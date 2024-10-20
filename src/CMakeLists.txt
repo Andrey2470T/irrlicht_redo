@@ -297,31 +297,31 @@ set(link_includes
 # Source files
 
 set(IRRMESHLOADER
-	CB3DMeshFileLoader.cpp
-	CGLTFMeshFileLoader.cpp
-	COBJMeshFileLoader.cpp
-	CXMeshFileLoader.cpp
+	Mesh/CB3DMeshFileLoader.cpp
+	Mesh/CGLTFMeshFileLoader.cpp
+	Mesh/COBJMeshFileLoader.cpp
+	Mesh/CXMeshFileLoader.cpp
 )
 
 add_library(IRRMESHOBJ OBJECT
-	CSkinnedMesh.cpp
-	CBoneSceneNode.cpp
-	CMeshSceneNode.cpp
-	CAnimatedMeshSceneNode.cpp
+	Mesh/CSkinnedMesh.cpp
+	Scene/CBoneSceneNode.cpp
+	Scene/CMeshSceneNode.cpp
+	Scene/CAnimatedMeshSceneNode.cpp
 	${IRRMESHLOADER}
 )
 
 target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
 
 add_library(IRROBJ OBJECT
-	CBillboardSceneNode.cpp
-	CCameraSceneNode.cpp
-	CDummyTransformationSceneNode.cpp
-	CEmptySceneNode.cpp
-	CMeshManipulator.cpp
-	CSceneCollisionManager.cpp
-	CSceneManager.cpp
-	CMeshCache.cpp
+	Scene/CBillboardSceneNode.cpp
+	Scene/CCameraSceneNode.cpp
+	Scene/CDummyTransformationSceneNode.cpp
+	Scene/CEmptySceneNode.cpp
+	Mesh/CMeshManipulator.cpp
+	Scene/CSceneCollisionManager.cpp
+	Scene/CSceneManager.cpp
+	Mesh/CMeshCache.cpp
 )
 
 # Make sure IRROBJ gets the transitive include directories for
@@ -329,12 +329,12 @@ add_library(IRROBJ OBJECT
 target_link_libraries(IRROBJ PRIVATE IRRMESHOBJ)
 
 set(IRRDRVROBJ
-	CNullDriver.cpp
-	CGLXManager.cpp
-	CWGLManager.cpp
-	CEGLManager.cpp
-	CSDLManager.cpp
-	mt_opengl_loader.cpp
+	Video/CNullDriver.cpp
+	Video/CGLXManager.cpp
+	Video/CWGLManager.cpp
+	Video/CEGLManager.cpp
+	Video/CSDLManager.cpp
+	Video/mt_opengl_loader.cpp
 )
 
 # the two legacy drivers
@@ -342,10 +342,10 @@ set(IRRDRVROBJ
 if(ENABLE_OPENGL)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		COpenGLCacheHandler.cpp
-		COpenGLDriver.cpp
-		COpenGLSLMaterialRenderer.cpp
-		COpenGLExtensionHandler.cpp
+		Video/OldOpenGL/COpenGLCacheHandler.cpp
+		Video/OldOpenGL/COpenGLDriver.cpp
+		Video/OldOpenGL/COpenGLSLMaterialRenderer.cpp
+		Video/OldOpenGL/COpenGLExtensionHandler.cpp
 	)
 endif()
 
@@ -354,65 +354,65 @@ endif()
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGL/Driver.cpp
-		OpenGL/ExtensionHandler.cpp
-		OpenGL/FixedPipelineRenderer.cpp
-		OpenGL/MaterialRenderer.cpp
-		OpenGL/Renderer2D.cpp
+		Video/OpenGL/Driver.cpp
+		Video/OpenGL/ExtensionHandler.cpp
+		Video/OpenGL/FixedPipelineRenderer.cpp
+		Video/OpenGL/MaterialRenderer.cpp
+		Video/OpenGL/Renderer2D.cpp
 	)
 endif()
 
 if(ENABLE_OPENGL3)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGL3/Driver.cpp
+		Video/OpenGL3/Driver.cpp
 	)
 endif()
 
 if(ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGLES2/Driver.cpp
+		Video/OpenGLES2/Driver.cpp
 	)
 endif()
 
 set(IRRIMAGEOBJ
-	CColorConverter.cpp
-	CImage.cpp
-	CImageLoaderBMP.cpp
-	CImageLoaderJPG.cpp
-	CImageLoaderPNG.cpp
-	CImageLoaderTGA.cpp
-	CImageWriterJPG.cpp
-	CImageWriterPNG.cpp
+	Image/CColorConverter.cpp
+	Image/CImage.cpp
+	Image/CImageLoaderBMP.cpp
+	Image/CImageLoaderJPG.cpp
+	Image/CImageLoaderPNG.cpp
+	Image/CImageLoaderTGA.cpp
+	Image/CImageWriterJPG.cpp
+	Image/CImageWriterPNG.cpp
 )
 
 add_library(IRRVIDEOOBJ OBJECT
-	CFPSCounter.cpp
+	Video/CFPSCounter.cpp
 	${IRRDRVROBJ}
 	${IRRIMAGEOBJ}
 )
 
 add_library(IRRIOOBJ OBJECT
-	CFileList.cpp
-	CFileSystem.cpp
-	CLimitReadFile.cpp
-	CMemoryFile.cpp
-	CReadFile.cpp
-	CWriteFile.cpp
-	CZipReader.cpp
-	CAttributes.cpp
+	IO/CFileList.cpp
+	IO/CFileSystem.cpp
+	IO/CLimitReadFile.cpp
+	IO/CMemoryFile.cpp
+	IO/CReadFile.cpp
+	IO/CWriteFile.cpp
+	IO/CZipReader.cpp
+	IO/CAttributes.cpp
 )
 
 add_library(IRROTHEROBJ OBJECT
-	CIrrDeviceSDL.cpp
-	CIrrDeviceLinux.cpp
-	CIrrDeviceStub.cpp
-	CIrrDeviceWin32.cpp
-	CLogger.cpp
-	COSOperator.cpp
-	Irrlicht.cpp
-	os.cpp
+	Misc/CIrrDeviceSDL.cpp
+	Misc/CIrrDeviceLinux.cpp
+	Misc/CIrrDeviceStub.cpp
+	Misc/CIrrDeviceWin32.cpp
+	Misc/CLogger.cpp
+	Misc/COSOperator.cpp
+	Misc/Irrlicht.cpp
+	Misc/os.cpp
 )
 
 if(ENABLE_OPENGL3)
@@ -423,8 +423,8 @@ if(APPLE)
 	# Build all IRROTHEROBJ sources as objc++, including the .cpp's
 	set_target_properties(IRROTHEROBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
 	target_sources(IRROTHEROBJ PRIVATE
-		CIrrDeviceOSX.mm
-		CNSOGLManager.mm
+		Misc/CIrrDeviceOSX.mm
+		Video/CNSOGLManager.mm
 	)
 endif()
 
@@ -441,21 +441,21 @@ if(USE_XCURSOR)
 endif()
 
 add_library(IRRGUIOBJ OBJECT
-	CGUIButton.cpp
-	CGUICheckBox.cpp
-	CGUIComboBox.cpp
-	CGUIEditBox.cpp
-	CGUIEnvironment.cpp
-	CGUIFileOpenDialog.cpp
-	CGUIFont.cpp
-	CGUIImage.cpp
-	CGUIListBox.cpp
-	CGUIScrollBar.cpp
-	CGUISkin.cpp
-	CGUIStaticText.cpp
-	CGUITabControl.cpp
-	CGUISpriteBank.cpp
-	CGUIImageList.cpp
+	GUI/Button.cpp
+	GUI/CheckBox.cpp
+	GUI/ComboBox.cpp
+	GUI/EditBox.cpp
+	GUI/Environment.cpp
+	GUI/FileOpenDialog.cpp
+	GUI/Font.cpp
+	GUI/Image.cpp
+	GUI/ListBox.cpp
+	GUI/ScrollBar.cpp
+	GUI/Skin.cpp
+	GUI/StaticText.cpp
+	GUI/TabControl.cpp
+	GUI/SpriteBank.cpp
+	GUI/ImageList.cpp
 )
 
 # Library

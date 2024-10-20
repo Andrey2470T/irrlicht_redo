@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CGUITabControl.h"
+#include "TabControl.h"
 
 #include "CGUIButton.h"
 #include "IGUISkin.h"

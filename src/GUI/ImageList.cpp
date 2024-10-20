@@ -2,7 +2,7 @@
 // written by Reinhard Ostermeier, reinhard@nospam.r-ostermeier.de
 // modified by Thomas Alten
 
-#include "CGUIImageList.h"
+#include "ImageList.h"
 
 namespace irr
 {

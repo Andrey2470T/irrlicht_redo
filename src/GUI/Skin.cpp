@@ -4,7 +4,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CGUISkin.h"
+#include "Skin.h"
 
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"

@@ -3,24 +3,24 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CGUIEnvironment.h"
+#include "Environment.h"
 
 #include "IVideoDriver.h"
 
-#include "CGUISkin.h"
-#include "CGUIButton.h"
-#include "CGUIScrollBar.h"
-#include "CGUIFont.h"
-#include "CGUISpriteBank.h"
-#include "CGUIImage.h"
-#include "CGUICheckBox.h"
-#include "CGUIListBox.h"
-#include "CGUIImageList.h"
-#include "CGUIFileOpenDialog.h"
-#include "CGUIStaticText.h"
-#include "CGUIEditBox.h"
-#include "CGUITabControl.h"
-#include "CGUIComboBox.h"
+#include "Skin.h"
+#include "Button.h"
+#include "ScrollBar.h"
+#include "Font.h"
+#include "SpriteBank.h"
+#include "Image.h"
+#include "CheckBox.h"
+#include "ListBox.h"
+#include "ImageList.h"
+#include "FileOpenDialog.h"
+#include "StaticText.h"
+#include "EditBox.h"
+#include "TabControl.h"
+#include "ComboBox.h"
 
 #include "IWriteFile.h"
 #ifdef IRR_ENABLE_BUILTIN_FONT

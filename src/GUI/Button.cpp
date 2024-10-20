@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CGUIButton.h"
+#include "Button.h"
 
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
