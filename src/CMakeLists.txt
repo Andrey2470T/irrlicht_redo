@@ -128,12 +128,6 @@ else()
 	set(ENABLE_OPENGL3 FALSE)
 endif()
 
-if(ANDROID OR EMSCRIPTEN)
-	set(ENABLE_OPENGL FALSE)
-else()
-	option(ENABLE_OPENGL "Enable OpenGL" TRUE)
-endif()
-
 if(APPLE)
 	set(ENABLE_GLES2 FALSE)
 	set(ENABLE_WEBGL1 FALSE)
@@ -152,21 +146,11 @@ else()
 	endif()
 endif()
 
-if(ENABLE_OPENGL)
-	add_definitions(-D_IRR_COMPILE_WITH_OPENGL_)
-	set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
-	if(DEVICE STREQUAL "WINDOWS")
-		add_definitions(-D_IRR_COMPILE_WITH_WGL_MANAGER_)
-	elseif(DEVICE STREQUAL "X11")
-		add_definitions(-D_IRR_COMPILE_WITH_GLX_MANAGER_)
-	elseif(DEVICE STREQUAL "OSX")
-		add_definitions(-D_IRR_COMPILE_WITH_NSOGL_MANAGER_)
-	endif()
-endif()
-
 if(ENABLE_OPENGL3)
 	if (NOT USE_SDL2)
 		message(FATAL_ERROR "OpenGL 3 driver requires SDL2")
+	else()
+		set(RENDERER "OpenGL3")
 	endif()
 endif()
 
@@ -175,10 +159,14 @@ if(ENABLE_GLES2)
 	if(DEVICE MATCHES "^(WINDOWS|X11)$" OR EMSCRIPTEN)
 		add_definitions(-D_IRR_COMPILE_WITH_EGL_MANAGER_)
 	endif()
+	
+	set(RENDERER "OpenGL ES 2")
 endif()
 
 if(ENABLE_WEBGL1)
 	add_definitions(-D_IRR_COMPILE_WITH_WEBGL1_)
+	
+	set(RENDERER "Web GL 1")
 endif()
 
 # Misc
@@ -192,14 +180,7 @@ endif()
 # Configuration report
 
 message(STATUS "Device: ${DEVICE}")
-message(STATUS "OpenGL: ${ENABLE_OPENGL}")
-message(STATUS "OpenGL 3: ${ENABLE_OPENGL3}")
-if (ENABLE_GLES2)
-	message(STATUS "OpenGL ES 2: ON (unified)")
-else()
-	message(STATUS "OpenGL ES 2: OFF")
-endif()
-#message(STATUS "WebGL: ${ENABLE_WEBGL1}")
+message(STATUS "Renderer: ${RENDERER}")
 
 # Required libs
 
@@ -211,9 +192,6 @@ find_package(PNG REQUIRED)
 
 if(ENABLE_GLES2)
 	find_package(OpenGLES2 REQUIRED)
-endif()
-if(ENABLE_OPENGL)
-	find_package(OpenGL REQUIRED)
 endif()
 if(USE_SDL2)
 	if(NOT ANDROID)
@@ -243,23 +221,6 @@ int main() {}" CHECK_SDL_VERSION)
 	endif()
 endif()
 
-# More special config
-
-if(ENABLE_OPENGL AND DEVICE STREQUAL "SDL")
-	# The legacy GL driver requires some symbols from GL 4.5 to compile,
-	# which SDL only provides since 2.26.0 (Nov 2022).
-	# We have a fallback in case this isn't satisfied so test for it.
-	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
-	unset(CHECK_GL_VERSION_4_5 CACHE)
-	check_cxx_source_compiles("#include <SDL_opengl.h>\n\
-#ifndef GL_VERSION_4_5\n\
-#error\n\
-#endif\n\
-int main() {}" CHECK_GL_VERSION_4_5)
-	if(CHECK_GL_VERSION_4_5)
-		add_definitions(-DIRR_PREFER_SDL_GL_HEADER)
-	endif()
-endif()
 
 # Platform-specific libs
 
@@ -296,19 +257,15 @@ set(link_includes
 
 # Source files
 
-set(IRRMESHLOADER
-	Mesh/CB3DMeshFileLoader.cpp
-	Mesh/CGLTFMeshFileLoader.cpp
-	Mesh/COBJMeshFileLoader.cpp
-	Mesh/CXMeshFileLoader.cpp
-)
-
 add_library(IRRMESHOBJ OBJECT
 	Mesh/CSkinnedMesh.cpp
 	Scene/CBoneSceneNode.cpp
 	Scene/CMeshSceneNode.cpp
 	Scene/CAnimatedMeshSceneNode.cpp
-	${IRRMESHLOADER}
+	Mesh/CB3DMeshFileLoader.cpp
+	Mesh/CGLTFMeshFileLoader.cpp
+	Mesh/COBJMeshFileLoader.cpp
+	Mesh/CXMeshFileLoader.cpp
 )
 
 target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
@@ -330,24 +287,10 @@ target_link_libraries(IRROBJ PRIVATE IRRMESHOBJ)
 
 set(IRRDRVROBJ
 	Video/CNullDriver.cpp
-	Video/CGLXManager.cpp
-	Video/CWGLManager.cpp
 	Video/CEGLManager.cpp
 	Video/CSDLManager.cpp
 	Video/mt_opengl_loader.cpp
 )
-
-# the two legacy drivers
-
-if(ENABLE_OPENGL)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OldOpenGL/COpenGLCacheHandler.cpp
-		Video/OldOpenGL/COpenGLDriver.cpp
-		Video/OldOpenGL/COpenGLSLMaterialRenderer.cpp
-		Video/OldOpenGL/COpenGLExtensionHandler.cpp
-	)
-endif()
 
 # the unified drivers
 
@@ -376,7 +319,9 @@ if(ENABLE_GLES2)
 	)
 endif()
 
-set(IRRIMAGEOBJ
+add_library(IRRVIDEOOBJ OBJECT
+	Video/CFPSCounter.cpp
+	${IRRDRVROBJ}
 	Image/CColorConverter.cpp
 	Image/CImage.cpp
 	Image/CImageLoaderBMP.cpp
@@ -385,12 +330,6 @@ set(IRRIMAGEOBJ
 	Image/CImageLoaderTGA.cpp
 	Image/CImageWriterJPG.cpp
 	Image/CImageWriterPNG.cpp
-)
-
-add_library(IRRVIDEOOBJ OBJECT
-	Video/CFPSCounter.cpp
-	${IRRDRVROBJ}
-	${IRRIMAGEOBJ}
 )
 
 add_library(IRRIOOBJ OBJECT

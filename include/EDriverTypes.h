@@ -17,11 +17,6 @@ enum E_DRIVER_TYPE
 	render and display any graphics. */
 	EDT_NULL,
 
-	//! OpenGL device, available on most platforms.
-	/** Performs hardware accelerated rendering of 3D and 2D
-	primitives. */
-	EDT_OPENGL,
-
 	//! OpenGL-ES 2.x driver, for embedded and mobile systems
 	/** Supports shaders etc. */
 	EDT_OGLES2,
@@ -29,6 +24,7 @@ enum E_DRIVER_TYPE
 	//! WebGL1 friendly subset of OpenGL-ES 2.x driver for Emscripten
 	EDT_WEBGL1,
 
+	//! OpenGL 3+ driver
 	EDT_OPENGL3,
 
 	//! No driver, just for counting the elements

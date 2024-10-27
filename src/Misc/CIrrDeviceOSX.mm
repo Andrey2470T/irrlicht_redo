@@ -433,14 +433,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void *key)
 	return value;
 }
 
-namespace irr
-{
-namespace video
-{
-IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &param, io::IFileSystem *io, IContextManager *contextManager);
-}
-} // end namespace irr
-
 static bool firstLaunch = true;
 
 @implementation CIrrDelegateOSX {
@@ -629,7 +621,7 @@ bool CIrrDeviceMacOSX::createWindow()
 	ScreenWidth = (int)CGDisplayPixelsWide(Display);
 	ScreenHeight = (int)CGDisplayPixelsHigh(Display);
 
-	const NSBackingStoreType type = (CreationParams.DriverType == video::EDT_OPENGL) ? NSBackingStoreBuffered : NSBackingStoreNonretained;
+	const NSBackingStoreType type = NSBackingStoreNonretained;
 
 	// TODO: fullscreen
 	// if (!CreationParams.Fullscreen)
@@ -673,16 +665,6 @@ void CIrrDeviceMacOSX::setResize(int width, int height)
 	DeviceWidth = width;
 	DeviceHeight = height;
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
-	// update the size of the opengl rendering context
-	if (CreationParams.DriverType == video::EDT_OPENGL) {
-		NSOpenGLContext *Context = (NSOpenGLContext *)ContextManager->getContext().OpenGLOSX.Context;
-
-		if (Context)
-			[Context update];
-	}
-#endif
-
 	// resize the driver to the inner pane size
 	if (Window) {
 		NSRect driverFrame = [Window contentRectForFrameRect:[Window frame]];
@@ -696,32 +678,9 @@ void CIrrDeviceMacOSX::setResize(int width, int height)
 void CIrrDeviceMacOSX::createDriver()
 {
 	switch (CreationParams.DriverType) {
-	case video::EDT_OPENGL:
-#ifdef _IRR_COMPILE_WITH_OPENGL_
-	{
-		video::SExposedVideoData data;
-		data.OpenGLOSX.Window = Window;
-		ContextManager = new video::CNSOGLManager();
-		ContextManager->initialize(CreationParams, data);
-		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, ContextManager);
-		if (!VideoDriver) {
-			os::Printer::log("Could not create OpenGL driver.", ELL_ERROR);
-		}
-
-		if (Window) {
-			[[Window contentView] setWantsBestResolutionOpenGLSurface:NO];
-			[(NSOpenGLContext *)ContextManager->getContext().OpenGLOSX.Context setView:[Window contentView]];
-		} else {
-			[(NSView *)CreationParams.WindowId setWantsBestResolutionOpenGLSurface:NO];
-			[(NSOpenGLContext *)ContextManager->getContext().OpenGLOSX.Context setView:(NSView *)CreationParams.WindowId];
-		}
-	}
-#else
-		os::Printer::log("No OpenGL support compiled in.", ELL_ERROR);
-#endif
-	break;
-
+	case video::EDT_OPENGL3:
 	case video::EDT_OGLES2:
+	case video::EDT_WEBGL1:
 		os::Printer::log("This driver is not available on OSX.", ELL_ERROR);
 		break;
 

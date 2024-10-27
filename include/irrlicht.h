@@ -170,7 +170,7 @@ for the vertical retrace period, otherwise not.
 device could not be created.
 */
 extern "C" IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDevice(
-		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL,
+		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL3,
 		// parentheses are necessary for some compilers
 		const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
 		u32 bits = 32,

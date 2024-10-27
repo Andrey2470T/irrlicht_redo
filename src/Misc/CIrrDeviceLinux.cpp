@@ -34,14 +34,6 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
-#if defined(_IRR_COMPILE_WITH_OGLES2_)
-#include "CEGLManager.h"
-#endif
-
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
-#include "CGLXManager.h"
-#endif
-
 #ifdef _IRR_LINUX_XCURSOR_
 #include <X11/Xcursor/Xcursor.h>
 #endif
@@ -73,10 +65,6 @@ namespace irr
 {
 namespace video
 {
-#ifdef _IRR_COMPILE_WITH_OPENGL_
-IVideoDriver *createOpenGLDriver(const irr::SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-#endif
-
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 IVideoDriver *createOGLES2Driver(const irr::SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
 #endif
@@ -397,17 +385,6 @@ bool CIrrDeviceLinux::createWindow()
 	if (WMCheck != None)
 		HasNetWM = true;
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
-	// don't use the XVisual with OpenGL, because it ignores all requested
-	// properties of the CreationParams
-	if (CreationParams.DriverType == video::EDT_OPENGL) {
-		video::SExposedVideoData data;
-		data.OpenGLLinux.X11Display = XDisplay;
-		ContextManager = new video::CGLXManager(CreationParams, data, Screennr);
-		VisualInfo = ((video::CGLXManager *)ContextManager)->getVisual();
-	}
-#endif
-
 	if (!VisualInfo) {
 		// create visual with standard X methods
 		os::Printer::log("Using plain X visual");
@@ -538,21 +515,6 @@ void CIrrDeviceLinux::createDriver()
 {
 	switch (CreationParams.DriverType) {
 #ifdef _IRR_COMPILE_WITH_X11_
-	case video::EDT_OPENGL:
-#ifdef _IRR_COMPILE_WITH_OPENGL_
-	{
-		video::SExposedVideoData data;
-		data.OpenGLLinux.X11Window = XWindow;
-		data.OpenGLLinux.X11Display = XDisplay;
-
-		ContextManager->initialize(CreationParams, data);
-
-		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, ContextManager);
-	}
-#else
-		os::Printer::log("No OpenGL support compiled in.", ELL_ERROR);
-#endif
-	break;
 	case video::EDT_OGLES2:
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 	{

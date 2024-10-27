@@ -22,7 +22,7 @@ struct SIrrlichtCreationParameters
 	//! Constructs a SIrrlichtCreationParameters structure with default values.
 	SIrrlichtCreationParameters() :
 			DeviceType(EIDT_BEST),
-			DriverType(video::EDT_OPENGL),
+			DriverType(video::EDT_OPENGL3),
 			WindowSize(core::dimension2d<u32>(800, 600)),
 			WindowPosition(core::position2di(-1, -1)),
 			Bits(32),
