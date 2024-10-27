@@ -4,7 +4,7 @@
 
 #include "Driver.h"
 #include <cassert>
-#include "mt_opengl.h"
+#include "opengl_loader.h"
 
 namespace irr
 {

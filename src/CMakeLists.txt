@@ -289,7 +289,7 @@ set(IRRDRVROBJ
 	Video/CNullDriver.cpp
 	Video/CEGLManager.cpp
 	Video/CSDLManager.cpp
-	Video/mt_opengl_loader.cpp
+	Video/opengl_loader.cpp
 )
 
 # the unified drivers

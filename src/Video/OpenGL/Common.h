@@ -10,8 +10,6 @@
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 #include <SDL_video.h>
 #include <SDL_opengl.h>
-#else
-#include "vendor/gl.h"
 #endif
 
 // macro used with COpenGL3DriverBase

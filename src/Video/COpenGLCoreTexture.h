@@ -12,7 +12,7 @@
 #include "CImage.h"
 #include "CColorConverter.h"
 
-#include "mt_opengl.h"
+#include "opengl_loader.h"
 
 namespace irr
 {
