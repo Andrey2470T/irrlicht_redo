@@ -73,14 +73,12 @@ public:
 	/** \return The vector of the line. */
 	Vector3D<T> getVector() const { return end - start; }
 
-	//! Check if the given point is between start and end of the line.
-	/** Assumes that the point is already somewhere on the line.
-	\param point The point to test.
-	\return True if point is on the line between start and end, else false.
-	*/
-	bool isPointBetweenStartAndEnd(const Vector3D<T> &point) const
+	//! Get unit vector of the line.
+	/** \return Unit vector of this line. */
+	Vector2D<T> getUnitVector() const
 	{
-		return point.isBetweenPoints(start, end);
+		T len = (T)(1.0 / getLength());
+		return (end - start) * len;
 	}
 };
 

@@ -240,18 +240,6 @@ public:
 		return *this;
 	}
 
-	//! Returns if this vector interpreted as a point is on a line between two other points.
-	/** It is assumed that the point is on the line.
-	\param begin Beginning vector to compare between.
-	\param end Ending vector to compare between.
-	\return True if this vector is between begin and end, false if not. */
-	bool isBetweenPoints(const Vector2D<T> &begin, const Vector2D<T> &end) const
-	{
-		const T dist = begin.getDistanceFromSQ(end);
-		return getDistanceFromSQ(begin) <= dist &&
-				getDistanceFromSQ(end) <= dist;
-	}
-
 	//! Creates an interpolated vector between this vector and another vector.
 	/** \param other The other vector to interpolate with.
 	\param d Interpolation value between 0.0f (all the other vector) and 1.0f (all this vector).
@@ -279,50 +267,6 @@ public:
 
 		return Vector2D<T>((T)(X * mul0 + v2.X * mul1 + v3.X * mul2),
 				(T)(Y * mul0 + v2.Y * mul1 + v3.Y * mul2));
-	}
-
-	/*! Test if this point and another 2 points taken as triplet
-		are colinear, clockwise, anticlockwise. This can be used also
-		to check winding order in triangles for 2D meshes.
-		\return 0 if points are colinear, 1 if clockwise, 2 if anticlockwise
-	*/
-	s32 checkOrientation(const Vector2D<T> &b, const Vector2D<T> &c) const
-	{
-		// Example of clockwise points
-		//
-		//   ^ Y
-		//   |       A
-		//   |      . .
-		//   |     .   .
-		//   |    C.....B
-		//   +---------------> X
-
-
-		T val = (b.Y - Y) * (c.X - b.X) -
-				(b.X - X) * (c.Y - b.Y);
-
-		if (val == 0)
-			return 0; // colinear
-
-		return (val > 0) ? 1 : 2; // clock or counterclock wise
-	}
-
-	/*! Returns true if points (a,b,c) are clockwise on the X,Y plane*/
-	inline bool areClockwise(const Vector2D<T> &b, const Vector2D<T> &c) const
-	{
-		T val = (b.Y - Y) * (c.X - b.X) -
-				(b.X - X) * (c.Y - b.Y);
-
-		return val > 0;
-	}
-
-	/*! Returns true if points (a,b,c) are counterclockwise on the X,Y plane*/
-	inline bool areCounterClockwise(const Vector2D<T> &b, const Vector2D<T> &c) const
-	{
-		T val = (b.Y - Y) * (c.X - b.X) -
-				(b.X - X) * (c.Y - b.Y);
-
-		return val < 0;
 	}
 
 	//! Sets this vector to the linearly interpolated vector between a and b.

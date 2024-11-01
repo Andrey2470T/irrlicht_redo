@@ -238,18 +238,6 @@ public:
 		return *this;
 	}
 
-	//! Returns if this vector interpreted as a point is on a line between two other points.
-	/** It is assumed that the point is on the line.
-	\param begin Beginning vector to compare between.
-	\param end Ending vector to compare between.
-	\return True if this vector is between begin and end, false if not. */
-	bool isBetweenPoints(const Vector3D<T> &begin, const Vector3D<T> &end) const
-	{
-		const T dist = (end - begin).getLengthSQ();
-		return getDistanceFromSQ(begin) <= dist &&
-			   getDistanceFromSQ(end) <= dist;
-	}
-
 	//! Inverts the vector.
 	Vector3D<T> &invert()
 	{
@@ -397,27 +385,6 @@ public:
 		if (angle.X >= 360)
 			angle.X -= 360;
 
-		return angle;
-	}
-
-	//! Get the spherical coordinate angles
-	/** This returns Euler degrees for the point represented by
-	this vector.  The calculation assumes the pole at (0,1,0) and
-	returns the angles in X and Y.
-	*/
-	Vector3D<T> getSphericalCoordinateAngles() const
-	{
-		Vector3D<T> angle;
-		const f64 length = getLengthSQ(*this);
-
-		if (length) {
-			if (X != 0) {
-				angle.Y = (T)radToDeg(std::atan2((f64)Z, (f64)X));
-			} else if (Z < 0)
-				angle.Y = 180;
-
-			angle.X = (T)radToDeg(std::acos(Y * 1.0 / std::sqrt(length)));
-		}
 		return angle;
 	}
 

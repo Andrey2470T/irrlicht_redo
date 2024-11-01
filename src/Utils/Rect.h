@@ -22,27 +22,24 @@ template <class T>
 class Rect
 {
 public:
-	Vector2D<T> Origin;
+	//! Upper left corner
+	Vector2D<T> ULC;
+	//! Lower right corner
+	Vector2D<T> LRC;
 
-	T Width;
-	T Height;
-
-	Rect() : Origin(0, 0), Width(0), Height(0) {}
+	Rect() : ULC(0, 0), LRC(0) {}
 
 	Rect(T x, T y, T x2, T y2) :
-			Origin(x, y), Width(x2 - x), Height(y2 - y) {}
+			ULC(x, y), LRC(x2, y2) {}
 
 	Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight) :
-			Origin(upperLeft), Width(lowerRight.X - upperLeft.X),
-			Height(lowerRight.Y - upperLeft.Y) {}
+			ULC(upperLeft), LRC(lowerRight) {}
 
 	Rect(const Vector2D<T> &pos, const Vector2D<T> &size) :
-			Origin(pos), Width(size.X), Height(size.Y) {}
+			ULC(pos), LRC(pos.X + size.X, pos.Y + size.Y) {}
 
 	explicit Rect(const Vector2D &size) :
-			Origin(0, 0), Width(size.X), Height(size.Y)
-	{
-	}
+			ULC(0, 0), LRC(size.X, size.Y) {}
 
 	//! move right by given numbers
 	Rect<T> operator+(const Vector2D<T> &pos) const
@@ -54,30 +51,28 @@ public:
 	//! move right by given numbers
 	Rect<T> &operator+=(const Vector2D<T> &pos)
 	{
-		Origin += pos;
+		ULC += pos;
+		LRC += pos;
 		return *this;
 	}
 
 	//! move left by given numbers
 	Rect<T> operator-(const Vector2D<T> &pos) const
 	{
-		Rect<T> rect(*this);
-		return rect -= pos;
+		return *this + (-pos);
 	}
 
 	//! move left by given numbers
 	Rect<T> &operator-=(const Vector2D<T> &pos)
 	{
-		Origin -= pos;
+		*this += (-pos);
 		return *this;
 	}
 
 	//! equality operator
 	constexpr bool operator==(const Rect<T> &other) const
 	{
-		return (Origin == other.Origin &&
-				Width == other.Width &&
-				Height == other.Height);
+		return (ULC == other.ULC && LRC == other.LRC);
 	}
 
 	//! inequality operator
@@ -92,15 +87,20 @@ public:
 		return getArea() < other.getArea();
 	}
 
+	T getWidth() const
+	{
+		return LRC.X - ULC.X;
+	}
+
+	T getHeight() const
+	{
+		return LRC.Y - ULC.Y;
+	}
+
 	//! Returns size of Rectangle
 	T getArea() const
 	{
-		return Width * Height;
-	}
-
-	Vector2D<T> getEnd() const
-	{
-		return Origin + Vector2D(Width, Height);
+		return getWidth() * getHeight();
 	}
 
 	//! Returns if a 2d point is within this Rectangle.
@@ -108,11 +108,10 @@ public:
 	\return True if the position is within the rectangle, false if not. */
 	bool isPointInside(const Vector2D<T> &pos) const
 	{
-		Vector2D<T> end = getEnd();
-		return (Origin.X <= pos.X &&
-				Origin.Y <= pos.Y &&
-				end.X >= pos.X &&
-				end.Y >= pos.Y);
+		return (ULC.X <= pos.X &&
+				ULC.Y <= pos.Y &&
+				LRC.X >= pos.X &&
+				LRC.Y >= pos.Y);
 	}
 
 	//! Check if the rectangle collides with another rectangle.
@@ -120,81 +119,67 @@ public:
 	\return True if the rectangles collide. */
 	bool isRectCollided(const Rect<T> &other) const
 	{
-		Vector2D<T> end = getEnd();
-		Vector2D<T> other_end = other.getEnd();
-		return (end.Y > other.Origin.Y &&
-				Origin.Y < other_end.Y &&
-				end.X > other.Origin.X &&
-				Origin.X < other_end.X);
+		return (LRC.Y > other.ULC.Y &&
+				ULC.Y < LRC.Y &&
+				LRC.X > other.ULC.X &&
+				ULC.X < LRC.X);
 	}
 
 	//! Clips this rectangle with another one.
 	/** \param other Rectangle to clip with */
 	void clipAgainst(const Rect<T> &other)
 	{
-		Vector2D<T> end = getEnd();
-		Vector2D<T> other_end = other.getEnd();
+		if (other.LRC.X < LRC.X)
+			LRC.X = other.LRC.X;
+		if (other.LRC.Y < LRC.Y)
+			LRC.Y = other.LRC.Y;
 
-		if (other_end.X < end.X)
-			end.X = other_end.X;
-		if (other_end.Y < end.Y)
-			end.Y = other_end.Y;
+		if (other.ULC.X > LRC.X)
+			LRC.X = other.ULC.X;
+		if (other.ULC.Y > LRC.Y)
+			LRC.Y = other.ULC.Y;
 
-		if (other.Origin.X > end.X)
-			end.X = other.Origin.X;
-		if (other.Origin.Y > end.Y)
-			end.Y = other.Origin.Y;
+		if (other.LRC.X < ULC.X)
+			ULC.X = other.LRC.X;
+		if (other.LRC.Y < ULC.Y)
+			ULC.Y = other.LRC.Y;
 
-		if (other_end.X < Origin.X)
-			Origin.X = other_end.X;
-		if (other_end.Y < Origin.Y)
-			Origin.Y = other_end.Y;
-
-		if (other.Origin.X > Origin.X)
-			Origin.X = other.Origin.X;
-		if (other.Origin.Y > Origin.Y)
-			Origin.Y = other.Origin.Y;
-
-		Width = end.X - Origin.X;
-		Height = end.Y - Origin.Y;
+		if (other.ULC.X > ULC.X)
+			ULC.X = other.ULC.X;
+		if (other.ULC.Y > ULC.Y)
+			ULC.Y = other.ULC.Y;
 	}
 
 	//! Moves this rectangle to fit inside another one.
 	/** \return True on success, false if not possible */
 	bool constrainTo(const Rect<T> &other)
 	{
-		if (other.Width < Width || other.Height < Height)
+		if (other.getWidth() < getWidth() || other.getHeight() < getHeight())
 			return false;
 
-		Vector2D<T> end = getEnd();
-		Vector2D<T> other_end = other.getEnd();
-
-		T diff = other_end.X - end.X;
+		T diff = other.LRC.X - LRC.X;
 		if (diff < 0) {
-			end.X += diff;
-			Origin.X += diff;
+			LRC.X += diff;
+			ULC.X += diff;
 		}
 
-		diff = other_end.Y - end.Y;
+		diff = other.LRC.Y - LRC.Y;
 		if (diff < 0) {
-			end.Y += diff;
-			Origin.Y += diff;
+			LRC.Y += diff;
+			ULC.Y += diff;
 		}
 
-		diff = Origin.X - other.Origin.X;
+		diff = ULC.X - other.ULC.X;
 		if (diff < 0) {
-			Origin.X -= diff;
-			end.X -= diff;
+			ULC.X -= diff;
+			LRC.X -= diff;
 		}
 
-		diff = Origin.Y - other.Origin.Y;
+		diff = ULC.Y - other.ULC.Y;
 		if (diff < 0) {
-			Origin.Y -= diff;
-			end.Y -= diff;
+			ULC.Y -= diff;
+			LRC.Y -= diff;
 		}
-
-		Width = end.X - Origin.X;
-		Height = end.Y - Origin.Y;
 
 		return true;
 	}
@@ -202,14 +187,16 @@ public:
 	//! If the lower right corner of the rect is smaller then the upper left, the points are swapped.
 	void repair()
 	{
-		if (Width < 0) {
-			Origin.X += Width;
-			Width *= -1;
+		if (LRC.X < ULC.X) {
+			T t = LRC.X;
+			LRC.X = ULC.X;
+			ULC.X = t;
 		}
 
-		if (Height < 0) {
-			Origin.Y += Height;
-			Height *= -1;
+		if (LRC.Y < ULC.Y) {
+			T t = LRC.Y;
+			LRC.Y = ULC.Y;
+			ULC.Y = t;
 		}
 	}
 
@@ -218,13 +205,13 @@ public:
 	right than the LowerRightCorner. */
 	bool isValid() const
 	{
-		return (Width >= 0 && Height >= 0);
+		return ((LRC.X >= ULC.X) && (LRC.Y >= ULC.Y));
 	}
 
 	//! Get the center of the rectangle
 	Vector2D<T> getCenter() const
 	{
-		return Vector2D<T>((Origin + getEnd()) / 2);
+		return Vector2D<T>((ULC + LRC) / 2);
 	}
 
 	//! Adds a point to the rectangle
@@ -243,20 +230,15 @@ public:
 	\param y Y-Coordinate of the point to add to this box. */
 	void addInternalPoint(T x, T y)
 	{
-		Vector2D<T> end = getEnd();
-		if (x > end.X)
-			Width = x - Origin.X;
-		if (y > end.Y)
-			Height = y - Origin.Y;
+		if (x > LRC.X)
+			LRC.X = x;
+		if (y > LRC.Y)
+			LRC.Y = y;
 
-		if (x < Origin.X) {
-			Width += (Origin.X - x);
-			Origin.X = x;
-		}
-		if (y < Origin.Y) {
-			Height += (Origin.Y - y)
-			Origin.Y = y;
-		}
+		if (x < ULC.X)
+			ULC.X = x;
+		if (y < ULC.Y)
+			ULC.Y = y;
 	}
 };
 

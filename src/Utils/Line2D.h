@@ -72,45 +72,12 @@ public:
 	/** \return The vector of the line. */
 	Vector2D<T> getVector() const { return end - start; }
 
-	/*! Check if 2 lines/segments are parallel or nearly parallel.*/
-	bool nearlyParallel(const Line2D<T> &line, const T factor = relativeErrorFactor<T>()) const
-	{
-		const Vector2D<T> a = getVector();
-		const Vector2D<T> b = line.getVector();
-
-		return a.nearlyParallel(b, factor);
-	}
-
 	//! Get unit vector of the line.
 	/** \return Unit vector of this line. */
 	Vector2D<T> getUnitVector() const
 	{
 		T len = (T)(1.0 / getLength());
-		return (end - start) * len;;
-	}
-
-	//! Tells us if the given point lies to the left, right, or on the line.
-	/** \return 0 if the point is on the line
-	<0 if to the left, or >0 if to the right. */
-	T getPointOrientation(const Vector2D<T> &point) const
-	{
-		return ((end.X - start.X) * (point.Y - start.Y) -
-				(point.X - start.X) * (end.Y - start.Y));
-	}
-
-	//! Check if the given point is a member of the line
-	/** \return True if point is between start and end, else false. */
-	bool isPointOnLine(const Vector2D<T> &point) const
-	{
-		T d = getPointOrientation(point);
-		return (d == 0 && point.isBetweenPoints(start, end));
-	}
-
-	//! Check if the given point is between start and end of the line.
-	/** Assumes that the point is already somewhere on the line. */
-	bool isPointBetweenStartAndEnd(const Vector2D<T> &point) const
-	{
-		return point.isBetweenPoints(start, end);
+		return (end - start) * len;
 	}
 };
 
