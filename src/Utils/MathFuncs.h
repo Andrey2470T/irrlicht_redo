@@ -3,6 +3,9 @@
 #include <cmath>
 #include "Typedefs.h"
 
+namespace utils
+{
+
 #ifndef PI
 //! Constant for PI.
 const f64 PI = std::atan(1.0) * 4;
@@ -60,3 +63,4 @@ inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERRO
 	return std::abs(a - b) <= tolerance;
 }
 
+}

@@ -167,8 +167,8 @@ public:
 	/** \param edges: Pointer to array of 8 edges. */
 	void getEdges(Vector3D<T> *edges) const
 	{
-		const core::Vector3D<T> middle = getCenter();
-		const core::Vector3D<T> diag = middle - MaxEdge;
+		const v3f middle = getCenter();
+		const v3f diag = middle - MaxEdge;
 
 		/*
 		Edges are stored in this way:
@@ -344,9 +344,9 @@ public:
 };
 
 //! Typedef for a f32 3d bounding box.
-typedef AABB<f32> aabb3f;
+typedef AABB<f32> aabbf;
 //! Typedef for an integer 3d bounding box.
-typedef AABB<s32> aabb3i;
+typedef AABB<s32> aabbi;
 
 } // end namespace core
 } // end namespace irr

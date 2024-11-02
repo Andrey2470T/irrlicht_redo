@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "irrMath.h"
-#include "vector3d.h"
+#include "MathFuncs.h"
+#include "Vector3D.h"
 
-namespace irr
-{
-namespace core
+namespace utils
 {
 
 //! Enumeration for intersection relations of 3d objects
@@ -113,21 +111,6 @@ public:
 		vector3d<T> vect = linePoint2 - linePoint1;
 		T t2 = (f32)Normal.dotProduct(vect);
 		return (f32) - ((Normal.dotProduct(linePoint1) + D) / t2);
-	}
-
-	//! Get an intersection with a 3d line, limited between two 3d points.
-	/** \param linePoint1 Point 1 of the line.
-	\param linePoint2 Point 2 of the line.
-	\param outIntersection Place to store the intersection point, if there is one.
-	\return True if there was an intersection, false if there was not.
-	*/
-	bool getIntersectionWithLimitedLine(
-			const vector3d<T> &linePoint1,
-			const vector3d<T> &linePoint2,
-			vector3d<T> &outIntersection) const
-	{
-		return (getIntersectionWithLine(linePoint1, linePoint2 - linePoint1, outIntersection) &&
-				outIntersection.isBetweenPoints(linePoint1, linePoint2));
 	}
 
 	//! Classifies the relation of a point to this plane.
@@ -240,5 +223,4 @@ typedef plane3d<f32> plane3df;
 //! Typedef for an integer 3d plane.
 typedef plane3d<s32> plane3di;
 
-} // end namespace core
-} // end namespace irr
+}

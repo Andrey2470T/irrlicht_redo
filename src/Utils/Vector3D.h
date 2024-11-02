@@ -76,8 +76,7 @@ public:
 
 	Vector3D<T> &operator-=(const Vector3D<T> &other)
 	{
-		*this += (-other);
-		return *this;
+		return *this += (-other);
 	}
 
 	Vector3D<T> operator-(const T v) const {
@@ -86,8 +85,7 @@ public:
 
 	Vector3D<T> &operator-=(const T v)
 	{
-		*this += (-v);
-		return *this;
+		return *this += (-v);
 	}
 
 	//! Multiplication
@@ -309,10 +307,9 @@ public:
 	\param d Interpolation value between 0.0f (all the other vector) and 1.0f (all this vector).
 	Note that this is the opposite direction of interpolation to getInterpolated_quadratic()
 	\return An interpolated vector.  This vector is not modified. */
-	Vector3D<T> getInterpolated(const Vector3D<T> &other, f64 d) const
+	Vector3D<T> linInterp(const Vector3D<T> &other, f32 d) const
 	{
-		const f64 inv = 1.0 - d;
-		return Vector3D<T>((T)(other.X * inv + X * d), (T)(other.Y * inv + Y * d), (T)(other.Z * inv + Z * d));
+		return Vector2D<T>(lerp<T>(other.X, X, d), lerp<T>(other.Y, Y, d), lerp<T>(other.Z, Z, d));
 	}
 
 	//! Creates a quadratically interpolated vector between this and two other vectors.
@@ -321,7 +318,7 @@ public:
 	\param d Interpolation value between 0.0f (all this vector) and 1.0f (all the 3rd vector).
 	Note that this is the opposite direction of interpolation to getInterpolated() and interpolate()
 	\return An interpolated vector. This vector is not modified. */
-	Vector3D<T> getInterpolated_quadratic(const Vector3D<T> &v2, const Vector3D<T> &v3, f64 d) const
+	Vector3D<T> quadInterp(const Vector3D<T> &v2, const Vector3D<T> &v3, f64 d) const
 	{
 		// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
 		const f64 inv = (T)1.0 - d;
@@ -340,11 +337,12 @@ public:
 	\param d Interpolation value between 0.0f (all vector b) and 1.0f (all vector a)
 	Note that this is the opposite direction of interpolation to getInterpolated_quadratic()
 	*/
-	Vector3D<T> &interpolate(const Vector3D<T> &a, const Vector3D<T> &b, f64 d)
+	Vector3D<T> &linInterpBetween(const Vector3D<T> &a, const Vector3D<T> &b, f64 d)
 	{
-		X = (T)((f64)b.X + ((a.X - b.X) * d));
-		Y = (T)((f64)b.Y + ((a.Y - b.Y) * d));
-		Z = (T)((f64)b.Z + ((a.Z - b.Z) * d));
+		X = lerp(a.X, b.X, d);
+		Y = lerp(a.Y, b.Y, d);
+		Z = lerp(a.Z, b.Z, d);
+		
 		return *this;
 	}
 

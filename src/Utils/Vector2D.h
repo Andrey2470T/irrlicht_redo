@@ -65,25 +65,21 @@ public:
 
 	//! Subtraction
 	Vector2D<T> operator-(const Vector2D<T> &other) const {
-		return Vector2D<T>(X - other.X, Y - other.Y);
+		return *this + (-other);
 	}
 
 	Vector2D<T> &operator-=(const Vector2D<T> &other)
 	{
-		X -= other.X;
-		Y -= other.Y;
-		return *this;
+		return *this += (-other);
 	}
 
 	Vector2D<T> operator-(const T v) const {
-		return Vector2D<T>(X - v, Y - v);
+		return *this + (-v);
 	}
 
 	Vector2D<T> &operator-=(const T v)
 	{
-		X -= v;
-		Y -= v;
-		return *this;
+		return *this += (-v);
 	}
 
 	//! Multiplication
@@ -245,10 +241,9 @@ public:
 	\param d Interpolation value between 0.0f (all the other vector) and 1.0f (all this vector).
 	Note that this is the opposite direction of interpolation to getInterpolated_quadratic()
 	\return An interpolated vector.  This vector is not modified. */
-	Vector2D<T> getInterpolated(const Vector2D<T> &other, f64 d) const
+	Vector2D<T> linInterp(const Vector2D<T> &other, f32 d) const
 	{
-		const f64 inv = 1.0f - d;
-		return Vector2D<T>((T)(other.X * inv + X * d), (T)(other.Y * inv + Y * d));
+		return Vector2D<T>(lerp<T>(other.X, X, d), lerp<T>(other.Y, Y, d));
 	}
 
 	//! Creates a quadratically interpolated vector between this and two other vectors.
@@ -257,7 +252,7 @@ public:
 	\param d Interpolation value between 0.0f (all this vector) and 1.0f (all the 3rd vector).
 	Note that this is the opposite direction of interpolation to getInterpolated() and interpolate()
 	\return An interpolated vector. This vector is not modified. */
-	Vector2D<T> getInterpolated_quadratic(const Vector2D<T> &v2, const Vector2D<T> &v3, f64 d) const
+	Vector2D<T> quadInterp(const Vector2D<T> &v2, const Vector2D<T> &v3, f64 d) const
 	{
 		// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
 		const f64 inv = 1.0f - d;
@@ -275,10 +270,11 @@ public:
 	\param d Interpolation value between 0.0f (all vector b) and 1.0f (all vector a)
 	Note that this is the opposite direction of interpolation to getInterpolated_quadratic()
 	*/
-	Vector2D<T> &interpolate(const Vector2D<T> &a, const Vector2D<T> &b, f64 d)
+	Vector2D<T> &linInterpBetween(const Vector2D<T> &a, const Vector2D<T> &b, f32 d)
 	{
-		X = (T)((f64)b.X + ((a.X - b.X) * d));
-		Y = (T)((f64)b.Y + ((a.Y - b.Y) * d));
+		X = lerp(a.X, b.X, d);
+		Y = lerp(a.Y, b.Y, d);
+
 		return *this;
 	}
 };
