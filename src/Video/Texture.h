@@ -38,7 +38,7 @@ protected:
 
 	TextureFormat format;
 	TextureFormatInfo format_info;
-	
+
 	bool isRenderTarget;
 public:
 	Texture(const std::string &_name, u32 _width, u32 _height, TextureFormat _format)
@@ -73,7 +73,7 @@ public:
 	virtual void bind() const = 0;
 	virtual void unbind() const = 0;
 
-	virtual Image *downloadData() const = 0;
+	virtual std::unique_ptr<Image> downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;
 };
 

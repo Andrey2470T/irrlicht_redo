@@ -309,7 +309,7 @@ public:
 	\return An interpolated vector.  This vector is not modified. */
 	Vector3D<T> linInterp(const Vector3D<T> &other, f32 d) const
 	{
-		return Vector2D<T>(lerp<T>(other.X, X, d), lerp<T>(other.Y, Y, d), lerp<T>(other.Z, Z, d));
+		return Vector3D<T>(lerp<T>(other.X, X, d), lerp<T>(other.Y, Y, d), lerp<T>(other.Z, Z, d));
 	}
 
 	//! Creates a quadratically interpolated vector between this and two other vectors.
@@ -342,7 +342,7 @@ public:
 		X = lerp(a.X, b.X, d);
 		Y = lerp(a.Y, b.Y, d);
 		Z = lerp(a.Z, b.Z, d);
-		
+
 		return *this;
 	}
 
