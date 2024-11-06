@@ -252,16 +252,9 @@ public:
 	\param d Interpolation value between 0.0f (all this vector) and 1.0f (all the 3rd vector).
 	Note that this is the opposite direction of interpolation to getInterpolated() and interpolate()
 	\return An interpolated vector. This vector is not modified. */
-	Vector2D<T> quadInterp(const Vector2D<T> &v2, const Vector2D<T> &v3, f64 d) const
+	Vector2D<T> quadInterp(const Vector2D<T> &v2, const Vector2D<T> &v3, f32 d) const
 	{
-		// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
-		const f64 inv = 1.0f - d;
-		const f64 mul0 = inv * inv;
-		const f64 mul1 = 2.0f * d * inv;
-		const f64 mul2 = d * d;
-
-		return Vector2D<T>((T)(X * mul0 + v2.X * mul1 + v3.X * mul2),
-				(T)(Y * mul0 + v2.Y * mul1 + v3.Y * mul2));
+		return Vector2D<T>(qerp<T>(X, v2.X, v3.X, d), qerp<T>(Y, v2.Y, v3.Y, d));
 	}
 
 	//! Sets this vector to the linearly interpolated vector between a and b.

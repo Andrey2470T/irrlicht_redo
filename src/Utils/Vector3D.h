@@ -318,17 +318,12 @@ public:
 	\param d Interpolation value between 0.0f (all this vector) and 1.0f (all the 3rd vector).
 	Note that this is the opposite direction of interpolation to getInterpolated() and interpolate()
 	\return An interpolated vector. This vector is not modified. */
-	Vector3D<T> quadInterp(const Vector3D<T> &v2, const Vector3D<T> &v3, f64 d) const
+	Vector3D<T> quadInterp(const Vector3D<T> &v2, const Vector3D<T> &v3, f32 d) const
 	{
-		// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
-		const f64 inv = (T)1.0 - d;
-		const f64 mul0 = inv * inv;
-		const f64 mul1 = (T)2.0 * d * inv;
-		const f64 mul2 = d * d;
-
-		return Vector3D<T>((T)(X * mul0 + v2.X * mul1 + v3.X * mul2),
-				(T)(Y * mul0 + v2.Y * mul1 + v3.Y * mul2),
-				(T)(Z * mul0 + v2.Z * mul1 + v3.Z * mul2));
+		return Vector3D<T>(
+				qerp<T>(X, v2.X, v3.X, d),
+				qerp<T>(Y, v2.Y, v3.Y, d),
+				qerp<T>(Z, v2.Z, v3.Z, d));
 	}
 
 	//! Sets this vector to the linearly interpolated vector between a and b.
