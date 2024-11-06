@@ -113,6 +113,12 @@ public:
 				LRC.X >= pos.X &&
 				LRC.Y >= pos.Y);
 	}
+	
+	//! Return if the other rect is within this rect.
+	bool isRectInside(const Rect<T> &other) const
+	{
+		return (isPointInside(other.ULC) && isPointInside(other.LRC));
+	}
 
 	//! Check if the rectangle collides with another rectangle.
 	/** \param other Rectangle to test collision with

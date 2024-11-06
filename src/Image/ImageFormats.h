@@ -1,25 +1,27 @@
 #pragma once
 
 #include <array>
-#include "Common.h"
+#include "Render/Common.h"
 
-namespace render
+using namespace utils;
+
+namespace img
 {
 
 enum ImageFormat
 {
-	IF_R8G8B8 = 0,
-	IF_A8R8G8B8,
+	IF_RGB8 = 0,
+	IF_RGBA8,
 	IF_R16F,
-	IF_G16R16F,
-	IF_A16B16G16R16F,
+	IF_RG16F,
+	IF_RGBA16F,
 	IF_R32F,
-	IF_G32R32F,
-	IF_A32B32G32R32F,
+	IF_RG32F,
+	IF_RGBA32F,
 	IF_R8,
-	IF_R8G8,
+	IF_RG8,
 	IF_R16,
-	IF_R16G16,
+	IF_RG16,
 	IF_D16,
 	IF_D32,
 	IF_D24S8,

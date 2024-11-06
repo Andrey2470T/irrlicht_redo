@@ -3,7 +3,7 @@
 #include <limits>
 #include "ImageFormats.h"
 
-namespace render {
+namespace img {
 
 //! Class representing a color in RGBA format.
 /** The color values can have an arbitrary type
@@ -133,7 +133,7 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 	
 	L = (maxVal + minVal) * 50;
 	
-	if (utils::equals<f32>(maxVal, minVal)) {
+	if (equals<f32>(maxVal, minVal)) {
 		H = 0.0f;
 		S = 0.0f;
 		return;
@@ -147,9 +147,9 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 	}
 	S *= 100;
 
-	if (utils::equals<f32>(maxVal, color.R))
+	if (equals<f32>(maxVal, color.R))
 		H = (color.G - color.B) / delta;
-	else if (utils::equals<f32>(maxVal, color.G))
+	else if (equals<f32>(maxVal, color.G))
 		H = 2 + ((color.B - color.R) / delta);
 	else // blue is max
 		H = 4 + ((color.R - color.G) / delta);
@@ -162,7 +162,7 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 inline void ColorHSL::toRGBA(ColorRGBA<f32> &color) const
 {
 	const f32 l = L / 100;
-	if (utils::equals<f32>(S, 0.0f)) { // grey
+	if (equals<f32>(S, 0.0f)) { // grey
 		color.R = l;
 		color.G = l;
 		color.B = l;
