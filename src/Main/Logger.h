@@ -1,11 +1,12 @@
 #pragma once
 
 #include <string>
+#include "EventReceiver.h"
 
-namespace utils
+namespace main
 {
 
-/! Possible log levels.
+//! Possible log levels.
 //! When used has filter ELL_DEBUG means => log everything and ELL_NONE means => log (nearly) nothing.
 //! When used to print logging information ELL_DEBUG will have lowest priority while ELL_NONE
 //! messages are never filtered and always printed.
@@ -31,8 +32,11 @@ enum LOG_LEVEL
 class Logger
 {
 	LOG_LEVEL Level;
+	EventReceiver *Receiver;
 
-	Logger() : level(LL_INFORMATION) {}
+	Logger(EventReceiver *receiver)
+		: level(LL_INFORMATION), Receiver(receiver)
+	{}
 	
 	LOG_LEVEL getLogLevel() const
 	{
@@ -48,6 +52,15 @@ class Logger
 	{
 		if (level < Level)
 			return;
+		
+		if (Receiver) {
+			Event event;
+			event.EventType = ET_LOG_TEXT_EVENT;
+			event.LogEvent.Text = text;
+			event.LogEvent.Level = ll;
+			if (Receiver->OnEvent(event))
+				return;
+		}
 		
 		std::cout << text << std::endl;
 	}
