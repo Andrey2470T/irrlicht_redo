@@ -36,7 +36,7 @@ class CursorControl
 	utils::v2i Pos;
 	bool IsVisible;
 	CURSOR_ICON Icon;
-	
+
 	struct CursorDeleter
 	{
 		void operator()(SDL_Cursor *ptr)
@@ -45,13 +45,13 @@ class CursorControl
 				SDL_FreeCursor(ptr);
 		}
 	};
-		
+
 	std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
-	
-	SDLApp *App;
+
+	MainWindow *Wnd;
 public:
-	CursorControl(SDLApp *app);
-	
+	CursorControl(MainWindow *window);
+
 	//! Changes the visible state of the mouse cursor.
 	void setVisible(bool visible);
 
@@ -60,7 +60,7 @@ public:
 	{
 		return IsVisible;
 	}
-	
+
 	//! Sets the new position of the cursor.
 	void setPosition(utils::v2i newPos);
 

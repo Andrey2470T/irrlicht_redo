@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "Texture.h"
 
 namespace render

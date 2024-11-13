@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include "Typedefs.h"
+#include "BasicIncludes.h"
 #include "MathFuncs.h"
 #include "Matrix4.h"
-#include "Vector3D.h"
-
 
 namespace utils
 {
@@ -24,7 +22,7 @@ public:
 	f32 Y;
 	f32 Z;
 	f32 W; // real part
-	
+
 	//! Default Constructor
 	Quaternion() :
 			X(0.0f), Y(0.0f), Z(0.0f), W(1.0f) {}

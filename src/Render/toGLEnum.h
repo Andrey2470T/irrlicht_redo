@@ -1,11 +1,10 @@
 #pragma once
 
-#include <array>
 #include "Common.h"
 
 namespace render
 {
-	
+
 enum TextureWrapping
 {
 	TW_REPEAT = 0,

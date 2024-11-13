@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "Typedefs.h"
-#include "Vector2D.h"
+#include "BasicIncludes.h"
 
 namespace utils
 {

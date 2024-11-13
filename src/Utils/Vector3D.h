@@ -1,9 +1,7 @@
 #pragma once
 
 #include "MathFuncs.h"
-
-#include <functional>
-#include <array>
+#include "BasicIncludes.h"
 
 namespace utils
 {

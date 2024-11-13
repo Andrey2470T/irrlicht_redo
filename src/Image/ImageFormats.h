@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include "Render/Common.h"
 
 using namespace utils;

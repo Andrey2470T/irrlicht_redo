@@ -3,7 +3,7 @@
 #include <SDL_video.h>
 #include <SDL_opengl.h>
 
-#include "Typedefs.h"
+#include "BasicIncludes.h"
 
 #define TEST_GL_ERROR() testGLError(__FILE__, __LINE__)
 

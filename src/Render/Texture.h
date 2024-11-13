@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "Common.h"
 #include "TextureFormats.h"
 #include "toGLEnum.h"
 

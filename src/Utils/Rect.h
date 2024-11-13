@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "Typedefs.h"
-#include "Vector2D.h"
+#include "BasicIncludes.h"
 
 namespace utils
 {
@@ -113,7 +112,7 @@ public:
 				LRC.X >= pos.X &&
 				LRC.Y >= pos.Y);
 	}
-	
+
 	//! Return if the other rect is within this rect.
 	bool isRectInside(const Rect<T> &other) const
 	{

@@ -4,10 +4,9 @@
 
 #pragma once
 
+#include "BasicIncludes.h"
 #include <cstring> // memset, memcpy
 #include "MathFuncs.h"
-#include "Vector3D.h"
-#include "Vector2D.h"
 #include "Plane3D.h"
 #include "AABB.h"
 #include "Rect.h"
@@ -662,7 +661,7 @@ inline Matrix4<T> &Matrix4<T>::setbyproduct_nocheck(const Matrix4<T> &other_a, c
 	M[13] = m1[1] * m2[12] + m1[5] * m2[13] + m1[9] * m2[14] + m1[13] * m2[15];
 	M[14] = m1[2] * m2[12] + m1[6] * m2[13] + m1[10] * m2[14] + m1[14] * m2[15];
 	M[15] = m1[3] * m2[12] + m1[7] * m2[13] + m1[11] * m2[14] + m1[15] * m2[15];
-	
+
 	return *this;
 }
 

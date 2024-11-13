@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "BasicIncludes.h"
 #include "MathFuncs.h"
-#include "Vector3D.h"
 
 namespace utils
 {
