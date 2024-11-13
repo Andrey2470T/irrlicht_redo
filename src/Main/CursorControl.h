@@ -1,7 +1,9 @@
 #pragma once
 
-#include "utils/Vector2D.h"
+#include "BasicIncludes.h"
 #include "utils/Rect.h"
+
+#include <SDL_Cursor.h>
 
 namespace main
 {

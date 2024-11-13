@@ -19,22 +19,6 @@
 namespace render
 {
 
-enum class OpenGLSpec : u8
-{
-	Core,
-	Compat,
-	ES,
-	// WebGL, // TODO
-};
-
-struct OpenGLVersion
-{
-	OpenGLSpec Spec;
-	u8 Major;
-	u8 Minor;
-	u8 Release;
-};
-
 bool testGLError(const char *file, int line);
 
 }

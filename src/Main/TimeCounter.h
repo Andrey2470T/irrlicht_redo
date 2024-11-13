@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BasicIncludes.h"
 #include <chrono>
 
 namespace main
@@ -12,7 +13,7 @@ class TimeCounter
 	u32 OwnTime;    // starting from 0 always
 	bool IsStopped;
 public:
-	Stopwatch(bool do_start = false)
+	TimeCounter(bool do_start = false)
 		: LastFixedVirtualTime(0), OwnTime(0), IsStopped(true)
 	{
 		if (do_start)
