@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Render/Common.h"
-#include "ImageFormats.h"
+#include "PixelFormats.h"
 #include "Utils/Rect.h"
 #include "Color.h"
 
@@ -12,7 +12,7 @@ namespace img {
 */
 class Image
 {
-	ImageFormat format;
+	PixelFormat format;
 
 	u32 width;
 	u32 height;
@@ -21,13 +21,13 @@ class Image
 
 	bool ownPixelData;
 public:
-	Image(ImageFormat _format, u32 _width, u32 _height);
+	Image(PixelFormat _format, u32 _width, u32 _height);
 
-	Image(ImageFormat _format, u32 _width, u32 _height, u8 *data, bool copyData = true);
+	Image(PixelFormat _format, u32 _width, u32 _height, u8 *data, bool copyData = true);
 
 	~Image();
 
-	ImageFormat getFormat() const
+	PixelFormat getFormat() const
 	{
 		return format;
 	}

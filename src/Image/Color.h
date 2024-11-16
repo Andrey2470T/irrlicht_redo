@@ -1,7 +1,6 @@
 #pragma once
 
 #include <limits>
-#include "ImageFormats.h"
 
 namespace img {
 
@@ -112,10 +111,10 @@ public:
 	f32 S;
 	//! Luminance component
 	f32 L;
-	
+
 	ColorHSL() : H(0.0f), S(0.0f), L(0.0f)
 	{}
-	
+
 	ColorHSL(f32 h, f32 s, f32 l)
 		: H(h), S(s), L(l)
 	{}
@@ -130,9 +129,9 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 {
 	const f32 maxVal = std::max(color.R, color.G, color.B);
 	const f32 minVal = std::min(color.R, color.G, color.B);
-	
+
 	L = (maxVal + minVal) * 50;
-	
+
 	if (equals<f32>(maxVal, minVal)) {
 		H = 0.0f;
 		S = 0.0f;
