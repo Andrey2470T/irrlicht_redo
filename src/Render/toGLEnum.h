@@ -33,8 +33,32 @@ enum TextureMagFilter
 	TMAGF_COUNT
 };
 
+enum BlendOp
+{
+	BO_ADD = 0,
+	BO_SUBTRACT,
+	BO_COUNT
+};
+
+enum BlendFunc
+{
+	BF_ZERO = 0,
+	BF_ONE,
+	BF_SRC_COLOR,
+	BF_ONE_MINUS_SRC_COLOR,
+	BF_DST_COLOR,
+	BF_ONE_MINUS_DST_COLOR,
+	BF_SRC_ALPHA,
+	BF_ONE_MINUS_SRC_ALPHA,
+	BF_DST_ALPHA,
+	BF_ONE_MINUS_DST_ALPHA,
+	BF_COUNT
+};
+
 extern std::array<GLenum, TMF_COUNT> toGLMinFilter;
 extern std::array<GLenum, TMAGF_COUNT> toGLMagFilter;
 extern std::array<GLenum, TW_COUNT> toGLWrap;
+extern std::array<GLenum, BO_COUNT> toGLBlendOp;
+extern std::array<GLenum, BF_COUNT> toGLBlendFunc;
 
 }

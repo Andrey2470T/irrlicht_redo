@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <limits>
 #include "Typedefs.h"
 
 namespace utils
@@ -71,6 +72,13 @@ inline bool equals(const f32 a, const f32 b, const f32 tolerance = ROUNDING_ERRO
 inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERROR_f64)
 {
 	return std::abs(a - b) <= tolerance;
+}
+
+template <class T>
+inline T limClamp(T val)
+{
+	return std::min(std::max(
+		std::numeric_limits<T>::min(), val), std::numeric_limits<T>::max());
 }
 
 }
