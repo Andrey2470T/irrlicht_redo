@@ -37,7 +37,7 @@ public:
 	Rect(const Vector2D<T> &pos, const Vector2D<T> &size)
 		: ULC(pos), LRC(pos.X + size.X, pos.Y + size.Y) {}
 
-	explicit Rect(const Vector2D &size)
+	explicit Rect(const Vector2D<T> &size)
 		: ULC(0, 0), LRC(size.X, size.Y) {}
 
 	Rect(const Rect &other)

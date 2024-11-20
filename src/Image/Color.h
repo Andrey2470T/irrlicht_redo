@@ -4,11 +4,6 @@
 
 namespace img {
 
-//! Class representing a color in RGBA format.
-/** The color values can have an arbitrary type
- * (signed/unsigned 8-bit, 16-bit and 32-bit).
-*/
-
 template<class T>
 ColorRGBA<T> clampColor(const ColorRGBA &c)
 {
@@ -18,6 +13,11 @@ ColorRGBA<T> clampColor(const ColorRGBA &c)
 		utils::limClamp<T>(c.B),
 		c.A);
 }
+
+//! Class representing a color in RGBA format.
+/** The color values can have an arbitrary type
+ * (signed/unsigned 8-bit, 16-bit and 32-bit).
+*/
 
 template<class T>
 class ColorRGBA

@@ -37,6 +37,7 @@ enum BlendOp
 {
 	BO_ADD = 0,
 	BO_SUBTRACT,
+	BO_MULTIPLY, // Not supported in OpenGL, but used in ImageModifier
 	BO_COUNT
 };
 
@@ -59,6 +60,6 @@ extern std::array<GLenum, TMF_COUNT> toGLMinFilter;
 extern std::array<GLenum, TMAGF_COUNT> toGLMagFilter;
 extern std::array<GLenum, TW_COUNT> toGLWrap;
 extern std::array<GLenum, BO_COUNT> toGLBlendOp;
-extern std::array<GLenum, BF_COUNT> toGLBlendFunc;
+extern std::array<GLenum, BF_COUNT-1> toGLBlendFunc;
 
 }
