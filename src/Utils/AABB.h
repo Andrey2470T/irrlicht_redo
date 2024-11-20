@@ -9,7 +9,6 @@
 #include "plane3d.h"
 #include "Line3D.h"
 
-
 namespace utils
 {
 
@@ -29,14 +28,17 @@ public:
 	//! Default Constructor.
 	AABB() : MinEdge(-1, -1, -1), MaxEdge(1, 1, 1) {}
 	//! Constructor with min edge and max edge.
-	AABB(const Vector3D<T> &min, const Vector3D<T> &max) :
-			MinEdge(min), MaxEdge(max) {}
+	AABB(const Vector3D<T> &min, const Vector3D<T> &max)
+		: MinEdge(min), MaxEdge(max) {}
 	//! Constructor with only one point.
-	AABB(const Vector3D<T> &init) :
-			MinEdge(init), MaxEdge(init) {}
+	AABB(const Vector3D<T> &init)
+		: MinEdge(init), MaxEdge(init) {}
 	//! Constructor with min edge and max edge as single values, not vectors.
-	AABB(T minx, T miny, T minz, T maxx, T maxy, T maxz) :
-			MinEdge(minx, miny, minz), MaxEdge(maxx, maxy, maxz) {}
+	AABB(T minx, T miny, T minz, T maxx, T maxy, T maxz)
+		: MinEdge(minx, miny, minz), MaxEdge(maxx, maxy, maxz) {}
+
+	AABB(const AABB<T> &other)
+		: MinEdge(other.MinEdge), MaxEdge(other.MaxEdge) {}
 
 	// operators
 	//! Equality operator
@@ -236,11 +238,9 @@ public:
 	\param other Other box to interpolate between
 	\param d Value between 0.0f and 1.0f.
 	\return Interpolated box. */
-	AABB<T> getInterpolated(const AABB<T> &other, f32 d) const
+	AABB<T> interp(const AABB<T> &other, f32 d) const
 	{
-		f32 inv = 1.0f - d;
-		return AABB<T>((other.MinEdge * inv) + (MinEdge * d),
-				(other.MaxEdge * inv) + (MaxEdge * d));
+		return AABB<T>(MinEdge.linInterp(other.MinEdge, d), MaxEdge.linInterp(other.MaxEdge, d));
 	}
 
 	//! Determines if a point is within this box.
@@ -282,13 +282,13 @@ public:
 		if (!intersectsWithBox(other))
 			return out;
 
-		out.MaxEdge.X = min_(MaxEdge.X, other.MaxEdge.X);
-		out.MaxEdge.Y = min_(MaxEdge.Y, other.MaxEdge.Y);
-		out.MaxEdge.Z = min_(MaxEdge.Z, other.MaxEdge.Z);
+		out.MaxEdge.X = std::min(MaxEdge.X, other.MaxEdge.X);
+		out.MaxEdge.Y = std::min(MaxEdge.Y, other.MaxEdge.Y);
+		out.MaxEdge.Z = std::min(MaxEdge.Z, other.MaxEdge.Z);
 
-		out.MinEdge.X = max_(MinEdge.X, other.MinEdge.X);
-		out.MinEdge.Y = max_(MinEdge.Y, other.MinEdge.Y);
-		out.MinEdge.Z = max_(MinEdge.Z, other.MinEdge.Z);
+		out.MinEdge.X = std::max(MinEdge.X, other.MinEdge.X);
+		out.MinEdge.Y = std::max(MinEdge.Y, other.MinEdge.Y);
+		out.MinEdge.Z = std::max(MinEdge.Z, other.MinEdge.Z);
 
 		return out;
 	}
@@ -306,7 +306,7 @@ public:
 	//! Tests if the box intersects with a line
 	/** \param line: Line to test intersection with.
 	\return True if there is an intersection , else false. */
-	bool intersectsWithLine(const line3d<T> &line) const
+	bool intersectsWithLine(const Line3D<T> &line) const
 	{
 		return intersectsWithLine(line.getMiddle(), line.getVector().normalize(),
 				(T)(line.getLength() * 0.5));

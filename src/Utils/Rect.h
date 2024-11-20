@@ -28,17 +28,20 @@ public:
 
 	Rect() : ULC(0, 0), LRC(0) {}
 
-	Rect(T x, T y, T x2, T y2) :
-			ULC(x, y), LRC(x2, y2) {}
+	Rect(T x, T y, T x2, T y2)
+		: ULC(x, y), LRC(x2, y2) {}
 
-	Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight) :
-			ULC(upperLeft), LRC(lowerRight) {}
+	Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight)
+		: ULC(upperLeft), LRC(lowerRight) {}
 
-	Rect(const Vector2D<T> &pos, const Vector2D<T> &size) :
-			ULC(pos), LRC(pos.X + size.X, pos.Y + size.Y) {}
+	Rect(const Vector2D<T> &pos, const Vector2D<T> &size)
+		: ULC(pos), LRC(pos.X + size.X, pos.Y + size.Y) {}
 
-	explicit Rect(const Vector2D &size) :
-			ULC(0, 0), LRC(size.X, size.Y) {}
+	explicit Rect(const Vector2D &size)
+		: ULC(0, 0), LRC(size.X, size.Y) {}
+
+	Rect(const Rect &other)
+		: ULC(other.ULC), LRC(other.LRC) {}
 
 	//! move right by given numbers
 	Rect<T> operator+(const Vector2D<T> &pos) const

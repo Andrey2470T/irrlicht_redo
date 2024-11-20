@@ -2,8 +2,6 @@
 
 #include "Render/Common.h"
 
-using namespace utils;
-
 namespace img
 {
 

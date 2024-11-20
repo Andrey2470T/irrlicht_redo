@@ -13,9 +13,10 @@ template<class T>
 ColorRGBA<T> clampColor(const ColorRGBA &c)
 {
 	return ColorRGBA<T>(
-		std::min(c.R + other.R, std::numeric_limits<T>::max()),
-		std::min(G + other.G, std::numeric_limits<T>::max()),
-		std::min(B + other.B, std::numeric_limits<T>::max()));
+		utils::limClamp<T>(c.R),
+		utils::limClamp<T>(c.G),
+		utils::limClamp<T>(c.B),
+		c.A);
 }
 
 template<class T>
@@ -31,16 +32,18 @@ public:
 	//! Alpha component
 	T A;
 
-	ColorRGBA() : R(0), G(0), B(0), A(0)
-	{}
+	ColorRGBA() : R(0), G(0), B(0), A(0) {}
 
-	ColorRGBA(T _R, T _G, T _B, T _A = 0) : R(_R), G(_G), B(_B), A(_A)
-	{}
+	ColorRGBA(T _R, T _G, T _B, T _A = 0)
+		: R(_R), G(_G), B(_B), A(_A) {}
+
+	ColorRGBA(const ColorRGBA &other)
+		: R(other.R), G(other.G), B(other.B), A(other.A) {}
 
 	//! Get lightness of the color
 	f32 getLightness() const
 	{
-		return 0.5f * (std::max(std::max(R, G), B) + std::min(std::min(R, G), B));
+		return 0.5f * (utils::max3(R, G, B) + utils::min3(R, G, B));
 	}
 
 	//! Get luminance of the color
@@ -72,7 +75,7 @@ public:
 
 	ColorRGBA<T> operator+(const ColorRGBA<T> &other) const
 	{
-		return ColorRGBA(
+		return ColorRGBA<T>(
 				limClamp<T>(R + other.R),
 				limClamp<T>(G + other.G),
 				limClamp<T>(B + other.B));
@@ -84,12 +87,12 @@ public:
 		G = limClamp<T>(G + other.G);
 		B = limClamp<T>(B + other.B);
 
-		return *this
+		return *this;
 	}
 
 	ColorRGBA<T> operator+(T val) const
 	{
-		return ColorRGBA(
+		return ColorRGBA<T>(
 				limClamp<T>(R + val),
 				limClamp<T>(G + val),
 				limClamp<T>(B + val));
@@ -101,12 +104,12 @@ public:
 		G = limClamp<T>(G + val);
 		B = limClamp<T>(B + val);
 
-		return *this
+		return *this;
 	}
 
 	ColorRGBA<T> operator*(const ColorRGBA<T> &other) const
 	{
-		return ColorRGBA(
+		return ColorRGBA<T>(
 				limClamp<T>(R * other.R),
 				limClamp<T>(G * other.G),
 				limClamp<T>(B * other.B));
@@ -118,12 +121,12 @@ public:
 		G = limClamp<T>(G * other.G);
 		B = limClamp<T>(B * other.B);
 
-		return *this
+		return *this;
 	}
 
 	ColorRGBA<T> operator*(T val) const
 	{
-		return ColorRGBA(
+		return ColorRGBA<T>(
 				limClamp<T>(R * val),
 				limClamp<T>(G * val),
 				limClamp<T>(B * val));
@@ -135,7 +138,7 @@ public:
 		G = limClamp<T>(G * val);
 		B = limClamp<T>(B * val);
 
-		return *this
+		return *this;
 	}
 
 	//! Interpolates the color with a f32 value to another color
@@ -144,12 +147,11 @@ public:
 	\return Interpolated color. */
 	ColorRGBA<T> linInterp(const ColorRGBA<T> &other, f32 d) const
 	{
-		f32 clamped_d = std::clamp(d, 0.0f, 1.0f);
 		return ColorRGBA<T>(
 			lerp<T>(other.R, R, d),
 			lerp<T>(other.G, G, d),
 			lerp<T>(other.B, B, d),
-			lerp<T>(other.A, A, d));
+			A);
 	}
 
 	//! Returns interpolated color. ( quadratic )
@@ -158,12 +160,11 @@ public:
 	\param d: value between 0.0f and 1.0f. */
 	ColorRGBA<T> quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const
 	{
-		f32 clamped_d = std::clamp(d, 0.0f, 1.0f);
 		return ColorRGBA<T>(
 			qerp<T>(R, c1.R, c2.R, d),
 			qerp<T>(G, c1.G, c2.G, d),
 			qerp<T>(B, c1.B, c2.B, d),
-			qerp<T>(A, c1.A, c2.A, d),);
+			A);
 	}
 };
 
@@ -182,12 +183,10 @@ public:
 	//! Luminance component
 	f32 L;
 
-	ColorHSL() : H(0.0f), S(0.0f), L(0.0f)
-	{}
+	ColorHSL() : H(0.0f), S(0.0f), L(0.0f) {}
 
 	ColorHSL(f32 h, f32 s, f32 l)
-		: H(h), S(s), L(l)
-	{}
+		: H(h), S(s), L(l) {}
 
 	void fromRGBA(const ColorRGBA<f32> &color);
 	void toRGBA(ColorRGBA<f32> &color) const;
@@ -271,6 +270,9 @@ inline f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 
 	return rm1;
 }
+
+typedef ColorRGBA<u8> color8;
+typedef ColorRGBA<f32> colorf;
 
 }
 

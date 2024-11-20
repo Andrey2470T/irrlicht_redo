@@ -3,16 +3,16 @@
 namespace img
 {
 
-const ColorRGBA<u8> void blendPixels(
-	const ColorRGBA<u8> &src,
-	const ColorRGBA<u8> &dst,
+static const ColorRGBA<u8> void blendPixels(
+	const color8 &src,
+	const color8 &dst,
 	const BlendMode &mode)
 {
-	if (!mode.enabled)
-		return dst;
+	if (!mode.Enabled)
+		return src;
 
 	s8 op_sign = 1;
-	switch (mode.eq) {
+	switch (mode.Op) {
 		case render::BO_ADD:
 			op_sign = 1;
 			break;
@@ -23,10 +23,10 @@ const ColorRGBA<u8> void blendPixels(
 			break;
 	};
 
-	ColorRGBA<u8> c1(src);
-	ColorRGBA<u8> c2(dst);
+	color8 c1(src);
+	color8 c2(dst);
 
-	switch (mode.srcFunc) {
+	switch (mode.SrcFunc) {
 		case render::BF_ZERO:
 			c1 *= 0;
 			break;
@@ -47,7 +47,7 @@ const ColorRGBA<u8> void blendPixels(
 			break;
 	};
 
-	switch (mode.dstFunc) {
+	switch (mode.DstFunc) {
 		case render::BF_ZERO:
 			c2 *= 0;
 			break;

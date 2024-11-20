@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-namespace utils {
-
 typedef uint8_t u8;
 typedef int8_t s8;
 typedef char c8;
@@ -15,5 +13,3 @@ typedef uint64_t u64;
 typedef int64_t s64;
 typedef float f32;
 typedef double f64;
-
-}

@@ -14,73 +14,75 @@ template <class T>
 class Line3D
 {
 	//! Start point of the line.
-	Vector3D<T> start;
+	Vector3D<T> Start;
 	//! End point of the line.
-	Vector3D<T> end;
+	Vector3D<T> End;
 public:
-	Line3D() : start(0, 0, 0), end(1, 1, 1) {}
+	Line3D() : Start(0, 0, 0), End(1, 1, 1) {}
 
 	Line3D(T xa, T ya, T za, T xb, T yb, T zb)
-		: start(xa, ya, za), end(xb, yb, zb) {}
+		: Start(xa, ya, za), End(xb, yb, zb) {}
 
-	Line3D(const Vector3D<T> &start, const Vector3D<T> &end) :
-			start(start), end(end) {}
+	Line3D(const Vector3D<T> &start, const Vector3D<T> &end)
+		: Start(start), End(end) {}
+
+	Line3D(const Line3D &other)
+		: Start(other.Start), End(other.End) {}
 
 	// operators
 
-	Line3D<T> operator+(const Vector3D<T> &point) const { return Line3D<T>(start + point, end + point); }
+	Line3D<T> operator+(const Vector3D<T> &point) const { return Line3D<T>(Start + point, End + point); }
 	Line3D<T> &operator+=(const Vector3D<T> &point)
 	{
-		start += point;
-		end += point;
+		Start += point;
+		End += point;
 		return *this;
 	}
 
-	Line3D<T> operator-(const Vector3D<T> &point) const { return Line3D<T>(start - point, end - point); }
+	Line3D<T> operator-(const Vector3D<T> &point) const { return Line3D<T>(Start - point, End - point); }
 	Line3D<T> &operator-=(const Vector3D<T> &point)
 	{
-		start -= point;
-		end -= point;
+		Start -= point;
+		End -= point;
 		return *this;
 	}
 
-	constexpr bool operator==(const Line3D<T> &other) const
+	bool operator==(const Line3D<T> &other) const
 	{
-		return (start == other.start && end == other.end) || (end == other.start && start == other.end);
+		return (Start == other.Start && End == other.End) || (End == other.Start && Start == other.End);
 	}
-	constexpr bool operator!=(const Line3D<T> &other) const
+	bool operator!=(const Line3D<T> &other) const
 	{
-		return !(start == other.start && end == other.end) || (end == other.start && start == other.end);
+		return !(*this == other);
 	}
 
 	//! Get length of line
 	/** \return Length of the line. */
-	T getLength() const { return start.getDistanceFrom(end); }
+	T getLength() const { return Start.getDistanceFrom(End); }
 
 	//! Get squared length of the line
 	/** \return Squared length of line. */
-	T getLengthSQ() const { return start.getDistanceFromSQ(end); }
+	T getLengthSQ() const { return Start.getDistanceFromSQ(End); }
 
 	//! Get middle of the line
 	/** \return center of the line. */
 	Vector3D<T> getMiddle() const
 	{
-		return (start + end) / (T)2;
+		return (Start + End) / (T)2;
 	}
 
 	//! Get the vector of the line.
 	/** \return The vector of the line. */
-	Vector3D<T> getVector() const { return end - start; }
+	Vector3D<T> getVector() const { return End - Start; }
 
 	//! Get unit vector of the line.
 	/** \return Unit vector of this line. */
 	Vector2D<T> getUnitVector() const
 	{
 		T len = (T)(1.0 / getLength());
-		return (end - start) * len;
+		return (End - Start) * len;
 	}
 };
-
 
 typedef Line3D<f32> line3f;
 typedef Line3D<s32> line3i;
