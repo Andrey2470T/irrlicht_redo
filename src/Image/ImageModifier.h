@@ -6,6 +6,47 @@
 namespace img
 {
 
+enum RESAMPLE_FILTER
+{
+	RF_NEAREST,
+	RF_BILINEAR,
+	RF_BICUBIC,
+	RF_LANCZOS
+};
+
+enum ROTATE_ANGLE
+{
+	RA_90,
+	RA_180,
+	RA_270
+};
+
+enum FLIP_DIR
+{
+	FD_X,
+	FD_Y
+};
+
+enum BLEND_MODE
+{
+	BM_NORMAL,
+	BM_ALPHA,
+	BM_ADD,
+	BM_SUBTRACTION,
+	BM_MULTIPLY,
+	BM_DIVISION,
+	BM_SCREEN,
+	BM_OVERLAY,
+	BM_HARD_LIGHT,
+	BM_SOFT_LIGHT,
+	BM_GRAIN_EXTRACT,
+	BM_GRAIN_MERGE,
+	BM_DIFFERENCE,
+	BM_DARKEN_ONLY,
+	BM_LIGHTEN_ONLY,
+	BM_TONE
+};
+
 struct BlendMode
 {
 	bool Enabled = false;
@@ -64,6 +105,11 @@ public:
 		const utils::recti *rect = nullptr);
 
 	// Copies the whole (or part) of the source image to the whole (or part) of the dest image
+	/// @param "srcImg" - image whose the pixel data is copied
+	/// @param "dstImg" - image where the copy happens to
+	/// @param "srcRect" - part of the image which will be copied
+	/// @param "dstRect" - part of the image where the copy will be done to
+	/// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
 	void copyTo(
 		const Image * srcImg,
 		Image *dstImg,
@@ -71,11 +117,20 @@ public:
 		const utils::recti *dstRect = nullptr,
 		bool allowScale = false);
 
-	// Scales (up or down) the image with the given factor
-	void scale(Image *img, utils::v2i scaleFactor);
+	// Scales (up or down) the image with the given factor.
+	// The convolution algorithm is used with one of filter types.
+	void scale(Image *img, utils::v2i scaleFactor, RESAMPLE_FILTER filter=RF_NEAREST);
 
-	// Rotates the given image (clockwise or counter-clockwise) by the given angle
-	void rotate(Image *img, s32 angle);
+	// Rotates the given image by the angle multiple by 90 degrees
+	void rotate(Image *img, ROTATE_ANGLE angle);
+	
+	void flip(Image *img, FLIP_DIR dir);
+	
+	Image *crop(const Image *img, const utils::recti &rect);
+	
+	Image *createNew(u32 width, u32 height, const color8 &color=color8(255,255,255,255));
+	
+	Image *combine(const Image *img1, const Image *img2);
 
 	bool blendEnabled() const
 	{
