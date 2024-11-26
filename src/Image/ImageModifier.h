@@ -29,7 +29,7 @@ enum FLIP_DIR
 
 enum BLEND_MODE
 {
-	BM_NORMAL,
+	BM_NORMAL = 0,
 	BM_ALPHA,
 	BM_ADD,
 	BM_SUBTRACTION,
@@ -44,9 +44,11 @@ enum BLEND_MODE
 	BM_DIFFERENCE,
 	BM_DARKEN_ONLY,
 	BM_LIGHTEN_ONLY,
-	BM_TONE
+	BM_TONE,
+	BM_COUNT
 };
 
+static std::array<std::function<>, BM_COUNT>
 struct BlendMode
 {
 	bool Enabled = false;

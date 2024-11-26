@@ -19,48 +19,86 @@ ColorRGBA<T> clampColor(const ColorRGBA &c)
  * (signed/unsigned 8-bit, 16-bit and 32-bit).
 */
 
-template<class T>
+template <class T>
 class ColorRGBA
 {
+	PixelFormat format;
+
+	//! Color represented as a byte array saving the color data
+	//! depending on the format
+	std::vector<u8> color;
 public:
-	//! Red component
-	T R;
-	//! Green component
-	T G;
-	//! Blue component
-	T B;
-	//! Alpha component
-	T A;
+	ColorRGBA(PixelFormat _format)
+		: format(_format)
+	{
+		color.resize(pixelFormatInfo[format].size / 8);
+	}
 
-	ColorRGBA() : R(0), G(0), B(0), A(0) {}
-
-	ColorRGBA(T _R, T _G, T _B, T _A = 0)
-		: R(_R), G(_G), B(_B), A(_A) {}
+	ColorRGBA(PixelFormat _format, T _R, T _G = 0, T _B = 0, T _A = 0)
+		: format(_format)
+	{
+		set(R, G, B, A);
+	}
 
 	ColorRGBA(const ColorRGBA &other)
-		: R(other.R), G(other.G), B(other.B), A(other.A) {}
+		: format(other.format), color(other.color) {}
+
+	T R() const { return getChannel('R'); }
+	T G() const { return getChannel('G'); }
+	T B() const { return getChannel('B'); }
+	T A() const { return getChannel('A'); }
+
+	void R(T R) { return setChannel(R, 'R'); }
+	void G(T G) { return setChannel(G, 'G'); }
+	void B(T B) { return setChannel(B, 'B'); }
+	void A(T A) { return setChannel(A, 'A'); }
 
 	//! Get lightness of the color
 	f32 getLightness() const
 	{
-		return 0.5f * (utils::max3(R, G, B) + utils::min3(R, G, B));
+		u8 channelsCount = getChannelsCount(format);
+
+		if (channelsCount == 1)
+			return 0.5f * R();
+		else if (channelsCount == 2)
+			return 0.5f * (std::max(R(), G()) + std::min(R(), G()));
+		else
+			return 0.5f * (utils::max3(R(), G(), B()) + utils::min3(R, G, B));
 	}
 
 	//! Get luminance of the color
 	f32 getLuminance() const
 	{
+		if (getChannelsCount < 3)
+			return 0.0f;
 		return 0.3f * R + 0.59f * G + 0.11f * B;
 	}
 
 	//! Get average intensity of the color
 	u32 getAverage() const
 	{
-		return (R + G + B) / 3;
+		u8 channelsCount = getChannelsCount(format);
+
+		if (channelsCount == 1)
+			return R();
+		else if (channelsCount == 2)
+			return (R + G) / 2;
+		else
+			return (R + G + B) / 3;
 	}
 
 	void operator==(const ColorRGBA<T> &other)
 	{
-		return (R == other.R && G == other.G && B == other.B && A == other.A);
+		u8 channelsCount = getChannelsCount(format);
+
+		if (channelsCount == 1)
+			return R() == other.R();
+		else if (channelsCount == 2)
+			return (R() == other.R() && G() == other.G());
+		else if (channelsCount == 3)
+			return (R() == other.R() && G() == other.G() && B == other.B());
+		else
+			return (R() == other.R() && G() == other.G() && B() == other.B() && A() == other.A());
 	}
 
 	void operator!=(const ColorRGBA<T> &other)
@@ -70,22 +108,33 @@ public:
 
 	void operator<(const ColorRGBA<T> &other)
 	{
-		return (R <= other.R && G <= other.G && B <= other.B && A <= other.A);
+		u8 channelsCount = getChannelsCount(format);
+
+		if (channelsCount == 1)
+			return R() <= other.R();
+		else if (channelsCount == 2)
+			return (R() <= other.R && G() <= other.G());
+		else if (channelsCount == 3)
+			return (R() <= other.R() && G() <= other.G() && B() <= other.B());
+		else
+			return (R() <= other.R() && G() <= other.G() && B() <= other.B() && A() <= other.A());
 	}
 
 	ColorRGBA<T> operator+(const ColorRGBA<T> &other) const
 	{
 		return ColorRGBA<T>(
-				limClamp<T>(R + other.R),
-				limClamp<T>(G + other.G),
-				limClamp<T>(B + other.B));
+			limClamp<T>(R() + other.R()),
+			limClamp<T>(G() + other.G()),
+			limClamp<T>(B() + other.B()),
+			limClamp<T>(A() + other.A()))
 	}
 
 	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other) const
 	{
-		R = limClamp<T>(R + other.R);
-		G = limClamp<T>(G + other.G);
-		B = limClamp<T>(B + other.B);
+		R(limClamp<T>(R() + other.R));
+		G(limClamp<T>(G() + other.G));
+		B(limClamp<T>(B() + other.B));
+		A(limClamp<T>(A() + other.A));
 
 		return *this;
 	}
@@ -93,16 +142,18 @@ public:
 	ColorRGBA<T> operator+(T val) const
 	{
 		return ColorRGBA<T>(
-				limClamp<T>(R + val),
-				limClamp<T>(G + val),
-				limClamp<T>(B + val));
+			limClamp<T>(R() + val),
+			limClamp<T>(G() + val),
+			limClamp<T>(B() + val),
+			limClamp<T>(A() + val));
 	}
 
 	ColorRGBA<T> &operator+=(T val) const
 	{
-		R = limClamp<T>(R + val);
-		G = limClamp<T>(G + val);
-		B = limClamp<T>(B + val);
+		R(limClamp<T>(R() + val));
+		G(limClamp<T>(G() + val));
+		B(limClamp<T>(B) + val));
+		A(limClamp<T>(A() + val));
 
 		return *this;
 	}
@@ -110,16 +161,18 @@ public:
 	ColorRGBA<T> operator*(const ColorRGBA<T> &other) const
 	{
 		return ColorRGBA<T>(
-				limClamp<T>(R * other.R),
-				limClamp<T>(G * other.G),
-				limClamp<T>(B * other.B));
+			limClamp<T>(R() * other.R()),
+			limClamp<T>(G() * other.G()),
+			limClamp<T>(B() * other.B()),
+			limClamp<T>(A() + other.A()));
 	}
 
 	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other) const
 	{
-		R = limClamp<T>(R * other.R);
-		G = limClamp<T>(G * other.G);
-		B = limClamp<T>(B * other.B);
+		R(limClamp<T>(R() * other.R()));
+		G(limClamp<T>(G() * other.G()));
+		B(limClamp<T>(B() * other.B()));
+		B(limClamp<T>(A() * other.A()));
 
 		return *this;
 	}
@@ -127,16 +180,18 @@ public:
 	ColorRGBA<T> operator*(T val) const
 	{
 		return ColorRGBA<T>(
-				limClamp<T>(R * val),
-				limClamp<T>(G * val),
-				limClamp<T>(B * val));
+			limClamp<T>(R() * val),
+			limClamp<T>(G() * val),
+			limClamp<T>(B() * val),
+			limClamp<T>(A() * val));
 	}
 
 	ColorRGBA<T> &operator*=(T val) const
 	{
-		R = limClamp<T>(R * val);
-		G = limClamp<T>(G * val);
-		B = limClamp<T>(B * val);
+		R(limClamp<T>(R() * val));
+		G(limClamp<T>(G() * val));
+		B(limClamp<T>(B() * val));
+		A(limClamp<T>(A() * val));
 
 		return *this;
 	}
@@ -148,10 +203,10 @@ public:
 	ColorRGBA<T> linInterp(const ColorRGBA<T> &other, f32 d) const
 	{
 		return ColorRGBA<T>(
-			lerp<T>(other.R, R, d),
-			lerp<T>(other.G, G, d),
-			lerp<T>(other.B, B, d),
-			A);
+			lerp<T>(other.R(), R(), d),
+			lerp<T>(other.G(), G(), d),
+			lerp<T>(other.B(), B(), d),
+			A());
 	}
 
 	//! Returns interpolated color. ( quadratic )
@@ -161,10 +216,67 @@ public:
 	ColorRGBA<T> quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const
 	{
 		return ColorRGBA<T>(
-			qerp<T>(R, c1.R, c2.R, d),
-			qerp<T>(G, c1.G, c2.G, d),
-			qerp<T>(B, c1.B, c2.B, d),
-			A);
+			qerp<T>(R(), c1.R(), c2.R(), d),
+			qerp<T>(G(), c1.G(), c2.G(), d),
+			qerp<T>(B(), c1.B(), c2.B(), d),
+			A());
+	}
+private:
+	void set(T R, T G, T B, T A)
+	{
+		u8 channelsCount = pixelFormatInfo[format].channels;
+
+		setChannel(R, 'R');
+
+		if (channelsCount > 1)
+			setChannel(G, 'G');
+		if (channelsCount > 2)
+			setChannel(B, 'B');
+		if (channelsCount > 3)
+			setChannel(A, 'A');
+	}
+
+	void setChannel(T v, char type)
+	{
+		auto &pixel_info = pixelFormatInfo[format];
+		u32 channelBytesSize = (pixel_info.size / pixel_info.channels) / 8;
+
+		u32 offset = 0;
+
+		if (type == 'G') {
+			if (channelsCount < 2)
+				return;
+			offset += channelBytesSize;
+		}
+		else if (type == 'B') {
+			if (channelsCount < 3)
+				return;
+			offset += channelBytesSize*2;
+		}
+		else if (type == 'A') {
+			if (channelsCount < 4)
+				return;
+			offset += channelBytesSize*3;
+		}
+
+		if (channelBytesSize == 1) {
+			u8 ch = (u8)v;
+			color[offset] = ch;
+		}
+		else if (channelSize == 2) {
+			u16 ch = *(u16*)&v;
+
+			color[offset] = ch >> 8;
+			color[offset+1] = ch & 0xFF;
+		}
+		else if (channelSize == 4) {
+			u32 ch = *(u32*)&v;
+
+			color[offset] = ch >> 24;
+			color[offset+1] = ch >> 16 & 0xFF;
+			color[offset+2] = ch >> 8 & 0xFF;
+			color[offset+3] = ch & 0xFF;
+		}
 	}
 };
 

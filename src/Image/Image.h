@@ -6,9 +6,20 @@
 
 namespace img {
 
+/* 
+ * 8-bit palette (can be with alpha or without)
+ */
+struct Palette
+{
+	bool hasAlpha;
+	u32 size;
+	
+	std::vector<color8> colors;
+};
+
 /* Image representation class referring or saving directly
- * the pixel data. Can be RGB or RGBA unsigned integral 8-bit format.
-*/
+ * the pixel data. Can be RGB, RGBA or indexed to one of these types integral 8-bit format.
+ */
 class Image
 {
 	PixelFormat format;
@@ -17,6 +28,8 @@ class Image
 	u32 height;
 
 	u8* data;
+	
+	std::unique_ptr<Palette> palette;
 
 	bool ownPixelData;
 public:
@@ -39,6 +52,11 @@ public:
 	u32 getHeight() const
 	{
 		return height;
+	}
+	
+	Palette *getPalette() const
+	{
+		return palette.get();
 	}
 
 	u8* getData() const

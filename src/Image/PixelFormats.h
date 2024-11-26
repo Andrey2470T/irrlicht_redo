@@ -21,7 +21,9 @@ enum PixelFormat
 	PF_RG16,
 	PF_D16,
 	PF_D32,
-	PF_D24S8,
+	PF_DS16,
+	PF_INDEX_RGB8,
+	PF_INDEX_RGBA8,
 	PF_COUNT
 };
 
@@ -30,18 +32,19 @@ struct PixelFormatInfo
 	GLenum internalFormat;
 	GLenum pixelFormat;
 	GLenum pixelType;
-	u32 size;
+
+	u8 size;
+	u8 channels;
+
+	bool hasAlpha = false;
+	bool isDepth = false;
+	bool isFloatingPoint = false;
+	bool isIndexed = false;
 };
 
-extern std::array<PixelFormatInfo, IF_COUNT> toGLFormatConverter;
+extern std::array<PixelFormatInfo, PF_COUNT-2> pixelFormatInfo;
 
 //! calculate image data size in bytes for selected format, width and height.
 u32 getDataSizeFromFormat(PixelFormat format, u32 width, u32 height);
-
-//! check if the pixel format is only viable for depth/stencil textures
-static bool isDepthFormat(PixelFormat format);
-
-//! Check if the pixel format uses floating point values for pixels
-static bool isFloatingPointFormat(PixelFormat format);
 
 }
