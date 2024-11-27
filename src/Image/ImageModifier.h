@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Image.h"
+#include "BlendModes.h"
 #include "Utils/Rect.h"
 
 namespace img
@@ -27,28 +28,6 @@ enum FLIP_DIR
 	FD_Y
 };
 
-enum BLEND_MODE
-{
-	BM_NORMAL = 0,
-	BM_ALPHA,
-	BM_ADD,
-	BM_SUBTRACTION,
-	BM_MULTIPLY,
-	BM_DIVISION,
-	BM_SCREEN,
-	BM_OVERLAY,
-	BM_HARD_LIGHT,
-	BM_SOFT_LIGHT,
-	BM_GRAIN_EXTRACT,
-	BM_GRAIN_MERGE,
-	BM_DIFFERENCE,
-	BM_DARKEN_ONLY,
-	BM_LIGHTEN_ONLY,
-	BM_TONE,
-	BM_COUNT
-};
-
-static std::array<std::function<>, BM_COUNT>
 struct BlendMode
 {
 	bool Enabled = false;
@@ -125,13 +104,13 @@ public:
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	void rotate(Image *img, ROTATE_ANGLE angle);
-	
+
 	void flip(Image *img, FLIP_DIR dir);
-	
+
 	Image *crop(const Image *img, const utils::recti &rect);
-	
+
 	Image *createNew(u32 width, u32 height, const color8 &color=color8(255,255,255,255));
-	
+
 	Image *combine(const Image *img1, const Image *img2);
 
 	bool blendEnabled() const
