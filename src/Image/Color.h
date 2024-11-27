@@ -52,6 +52,8 @@ public:
 	void B(T B) { return setChannel(B, 2); }
 	void A(T A) { return setChannel(A, 3); }
 
+	PixelFormat getFormat() const { return format; }
+
 	//! Get lightness of the color
 	f32 getLightness() const
 	{
@@ -122,6 +124,7 @@ public:
 	ColorRGBA<T> operator+(const ColorRGBA<T> &other) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			limClamp<T>(R() + other.R()),
 			limClamp<T>(G() + other.G()),
 			limClamp<T>(B() + other.B()),
@@ -141,6 +144,7 @@ public:
 	ColorRGBA<T> operator+(T val) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			limClamp<T>(R() + val),
 			limClamp<T>(G() + val),
 			limClamp<T>(B() + val),
@@ -160,6 +164,7 @@ public:
 	ColorRGBA<T> operator*(const ColorRGBA<T> &other) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			limClamp<T>(R() * other.R()),
 			limClamp<T>(G() * other.G()),
 			limClamp<T>(B() * other.B()),
@@ -179,6 +184,7 @@ public:
 	ColorRGBA<T> operator*(T val) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			limClamp<T>(R() * val),
 			limClamp<T>(G() * val),
 			limClamp<T>(B() * val),
@@ -202,6 +208,7 @@ public:
 	ColorRGBA<T> linInterp(const ColorRGBA<T> &other, f32 d) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			lerp<T>(other.R(), R(), d),
 			lerp<T>(other.G(), G(), d),
 			lerp<T>(other.B(), B(), d),
@@ -215,6 +222,7 @@ public:
 	ColorRGBA<T> quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const
 	{
 		return ColorRGBA<T>(
+			getFormat(),
 			qerp<T>(R(), c1.R(), c2.R(), d),
 			qerp<T>(G(), c1.G(), c2.G(), d),
 			qerp<T>(B(), c1.B(), c2.B(), d),

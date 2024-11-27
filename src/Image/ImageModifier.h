@@ -28,44 +28,11 @@ enum FLIP_DIR
 	FD_Y
 };
 
-struct BlendMode
-{
-	bool Enabled = false;
-
-	render::BlendFunc SrcFunc;
-	render::BlendFunc DstFunc;
-
-	render::BlendOp Op = render::BO_ADD;
-
-	bool isAlphaBlending()
-	{
-		bool is_yes = false;
-		switch (SrcFunc) {
-			case render::BF_SRC_ALPHA:
-			case render::BF_ONE_MINUS_DST_ALPHA:
-				is_yes = true;
-				break;
-			default:
-				break;
-		};
-
-		switch (DstFunc) {
-			case render::BF_ONE_MINUS_SRC_ALPHA:
-			case render::BF_DST_ALPHA:
-				is_yes = true;
-				break;
-			default:
-				break;
-		};
-
-		return is_yes;
-	}
-};
-
 //! Does blitting without/with scaling and filling with some color in the set blend mode.
 class ImageModifier
 {
-	BlendMode Mode;
+	BLEND_MODE Mode;
+	bool BlendEnabled;
 public:
 	ImageModifier() {}
 
@@ -115,19 +82,17 @@ public:
 
 	bool blendEnabled() const
 	{
-		return mode.Enabled;
+		return BlendEnabled;
 	}
 
 	void toggleBlend()
 	{
-		mode.Enabled = !mode.Enabled;
+		BlendEnabled = !BlendEnabled;
 	}
 
-	void setBlendMode(render::BlendFunc srcF, render::BlendFunc dstF, render::BlendOp op = render::BO_ADD)
+	void setBlendMode(BLEND_MODE newMode)
 	{
-		mode.SrcFunc = srcF;
-		mode.DstFunc = dstF;
-		mode.Op = op;
+		Mode = newMode;
 	}
 };
 

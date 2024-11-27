@@ -25,14 +25,17 @@ enum BLEND_MODE
 	BM_COUNT
 };
 
+template <class T>
 inline ColorRGBA<T> NormalBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return src;
 }
 
+template <class T>
 inline ColorRGBA<T> AlphaBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
+		src.getFormat(),
 		src.R() * src.A() + dst.R() * (max_v - src.A()),
 		src.G() * src.A() + dst.G() * (max_v - src.A()),
 		src.B() * src.A() + dst.B() * (max_v - src.A()),
@@ -40,24 +43,29 @@ inline ColorRGBA<T> AlphaBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 	);
 }
 
+template <class T>
 inline ColorRGBA<T> AddBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return src + dst;
 }
 
+template <class T>
 inline ColorRGBA<T> SubtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return src - dst;
 }
 
+template <class T>
 inline ColorRGBA<T> MultiplyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return src * dst;
 }
 
+template <class T>
 inline ColorRGBA<T> DivisionBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
+		src.getFormat(),
 		src.R() / dst.R(),
 		src.G() / dst.G(),
 		src.B() / dst.B(),
@@ -65,21 +73,24 @@ inline ColorRGBA<T> DivisionBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &d
 	);
 }
 
+template <class T>
 inline ColorRGBA<T> ScreenBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
 	return ColorRGBA<T>(
+		src.getFormat(),
 		max_v - (max_v - src.R())*(max_v - dst.R()),
 		max_v - (max_v - src.G())*(max_v - dst.G()),
 		max_v - (max_v - src.B())*(max_v - dst.B())
 	);
 }
 
+template <class T>
 inline ColorRGBA<T> OverlayBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
 
-	ColorRGBA<T> newColor;
+	ColorRGBA<T> newColor(src.getFormat());
 
 	if (src.R() < max_v / 2)
 		newColor.R(2 * src.R() * dst.R());
@@ -97,11 +108,12 @@ inline ColorRGBA<T> OverlayBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &ds
 	return newColor;
 }
 
+template <class T>
 inline ColorRGBA<T> HardLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
 
-	ColorRGBA<T> newColor;
+	ColorRGBA<T> newColor(src.getFormat());
 
 	if (dst.R() < max_v / 2)
 		newColor.R(2 * src.R() * dst.R());
@@ -119,17 +131,20 @@ inline ColorRGBA<T> HardLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &
 	return newColor;
 }
 
+template <class T>
 inline ColorRGBA<T> SoftLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
 
 	return ColorRGBA<T>(
+		src.getFormat(),
 		(max_v - 2*dst.R())*src.R()*src.R() + 2*dst.R()*src.R(),
 		(max_v - 2*dst.G())*src.G()*src.G() + 2*dst.G()*src.G(),
 		(max_v - 2*dst.B())*src.B()*src.B() + 2*dst.B()*src.B()
 	);
 }
 
+template <class T>
 inline ColorRGBA<T> GrainExtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
@@ -137,6 +152,7 @@ inline ColorRGBA<T> GrainExtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T
 	return dst - src + max_v/2;
 }
 
+template <class T>
 inline ColorRGBA<T> GrainMergeBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = std::numeric_limits<T>::max();
@@ -144,20 +160,64 @@ inline ColorRGBA<T> GrainMergeBlend(const ColorRGBA<T> &src, const ColorRGBA<T> 
 	return dst + src - max_v/2;
 }
 
+template <class T>
 inline ColorRGBA<T> DarkenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
+		src.getFormat(),
 		std::min<T>(src.R(), dst.R()),
 		std::min<T>(src.G(), dst.G()),
 		std::min<T>(src.B(), dst.B())
 	);
 }
 
+template <class T>
 inline ColorRGBA<T> LightenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
+		src.getFormat(),
 		std::max<T>(src.R(), dst.R()),
 		std::max<T>(src.G(), dst.G()),
 		std::max<T>(src.B(), dst.B())
 	);
+}
+
+
+template <class T>
+ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BLEND_MODE mode)
+{
+	switch (mode) {
+		case BM_NORMAL:
+			return NormalBlend(src, dst);
+		case BM_ALPHA:
+			return AlphaBlend(src, dst);
+		case BM_ADD:
+			return AddBlend(src, dst);
+		case BM_SUBTRACTION:
+			return SubtractBlend(src, dst);
+		case BM_MULTIPLY:
+			return MultiplyBlend(src, dst);
+		case BM_DIVISION:
+			return DivisionBlend(src, dst);
+		case BM_SCREEN:
+			return ScreenBlend(src, dst);
+		case BM_OVERLAY:
+			return OverlayBlend(src, dst);
+		case BM_HARD_LIGHT:
+			return HardLightBlend(src, dst);
+		case BM_SOFT_LIGHT:
+			return SoftLightBlend(src, dst);
+		case BM_GRAIN_EXTRACT:
+			return GrainExtractBlend(src, dst);
+		case BM_GRAIN_MERGE:
+			return GrainMergeBlend(src, dst);
+		case BM_DARKEN_ONLY:
+			return DarkenOnlyBlend(src, dst);
+		case BM_LIGHTEN_ONLY:
+			return LightenOnlyBlend(src, dst);
+		default:
+			return ColorRGBA<T>(src.getFormat());
+	}
+}
+
 }
