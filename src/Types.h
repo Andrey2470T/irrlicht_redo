@@ -13,3 +13,19 @@ typedef uint64_t u64;
 typedef int64_t s64;
 typedef float f32;
 typedef double f64;
+
+enum BasicType
+{
+	UINT8,
+	UINT16,
+	UINT32,
+	UINT64,
+
+	CHAR,
+	SHORT,
+	INT,
+	LONG_INT,
+
+	FLOAT,
+	DOUBLE
+};

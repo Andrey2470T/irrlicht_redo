@@ -2,25 +2,9 @@
 
 class ByteArray
 {
-	enum ElementType
-	{
-		UINT8,
-		UINT16,
-		UINT32,
-		UINT64,
-
-		CHAR,
-		SHORT,
-		INT,
-		LONG_INT,
-
-		FLOAT,
-		DOUBLE
-	};
-
 	struct ByteArrayElement
 	{
-		ElementType type;
+		BasicType type;
 		u32 bytes_count;
 		u32 offset = 0;
 	};
@@ -32,6 +16,8 @@ class ByteArray
 	//! Current position of the 'bytes' indicator (offset in bytes)
 	u32 pos_i = 0;
 public:
+	ByteArray() = default;
+
 	//! Constructor. 'count' is an initial bytes count
 	ByteArray(u32 count)
 	{
@@ -140,7 +126,7 @@ private:
 
 u32 ByteArray::countBytesBefore(u32 n)
 {
-	if (n > count()-1) {
+	if (n >= count()) {
 		SDL_LogWarn(LC_ASS, "ByteArray::countBytesBefore() Access to the element outside of the byte array");
 		return 0;
 	}
@@ -154,7 +140,7 @@ u32 ByteArray::countBytesBefore(u32 n)
 
 std::vector<u8> ByteArray::getElement(u32 n) const
 {
-	if (n > count()-1) {
+	if (n >= count()) {
 		SDL_LogWarn(LC_ASS, "ByteArray::getElement() Access to the element outside of the byte array");
 		return {};
 	}
@@ -211,19 +197,24 @@ ByteArray::setElement(const ByteArrayElement &elem, void *data, s32 n)
 		}
 	}
 
+	if (n < count()) {
+		auto &n_elem = elements.at(n);
+
+		if (n_elem.type != elem.type || n_elem.bytes_count != elem.bytes_count) {
+			SDL_LogWarn("ByteArray::setElement() Can not replace the element to the another one with differing bytes count and type");
+			return;
+		}
+	}
+	// If n == -1, add the bytes at the end, else replace to them
 	u32 offset = countBytesBefore(n)+1;
 	for (u32 i = 0; i < elem_bytes.size(); i++)
-		if (n == -1)
-			bytes.push_back(elem_bytes[i]);
+		if (n < count())
+			bytes[offset + i] = elem_bytes[i];
 		else
-			bytes.insert(offset + i, elem_bytes[i]);
+			bytes.push_back(elem_bytes[i]);
 
-	if (n == -1) {
+	if (n >= count()) {
 		elem.offset = bytes.size() - elem_bytes.size();
 		elements.push_back(std::move(elem));
-	}
-	else {
-		elem.offset = offset;
-		elements.insert(n, std::move(elem));
 	}
 }

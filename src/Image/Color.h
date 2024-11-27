@@ -1,17 +1,18 @@
 #pragma once
 
 #include <limits>
+#include "utils/ByteArray.h"
 
 namespace img {
 
 template<class T>
-ColorRGBA<T> clampColor(const ColorRGBA &c)
+ColorRGBA<T> &clampColor(ColorRGBA<T> &c)
 {
-	return ColorRGBA<T>(
-		utils::limClamp<T>(c.R),
-		utils::limClamp<T>(c.G),
-		utils::limClamp<T>(c.B),
-		c.A);
+	c.R(utils::limClamp<T>(c.R()));
+	c.G(utils::limClamp<T>(c.G()));
+	c.B(utils::limClamp<T>(c.B()));
+	c.A(utils::limClamp<T>(c.A()));
+	return c;
 }
 
 //! Class representing a color in RGBA format.
@@ -26,37 +27,35 @@ class ColorRGBA
 
 	//! Color represented as a byte array saving the color data
 	//! depending on the format
-	std::vector<u8> color;
+	utils::ByteArray color;
 public:
 	ColorRGBA(PixelFormat _format)
-		: format(_format)
-	{
-		color.resize(pixelFormatInfo[format].size / 8);
-	}
+		: format(_format), color(pixelFormatInfo[format].size / 8)
+	{}
 
 	ColorRGBA(PixelFormat _format, T _R, T _G = 0, T _B = 0, T _A = 0)
-		: format(_format)
+		: format(_format), color(pixelFormatInfo[format].size / 8)
 	{
-		set(R, G, B, A);
+		set(_R, _G, _B, _A);
 	}
 
 	ColorRGBA(const ColorRGBA &other)
 		: format(other.format), color(other.color) {}
 
-	T R() const { return getChannel('R'); }
-	T G() const { return getChannel('G'); }
-	T B() const { return getChannel('B'); }
-	T A() const { return getChannel('A'); }
+	T R() const { return getChannel(0); }
+	T G() const { return getChannel(1); }
+	T B() const { return getChannel(2); }
+	T A() const { return getChannel(3); }
 
-	void R(T R) { return setChannel(R, 'R'); }
-	void G(T G) { return setChannel(G, 'G'); }
-	void B(T B) { return setChannel(B, 'B'); }
-	void A(T A) { return setChannel(A, 'A'); }
+	void R(T R) { return setChannel(R, 0); }
+	void G(T G) { return setChannel(G, 1); }
+	void B(T B) { return setChannel(B, 2); }
+	void A(T A) { return setChannel(A, 3); }
 
 	//! Get lightness of the color
 	f32 getLightness() const
 	{
-		u8 channelsCount = getChannelsCount(format);
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
 		if (channelsCount == 1)
 			return 0.5f * R();
@@ -69,15 +68,15 @@ public:
 	//! Get luminance of the color
 	f32 getLuminance() const
 	{
-		if (getChannelsCount < 3)
+		if (pixelFormatInfo[format].channels < 3)
 			return 0.0f;
-		return 0.3f * R + 0.59f * G + 0.11f * B;
+		return 0.3f * R() + 0.59f * G() + 0.11f * B();
 	}
 
 	//! Get average intensity of the color
 	u32 getAverage() const
 	{
-		u8 channelsCount = getChannelsCount(format);
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
 		if (channelsCount == 1)
 			return R();
@@ -89,7 +88,7 @@ public:
 
 	void operator==(const ColorRGBA<T> &other)
 	{
-		u8 channelsCount = getChannelsCount(format);
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
 		if (channelsCount == 1)
 			return R() == other.R();
@@ -108,7 +107,7 @@ public:
 
 	void operator<(const ColorRGBA<T> &other)
 	{
-		u8 channelsCount = getChannelsCount(format);
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
 		if (channelsCount == 1)
 			return R() <= other.R();
@@ -164,7 +163,7 @@ public:
 			limClamp<T>(R() * other.R()),
 			limClamp<T>(G() * other.G()),
 			limClamp<T>(B() * other.B()),
-			limClamp<T>(A() + other.A()));
+			limClamp<T>(A() * other.A()));
 	}
 
 	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other) const
@@ -226,57 +225,54 @@ private:
 	{
 		u8 channelsCount = pixelFormatInfo[format].channels;
 
-		setChannel(R, 'R');
+		setChannel(R);
 
 		if (channelsCount > 1)
-			setChannel(G, 'G');
+			setChannel(G);
 		if (channelsCount > 2)
-			setChannel(B, 'B');
+			setChannel(B);
 		if (channelsCount > 3)
-			setChannel(A, 'A');
+			setChannel(A);
 	}
 
-	void setChannel(T v, char type)
+	T getChannel(u32 n) const
 	{
-		auto &pixel_info = pixelFormatInfo[format];
-		u32 channelBytesSize = (pixel_info.size / pixel_info.channels) / 8;
+		BasicType type = pixelFormatInfo[format].type;
 
-		u32 offset = 0;
+		switch (type) {
+			case UINT8:
+				return color.getUInt8(n);
+			case UINT16:
+				return color.getUInt16(n);
+			case UINT32:
+				return color.getUInt32(n);
+			case FLOAT:
+				return color.getFloat(n);
+			default:
+				return 0;
+		};
+	}
 
-		if (type == 'G') {
-			if (channelsCount < 2)
-				return;
-			offset += channelBytesSize;
-		}
-		else if (type == 'B') {
-			if (channelsCount < 3)
-				return;
-			offset += channelBytesSize*2;
-		}
-		else if (type == 'A') {
-			if (channelsCount < 4)
-				return;
-			offset += channelBytesSize*3;
-		}
+	void setChannel(T v, s32 n=-1)
+	{
+		BasicType type = pixelFormatInfo[format].type;
 
-		if (channelBytesSize == 1) {
-			u8 ch = (u8)v;
-			color[offset] = ch;
-		}
-		else if (channelSize == 2) {
-			u16 ch = *(u16*)&v;
-
-			color[offset] = ch >> 8;
-			color[offset+1] = ch & 0xFF;
-		}
-		else if (channelSize == 4) {
-			u32 ch = *(u32*)&v;
-
-			color[offset] = ch >> 24;
-			color[offset+1] = ch >> 16 & 0xFF;
-			color[offset+2] = ch >> 8 & 0xFF;
-			color[offset+3] = ch & 0xFF;
-		}
+		switch (type) {
+			case UINT8:
+				color.setUInt8(v, n);
+				break;
+			case UINT16:
+				color.setUInt16(v, n);
+				break;
+			case UINT32:
+				color.setUInt32(v, n);
+				break;
+			case FLOAT:
+				color.setFloat(v, n);
+				break;
+			default:
+				break;
+		};
 	}
 };
 

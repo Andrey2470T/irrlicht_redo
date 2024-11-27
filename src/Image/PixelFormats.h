@@ -33,6 +33,7 @@ struct PixelFormatInfo
 	GLenum pixelFormat;
 	GLenum pixelType;
 
+	BasicType type;
 	u8 size;
 	u8 channels;
 
