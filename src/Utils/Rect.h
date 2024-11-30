@@ -254,6 +254,8 @@ public:
 typedef Rect<f32> rectf;
 //! Rectangle with int values
 typedef Rect<s32> recti;
+//! Rectangle with unsigned int values
+typedef Rect<u32> rectu;
 
 } // end namespace core
 } // end namespace irr

@@ -41,6 +41,13 @@ public:
 
 	ColorRGBA(const ColorRGBA &other)
 		: format(other.format), color(other.color) {}
+		
+	ColorRGBA<T> &operator=(const ColorRGBA<T> &other)
+	{
+		set(other.R(), other.G(), other.B(), other.A());
+		
+		return *this;
+	}
 
 	T R() const { return getChannel(0); }
 	T G() const { return getChannel(1); }
@@ -64,7 +71,7 @@ public:
 		else if (channelsCount == 2)
 			return 0.5f * (std::max(R(), G()) + std::min(R(), G()));
 		else
-			return 0.5f * (utils::max3(R(), G(), B()) + utils::min3(R, G, B));
+			return 0.5f * (utils::max3(R(), G(), B()) + utils::min3(R(), G(), B()));
 	}
 
 	//! Get luminance of the color
@@ -83,9 +90,9 @@ public:
 		if (channelsCount == 1)
 			return R();
 		else if (channelsCount == 2)
-			return (R + G) / 2;
+			return (R() + G()) / 2;
 		else
-			return (R + G + B) / 3;
+			return (R() + G() + B()) / 3;
 	}
 
 	void operator==(const ColorRGBA<T> &other)

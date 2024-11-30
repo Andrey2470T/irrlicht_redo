@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BasicIncludes.h"
-#include <functional>
 
 namespace img
 {

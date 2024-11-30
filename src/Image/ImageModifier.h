@@ -7,14 +7,6 @@
 namespace img
 {
 
-enum RESAMPLE_FILTER
-{
-	RF_NEAREST,
-	RF_BILINEAR,
-	RF_BICUBIC,
-	RF_LANCZOS
-};
-
 enum ROTATE_ANGLE
 {
 	RA_90,
@@ -50,7 +42,7 @@ public:
 	void fill(
 		Image *img,
 		const color8 &color,
-		const utils::recti *rect = nullptr);
+		const utils::rectu *rect = nullptr);
 
 	// Copies the whole (or part) of the source image to the whole (or part) of the dest image
 	/// @param "srcImg" - image whose the pixel data is copied
@@ -61,20 +53,20 @@ public:
 	void copyTo(
 		const Image * srcImg,
 		Image *dstImg,
-		const utils::recti *srcRect = nullptr,
-		const utils::recti *dstRect = nullptr,
+		const utils::rectu *srcRect = nullptr,
+		const utils::rectu *dstRect = nullptr,
 		bool allowScale = false);
 
-	// Scales (up or down) the image with the given factor.
+	// Scales (up or down) the image before the given rect.
 	// The convolution algorithm is used with one of filter types.
-	void scale(Image *img, utils::v2i scaleFactor, RESAMPLE_FILTER filter=RF_NEAREST);
+	void resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	void rotate(Image *img, ROTATE_ANGLE angle);
 
 	void flip(Image *img, FLIP_DIR dir);
 
-	Image *crop(const Image *img, const utils::recti &rect);
+	Image *crop(const Image *img, const utils::rectu &rect);
 
 	Image *createNew(u32 width, u32 height, const color8 &color=color8(255,255,255,255));
 

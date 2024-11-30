@@ -33,9 +33,10 @@ class Image
 
 	bool ownPixelData;
 public:
-	Image(PixelFormat _format, u32 _width, u32 _height);
+	Image(PixelFormat _format, u32 _width, u32 _height, color8 initColor=color8(PF_RGB, 0, 0, 0));
 
-	Image(PixelFormat _format, u32 _width, u32 _height, u8 *data, bool copyData = true);
+	Image(PixelFormat _format, u32 _width, u32 _height, u8 *data,
+		  bool copyData = true, color8 initColor=color8(PF_RGB, 0, 0, 0));
 
 	~Image();
 
@@ -53,7 +54,12 @@ public:
 	{
 		return height;
 	}
-	
+
+	utils::v2u getSize() const
+	{
+		return utils::v2u(width, height);
+	}
+
 	Palette *getPalette() const
 	{
 		return palette.get();
@@ -63,6 +69,8 @@ public:
 	{
 		return data.get();
 	}
+	
+	Image *copy() const;
 };
 
 }
