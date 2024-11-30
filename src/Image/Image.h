@@ -6,12 +6,26 @@
 
 namespace img {
 
+bool isFormatSupportedForImage(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGB:
+		case PF_RGBA:
+		case PF_INDEX_RGB:
+		case PF_INDEX_RGBA:
+			return true
+		default:
+			return false;
+	}
+}
+
 /* 
- * 8-bit palette (can be with alpha or without)
+ * 8-bit palette (can be with alpha or without).
+ * Indices are u8.
  */
 struct Palette
 {
-	bool hasAlpha;
+	bool hasAlpha = false;
 	u32 size;
 	
 	std::vector<color8> colors;
@@ -33,10 +47,9 @@ class Image
 
 	bool ownPixelData;
 public:
-	Image(PixelFormat _format, u32 _width, u32 _height, color8 initColor=color8(PF_RGB, 0, 0, 0));
+	Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB, 0, 0, 0));
 
-	Image(PixelFormat _format, u32 _width, u32 _height, u8 *data,
-		  bool copyData = true, color8 initColor=color8(PF_RGB, 0, 0, 0));
+	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data, bool _copyData = true);
 
 	~Image();
 
@@ -69,6 +82,8 @@ public:
 	{
 		return data.get();
 	}
+
+	void setPaletteColors(const std::vector<color8> &colors);
 	
 	Image *copy() const;
 };

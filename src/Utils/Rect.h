@@ -43,6 +43,14 @@ public:
 	Rect(const Rect &other)
 		: ULC(other.ULC), LRC(other.LRC) {}
 
+	Rect<T> &operator=(const Rect<T> &other)
+	{
+		ULC = other.ULC;
+		LRC = other.LRC;
+
+		return *this;
+	}
+
 	//! move right by given numbers
 	Rect<T> operator+(const Vector2D<T> &pos) const
 	{

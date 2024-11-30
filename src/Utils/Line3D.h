@@ -29,6 +29,14 @@ public:
 	Line3D(const Line3D &other)
 		: Start(other.Start), End(other.End) {}
 
+	Line3D<T> &operator=(const Line3D<T> &other)
+	{
+		Start = other.Start;
+		End = other.End;
+
+		return *this;
+	}
+
 	// operators
 
 	Line3D<T> operator+(const Vector3D<T> &point) const { return Line3D<T>(Start + point, End + point); }

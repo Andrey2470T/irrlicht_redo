@@ -40,6 +40,14 @@ public:
 	AABB(const AABB<T> &other)
 		: MinEdge(other.MinEdge), MaxEdge(other.MaxEdge) {}
 
+	AABB<T> &operator=(const AABB<T> &other)
+	{
+		MinEdge = other.MinEdge;
+		MaxEdge = other.MaxEdge;
+
+		return *this;
+	}
+
 	// operators
 	//! Equality operator
 	/** \param other box to compare with.

@@ -24,6 +24,8 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 		case PF_RGBA8:
 			u8 *pixel = data[y * 4 * width + 4 * x];
 			return color8(PF_RGBA8, *pixel, *pixel++, *pixel++, *pixel++);
+		case PF_INDEX_RGBA8:
+			return img->getPalette()->colors.at(*(data[y * width + x]));
 		default:
 			SDL_LogWarn(LC_VIDEO, "ImageModifier::getPixel() unsupported/unknown format");
 			return color8(PF_RGB8);
@@ -57,6 +59,10 @@ void ImageModifier::setPixel(
 	else if (format == PF_RGBA8) {
 		pixel = data[y * 4 * width + 4 * x];
 		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, *(pixel)+3);
+	}
+	else if (format == PF_INDEX_RGBA) {
+		data[y * width + x] = color.R();
+		return;
 	}
 	else {
 		SDL_LogWarn(LC_VIDEO, "ImageModifier::setPixel() unsupported/unknown format");

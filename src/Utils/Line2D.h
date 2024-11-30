@@ -29,6 +29,14 @@ public:
 	Line2D(const Line2D &other)
 		: Start(other.Start), End(other.End) {}
 
+	Line2D<T> &operator=(const Line2D<T> &other)
+	{
+		Start = other.Start;
+		End = other.End;
+
+		return *this;
+	}
+
 	// operators
 
 	Line2D<T> operator+(const Vector2D<T> &point) const { return Line2D<T>(Start + point, End + point); }
