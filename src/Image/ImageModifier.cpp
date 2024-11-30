@@ -105,9 +105,54 @@ void ImageModifier::fill(
 	}
 }
 
+// Copies the whole (or part) of the source image to the whole (or part) of the dest image
+/// @param "srcImg" - image whose the pixel data is copied
+/// @param "dstImg" - image where the copy happens to
+/// @param "srcRect" - part of the image which will be copied
+/// @param "dstRect" - part of the image where the copy will be done to
+/// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
+void ImageModifier::copyTo(
+	const Image *srcImg,
+	Image *dstImg,
+	const utils::rectu *srcRect,
+	const utils::rectu *dstRect,
+	bool allowScale)
+{
+	Image *srcPart = srcImg;
+
+	if (srcRect) {
+		srcPart = new Image(srcImg->getFormat(), srcRect->getWidth(), srcRect->getHeight());
+		
+		for (u32 x = srcRect->ULC.X; x < srcRect->LRC.X; x++)
+			for (u32 y = srcRect->ULC.Y; y < srcRect->LRC.Y; y++)
+				setPixel(srcPart, x - srcRect->ULC.X, y - srcRect->ULC.Y, getPixel(srcImg, x, y));
+	}
+	
+	if (dstRect && srcRect->getSize() != dstRect->getSize()) {
+		if (!allowScale) {
+			SDL_LogWarn(LC_VIDEO, "ImageModifier::copyTo() copying to destination image with another size is not allowed");
+			return;
+		}
+			
+		Image *srcPartScaled = resize(srcPart, *dstRect, RF_BICUBIC);
+		delete srcPart;
+		srcPart = srcPartScaled;
+	}
+	
+	for (u32 x = 0; x < srcPart->getWidth(); x++)
+		for (u32 y = 0; y < srcPart->getHeight(); y++) {
+			color8 curColor = getPixel(srcPart, x, y);
+			
+			if (!dstRect)
+				setPixel(dstImg, x, y, curColor);
+			else
+				setPixel(dstImg, x + dstRect->ULC.X, y + dstRect->ULC.Y, curColor);
+		}
+}
+
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
-void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
+Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
 {
 	f32 scaleX, scaleY = 1.0f, 1.0f;
 	f32 fscaleX, fscaleY = scaleX, scaleY;
@@ -213,6 +258,13 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
 		newImg = newImgCopy;
 	}
 	
-	return newImg;
+	delete img;
+	img = newImg;
+}
+
+// Rotates the given image by the angle multiple by 90 degrees
+void ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
+{
+	
 }
 }

@@ -51,7 +51,7 @@ public:
 	/// @param "dstRect" - part of the image where the copy will be done to
 	/// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
 	void copyTo(
-		const Image * srcImg,
+		const Image *srcImg,
 		Image *dstImg,
 		const utils::rectu *srcRect = nullptr,
 		const utils::rectu *dstRect = nullptr,
@@ -59,7 +59,7 @@ public:
 
 	// Scales (up or down) the image before the given rect.
 	// The convolution algorithm is used with one of filter types.
-	void resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
+	Image *resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	void rotate(Image *img, ROTATE_ANGLE angle);

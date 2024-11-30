@@ -14,12 +14,14 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor)
 
 	data = new u8[width * height * pixelSize];
 
+	palette = std::make_unique<Palette>(false, 0, 0);
 	fill(_initColor);
 
 	ownPixelData = true;
 }
 
-Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data, bool _copyData)
+Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
+	bool _copyData, Palette *_palette)
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForImage(format)) {
@@ -27,6 +29,9 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data, bool _copy
 		return;
 	}
 	ownPixelData = _copyData;
+
+	if (_palette)
+		palette = std::unique_ptr<Palette>(_palette);
 
 	if (!ownPixelData)
 		data = _data;

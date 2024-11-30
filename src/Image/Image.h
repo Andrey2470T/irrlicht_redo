@@ -49,7 +49,8 @@ class Image
 public:
 	Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB, 0, 0, 0));
 
-	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data, bool _copyData = true);
+	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
+		  bool _copyData = true, Palette *palette = nullptr);
 
 	~Image();
 

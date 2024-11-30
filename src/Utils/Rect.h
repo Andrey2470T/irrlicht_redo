@@ -107,6 +107,11 @@ public:
 		return LRC.Y - ULC.Y;
 	}
 
+	v2u getSize() const
+	{
+		return v2u(getWidth(), getHeight());
+	}
+
 	//! Returns size of Rectangle
 	T getArea() const
 	{
