@@ -29,6 +29,16 @@ struct Palette
 	u32 size;
 	
 	std::vector<color8> colors;
+	
+	u8 findColorIndex(const color8 &c)
+	{
+		auto it = std::find(colors.begin(), colors.end(), c);
+		
+		if (it == colors.end())
+			return 0;
+		
+		return static_cast<u8>(std::distance(colors.begin(), it));
+	}
 };
 
 /* Image representation class referring or saving directly
@@ -47,7 +57,7 @@ class Image
 
 	bool ownPixelData;
 public:
-	Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB, 0, 0, 0));
+	Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB, 0, 0, 0), Palette *_palette = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 		  bool _copyData = true, Palette *palette = nullptr);

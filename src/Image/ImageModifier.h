@@ -62,13 +62,11 @@ public:
 	Image *resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
-	void rotate(Image *img, ROTATE_ANGLE angle);
+	Image *rotate(Image *img, ROTATE_ANGLE angle);
 
-	void flip(Image *img, FLIP_DIR dir);
+	Image *flip(Image *img, FLIP_DIR dir);
 
 	Image *crop(const Image *img, const utils::rectu &rect);
-
-	Image *createNew(u32 width, u32 height, const color8 &color=color8(255,255,255,255));
 
 	Image *combine(const Image *img1, const Image *img2);
 

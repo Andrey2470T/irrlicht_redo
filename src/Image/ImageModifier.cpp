@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ImageModifier.h"
 #include "ResizeFilters.h"
 
@@ -25,7 +26,7 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 			u8 *pixel = data[y * 4 * width + 4 * x];
 			return color8(PF_RGBA8, *pixel, *pixel++, *pixel++, *pixel++);
 		case PF_INDEX_RGBA8:
-			return img->getPalette()->colors.at(*(data[y * width + x]));
+			return color8(PF_INDEX_RGBA8, data[y * width + x]);
 		default:
 			SDL_LogWarn(LC_VIDEO, "ImageModifier::getPixel() unsupported/unknown format");
 			return color8(PF_RGB8);
@@ -60,7 +61,7 @@ void ImageModifier::setPixel(
 		pixel = data[y * 4 * width + 4 * x];
 		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, *(pixel)+3);
 	}
-	else if (format == PF_INDEX_RGBA) {
+	else if (format == PF_INDEX_RGBA8) {
 		data[y * width + x] = color.R();
 		return;
 	}
@@ -122,7 +123,7 @@ void ImageModifier::copyTo(
 
 	if (srcRect) {
 		srcPart = new Image(srcImg->getFormat(), srcRect->getWidth(), srcRect->getHeight());
-		
+
 		for (u32 x = srcRect->ULC.X; x < srcRect->LRC.X; x++)
 			for (u32 y = srcRect->ULC.Y; y < srcRect->LRC.Y; y++)
 				setPixel(srcPart, x - srcRect->ULC.X, y - srcRect->ULC.Y, getPixel(srcImg, x, y));
@@ -133,7 +134,7 @@ void ImageModifier::copyTo(
 			SDL_LogWarn(LC_VIDEO, "ImageModifier::copyTo() copying to destination image with another size is not allowed");
 			return;
 		}
-			
+
 		Image *srcPartScaled = resize(srcPart, *dstRect, RF_BICUBIC);
 		delete srcPart;
 		srcPart = srcPartScaled;
@@ -142,7 +143,7 @@ void ImageModifier::copyTo(
 	for (u32 x = 0; x < srcPart->getWidth(); x++)
 		for (u32 y = 0; y < srcPart->getHeight(); y++) {
 			color8 curColor = getPixel(srcPart, x, y);
-			
+
 			if (!dstRect)
 				setPixel(dstImg, x, y, curColor);
 			else
@@ -222,7 +223,11 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 					u32 x = axis == 0 ? r : imgOut_axis2;
 					u32 y = axis == 0 ? imgOut_axis2 : r;
 					
-					resColor += getPixel(inImg, x, y) * weights[r - min];
+					color8 curPixel = getPixel(inImg, x, y);
+					
+					if (inImg->getFormat() == PF_INDEX_RGBA8)
+						curPixel = inImg->getPalette()->colors.at(curPixel.R());
+					resColor += curPixel * weights[r - min];
 				}
 				
 				resColor.R((u32)std::floor(resColor.R() * w_s + 0.5f));
@@ -232,7 +237,12 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 				x = axis == 0 ? imgOut_axis : imgOut_axis2;
 				y = axis == 0 ? imgOut_axis2 : imgOut_axis;
 				
-				setPixel(outImg, x, y, resColor);
+				if (outImg->getFormat() == PF_INDEX_RGBA8) {
+					u8 colorIndex = outImg->getPalette()->findColorIndex(resColor);
+					setPixel(outImg, x, y, color8(PF_INDEX_RGBA8, colorIndex));
+				}
+				else
+					setPixel(outImg, x, y, resColor);
 			}
 		}
 	};
@@ -240,17 +250,20 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 	Image *newImg = nullptr;
 	
 	if (scaleX != 1.0f) {
-		newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight());
+		newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight()
+			color8(PF_RGB, 0, 0, 0), img->getPalette());
 		axisScale(img, newImg, 0);
 	}
 	if (scaleY != 1.0f) {
 		Image *newImgCopy = nullptr;
 		if (!newImg) {
-			newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight());
+			newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight()
+				color8(PF_RGB, 0, 0, 0), img->getPalette());
 			axisScale(img, newImgCopy, 1);
 		}
 		else {
-			newImgCopy = new Image(img->getFormat(), newImg->getWidth(), rect.getHeight());
+			newImgCopy = new Image(img->getFormat(), newImg->getWidth(), rect.getHeight(),
+				color8(PF_RGB, 0, 0, 0), img->getPalette());
 			axisScale(newImg, newImgCopy, 1);
 			delete newImg;
 		}
@@ -263,8 +276,82 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 }
 
 // Rotates the given image by the angle multiple by 90 degrees
-void ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
+Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 {
-	
+	u32 oldWidth, oldHeight = img->getWidth(), img->getHeight();
+	u32 newWidth, newHeight = oldWidth, oldHeight;
+
+	if (angle == RA_90 || angle == RA_270)
+		std::swap(newWidth, newHeight);
+
+	Image *newImg = new Image(img->getFormat(), newWidth, newHeight);
+
+	utils::v2u center = img->getSize() / 2;
+
+	u8 degrees = 0;
+
+	if (angle == RA_90)
+		degrees = 90;
+	else if (angle == RA_180)
+		degrees = 180;
+	else if (angle == RA_270)
+		degrees = 270;
+
+	for (u32 x = 0; x < oldWidth; x++)
+		for (u32 y = 0; y < oldHeight; y++) {
+			color8 curColor = getPixel(img, x, y);
+
+			utils::v2u relPos = utils::v2u(x, y) - center;
+			relPos.rotateBy(degrees);
+
+			setPixel(newImg, relPos.X + center.X, relPos.Y + center.Y);
+		}
+
+	return newImg;
+}
+
+Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
+{
+	u32 width, height = img->getWidth(), img->getHeight();
+	Image *newImg = new Image(img->getFormat(), width, height);
+
+	for (u32 x = 0; x < width; x++)
+		for (u32 y = 0; y < height; y++) {
+			color8 curColor = getPixel(img, x, y);
+
+			utils::v2u curPoint(x, y);
+			utils::v2u middlePoint = dir == FD_X ?
+				utils::v2u(width / 2, y) : utils::v2u(x, height / 2);
+
+			utils::v2u reflectPoint = curPoint - middlePoint;
+			reflectPoint = -reflectPoint;
+			curPoint = middlePoint + reflectPoint;
+
+			setPixel(newImg, curPoint.X, curPoint.Y, curColor);
+		}
+}
+
+Image *ImageModifier::crop(const Image *img, const utils::rectu &rect)
+{
+	if (rect.getSize() == img->getSize())
+		return img;
+
+	Image *newImg = new Image(img->getFormat(), rect.getWidth(), rect.getHeight());
+	copyTo(img, newImg, rect);
+
+	return newImg;
+}
+
+Image *ImageModifier::combine(const Image *img1, const Image *img2)
+{
+	if (img1->getFormat() != img2->getFormat()) {
+		SDL_LogError(LC_VIDEO, "ImageModifier::combine() pixel formats of both images must be same");
+		return;
+	}
+	Image *newImg = new Image(img2->getFormat(), img2->getWidth(), img2->getHeight());
+	copyTo(img2, newImg);
+	copyTo(img1, img2, nullptr, nullptr, true);
+
+	return newImg;
 }
 }
