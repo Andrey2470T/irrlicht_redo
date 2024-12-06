@@ -28,4 +28,50 @@ u32 getDataSizeFromFormat(PixelFormat format, u32 width, u32 height)
 	return pixelFormatInfo[format].size / 8 * width * height;
 }
 
+u32 getRedMask(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGB8:
+			return 0xFF0000;
+		case PF_RGBA8:
+			return 0xFF000000;
+		default:
+			return 0x0;
+	}
+}
+
+u32 getGreenMask(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGB8:
+			return 0x00FF00;
+		case PF_RGBA8:
+			return 0x00FF0000;
+		default:
+			return 0x0;
+	}
+}
+
+u32 getBlueMask(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGB8:
+			return 0x0000FF;
+		case PF_RGBA8:
+			return 0x0000FF00;
+		default:
+			return 0x0;
+	}
+}
+
+u32 getAlphaMask(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGBA8:
+			return 0x000000FF;
+		default:
+			return 0x0;
+	}
+}
+
 }

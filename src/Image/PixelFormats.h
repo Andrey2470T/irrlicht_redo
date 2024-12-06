@@ -47,4 +47,9 @@ extern std::array<PixelFormatInfo, PF_COUNT-2> pixelFormatInfo;
 //! calculate image data size in bytes for selected format, width and height.
 u32 getDataSizeFromFormat(PixelFormat format, u32 width, u32 height);
 
+u32 getRedMask(PixelFormat format);
+u32 getGreenMask(PixelFormat format);
+u32 getBlueMask(PixelFormat format);
+u32 getAlphaMask(PixelFormat format);
+
 }
