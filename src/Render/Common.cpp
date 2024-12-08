@@ -5,8 +5,10 @@ namespace render
 
 bool testGLError(const char *file, int line)
 {
+	std::string file_p(file);
+
 	GLenum g = glGetError();
-	const char *err = nullptr;
+	std::string err = "";
 	switch (g) {
 	case GL_NO_ERROR:
 		return false;
@@ -45,15 +47,17 @@ bool testGLError(const char *file, int line)
 
 	// basename
 	for (char sep : {'/', '\\'}) {
-		const char *tmp = strrchr(file, sep);
-		if (tmp)
-			file = tmp+1;
+		auto basename_pos = file_p.find_last_of(sep);
+
+		if (basename_pos != file_p.npos)
+			file_p = file_p.substr(basename_pos+1);
 	}
 
-	char buf[80];
-	snprintf_irr(buf, sizeof(buf), "%s %s:%d%s",
-		err, file, line, multiple ? " (older errors exist)" : "");
-	os::Printer::log(buf, ELL_ERROR);
+	std::string log_output = err + " " + file_p + ":" + std::to_string(line);
+	log_output += (multiple ? " (older errors exist)" : "");
+
+	SDL_LogError(LC_VIDEO, log_output.c_str());
+
 	return true;
 }
 

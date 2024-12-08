@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "TextureFormats.h"
+#include "Image/Image.h"
 #include "toGLEnum.h"
 
 
@@ -23,6 +23,7 @@ struct TextureSettings
 	TextureMinFilter minF = TMF_NEAREST;
 	TextureMagFilter magF = TMAGF_NEAREST;
 
+	bool isRenderTarget;
 	bool hasMipMaps;
 	u8 maxMipLevel;
 };
@@ -36,14 +37,10 @@ protected:
 	u32 width;
 	u32 height;
 
-	TextureFormat format;
-	TextureFormatInfo format_info;
-
-	bool isRenderTarget;
+	img::PixelFormat format;
 public:
-	Texture(const std::string &_name, u32 _width, u32 _height, TextureFormat _format)
-		: name(_name), width(_width), height(_height), format(_format),
-		  format_info(toGLFormatConverter.at(_format))
+	Texture(const std::string &_name, u32 _width, u32 _height, img::PixelFormat _format)
+		: name(_name), width(_width), height(_height), format(_format)
 	{}
 
 	std::string getName() const
@@ -63,17 +60,21 @@ public:
 		return height;
 	}
 
-	TextureFormat getFormat() const
+	img::TextureFormat getFormat() const
 	{
 		return format;
 	}
 
 	virtual bool hasMipMaps() const;
+	virtual bool isRenderTarget() const;
 
 	virtual void bind() const = 0;
 	virtual void unbind() const = 0;
 
-	virtual std::unique_ptr<Image> downloadData() const = 0;
+	virtual void uploadData(void *data);
+	virtual void uploadSubData(u32 x, u32 y, void *data);
+
+	virtual std::unique_ptr<img::Image> downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;
 };
 
