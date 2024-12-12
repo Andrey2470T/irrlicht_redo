@@ -2,6 +2,9 @@
 
 #include "BasicIncludes.h"
 
+namespace utils
+{
+
 class ByteArray
 {
 	struct ByteArrayElement
@@ -37,7 +40,7 @@ public:
 	}
 
 	//! Setters
-	// 'n' is a number of the byte array element before which to insert
+	// 'n' is a number of the byte array element which is necessary to replace
 	// '-1' means inserting at the end
 	void setUInt8(u8 elem, s32 n=-1) 		{ setElement(ByteArrayElement(UINT8, 1), &elem, n) }
 	void setUInt16(u16 elem, s32 n=-1) 		{ setElement(ByteArrayElement(UINT16, 2), &elem, n) }
@@ -51,6 +54,38 @@ public:
 
 	void setFloat(f32 elem, s32 n=-1); 		{ setElement(ByteArrayElement(FLOAT, 4), &elem, n) }
 	void setDouble(f64 elem, s32 n=-1); 	{ setElement(ByteArrayElement(DOUBLE, 8), &elem, n) }
+
+	void setV2U(v2u elem, s32 n=-1)
+	{
+		setUInt32(elem.X, n);
+		setUInt32(elem.Y, n != -1 ? n + 1 : n);
+	}
+
+	void setV2I(v2i elem, s32 n=-1)
+	{
+		setInt32(elem.X, n);
+		setInt32(elem.Y, n != -1 ? n + 1 : n);
+	}
+
+	void setV2F(v2f elem, s32 n=-1)
+	{
+		setFloat(elem.X, n);
+		setFloat(elem.Y, n != -1 ? n + 1 : n);
+	}
+
+	void setV3I(v3i elem, s32 n=-1)
+	{
+		setInt32(elem.X, n);
+		setInt32(elem.Y, n != -1 ? n + 1 : n);
+		setInt32(elem.Z, n != -1 ? n + 2 : n);
+	}
+
+	void setV3F(v3f elem, s32 n=-1)
+	{
+		setFloat(elem.X, n);
+		setFloat(elem.Y, n != -1 ? n + 1 : n);
+		setFloat(elem.Z, n != -1 ? n + 2 : n);
+	}
 
 	//! Getters
 	// 'n' is a number of the byte array element
@@ -94,6 +129,31 @@ public:
 		return elem_u64;
 	}
 
+	v2u getV2U(u32 n) const
+	{
+		return v2u(getUInt32(n), getUInt32(n + 1));
+	}
+
+	v2i getV2I(u32 n) const
+	{
+		return v2i(getInt32(n), getInt32(n + 1));
+	}
+
+	v2f getV2F(u32 n) const
+	{
+		return v2f(getFloat(n), getFloat(n + 1));
+	}
+
+	v3i getV3I(u32 n) const
+	{
+		return v3i(getInt32(n), getInt32(n + 1), getInt32(n + 2));
+	}
+
+	v3f getV3F(u32 n) const
+	{
+		return v3f(getFloat(n), getFloat(n + 1), getFloat(n + 2));
+	}
+
 	s8 getChar(u32 n) const
 	{
 		return (s8)getUInt8(n);
@@ -125,98 +185,4 @@ private:
 	void setElement(const ByteArrayElement &elem, void *data, s32 n=-1);
 };
 
-
-u32 ByteArray::countBytesBefore(u32 n)
-{
-	if (n >= count()) {
-		SDL_LogWarn(LC_ASS, "ByteArray::countBytesBefore() Access to the element outside of the byte array");
-		return 0;
-	}
-
-	u32 count = 0;
-	for (u32 i = 0; i < n; i++)
-		count += elements[i].bytes_count;
-
-	return count;
-}
-
-std::vector<u8> ByteArray::getElement(u32 n) const
-{
-	if (n >= count()) {
-		SDL_LogWarn(LC_ASS, "ByteArray::getElement() Access to the element outside of the byte array");
-		return {};
-	}
-
-	std::vector<u8> elem_bytes;
-
-	auto &elem = elements[n];
-	for (u32 i = 0; i < elem.bytes_count; i++)
-		elem_bytes.push_back(bytes[elem.offset+i]);
-
-	return elem_bytes;
-}
-
-ByteArray::setElement(const ByteArrayElement &elem, void *data, s32 n)
-{
-	std::vector<u8> elem_bytes;
-
-	switch (elem.type) {
-		case UINT8:
-		case CHAR: {
-			elem_bytes.push_back(*(u8*)(data));
-			break;
-		}
-		case UINT16:
-		case SHORT: {
-			u16 elem_u16 = *(u16*)(data);
-			elem_bytes.push_back((u8)elem_u16 >> 8);
-			elem_bytes.push_back((u8)elem_u16 && 0xFF);
-			break;
-		}
-		case UINT32:
-		case INT:
-		case FLOAT: {
-			u16 elem_u32 = *(u32*)(data);
-			elem_bytes.push_back((u8)elem_u32 >> 24);
-			elem_bytes.push_back((u8)elem_u32 >> 16 && 0xFF);
-			elem_bytes.push_back((u8)elem_u32 >> 8 && 0xFF);
-			elem_bytes.push_back((u8)elem_u32 && 0xFF);
-			break;
-		}
-		case UINT64:
-		case LONG_INT:
-		case DOUBLE: {
-			u16 elem_u64 = *(u64*)(data);
-			elem_bytes.push_back((u8)elem_u64 >> 56);
-			elem_bytes.push_back((u8)elem_u64 >> 48 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 40 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 32 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 24 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 16 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 8 && 0xFF);
-			elem_bytes.push_back((u8)elem_u64 && 0xFF);
-			break;
-		}
-	}
-
-	if (n < count()) {
-		auto &n_elem = elements.at(n);
-
-		if (n_elem.type != elem.type || n_elem.bytes_count != elem.bytes_count) {
-			SDL_LogWarn("ByteArray::setElement() Can not replace the element to the another one with differing bytes count and type");
-			return;
-		}
-	}
-	// If n == -1, add the bytes at the end, else replace to them
-	u32 offset = countBytesBefore(n)+1;
-	for (u32 i = 0; i < elem_bytes.size(); i++)
-		if (n < count())
-			bytes[offset + i] = elem_bytes[i];
-		else
-			bytes.push_back(elem_bytes[i]);
-
-	if (n >= count()) {
-		elem.offset = bytes.size() - elem_bytes.size();
-		elements.push_back(std::move(elem));
-	}
 }
