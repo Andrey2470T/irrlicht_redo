@@ -76,13 +76,6 @@ inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERRO
 }
 
 template <class T>
-inline T limClamp(T val)
-{
-	return std::min<T>(std::max<T>(
-		std::numeric_limits<T>::min(), val), std::numeric_limits<T>::max());
-}
-
-template <class T>
 inline min3(T v1, T v2, T v3)
 {
 	return std::min<T>(std::min<T>(v1, v2), v3);

@@ -5,16 +5,6 @@
 
 namespace img {
 
-template<class T>
-ColorRGBA<T> &clampColor(ColorRGBA<T> &c)
-{
-	c.R(utils::limClamp<T>(c.R()));
-	c.G(utils::limClamp<T>(c.G()));
-	c.B(utils::limClamp<T>(c.B()));
-	c.A(utils::limClamp<T>(c.A()));
-	return c;
-}
-
 //! Class representing a color in RGBA format.
 /** The color values can have an arbitrary type
  * (signed/unsigned 8-bit, 16-bit and 32-bit).
@@ -132,18 +122,18 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			limClamp<T>(R() + other.R()),
-			limClamp<T>(G() + other.G()),
-			limClamp<T>(B() + other.B()),
-			limClamp<T>(A() + other.A()))
+			R() + other.R(),
+			G() + other.G(),
+			B() + other.B(),
+			A() + other.A())
 	}
 
 	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other) const
 	{
-		R(limClamp<T>(R() + other.R));
-		G(limClamp<T>(G() + other.G));
-		B(limClamp<T>(B() + other.B));
-		A(limClamp<T>(A() + other.A));
+		R(R() + other.R);
+		G(G() + other.G);
+		B(B() + other.B);
+		A(A() + other.A);
 
 		return *this;
 	}
@@ -152,18 +142,18 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			limClamp<T>(R() + val),
-			limClamp<T>(G() + val),
-			limClamp<T>(B() + val),
-			limClamp<T>(A() + val));
+			R() + val,
+			G() + val,
+			B() + val,
+			A() + val);
 	}
 
 	ColorRGBA<T> &operator+=(T val) const
 	{
-		R(limClamp<T>(R() + val));
-		G(limClamp<T>(G() + val));
-		B(limClamp<T>(B) + val));
-		A(limClamp<T>(A() + val));
+		R(R() + val);
+		G(G() + val);
+		B(B) + val);
+		A(A() + val);
 
 		return *this;
 	}
@@ -172,18 +162,18 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			limClamp<T>(R() * other.R()),
-			limClamp<T>(G() * other.G()),
-			limClamp<T>(B() * other.B()),
-			limClamp<T>(A() * other.A()));
+			R() * other.R(),
+			G() * other.G(),
+			B() * other.B(),
+			A() * other.A());
 	}
 
 	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other) const
 	{
-		R(limClamp<T>(R() * other.R()));
-		G(limClamp<T>(G() * other.G()));
-		B(limClamp<T>(B() * other.B()));
-		B(limClamp<T>(A() * other.A()));
+		R(R() * other.R());
+		G(G() * other.G());
+		B(B() * other.B());
+		B(A() * other.A());
 
 		return *this;
 	}
@@ -192,18 +182,18 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			limClamp<T>(R() * val),
-			limClamp<T>(G() * val),
-			limClamp<T>(B() * val),
-			limClamp<T>(A() * val));
+			R() * val,
+			G() * val,
+			B() * val,
+			A() * val);
 	}
 
 	ColorRGBA<T> &operator*=(T val) const
 	{
-		R(limClamp<T>(R() * val));
-		G(limClamp<T>(G() * val));
-		B(limClamp<T>(B() * val));
-		A(limClamp<T>(A() * val));
+		R(R() * val);
+		G(G() * val);
+		B(B() * val);
+		A(A() * val);
 
 		return *this;
 	}
