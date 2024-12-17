@@ -40,5 +40,17 @@ toGLPrimitiveType[PT_LINES] = GL_LINES;
 toGLPrimitiveType[PT_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP;
 toGLPrimitiveType[PT_TRIANGLE_FAN] = GL_TRIANGLE_FAN;
 toGLPrimitiveType[PT_TRIANGLES] = GL_TRIANGLES;
+toGLPrimitiveType[PT_POINT_SPRITES] = GL_POINTS;
+
+toGLType[BasicType::UINT8] = GL_UNSIGNED_BYTE;
+toGLType[BasicType::UINT16] = GL_UNSIGNED_SHORT;
+toGLType[BasicType::UINT32] = GL_UNSIGNED_INT;
+toGLType[BasicType::UINT64] = GL_UNSIGNED_INT;
+toGLType[BasicType::CHAR] = GL_BYTE;
+toGLType[BasicType::SHORT] = GL_SHORT;
+toGLType[BasicType::INT] = GL_INT;
+toGLType[BasicType::LONG_INT] = GL_INT;
+toGLType[BasicType::FLOAT] = GL_FLOAT;
+toGLType[BasicType::DOUBLE] = GL_DOUBLE;
 
 }

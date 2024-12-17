@@ -27,5 +27,6 @@ enum class BasicType
 	LONG_INT,
 
 	FLOAT,
-	DOUBLE
+	DOUBLE,
+	COUNT
 };

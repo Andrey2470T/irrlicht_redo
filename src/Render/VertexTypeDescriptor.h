@@ -15,16 +15,14 @@ struct VertexAttribute
 		Integral,
 	};
 	std::string Name;
-	u32 Index;
 	u32 ComponentCount;
 	BasicType ComponentType;
 	DataFormat Format;
-	size_t Offset;
 
 	bool operator==(const VertexAttribute &other)
 	{
-		return (Index == other.Index && ComponentCount == other.ComponentCount &&
-			ComponentType == other.ComponentType && Format == other.Format && Offset == other.Offset);
+		return (ComponentCount == other.ComponentCount &&
+			ComponentType == other.ComponentType && Format == other.Format);
 	}
 };
 
@@ -63,10 +61,10 @@ enum class DefaultVTypeAttrs
 static const VertexTypeDescriptor DefaultVType = {
 	"3D_Default",
 	{
-		{"Position", DefaultVTypeAttrs::POSITION, 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 0},
-		{"Normal", DefaultVTypeAttrs::NORMAL, 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 3 * getSizeOfType(BasicType::FLOAT)},
-		{"Color", DefaultVTypeAttrs::COLOR, 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized, 2 * 3 * getSizeOfType(BasicType::FLOAT)},
-		{"UV", DefaultVTypeAttrs::UV, 2, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 2 * 3 * getSizeOfType(BasicType::FLOAT) + 4 * getSizeOfType(BasicType::UINT8)},
+		{"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular},
+		{"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular},
+		{"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized},
+		{"UV", 2, BasicType::FLOAT, VertexAttribute::DataFormat::Regulard},
 	}
 };
 

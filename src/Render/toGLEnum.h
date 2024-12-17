@@ -75,5 +75,6 @@ extern std::array<GLenum, TW_COUNT> toGLWrap;
 extern std::array<GLenum, BO_COUNT> toGLBlendOp;
 extern std::array<GLenum, BF_COUNT-1> toGLBlendFunc;
 extern std::array<GLenum, PT_COUNT-1> toGLPrimitiveType;
+extern std::array<GLenum, BasicType::COUNT> toGLType;
 
 }
