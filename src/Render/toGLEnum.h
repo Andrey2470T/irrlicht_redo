@@ -56,10 +56,24 @@ enum BlendFunc
 	BF_COUNT
 };
 
+enum PrimitiveType
+{
+	PT_POINTS = 0,
+	PT_LINE_STRIP,
+	PT_LINE_LOOP,
+	PT_LINES,
+	PT_TRIANGLE_STRIP,
+	PT_TRIANGLE_FAN,
+	PT_TRIANGLES,
+	PT_POINT_SPRITES,
+	PT_COUNT
+};
+
 extern std::array<GLenum, TMF_COUNT> toGLMinFilter;
 extern std::array<GLenum, TMAGF_COUNT> toGLMagFilter;
 extern std::array<GLenum, TW_COUNT> toGLWrap;
 extern std::array<GLenum, BO_COUNT> toGLBlendOp;
 extern std::array<GLenum, BF_COUNT-1> toGLBlendFunc;
+extern std::array<GLenum, PT_COUNT-1> toGLPrimitiveType;
 
 }
