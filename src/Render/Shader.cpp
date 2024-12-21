@@ -42,9 +42,9 @@ Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::
 		return;
 	}
 
-	createShader(GL_VERTEX_SHADER, vsCode);
-	createShader(GL_FRAGMENT_SHADER, fsCode);
-	createShader(GL_GEOMETRY_SHADER, gsCode);
+	vertexShaderID = createShader(GL_VERTEX_SHADER, vsCode);
+	fragmentShaderID = createShader(GL_FRAGMENT_SHADER, fsCode);
+	geometryShaderID = createShader(GL_GEOMETRY_SHADER, gsCode);
 
 	createProgram();
 }
@@ -58,6 +58,134 @@ Shader::~Shader()
 		glDeleteShader(geometryShaderID);
 
 	glDeleteProgram(programID);
+}
+
+void Shader::setUniformFloat(const std::string &name, f32 value)
+{
+	glUniform1f(getUniformLocation(name), value);
+}
+void Shader::setUniformInt(const std::string &name, s32 value)
+{
+	glUniform1i(getUniformLocation(name), value);
+}
+void Shader::setUniformUInt(const std::string &name, u32 value)
+{
+	glUniform1ui(getUniformLocation(name), value);
+}
+
+void Shader::setUniformFloatArray(const std::string &name, std::vector<f32> values)
+{
+	glUniform1fv(getUniformLocation(name), values.data(), values.size());
+}
+void Shader::setUniformIntArray(const std::string &name, std::vector<s32> values)
+{
+	glUniform1iv(getUniformLocation(name), values.data(), values.size());
+}
+void Shader::setUniformUIntArray(const std::string &name, std::vector<u32> values)
+{
+	glUniform1uiv(getUniformLocation(name), values.data(), values.size());
+}
+
+void Shader::setUniform2Float(const std::string &name, utils::vec2f value)
+{
+	glUniform2f(getUniformLocation(name), value.X, value.Y);
+}
+void Shader::setUniform2Int(const std::string &name, utils::vec2i value)
+{
+	glUniform2i(getUniformLocation(name), value.X, value.Y);
+}
+void Shader::setUniform2UInt(const std::string &name, utils::vec2u value)
+{
+	glUniform2ui(getUniformLocation(name), value.X, value.Y);
+}
+
+void Shader::setUniform3Float(const std::string &name, utils::vec3f value)
+{
+	glUniform3f(getUniformLocation(name), value.X, value.Y, value.Z);
+}
+void Shader::setUniform3Int(const std::string &name, utils::vec3i value)
+{
+	glUniform3i(getUniformLocation(name), value.X, value.Y, value.Z);
+}
+void Shader::setUniform3UInt(const std::string &name, utils::vec3u value)
+{
+	glUniform3ui(getUniformLocation(name), value.X, value.Y, value.Z);
+}
+
+void Shader::setUniform4x4Matrix(const std::string &name, utils::Matrix4 value)
+{
+	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.pointer());
+}
+
+
+u32 Shader::createShader(GLenum shaderType, const std::string &code)
+{
+	if (code.empty())
+		return 0;
+
+	GLuint shaderID = glCreateShader(shaderType);
+	glShaderSource(shaderID, 1, &code, nullptr);
+	glCompileShader(shaderID);
+
+	GLuint success;
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+	
+	if (!success) {
+		GLint maxLength = 0;
+		GLint length;
+		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+
+		GLchar *infoLog = new GLchar[maxLength];
+		glGetShaderInfoLog(shaderID, maxLength, &length, infoLog);
+
+		SDL_LogError(VC_VIDEO, "Shader::createShader() the shader failed to compile: " + std::string(infoLog));
+		return 0;
+	}
+
+	return shaderID;
+}
+
+u32 Shader::createProgram()
+{
+	GLuint programID = glCreateProgram();
+	glAttachShader(programID, &vertexShaderID);
+	glAttachShader(programID, &fragmentShaderID);
+
+	if (geometryShaderID != 0)
+		glAttachShader(programID, &geometryShaderID);
+
+	glLinkProgram(programID);
+
+	GLuint success;
+	glGetProgramiv(programID, GL_LINK_STATUS, &success);
+
+	if (!success) {
+		GLint maxLength = 0;
+		GLint length;
+		glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &maxLength);
+
+		GLchar *infoLog = new GLchar[maxLength];
+		glGetProgramInfoLog(programID, maxLength, &length, infoLog);
+
+		SDL_LogError(VC_VIDEO, "Shader::createProgram() the program failed to link: " + std::string(infoLog));
+		return 0;
+	}
+
+	return programID;
+}
+
+u32 Shader::getUniformLocation(const std::string &name)
+{
+	auto found = uniforms.find(name);
+	
+	if (found != uniforms.end())
+		return found.second;
+	else {
+		u32 location = glGetUniformLocation(programID, name.c_str());
+		uniforms[name] = location;
+		
+		return location;
+	}
 }
 
 }

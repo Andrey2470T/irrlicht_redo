@@ -2,25 +2,19 @@
 
 #include "Common.h"
 #include "utils/Matrix4.h"
+#include <unordered_map>
 
 namespace render
 {
 
 class Shader
 {
-	struct Uniform
-	{
-		std::string Name;
-		GLuint Location;
-		GLenum Type;
-	};
-
 	u32 programID;
 	u32 vertexShaderID;
 	u32 fragmentShaderID;
 	u32 geometryShaderID;
 
-	std::vector<Uniform> uniforms;
+	std::unordered_map<std::string, u32> uniforms;
 public:
 	Shader(const std::string &vsPath, const std::string &fsPath, const std::string &gsPath="");
 	Shader(const std::string &vsCode, const std::string &fsCode, const std::string &gsCode="");
@@ -55,8 +49,10 @@ public:
 
 	void setUniform4x4Matrix(const std::string &name, utils::Matrix4 value);
 private:
-	void createShader(GLenum shaderType, const std::string &code);
-	void createProgram();
+	u32 createShader(GLenum shaderType, const std::string &code);
+	u32 createProgram();
+	
+	u32 getUniformLocation(const std::string &name);
 };
 
 }
