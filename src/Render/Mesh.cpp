@@ -16,6 +16,17 @@ Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
 	uploadData(vertices, verticesCount, indices, indicesCount);
 }
 
+Mesh::~Mesh()
+{
+	glDeleteVertexArrays(1, &vaoID);
+	glDeleteBuffers(1, &vboID);
+
+	if (iboID != 0)
+		glDeleteBuffers(1, &iboID);
+
+	TEST_GL_ERROR();
+}
+
 void Mesh::uploadData(const void *vertices, u32 verticesCount, const u32 *indices, u32 indicesCount)
 {
 	bool vertices_valid = vertices != nullptr && verticesCount > 0;

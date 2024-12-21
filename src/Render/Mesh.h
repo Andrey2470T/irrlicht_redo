@@ -18,6 +18,8 @@ public:
 
 	Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr,
 		 u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType);
+	
+	~Mesh();
 
 	VertexTypeDescriptor getVertexType() const
 	{

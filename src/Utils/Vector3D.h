@@ -419,5 +419,6 @@ public:
 
 typedef Vector3D<f32> v3f;
 typedef Vector3D<s32> v3i;
+typedef Vector3D<u32> v3u;
 
 }
