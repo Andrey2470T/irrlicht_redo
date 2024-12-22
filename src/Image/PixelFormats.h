@@ -21,7 +21,7 @@ enum PixelFormat
 	PF_RG16,
 	PF_D16,
 	PF_D32,
-	PF_DS16,
+	PF_D24S8,
 	PF_INDEX_RGBA8,
 	PF_COUNT
 };
