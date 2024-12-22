@@ -5,7 +5,7 @@ namespace utils
 
 u32 ByteArray::countBytesBefore(u32 n)
 {
-	if (n >= count()) {
+	if (n > count()) {
 		SDL_LogWarn(LC_ASS, "ByteArray::countBytesBefore() Access to the element outside of the byte array");
 		return 0;
 	}

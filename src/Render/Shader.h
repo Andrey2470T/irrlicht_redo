@@ -7,6 +7,8 @@
 namespace render
 {
 
+class UniformBuffer;
+
 class Shader
 {
 	u32 programID;
@@ -48,6 +50,8 @@ public:
 	void setUniform3UInt(const std::string &name, utils::vec3u value);
 
 	void setUniform4x4Matrix(const std::string &name, utils::Matrix4 value);
+
+	void setUniformBlock(const std::string &name, UniformBuffer *ubo);
 private:
 	u32 createShader(GLenum shaderType, const std::string &code);
 	u32 createProgram();

@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include "UniformBuffer.h"
 
 namespace render
 {
@@ -119,6 +120,12 @@ void Shader::setUniform3UInt(const std::string &name, utils::vec3u value)
 void Shader::setUniform4x4Matrix(const std::string &name, utils::Matrix4 value)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.pointer());
+}
+
+void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
+{
+	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
+	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
 }
 
 

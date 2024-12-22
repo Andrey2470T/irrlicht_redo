@@ -38,6 +38,16 @@ public:
 	{
 		return elements.size();
 	}
+	
+	u32 bytesCount() const
+	{
+		return countBytesBefore(count());
+	}
+	
+	void *data() const
+	{
+		return static_cast<void*>(bytes.data());
+	}
 
 	//! Setters
 	// 'n' is a number of the byte array element which is necessary to replace
