@@ -13,6 +13,10 @@ std::string readFile(const std::string &path)
 	std::ifstream file;
 	file.open(fs::path(path));
 
+	if (!file.is_open()) {
+		SDL_LogError(LC_SYS, "readFile() failed to open the file");
+		return "";
+	}
 	std::stringstream strBuffer;
 	strBuffer << file.rdbuf();
 
@@ -27,11 +31,11 @@ Shader::Shader(const std::string &vsPath, const std::string &fsPath, const std::
 		return;
 	}
 
-	createShader(GL_VERTEX_SHADER, readFile(vsPath));
-	createShader(GL_FRAGMENT_SHADER, readFile(fsPath));
-	createShader(GL_GEOMETRY_SHADER, readFile(gsPath));
+	vertexShaderID = createShader(GL_VERTEX_SHADER, readFile(vsPath));
+	fragmentShaderID = createShader(GL_FRAGMENT_SHADER, readFile(fsPath));
+	geometryShaderID = createShader(GL_GEOMETRY_SHADER, readFile(gsPath));
 
-	createProgram();
+	programID = createProgram();
 }
 
 Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::string &gsCode)
@@ -46,7 +50,7 @@ Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::
 	fragmentShaderID = createShader(GL_FRAGMENT_SHADER, fsCode);
 	geometryShaderID = createShader(GL_GEOMETRY_SHADER, gsCode);
 
-	createProgram();
+	programID = createProgram();
 }
 
 Shader::~Shader()
@@ -75,15 +79,15 @@ void Shader::setUniformUInt(const std::string &name, u32 value)
 
 void Shader::setUniformFloatArray(const std::string &name, std::vector<f32> values)
 {
-	glUniform1fv(getUniformLocation(name), values.data(), values.size());
+	glUniform1fv(getUniformLocation(name), values.size(), values.data());
 }
 void Shader::setUniformIntArray(const std::string &name, std::vector<s32> values)
 {
-	glUniform1iv(getUniformLocation(name), values.data(), values.size());
+	glUniform1iv(getUniformLocation(name), values.size(), values.data());
 }
 void Shader::setUniformUIntArray(const std::string &name, std::vector<u32> values)
 {
-	glUniform1uiv(getUniformLocation(name), values.data(), values.size());
+	glUniform1uiv(getUniformLocation(name), values.size(), values.data());
 }
 
 void Shader::setUniform2Float(const std::string &name, utils::vec2f value)
@@ -123,67 +127,64 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 	if (code.empty())
 		return 0;
 
-	GLuint shaderID = glCreateShader(shaderType);
-	glShaderSource(shaderID, 1, &code, nullptr);
-	glCompileShader(shaderID);
+	GLuint shader = glCreateShader(shaderType);
+	glShaderSource(shader, 1, &code, nullptr);
+	glCompileShader(shader);
 
 	GLuint success;
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
 	if (!success) {
 		GLint maxLength = 0;
-		GLint length;
-		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
 		GLchar *infoLog = new GLchar[maxLength];
-		glGetShaderInfoLog(shaderID, maxLength, &length, infoLog);
+		glGetShaderInfoLog(shader, maxLength, nullptr, infoLog);
 
 		SDL_LogError(VC_VIDEO, "Shader::createShader() the shader failed to compile: " + std::string(infoLog));
 		return 0;
 	}
 
-	return shaderID;
+	return shader;
 }
 
 u32 Shader::createProgram()
 {
-	GLuint programID = glCreateProgram();
-	glAttachShader(programID, &vertexShaderID);
-	glAttachShader(programID, &fragmentShaderID);
+	GLuint program = glCreateProgram();
+	glAttachShader(program, &vertexShaderID);
+	glAttachShader(program, &fragmentShaderID);
 
 	if (geometryShaderID != 0)
-		glAttachShader(programID, &geometryShaderID);
+		glAttachShader(program, &geometryShaderID);
 
-	glLinkProgram(programID);
+	glLinkProgram(program);
 
 	GLuint success;
-	glGetProgramiv(programID, GL_LINK_STATUS, &success);
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
 
 	if (!success) {
 		GLint maxLength = 0;
-		GLint length;
-		glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
 		GLchar *infoLog = new GLchar[maxLength];
-		glGetProgramInfoLog(programID, maxLength, &length, infoLog);
+		glGetProgramInfoLog(program, maxLength, nullptr, infoLog);
 
 		SDL_LogError(VC_VIDEO, "Shader::createProgram() the program failed to link: " + std::string(infoLog));
 		return 0;
 	}
 
-	return programID;
+	return program;
 }
 
 u32 Shader::getUniformLocation(const std::string &name)
 {
 	auto found = uniforms.find(name);
-	
+
 	if (found != uniforms.end())
 		return found.second;
 	else {
 		u32 location = glGetUniformLocation(programID, name.c_str());
 		uniforms[name] = location;
-		
 		return location;
 	}
 }
