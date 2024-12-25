@@ -15,8 +15,8 @@ class FrameBuffer
 
 	u32 maxColorAttachments;
 
-	std::vector<std::unique_ptr<Texture>> colorTextures;
-	std::unique_ptr<Texture> depthStencilTexture;
+	std::vector<Texture*> colorTextures;
+	Texture* depthStencilTexture;
 public:
 	FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments);
 
@@ -37,17 +37,18 @@ public:
 		return utils::v2u(width, height);
 	}
 
-	std::vector<const Texture*> getColorTextures() const
+	std::vector<Texture*> getColorTextures() const
 	{
-		std::vector<const Texture*> readTextures(colorTextures.size());
-		
-		for (u8 i = 0; i < colorTextures.size(); i++)
-			readTextures[i] = colorTextures[i];
-		
-		return readTextures;
+		return colorTextures;
 	}
 
-	void setColorTextures(const std::vector<Texture*> &textures);
+	Texture *getDepthStencilTexture() const
+	{
+		return depthStencilTexture;
+	}
+
+	void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings);
+	void setDepthStencilTexture(Texture *texture);
 };
 
 }

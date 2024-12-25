@@ -7,8 +7,6 @@ namespace render
 
 class Texture2D : public Texture
 {
-	GLuint id;
-
 	TextureSettings texSettings;
 	std::unique_ptr<img::Image> imgCache;
 public:
@@ -17,7 +15,7 @@ public:
 
 	~Texture()
 	{
-		glDeleteTextures(1, &id);
+		glDeleteTextures(1, &texID);
 	}
 
 	TextureType getType() const override
@@ -37,7 +35,7 @@ public:
 
 	void bind() const override
 	{
-		glBindTexture(GL_TEXTURE_2D, id);
+		glBindTexture(GL_TEXTURE_2D, texID);
 	}
 
 	void unbind() const override

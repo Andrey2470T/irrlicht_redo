@@ -22,9 +22,9 @@ Texture2D::Texture2D(const std::string &name, std::unique_ptr<img::Image> image,
 
 void Texture2D::initTexture(void *data)
 {
-	glGenTextures(1, &id);
+	glGenTextures(1, &texID);
 
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(GL_TEXTURE_2D, texID);
 
 	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
 
@@ -91,7 +91,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 
 	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
 
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)imgSize.X, (s32)imgSize.Y,
 		formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(img->getData()));
 
@@ -108,7 +108,7 @@ img::Image *Texture2D::downloadData() const
 		img::Image *img = new img::Image(format, width, height);
 
 		img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
-		glBindTexture(GL_TEXTURE_2D, id);
+		glBindTexture(GL_TEXTURE_2D, texID);
 		glGetTexImage(GL_TEXTURE_2D, 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
 
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -123,7 +123,7 @@ void Texture2D::regenerateMipMaps(u8 max_level)
 {
 	texSettings.maxMipLevel = max_level;
 
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)maxMipLevel);
 	glGenerateMipMaps(GL_TEXTURE_2D);
 

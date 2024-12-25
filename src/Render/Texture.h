@@ -14,6 +14,17 @@ enum TextureType
 	TT_CUBEMAP;
 };
 
+enum CubeMapFace
+{
+	CMF_POS_X = 0,
+	CMF_NEG_X,
+	CMF_POS_Y,
+	CMF_NEG_Y,
+	CMF_POS_Z,
+	CMF_NEG_Z,
+	CMF_COUNT
+};
+
 struct TextureSettings
 {
 	TextureWrapping wrapU = TW_REPEAT;
@@ -32,6 +43,7 @@ struct TextureSettings
 class Texture
 {
 protected:
+	u32 texID;
 	std::string name;
 
 	u32 width;
@@ -49,6 +61,11 @@ public:
 	}
 
 	virtual TextureType getType() const = 0;
+	
+	u32 getID() const
+	{
+		return texID;
+	}
 
 	u32 getWidth() const
 	{
