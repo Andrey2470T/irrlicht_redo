@@ -2,8 +2,8 @@
 
 #include "Common.h"
 #include "Image/Image.h"
+#include "Image/ImageModifier.h"
 #include "toGLEnum.h"
-
 
 namespace render
 {
@@ -50,10 +50,22 @@ protected:
 	u32 height;
 
 	img::PixelFormat format;
+
+	TextureSettings texSettings;
 public:
-	Texture(const std::string &_name, u32 _width, u32 _height, img::PixelFormat _format)
-		: name(_name), width(_width), height(_height), format(_format)
-	{}
+	Texture(const std::string &_name, u32 _width, u32 _height, img::PixelFormat _format,
+			const TextureSettings &_texSettings=TextureSettings())
+		: name(_name), width(_width), height(_height), format(_format), texSettings(_texSettings)
+	{
+		texSettings.hasMipMaps = false;
+		texSettings.maxMipLevel = 0;
+		texSettings.isRenderTarget = true;
+	}
+	
+	~Texture2D()
+	{
+		glDeleteTextures(1, &texID);
+	}
 
 	std::string getName() const
 	{
@@ -82,14 +94,20 @@ public:
 		return format;
 	}
 
-	virtual bool hasMipMaps() const;
-	virtual bool isRenderTarget() const;
+	bool hasMipMaps() const
+	{
+		return texSettings.hasMipMaps;
+	}
+	bool isRenderTarget() const
+	{
+		return texSettings.isRenderTarget;
+	}
 
 	virtual void bind() const = 0;
 	virtual void unbind() const = 0;
 
-	virtual void uploadData(void *data);
-	virtual void uploadSubData(u32 x, u32 y, void *data);
+	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr);
+	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr);
 
 	virtual std::unique_ptr<img::Image> downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;

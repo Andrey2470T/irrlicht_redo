@@ -1,6 +1,5 @@
 #pragma once
 
-#include <limits>
 #include "utils/ByteArray.h"
 
 namespace img {

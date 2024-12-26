@@ -6,16 +6,12 @@ namespace render
 Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format)
 	: Texture(name, width, height, format)
 {
-	texSettings.hasMipMaps = false;
-	texSettings.maxMipLevel = 0;
-	texSettings.isRenderTarget = true;
-
 	initTexture();
 }
 
 Texture2D::Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings)
-	: Texture(name, image->getWidth(), image->getHeight(), image->getFormat()),
-	  imgCache(image.release()), texSettings(settings)
+	: Texture(name, image->getWidth(), image->getHeight(), image->getFormat(), settings),
+	  imgCache(image.release())
 {
 	initTexture(imgCache->getData());
 }

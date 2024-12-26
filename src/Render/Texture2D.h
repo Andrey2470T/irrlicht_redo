@@ -7,30 +7,14 @@ namespace render
 
 class Texture2D : public Texture
 {
-	TextureSettings texSettings;
 	std::unique_ptr<img::Image> imgCache;
 public:
 	Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format);
 	Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings);
 
-	~Texture()
-	{
-		glDeleteTextures(1, &texID);
-	}
-
 	TextureType getType() const override
 	{
 		return TT_2D;
-	}
-
-	bool hasMipMaps() const override
-	{
-		return texSettings.hasMipMaps;
-	}
-
-	bool isRenderTarget() const override
-	{
-		return texSettings.isRenderTarget;
 	}
 
 	void bind() const override
@@ -48,7 +32,7 @@ public:
 
 	img::Image *downloadData() const override;
 	void regenerateMipMaps(u8 max_level) override;
-
+private:
 	void initTexture(void *data = nullptr);
 };
 
