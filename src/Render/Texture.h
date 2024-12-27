@@ -111,6 +111,16 @@ public:
 
 	virtual std::unique_ptr<img::Image> downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;
+	
+	bool operator==(const Texture *other)
+	{
+		return texID == other->texID;
+	}
+	
+	bool operator!=(const Texture *other)
+	{
+		return texID != other->texID;
+	}
 };
 
 }

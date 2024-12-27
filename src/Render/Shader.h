@@ -52,6 +52,16 @@ public:
 	void setUniform4x4Matrix(const std::string &name, utils::Matrix4 value);
 
 	void setUniformBlock(const std::string &name, UniformBuffer *ubo);
+	
+	bool operator==(const Shader *other)
+	{
+		return programID == other->programID;
+	}
+	
+	bool operator!=(const Shader *other)
+	{
+		return programID != other->programID;
+	}
 private:
 	u32 createShader(GLenum shaderType, const std::string &code);
 	u32 createProgram();

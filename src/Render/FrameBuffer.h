@@ -13,10 +13,13 @@ class FrameBuffer
 	u32 width;
 	u32 height;
 
-	u32 maxColorAttachments;
+	u8 maxColorAttachments;
 
 	std::vector<Texture*> colorTextures;
+	std::vector<CubeMapFace> colorCubeMapFaces;
+
 	Texture* depthStencilTexture;
+	CubeMapFace depthStencilCubeMapFace;
 public:
 	FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments);
 
@@ -49,6 +52,16 @@ public:
 
 	void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings);
 	void setDepthStencilTexture(Texture *texture);
+	
+	bool operator==(const FrameBuffer *other)
+	{
+		return fboID == other->fboID;
+	}
+	
+	bool operator!=(const FrameBuffer *other)
+	{
+		return fboID != other->fboID;
+	}
 };
 
 }

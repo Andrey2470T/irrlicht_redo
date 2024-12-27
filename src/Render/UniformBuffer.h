@@ -33,6 +33,16 @@ public:
 	}
 
 	void uploadSubData(u32 offset, const utils::ByteArray &uniforms);
+	
+	bool operator==(const UniformBuffer *other)
+	{
+		return uboID == other->uboID;
+	}
+	
+	bool operator!=(const UniformBuffer *other)
+	{
+		return uboID != other->uboID;
+	}
 };
 
 }

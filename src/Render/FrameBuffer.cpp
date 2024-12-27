@@ -7,6 +7,9 @@ FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments)
 	: width(_width), height(_height), maxColorAttachments(_maxColorAttachments)
 {
 	colorTextures.resize(maxColorAttachments, nullptr);
+	colorCubeMapFaces.resize(maxColorAttachments);
+
+	depthStencilTexture = nullptr;
 
 	glGenFramebuffers(1, &fboID);
 
@@ -29,18 +32,29 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
-	u8 maxTextureCount = std::min(textures.size(), maxColorAttachments);
+	u8 maxTextureCount = std::min((u8)textures.size(), maxColorAttachments);
 
-	colorTextures.resize(maxColorAttachments, nullptr);
+	colorTextures.resize(maxTextureCount, nullptr);
+	colorCubeMapFaces.resize(maxTextureCount);
 
 	for (u8 i = 0; i < maxTextureCount; i++) {
 		Texture *tex = textures[i];
+		
+		if (colorTextures[i] != nullptr) {
+			if (tex->getType() == TT_2D && *tex == *colorTextures[i])
+				continue;
+			else if (tex->getType() == TT_CUBEMAP && *tex == *colorTextures[i]
+				&& cubeMapFaceMappings[i] == colorCubeMapFaces[i])
+				continue;
+		}
+
 		GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
 		GLenum textarget = tex->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<u32>(cubeMapFaceMappings[i]);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, tex->getID(), 0);
 
 		colorTextures[i] = tex;
+		colorCubeMapFaces[i] = cubeMapFaceMappings[i];
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -52,8 +66,23 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-		texture->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<u32>(dsCubeMapFace), texture->getID(), 0);
+	bool already_attached = false;
+
+	if (depthStencilTexture != nullptr) {
+		if (texture->getType() == TT_2D && *texture == *depthStencilTexture)
+			already_attached = true;
+		else if (texture->getType() == TT_CUBEMAP && *texture == *depthStencilTexture &&
+			dsCubeMapFace == depthStencilCubeMapFace)
+			already_attached = true;
+	}
+	
+	if (!already_attached) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			texture->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<u32>(dsCubeMapFace), texture->getID(), 0);
+		
+		depthStencilTexture = texture;
+		depthStencilCubeMapFace = dsCubeMapFace;
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
