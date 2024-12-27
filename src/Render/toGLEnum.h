@@ -69,6 +69,35 @@ enum PrimitiveType
 	PT_COUNT
 };
 
+enum CompareFunc
+{
+	CF_LESS = 0,
+	CF_EQUAL,
+	CF_LEQUAL,
+	CF_GREATER,
+	CF_NOTEQUAL,
+	CF_GEQUAL,
+	CF_ALWAYS,
+	CF_COUNT
+};
+
+enum CullMode
+{
+	CM_BACK = 0,
+	CM_FRONT,
+	CM_FRONT_AND_BACK,
+	CM_COUNT
+};
+
+enum StencilOp
+{
+	SO_KEEP = 0,
+	SO_ZERO,
+	SO_REPLACE,
+	SO_INVERT,
+	SO_COUNT
+};
+
 extern std::array<GLenum, TMF_COUNT> toGLMinFilter;
 extern std::array<GLenum, TMAGF_COUNT> toGLMagFilter;
 extern std::array<GLenum, TW_COUNT> toGLWrap;
@@ -76,5 +105,8 @@ extern std::array<GLenum, BO_COUNT> toGLBlendOp;
 extern std::array<GLenum, BF_COUNT-1> toGLBlendFunc;
 extern std::array<GLenum, PT_COUNT-1> toGLPrimitiveType;
 extern std::array<GLenum, BasicType::COUNT> toGLType;
+extern std::array<GLenum, CF_COUNT> toGLCompareFunc;
+extern std::array<GLenum, CM_COUNT> toGLCullMode;
+extern std::array<GLenum, SO_COUNT> toGLStencilOp;
 
 }

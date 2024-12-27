@@ -53,4 +53,21 @@ toGLType[BasicType::LONG_INT] = GL_INT;
 toGLType[BasicType::FLOAT] = GL_FLOAT;
 toGLType[BasicType::DOUBLE] = GL_DOUBLE;
 
+toGLCompareFunc[CF_LESS] = GL_LESS;
+toGLCompareFunc[CF_EQUAL] = GL_EQUAL;
+toGLCompareFunc[CF_LEQUAL] = GL_LEQUAL;
+toGLCompareFunc[CF_GREATER] = GL_GREATER;
+toGLCompareFunc[CF_NOTEQUAL] = GL_NOTEQUAL;
+toGLCompareFunc[CF_GEQUAL] = GL_GEQUAL;
+toGLCompareFunc[CF_ALWAYS] = GL_ALWAYS;
+
+toGLCullMode[CM_BACK] = GL_BACK;
+toGLCullMode[CM_FRONT] = GL_FRONT;
+toGLCullMode[CM_FRONT_AND_BACK] = GL_FRONT_AND_BACK;
+
+toGLStencilOp[SO_KEEP] = GL_KEEP;
+toGLStencilOp[SO_ZERO] = GL_ZERO;
+toGLStencilOp[SO_REPLACE] = GL_REPLACE;
+toGLStencilOp[SO_INVERT] = GL_INVERT;
+
 }
