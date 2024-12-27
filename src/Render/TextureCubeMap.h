@@ -23,13 +23,13 @@ public:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	}
 
-	void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override;
-	void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;
+	void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
+	void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
 
-	img::Image *downloadData() const override;
-	void regenerateMipMaps(u8 max_level) override;
+	img::Image *downloadData() const override {}
+	void regenerateMipMaps(u8 max_level) override {}
 private:
-	void initTexture(const std::array<img::Image *, CMF_COUNT> &data =  std::array<img::Image *, CMF_COUNT>());
+	void initTexture(const std::array<img::Image *, CMF_COUNT> &data = std::array<img::Image *, CMF_COUNT>());
 };
 
 }

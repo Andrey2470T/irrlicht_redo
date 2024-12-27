@@ -21,3 +21,44 @@ TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, 
 
 	initTexture(imgs);
 }
+
+void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data)
+{
+	glGenTextures(1, &texID);
+	
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+	
+	if (isRenderTarget) {
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		for (u8 i = 0; i < CMF_COUNT; i++)
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+				formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLMagFilter.at(texSettings.magF));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLWrap.at(texSettings.wrapU));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
+
+		for (u8 i = 0; i < CMF_COUNT; i++) {
+			if (data[i] != nullptr)
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, formatInfo.internalFormat,
+					width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void*>(data[i]->getData()));
+		}
+
+		if (texSettings.hasMipMaps) {
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, (GLint)texSettings.maxMipLevel);
+			glGenerateMipMap(GL_TEXTURE_CUBE_MAP);
+		}
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	TEST_GL_ERROR();
+}
+
+}

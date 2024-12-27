@@ -47,7 +47,7 @@ void Texture2D::initTexture(void *data)
 
 		if (texSettings.hasMipMaps) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (GLint)texSettings.maxMipLevel);
-			glGenerateMipMaps(GL_TEXTURE_2D);
+			glGenerateMipMap(GL_TEXTURE_2D);
 		}
 	}
 
