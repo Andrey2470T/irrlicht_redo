@@ -64,6 +64,8 @@ public:
 	{
 		return fboID != other->fboID;
 	}
+private:
+	bool checkStatus() const;
 };
 
 }

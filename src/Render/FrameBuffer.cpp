@@ -39,17 +39,17 @@ void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
 		glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
 		mask |= GL_COLOR_BUFFER_BIT;
 	}
-	
+
 	if (flags & CBF_DEPTH) {
 		glClearDepthf(depth);
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
-	
+
 	if (flags & CBF_STENCIL) {
 		glClearStencil(stencil);
 		mask |= GL_STENCIL_BUFFER_BIT;
 	}
-	
+
 	glClear(mask);
 }
 
@@ -89,6 +89,10 @@ void setColorTextures(const std::vector<Texture*> &textures, const std::vector<C
 		colorCubeMapFaces[i] = cubeMapFaceMappings[i];
 	}
 
+#ifdef _DEBUG
+	checkStatus();
+#endif
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	TEST_GL_ERROR();
@@ -107,18 +111,62 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 			dsCubeMapFace == depthStencilCubeMapFace)
 			already_attached = true;
 	}
-	
+
 	if (!already_attached) {
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-			texture->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<u32>(dsCubeMapFace), texture->getID(), 0);
-		
+		GLenum target = texture->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<GLenum>(dsCubeMapFace);
+#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, target, texture->getID(), 0);
+#else
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target, texture->getID(), 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, target, texture->getID(), 0);
+#endif
 		depthStencilTexture = texture;
 		depthStencilCubeMapFace = dsCubeMapFace;
 	}
 
+#ifdef _DEBUG
+	checkStatus();
+#endif
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	TEST_GL_ERROR();
+}
+
+bool FrameBuffer::checkStatus() const
+{
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	switch (status) {
+		case GL_FRAMEBUFFER_COMPLETE:
+			return true;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			SDL_LogError(LC_VIDEO, "FBO has invalid read buffer");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			SDL_LogError(LC_VIDEO, "FBO has invalid draw buffer");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			SDL_LogError(LC_VIDEO, "FBO has one or several incomplete image attachments");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
+			SDL_LogError(LC_VIDEO, "FBO has one or several image attachments with different internal formats");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+			SDL_LogError(LC_VIDEO, "FBO has one or several image attachments with different dimensions");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			SDL_LogError(LC_VIDEO, "FBO missing an image attachment");
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			SDL_LogError(LC_VIDEO, "FBO format unsupported");
+			break;
+		default:
+			SDL_LogError(LC_VIDEO, "FBO error");
+			break;
+	}
+
+	return false;
 }
 
 }
