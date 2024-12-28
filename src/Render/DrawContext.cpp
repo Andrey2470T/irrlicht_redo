@@ -103,6 +103,11 @@ StencilTestState DrawContext::getStencilTest() const
 	return curStencilTest;
 }
 
+ScissorTestState DrawContext::getScissorTest() const
+{
+	return curScissorTest;
+}
+
 
 //! Setters
 void DrawContext::setFrameBuffer(FrameBuffer *fbo)
@@ -266,6 +271,27 @@ void DrawContext::setStencilOp(StencilOp _sfail_op, StencilOp _dpfail_op, Stenci
 	}
 }
 
+void DrawContext::enableScissorTest(bool scissortest)
+{
+	if (curScissorTest.enabled != scissortest) {
+		if (scissortest)
+			glEnable(GL_SCISSOR_TEST);
+		else
+			glDisable(GL_SCISSOR_TEST);
+
+		curScissorTest.enabled = scissortest;
+	}
+}
+void DrawContext::setScissorBox(utils::recti box)
+{
+	if (!curScissorTest.enabled)
+		return;
+	if (curScissorTest.box != box) {
+		glScissor(box.X, box.Y, box.Width, box.Height);
+		curScissorTest.box = box;
+	}
+}
+
 void DrawContext::setPointSize(f32 pointsize)
 {
 	if (pointSize != pointsize) {
@@ -295,6 +321,8 @@ void DrawContext::initContext(utils::recti viewportSize)
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_LINE_SMOOTH);
+	
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	setBlendMode(curMode);
 
