@@ -1,7 +1,51 @@
 #include "Common.h"
+#include <sstream>
 
 namespace render
 {
+
+GLParameters::GLParameters()
+{
+	version = glGetString(GL_VERSION);
+	vendor = glGetString(GL_VENDOR);
+
+	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &maxCubeMapTextureSize);
+	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndexCount);
+	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxTextureLODBias);
+}
+
+void debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message)
+{
+	// shader compiler can be very noisy
+	if (source == GL_DEBUG_SOURCE_SHADER_COMPILER && severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
+	SDL_LogPriority priority = SDL_LOG_PRIORITY_INFO;
+	if (severity == GL_DEBUG_SEVERITY_HIGH)
+		priority = SDL_LOG_PRIORITY_ERROR;
+	else if (severity == GL_DEBUG_SEVERITY_MEDIUM)
+		priority = SDL_LOG_PRIORITY_WARN;
+	
+	std::stringstream debugLog;
+	
+	debugLog << (u32)source << " ";
+	debugLog << (u32)type << " ";
+	debugLog << message;
+	
+	SDL_LogMessage(LC_VIDEO, priority, debugLog.str());
+	//char buf[256];
+	//snprintf_irr(buf, sizeof(buf), "%04x %04x %.*s", source, type, length, message);
+	//os::Printer::log("GL", buf, ll);
+}
+
+void enableErrorTest()
+{
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(debugCB, nullptr);
+}
 
 bool testGLError(const char *file, int line)
 {

@@ -21,6 +21,24 @@
 namespace render
 {
 
+struct GLParameters
+{
+	std::string version;
+	std::string vendor;
+
+	u8 maxTextureUnits;
+	u8 maxColorAttachments;
+
+	u32 maxTextureSize;
+	u32 maxCubeMapTextureSize;
+
+	u32 maxIndexCount;
+	f32 maxTextureLODBias;
+
+	GLParameters();
+};
+
+void enableErrorTest();
 bool testGLError(const char *file, int line);
 
 }

@@ -3,6 +3,14 @@
 namespace render
 {
 
+enum ClearBufferFlags
+{
+	CBF_NONE,
+	CBF_COLOR,
+	CBF_DEPTH,
+	CBF_STENCIL
+};
+
 FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments)
 	: width(_width), height(_height), maxColorAttachments(_maxColorAttachments)
 {
@@ -21,7 +29,31 @@ FrameBuffer::~FrameBuffer()
 	glDeleteFramebuffers(1, &fboID);
 }
 
-void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings)
+void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil)
+{
+	GLbitfield mask = 0;
+
+	if (flags & CBF_COLOR) {
+		f32 inv = 1.0f / 255.0f;
+
+		glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
+		mask |= GL_COLOR_BUFFER_BIT;
+	}
+	
+	if (flags & CBF_DEPTH) {
+		glClearDepthf(depth);
+		mask |= GL_DEPTH_BUFFER_BIT;
+	}
+	
+	if (flags & CBF_STENCIL) {
+		glClearStencil(stencil);
+		mask |= GL_STENCIL_BUFFER_BIT;
+	}
+	
+	glClear(mask);
+}
+
+void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings)
 {
 	if (textures.size() == 0)
 		return;
