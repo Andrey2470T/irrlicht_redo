@@ -5,6 +5,8 @@
 
 #include "BasicIncludes.h"
 
+#include "toGLEnum.h"
+
 #define TEST_GL_ERROR() testGLError(__FILE__, __LINE__)
 
 //! Defines for snprintf_irr because snprintf method does not match the ISO C

@@ -53,11 +53,6 @@ public:
 
 	void setUniformBlock(const std::string &name, UniformBuffer *ubo);
 	
-	void activateUnit(u32 index)
-	{
-		glActiveTexture(GL_TEXTURE0 + index);
-	}
-	
 	bool operator==(const Shader *other)
 	{
 		return programID == other->programID;
