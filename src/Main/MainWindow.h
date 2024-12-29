@@ -38,13 +38,13 @@ public:
 		switch (type) {
 		case OGL_TYPE_DESKTOP:
 			Profile = SDL_GL_CONTEXT_PROFILE_CORE;
-			Major = 4;
-			Minor = 6;
+			Major = 3;
+			Minor = 2;
 		case OGL_TYPE_ES:
 		case OGL_TYPE_WEB:
 			Profile = SDL_GL_CONTEXT_PROFILE_ES;
-			Major = 3;
-			Minor = 2;
+			Major = 2;
+			Minor = 0;
 		}
 	}
 };
@@ -78,34 +78,16 @@ struct MainWindowParameters
 
 class MainWindow
 {
-	struct WindowDeleter
-	{
-		void operator()(SDL_Window *ptr)
-		{
-			if (ptr)
-				SDL_DestroyWindow(ptr);
-		}
-	};
-
-	struct ContextDeleter
-	{
-		void operator()(SDL_GLContext *ptr)
-		{
-			if (ptr)
-				SDL_DeleteContext(ptr);
-		}
-	};
-
-	std::unique_ptr<SDL_Window> Window;
+	SDL_Window* Window;
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
-	std::unique_ptr<SDL_Renderer> Renderer;
+	SDL_Renderer* Renderer;
 #else
-	std::unique_ptr<SDL_GLContext> Context;
+	SDL_GLContext* Context;
 #endif
-#if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
-	std::vector<std::unique_ptr<SDL_Joystick>> Joysticks;
+#ifdef _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+	std::vector<SDL_Joystick*> Joysticks;
 #endif
-	SDL_SysWMinfo Info;
+	SDL_version SDLVersion;
 	OpenGLVersion GLVersion;
 
 	TimeCounter Timer;

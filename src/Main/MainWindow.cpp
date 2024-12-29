@@ -4,9 +4,10 @@
 #include <emscripten.h>
 #endif
 
+
 MainWindow::MainWindow(const MainWindowParameters &params)
-	: GLVersion(Params.GLType), Timer(false), CursorControl(this), Params(params),
-	  Resizable(params.Resizable == 1 ? true : false), Close(false)
+	: GLVersion(Params.GLType), Timer(false), CursorControl(this), Params(std::move(params)),
+	  Resizable(Params.Resizable == 1 ? true : false), Close(false)
 {
 #ifdef __ANDROID__
 	// Blocking on pause causes problems with multiplayer.
@@ -61,21 +62,43 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 #endif
 
 	if (SDL_Init(flags) < 0) {
-		ERR_LOG_WITH_HINT("Unable to initialize SDL", SDL_GetError());
+		SDL_LogError(LC_APP, "Unable to initialize SDL: " + SDL_GetError());
 		Close = true;
 	} else {
-		LOG("SDL initialized");
+		SDL_LogInfo(LC_APP, "SDL initialized");
 	}
 
-	if (params.InitVideo)
+	if (Params.InitVideo)
 		if (!initWindow()) {
 			Close = true;
-			ERR_LOG("Unable to initialize SDL window and context (InitVideo = true)");
+			SDL_LogError(LC_APP, "Unable to initialize SDL window and context (InitVideo = true)");
 		}
 
-	SDL_GetWindowWMInfo(&Window, &Info);
+	SDL_VERSION(&SDLVersion);
 
-	LOG("SDL Version " + Info.version.major + "." + Info.version.minor + "." + Info.version.patch);
+	SDL_LogInfo(LC_APP, "SDL Version: " + SDLVersion.major + "." + SDLVersion.minor + "." + SDLVersion.patch);
+}
+
+MainWindow::~MainWindow()
+{
+
+	if (Window)
+		SDL_DestroyWindow(Window);
+	
+#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+	if (Renderer)
+		SDL_DestroyRenderer(Renderer);
+#else
+	if (Context)
+		SDL_GL_DeleteContext(Context);
+#endif
+	
+#ifdef _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+	for (auto &joystick : Joysticks)
+		if (joystick)
+			SDL_JoystickClose(joystick);
+#endif
+	SDL_LogInfo(LC_APP, "Quit SDL");
 }
 
 u32 MainWindow::getFullScreenFlag(bool fullscreen)
@@ -115,15 +138,6 @@ bool MainWindow::initWindow()
 
 	SDL_GL_ResetAttributes();
 
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
-	if (Params.Width != 0 || Params.Height != 0)
-		emscripten_set_canvas_size(Params.Width, Params.Height);
-	else {
-		int fs;
-		emscripten_get_canvas_size(&Params.Width, &Params.Height, &fs);
-	}
-#endif
-
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, Params.ColorChannelBits);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, Params.ColorChannelBits);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, Params.ColorChannelBits);
@@ -141,40 +155,45 @@ bool MainWindow::initWindow()
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
-
-	if (Params.DriverDebug) {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
-	}
-
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
-	SDL_Window *wnd;
-	SDL_Renderer *rndr;
-	SDL_CreateWindowAndRenderer(0, 0, Wnd_Flags, &wnd, &rndr); // 0,0 will use the canvas size
-	Window = std::unique_ptr<SDL_Window>(wnd);
-	Renderer = std::unique_ptr<SDL_Renderer>(rndr);
+	if (Params.Width != 0 || Params.Height != 0)
+		emscripten_set_canvas_size(Params.Width, Params.Height);
+	else
+		emscripten_get_canvas_size(&Params.Width, &Params.Height, nullptr);
+
+	SDL_CreateWindowAndRenderer(0, 0, Wnd_Flags, &Window, &Renderer); // 0,0 will use the canvas size
+	
+	if (!Window || !Renderer) {
+		SDL_LogError(LC_APP, "Could not create window or renderer: " + SDL_GetError());
+		Close = true;
+		return false;
+	}
 
 	// "#canvas" is for the opengl context
 	emscripten_set_mousedown_callback("#canvas", (void *)this, true, MouseUpDownCallback);
 	emscripten_set_mouseup_callback("#canvas", (void *)this, true, MouseUpDownCallback);
 	emscripten_set_mouseenter_callback("#canvas", (void *)this, false, MouseEnterCallback);
 	emscripten_set_mouseleave_callback("#canvas", (void *)this, false, MouseLeaveCallback);
-
-	return true;
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
-	Window = std::unique_ptr<SDL_Window>(
-		SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Params.Width, Params.Height, Wnd_Flags));
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
+
+	if (Params.DriverDebug)
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
+
+	Window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Params.Width, Params.Height, Wnd_Flags);
 
 	if (!Window) {
-		ERR_LOG_WITH_HINT("Could not create window", SDL_GetError());
+		SDL_LogError(LC_APP, "Could not create window: " + SDL_GetError());
+		Close = true;
 		return false;
 	}
 
-	Context = std::unique_ptr<SDL_GLContext>(SDL_GL_CreateContext(Window));
+	Context = SDL_GL_CreateContext(Window);
 	if (!Context) {
-		ERR_LOG_WITH_HINT("Could not create context", SDL_GetError());
+		SDL_LogError(LC_APP, "Could not create context: " + SDL_GetError());
+		Close = true;
 		return false;
 	}
 
