@@ -1,4 +1,6 @@
 #include "MainWindow.h"
+#include "Image/Converting.h"
+#include "Utils/String.h"
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten.h>
@@ -7,7 +9,7 @@
 
 MainWindow::MainWindow(const MainWindowParameters &params)
 	: GLVersion(Params.GLType), Timer(false), CursorControl(this), Params(std::move(params)),
-	  Resizable(Params.Resizable == 1 ? true : false), Close(false)
+	  Resizable(Params.Resizable == 1 ? true : false), Close(false), IsInBackground(false)
 {
 #ifdef __ANDROID__
 	// Blocking on pause causes problems with multiplayer.
@@ -101,6 +103,142 @@ MainWindow::~MainWindow()
 	SDL_LogInfo(LC_APP, "Quit SDL");
 }
 
+
+// Window params adjusting methods
+void MainWindow::setIcon(std::shared_ptr<Image> newImg, img::ImageModifier *mdf)
+{
+	if (!Window)
+		return false;
+
+	u32 height = newImg->getHeight();
+	u32 width = newImg->getWidth();
+
+	SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 32,
+			0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+
+	if (!surface) {
+		SDL_LogError(LC_APP, "Failed to create SDL suface");
+		return false;
+	}
+
+	SDL_LockSurface(surface);
+	
+	img::Image *tempImg = convertSDLSurfaceToImage(surface);
+	bool succ = mdf->copyTo(newImg.get(), tempImg);
+	delete tempImg;
+
+	SDL_UnlockSurface(surface);
+
+	if (!succ) {
+		SDL_FreeSurface(surface);
+		return false;
+	}
+
+	SDL_SetWindowIcon(Window, surface);
+
+	SDL_FreeSurface(surface);
+
+	return true;
+}
+
+void MainWindow::setCaption(const std::wstring &newCaption)
+{
+	std::string utf8_str = wide_to_utf8(newCaption);
+	SDL_SetWindowTitle(Window, utf8_str.c_str());
+}
+
+bool MainWindow::isActive() const
+{
+#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+	// Hidden test only does something in some browsers (when tab in background or window is minimized)
+	// In other browsers code automatically doesn't seem to be called anymore.
+	EmscriptenVisibilityChangeEvent emVisibility;
+	if (emscripten_get_visibility_status(&emVisibility) == EMSCRIPTEN_RESULT_SUCCESS) {
+		if (emVisibility.hidden)
+			return false;
+	}
+#endif
+	const u32 windowFlags = SDL_GetWindowFlags(Window);
+	return windowFlags & SDL_WINDOW_SHOWN && windowFlags & SDL_WINDOW_INPUT_FOCUS;
+}
+
+bool MainWindow::isFocused() const
+{
+	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+}
+
+bool MainWindow::isVisible() const
+{
+	return !IsInBackground;
+}
+
+bool MainWindow::isMinimized() const
+{
+	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MINIMIZED) != 0;
+}
+
+bool MainWindow::isMaximized() const
+{
+	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MAXIMIZED) != 0;
+}
+
+bool MainWindow::isFullScreen() const
+{
+	return Window && ((SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN) != 0 ||
+		(SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
+}
+
+void MainWindow::setResizable(bool resize = false)
+{
+#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+	SDL_LogWarn("Resizable not available on the web.");
+	return;
+#else
+	if (resize != Resizable) {
+		if (Window)
+			SDL_SetWindowResizable(Window, (SDL_bool)resize);
+		Resizable = resize;
+	}
+#endif
+}
+
+void MainWindow::minimize()
+{
+	if (Window)
+		SDL_MinimizeWindow(Window);
+}
+
+void MainWindow::maximize()
+{
+	if (Window)
+		SDL_MaximizeWindow(Window);
+}
+
+void MainWindow::restore()
+{
+	if (Window)
+		SDL_RestoreWindow(Window);
+}
+
+bool MainWindow::setFullscreen(bool fullscreen)
+{
+	if (!Window)
+		return false;
+	// The SDL wiki says that this may trigger SDL_RENDER_TARGETS_RESET, but
+	// looking at the SDL source, this only happens with D3D, so it's not
+	// relevant to us.
+	bool success = SDL_SetWindowFullscreen(Window, getFullscreenFlag(fullscreen)) == 0;
+	if (!success)
+		SDL_LogError("SDL_SetWindowFullscreen failed: " + SDL_GetError());
+	return success;
+}
+
+void MainWindow::SwapWindow()
+{
+	if (Window)
+		SDL_GL_SwapWindow(Window);
+}
+
 u32 MainWindow::getFullScreenFlag(bool fullscreen)
 {
 	if (!fullscreen)
@@ -115,13 +253,13 @@ u32 MainWindow::getFullScreenFlag(bool fullscreen)
 void MainWindow::updateViewportAndScale()
 {
 	int window_w, window_h;
-	SDL_GetWindowSize(Window.get(), &window_w, &window_h);
+	SDL_GetWindowSize(Window, &window_w, &window_h);
 
-	int drawable_w, drawable_h;
-	SDL_GL_GetDrawableSize(Window.get(), &drawable_w, &drawable_h);
+	SDL_GL_GetDrawableSize(Window, &Params.Width, &Params.Height);
 
-	ScaleX = (float)drawable_w / (float)window_w;
-	ScaleY = (float)drawable_h / (float)window_h;
+	Scale = utils::v2f(
+		(float)Params.Width / (float)window_w,
+		(float)Params.Height / (float)window_h);
 }
 
 bool MainWindow::initWindow()
@@ -174,7 +312,7 @@ bool MainWindow::initWindow()
 	emscripten_set_mouseup_callback("#canvas", (void *)this, true, MouseUpDownCallback);
 	emscripten_set_mouseenter_callback("#canvas", (void *)this, false, MouseEnterCallback);
 	emscripten_set_mouseleave_callback("#canvas", (void *)this, false, MouseLeaveCallback);
-#else // !_IRR_EMSCRIPTEN_PLATFORM_
+#else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
@@ -197,18 +335,18 @@ bool MainWindow::initWindow()
 		return false;
 	}
 
-	updateSizeAndScale();
-	if (ScaleX != 1.0f || ScaleY != 1.0f) {
+	updateViewportAndScale();
+	if (Scale.X != 1.0f || Scale.Y != 1.0f) {
 		// The given window size is in pixels, not in screen coordinates.
 		// We can only do the conversion now since we didn't know the scale before.
 		SDL_SetWindowSize(Window,
-				static_cast<int>(CreationParams.WindowSize.Width / ScaleX),
-				static_cast<int>(CreationParams.WindowSize.Height / ScaleY));
+				static_cast<int>(Params.Width / Scale.X),
+				static_cast<int>(Params.Height / Scale.Y));
 		// Re-center, otherwise large, non-maximized windows go offscreen.
 		SDL_SetWindowPosition(Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-		updateSizeAndScale();
+		updateViewportAndScale();
 	}
 
 	return true;
-#endif // !_IRR_EMSCRIPTEN_PLATFORM_
+#endif
 }
