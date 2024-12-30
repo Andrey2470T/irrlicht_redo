@@ -112,7 +112,7 @@ void ImageModifier::fill(
 /// @param "srcRect" - part of the image which will be copied
 /// @param "dstRect" - part of the image where the copy will be done to
 /// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
-void ImageModifier::copyTo(
+bool ImageModifier::copyTo(
 	const Image *srcImg,
 	Image *dstImg,
 	const utils::rectu *srcRect,
@@ -128,18 +128,16 @@ void ImageModifier::copyTo(
 			for (u32 y = srcRect->ULC.Y; y < srcRect->LRC.Y; y++)
 				setPixel(srcPart, x - srcRect->ULC.X, y - srcRect->ULC.Y, getPixel(srcImg, x, y));
 	}
-	
+
 	if (dstRect && srcRect->getSize() != dstRect->getSize()) {
 		if (!allowScale) {
-			SDL_LogWarn(LC_VIDEO, "ImageModifier::copyTo() copying to destination image with another size is not allowed");
-			return;
+			SDL_LogError(LC_VIDEO, "ImageModifier::copyTo() copying to destination image with another size is not allowed");
+			return false;
 		}
 
-		Image *srcPartScaled = resize(srcPart, *dstRect, RF_BICUBIC);
-		delete srcPart;
-		srcPart = srcPartScaled;
+		resize(srcPart, *dstRect, RF_BICUBIC);
 	}
-	
+
 	for (u32 x = 0; x < srcPart->getWidth(); x++)
 		for (u32 y = 0; y < srcPart->getHeight(); y++) {
 			color8 curColor = getPixel(srcPart, x, y);
@@ -149,6 +147,8 @@ void ImageModifier::copyTo(
 			else
 				setPixel(dstImg, x + dstRect->ULC.X, y + dstRect->ULC.Y, curColor);
 		}
+
+	return true;
 }
 
 // Scales (up or down) the image before the given rect.

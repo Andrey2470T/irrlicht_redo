@@ -9,6 +9,12 @@ CursorControl::CursorControl(MainWindow *window)
 	initCursors();
 }
 
+CursorControl::~CursorControl()
+{
+	for (auto &cursor : Cursors)
+		SDL_FreeCursor(cursor);
+}
+
 //! Sets the new position of the cursor.
 void CursorControl::setPosition(utils::v2i newPos)
 {
@@ -16,14 +22,13 @@ void CursorControl::setPosition(utils::v2i newPos)
 	// On Android, this somehow results in a camera jump when enabling
 	// relative mouse mode and it isn't supported anyway.
 	SDL_WarpMouseInWindow(Wnd->Window,
-			static_cast<int>(newPos.X / Wnd->ScaleX),
-			static_cast<int>(newPos.Y / Wnd->ScaleY));
+			static_cast<int>(newPos.X / Wnd->Scale.X),
+			static_cast<int>(newPos.Y / Wnd->Scale.Y));
 #endif
 
 	if (SDL_GetRelativeMouseMode()) {
 		// There won't be an event for this warp (details on libsdl-org/SDL/issues/6034)
-		Wnd->MouseX = x;
-		Wnd->MouseY = y;
+		Wnd->MousePos = newPos;
 	}
 }
 
@@ -41,8 +46,8 @@ utils::v2f CursorControl::getRelativePosition(bool updateCursor)
 {
 	if (updateCursor)
 		updateCursorPos();
-		return utils::v2f(Pos.X / (f32)Wnd->Width,
-				Pos.Y / (f32)Wnd->Height);
+		return utils::v2f(Pos.X / (f32)Wnd->Params.Width,
+			Pos.Y / (f32)Wnd->Params.Height);
 }
 
 void CursorControl::setRelativeMode(bool relative)
@@ -62,7 +67,7 @@ void CursorControl::setActiveIcon(CURSOR_ICON icon)
 	if (icon > Cursors.size() || !Cursors[icon])
 		Icon = CI_NORMAL;
 
-	SDL_SetCursor(Cursors[Icon].get());
+	SDL_SetCursor(Cursors[Icon]);
 }
 
 void CursorControl::updateCursorPos()
@@ -71,18 +76,15 @@ void CursorControl::updateCursorPos()
 	EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
 	if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
 		if (pointerlockStatus.isActive) {
-			Pos.X += Wnd->MouseXRel;
-			Pos.Y += Wnd->MouseYRel;
-			Wnd->MouseXRel = 0;
-			Wnd->MouseYRel = 0;
-		} else {
-			Pos.X = Wnd->MouseX;
-			Pos.Y = Wnd->MouseY;
+			Pos += Wnd->MouseRelPos;
+			Wnd->MouseRelPos = utils::v2i();
 		}
+		else
+			Pos = Wnd->MousePos;
 	}
 #else
-	Pos.X = std::clamp(Device->MouseX, 0, (s32)Wnd->Width);
-	Pos.Y = std::clamp(Device->MouseY, 0, (s32)Wnd->Height);
+	Pos.X = std::clamp(Wnd->MousePos.X, 0, (s32)Wnd->Width);
+	Pos.Y = std::clamp(Wnd->MousePos.Y, 0, (s32)Wnd->Height);
 #endif
 }
 

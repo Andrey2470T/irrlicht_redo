@@ -39,20 +39,13 @@ class CursorControl
 	bool IsVisible;
 	CURSOR_ICON Icon;
 
-	struct CursorDeleter
-	{
-		void operator()(SDL_Cursor *ptr)
-		{
-			if (ptr)
-				SDL_FreeCursor(ptr);
-		}
-	};
-
-	std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
+	std::vector<SDL_Cursor*> Cursors;
 
 	MainWindow *Wnd;
 public:
 	CursorControl(MainWindow *window);
+	
+	~CursorControl();
 
 	//! Changes the visible state of the mouse cursor.
 	void setVisible(bool visible);
