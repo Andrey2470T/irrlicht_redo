@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(Irrlicht LANGUAGES CXX)
+project(IrrlichtMt LANGUAGES CXX)
 
-message(STATUS "*** Building IrrlichtMt ***")
+set(IRRLICHTMT_MAJOR_VERSION 2)
+set(IRRLICHTMT_MINOR_VERSION 0)
+set(IRRLICHTMT_PATCH_VERSION 0)
+set(IRRLICHTMT_VERSION "${IRRLICHTMT_MAJOR_VERSION}.${IRRLICHTMT_MINOR_VERSION\}.${IRRLICHTMT_PATCH_VERSION}")
+
+message(STATUS "*** Building IrrlichtMt ${IRRLICHTMT_VERSION} ***")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug or Release" FORCE)
-endif()
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug or Release")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 add_subdirectory(src)

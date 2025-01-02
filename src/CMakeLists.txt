@@ -1,16 +1,9 @@
-# When enabling SDL2 by default on macOS, don't forget to change
-# "NSHighResolutionCapable" to true in "Info.plist".
-if(ANDROID)
-	set(DEFAULT_SDL2 ON)
-endif()
-
-option(USE_SDL2 "Use the SDL2 backend" ${DEFAULT_SDL2})
-
 # Compiler flags
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-D_DEBUG)
+	add_definitions(-DDEBUG)
 endif()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
@@ -31,7 +24,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 	endif()
 
 elseif(MSVC)
-	string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " msvcrt.lib") # ???? fuck off
+	string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " msvcrt.lib")
 
 	add_compile_options(/Zl)
 
@@ -42,132 +35,55 @@ elseif(MSVC)
 	endif()
 endif()
 
-# Platform-independent configuration (hard-coded currently)
-add_definitions(
-	-DIRR_ENABLE_BUILTIN_FONT
-)
 
-# Platform-specific configuration
-
-if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-	set(SOLARIS TRUE)
-endif()
-
-# Device
+# Platforms
 
 if(WIN32)
-	add_definitions(-D_IRR_WINDOWS_ -D_IRR_WINDOWS_API_)
-	set(DEVICE "WINDOWS")
+	set(Platform "Windows")
 elseif(APPLE)
-	add_definitions(-D_IRR_OSX_PLATFORM_)
-	set(DEVICE "OSX")
+	set(Platform "MacOS")
 elseif(ANDROID)
-	add_definitions(-D_IRR_ANDROID_PLATFORM_)
-	if(NOT USE_SDL2)
-		message(FATAL_ERROR "The Android build requires SDL2")
-	endif()
+	set(Platform "Android")
+elseif(LINUX)
+	set(Platform "Linux")
+elseif(BSD)
+	set(Platform "BSD")
+elseif(IOS)
+	set(Platform "IOS")
 elseif(EMSCRIPTEN)
-	add_definitions(-D_IRR_EMSCRIPTEN_PLATFORM_ -D_IRR_COMPILE_WITH_EGL_MANAGER_)
-	set(LINUX_PLATFORM TRUE)
-	set(DEVICE "SDL")
-elseif(SOLARIS)
-	add_definitions(-D_IRR_SOLARIS_PLATFORM_ -D_IRR_POSIX_API_)
-	set(DEVICE "X11")
+	set(Platform "Emscripten")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+	set(Platform "Solaris")
 else()
-	add_definitions(-D_IRR_POSIX_API_)
-	set(LINUX_PLATFORM TRUE)
-	set(DEVICE "X11")
+	message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
 endif()
 
-if(LINUX_PLATFORM)
-	add_definitions(-D_IRR_LINUX_PLATFORM_)
-endif()
+add_compile_definitions(PLATFORM=${Platform})
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-if(USE_SDL2)
-	set(DEVICE "SDL")
-elseif(DEVICE STREQUAL "SDL")
-	message(FATAL_ERROR "SDL was used but not enabled?!")
-endif()
-
-add_definitions("-D_IRR_COMPILE_WITH_${DEVICE}_DEVICE_")
-
-# X11
-
-if(DEVICE STREQUAL "X11")
-	option(USE_X11 "Use X11" TRUE)
-else()
-	set(USE_X11 FALSE)
-endif()
-
-if(LINUX_PLATFORM AND USE_X11)
-	option(USE_XINPUT2 "Use XInput2" TRUE)
-	option(USE_XCURSOR "Use XCursor" FALSE)
-else()
-	set(USE_XINPUT2 FALSE)
-	set(USE_XCURSOR FALSE)
-endif()
 
 # Joystick
 
 if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
-	add_definitions(-D_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+	add_definitions(-DCOMPILE_WITH_JOYSTICK_EVENTS)
 endif()
+
 
 # OpenGL
 
-if(USE_SDL2)
-	if(NOT ANDROID)
-		set(DEFAULT_OPENGL3 TRUE)
-	endif()
-	option(ENABLE_OPENGL3 "Enable OpenGL 3+" ${DEFAULT_OPENGL3})
+if(ANDROID OR IOS)
+	set(Renderer "OpenGLES2")
+elseif(EMSCRIPTEN)
+	set(Renderer "WebGL1")
 else()
-	set(ENABLE_OPENGL3 FALSE)
+	set(Renderer "OpenGL3+")
 endif()
 
-if(APPLE)
-	set(ENABLE_GLES2 FALSE)
-	set(ENABLE_WEBGL1 FALSE)
-else()
-	if(ANDROID OR EMSCRIPTEN)
-		set(DEFAULT_GLES2 TRUE)
-	endif()
-	if(EMSCRIPTEN)
-		set(DEFAULT_WEBGL1 TRUE)
-	endif()
-	option(ENABLE_GLES2 "Enable OpenGL ES 2+" ${DEFAULT_GLES2})
-	#option(ENABLE_WEBGL1 "Enable WebGL (requires GLES2)" ${DEFAULT_WEBGL1})
-	set(ENABLE_WEBGL1 FALSE) # not working currently
-	if(ENABLE_WEBGL1)
-		set(ENABLE_GLES2 TRUE)
-	endif()
-endif()
+add_compile_definitions(RENDERER=${Renderer})
 
-if(ENABLE_OPENGL3)
-	if (NOT USE_SDL2)
-		message(FATAL_ERROR "OpenGL 3 driver requires SDL2")
-	else()
-		set(RENDERER "OpenGL3")
-	endif()
-endif()
-
-if(ENABLE_GLES2)
-	add_definitions(-D_IRR_COMPILE_WITH_OGLES2_)
-	if(DEVICE MATCHES "^(WINDOWS|X11)$" OR EMSCRIPTEN)
-		add_definitions(-D_IRR_COMPILE_WITH_EGL_MANAGER_)
-	endif()
-	
-	set(RENDERER "OpenGL ES 2")
-endif()
-
-if(ENABLE_WEBGL1)
-	add_definitions(-D_IRR_COMPILE_WITH_WEBGL1_)
-	
-	set(RENDERER "Web GL 1")
-endif()
 
 # Misc
 
@@ -177,281 +93,79 @@ if(BIG_ENDIAN)
 	add_definitions(-D__BIG_ENDIAN__)
 endif()
 
-# Configuration report
 
-message(STATUS "Device: ${DEVICE}")
-message(STATUS "Renderer: ${RENDERER}")
+# Print the current configuration
+message(STATUS "Platform: ${Platform}")
+message(STATUS "Renderer: ${Renderer}")
+
 
 # Required libs
 
 include(CheckCXXSourceCompiles)
 
+find_package(SDL2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
-if(ENABLE_GLES2)
+if(Renderer STREQUAL "OpenGLES2")
 	find_package(OpenGLES2 REQUIRED)
+elseif(Renderer STREQUAL "WebGL1")
+	find_package(WebGL1 REQUIRED)
+else()
+	find_package(OpenGL3 REQUIRED)
 endif()
-if(USE_SDL2)
-	if(NOT ANDROID)
-		find_package(SDL2 REQUIRED)
-	else()
-		# provided by MinetestAndroidLibs.cmake
-	endif()
-	message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
 
-	# unfortunately older SDL does not provide its version to cmake, so check header.
-	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
-	unset(CHECK_SDL_VERSION CACHE)
-	check_cxx_source_compiles("#include <SDL_version.h>\n\
-#if !SDL_VERSION_ATLEAST(2, 0, 10)\n\
-#error\n\
-#endif\n\
-int main() {}" CHECK_SDL_VERSION)
-	if(NOT CHECK_SDL_VERSION)
-		message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
-	endif()
+# unfortunately older SDL does not provide its version to cmake, so check header.
+set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
+unset(CHECK_SDL_VERSION CACHE)
+check_cxx_source_compiles("#include <SDL_version.h>\n\
+	#if !SDL_VERSION_ATLEAST(2, 0, 10)\n\
+	#error\n\
+	#endif\n\
+	int main() {}" CHECK_SDL_VERSION)
 
-	# ...no target either.
-	if(NOT TARGET SDL2::SDL2)
-		add_library(SDL2::SDL2 SHARED IMPORTED)
-		set_target_properties(SDL2::SDL2 PROPERTIES
-			IMPORTED_LOCATION "${SDL2_LIBRARIES}")
-	endif()
+if(NOT CHECK_SDL_VERSION)
+	message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
+endif()
+
+# ...no target either.
+if(NOT TARGET SDL2::SDL2)
+	add_library(SDL2::SDL2 SHARED IMPORTED)
+	set_target_properties(SDL2::SDL2 PROPERTIES
+		IMPORTED_LOCATION "${SDL2_LIBRARIES}")
 endif()
 
 
-# Platform-specific libs
+# Adding library
 
-if(ANDROID)
-	enable_language(C)
-elseif(APPLE)
-	find_library(COCOA_LIB Cocoa REQUIRED)
-	find_library(IOKIT_LIB IOKit REQUIRED)
+file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-	add_definitions(-DGL_SILENCE_DEPRECATION)
-elseif(NOT USE_SDL2)
-	# Unix probably
-	find_package(X11 REQUIRED)
-	if(USE_XINPUT2 AND NOT X11_Xi_FOUND)
-		message(FATAL_ERROR "XInput not found")
-	endif()
-endif()
-
-set(link_includes
-	"${PROJECT_SOURCE_DIR}/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-
-	"${ZLIB_INCLUDE_DIR}"
-	"${JPEG_INCLUDE_DIR}"
-	"${PNG_INCLUDE_DIR}"
-	"$<$<BOOL:${USE_SDL2}>:${SDL2_INCLUDE_DIRS}>"
-
+set(PRIVATE_HEADERS
+	${ZLIB_INCLUDE_DIR}
+	${JPEG_INCLUDE_DIR}
+	${PNG_INCLUDE_DIR}
+	${SDL2_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
-	${EGL_INCLUDE_DIR}
-
-	"$<$<BOOL:${USE_X11}>:${X11_INCLUDE_DIR}>"
+	${WEBGL1_INCLUDE_DIR}
 )
 
-# Source files
-
-add_library(IRRMESHOBJ OBJECT
-	Mesh/CSkinnedMesh.cpp
-	Scene/CBoneSceneNode.cpp
-	Scene/CMeshSceneNode.cpp
-	Scene/CAnimatedMeshSceneNode.cpp
-	Mesh/CB3DMeshFileLoader.cpp
-	Mesh/CGLTFMeshFileLoader.cpp
-	Mesh/COBJMeshFileLoader.cpp
-	Mesh/CXMeshFileLoader.cpp
-)
-
-target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
-
-add_library(IRROBJ OBJECT
-	Scene/CBillboardSceneNode.cpp
-	Scene/CCameraSceneNode.cpp
-	Scene/CDummyTransformationSceneNode.cpp
-	Scene/CEmptySceneNode.cpp
-	Mesh/CMeshManipulator.cpp
-	Scene/CSceneCollisionManager.cpp
-	Scene/CSceneManager.cpp
-	Mesh/CMeshCache.cpp
-)
-
-# Make sure IRROBJ gets the transitive include directories for
-# tiniergltf from IRRMESHOBJ.
-target_link_libraries(IRROBJ PRIVATE IRRMESHOBJ)
-
-set(IRRDRVROBJ
-	Video/CNullDriver.cpp
-	Video/CEGLManager.cpp
-	Video/CSDLManager.cpp
-	Video/opengl_loader.cpp
-)
-
-# the unified drivers
-
-if(ENABLE_OPENGL3 OR ENABLE_GLES2)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OpenGL/Driver.cpp
-		Video/OpenGL/ExtensionHandler.cpp
-		Video/OpenGL/FixedPipelineRenderer.cpp
-		Video/OpenGL/MaterialRenderer.cpp
-		Video/OpenGL/Renderer2D.cpp
-	)
-endif()
-
-if(ENABLE_OPENGL3)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OpenGL3/Driver.cpp
-	)
-endif()
-
-if(ENABLE_GLES2)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OpenGLES2/Driver.cpp
-	)
-endif()
-
-add_library(IRRVIDEOOBJ OBJECT
-	Video/CFPSCounter.cpp
-	${IRRDRVROBJ}
-	Image/CColorConverter.cpp
-	Image/CImage.cpp
-	Image/CImageLoaderBMP.cpp
-	Image/CImageLoaderJPG.cpp
-	Image/CImageLoaderPNG.cpp
-	Image/CImageLoaderTGA.cpp
-	Image/CImageWriterJPG.cpp
-	Image/CImageWriterPNG.cpp
-)
-
-add_library(IRRIOOBJ OBJECT
-	IO/CFileList.cpp
-	IO/CFileSystem.cpp
-	IO/CLimitReadFile.cpp
-	IO/CMemoryFile.cpp
-	IO/CReadFile.cpp
-	IO/CWriteFile.cpp
-	IO/CZipReader.cpp
-	IO/CAttributes.cpp
-)
-
-add_library(IRROTHEROBJ OBJECT
-	Misc/CIrrDeviceSDL.cpp
-	Misc/CIrrDeviceLinux.cpp
-	Misc/CIrrDeviceStub.cpp
-	Misc/CIrrDeviceWin32.cpp
-	Misc/CLogger.cpp
-	Misc/COSOperator.cpp
-	Misc/Irrlicht.cpp
-	Misc/os.cpp
-)
-
-if(ENABLE_OPENGL3)
-	target_compile_definitions(IRROTHEROBJ PRIVATE ENABLE_OPENGL3)
-endif()
-
-if(APPLE)
-	# Build all IRROTHEROBJ sources as objc++, including the .cpp's
-	set_target_properties(IRROTHEROBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
-	target_sources(IRROTHEROBJ PRIVATE
-		Misc/CIrrDeviceOSX.mm
-		Video/CNSOGLManager.mm
-	)
-endif()
-
-if(USE_X11)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_COMPILE_WITH_X11_)
-endif()
-
-if(USE_XINPUT2)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
-endif()
-
-if(USE_XCURSOR)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_XCURSOR_)
-endif()
-
-add_library(IRRGUIOBJ OBJECT
-	GUI/Button.cpp
-	GUI/CheckBox.cpp
-	GUI/ComboBox.cpp
-	GUI/EditBox.cpp
-	GUI/Environment.cpp
-	GUI/FileOpenDialog.cpp
-	GUI/Font.cpp
-	GUI/Image.cpp
-	GUI/ListBox.cpp
-	GUI/ScrollBar.cpp
-	GUI/Skin.cpp
-	GUI/StaticText.cpp
-	GUI/TabControl.cpp
-	GUI/SpriteBank.cpp
-	GUI/ImageList.cpp
-)
-
-# Library
-
-add_library(IrrlichtMt STATIC)
-foreach(object_lib
-	IRRMESHOBJ IRROBJ IRRVIDEOOBJ
-	IRRIOOBJ IRROTHEROBJ IRRGUIOBJ)
-	# Set include directories for object library compilation
-	target_include_directories(${object_lib} PRIVATE ${link_includes})
-	# Add objects from object library to main library
-	target_sources(IrrlichtMt PRIVATE $<TARGET_OBJECTS:${object_lib}>)
-
-	if(BUILD_WITH_TRACY)
-		target_link_libraries(${object_lib} PRIVATE Tracy::TracyClient)
-	endif()
-endforeach()
-
-# Alias target provides add_submodule compatibility
-add_library(IrrlichtMt::IrrlichtMt ALIAS IrrlichtMt)
+add_library(IrrlichtMt SHARED ${SOURCES})
 
 target_include_directories(IrrlichtMt
-	PUBLIC
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
-	PRIVATE
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-		${link_includes}
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	PRIVATE ${PRIVATE_HEADERS}
 )
 
-# this needs to be here and not in a variable (like link_includes) due to issues
-# with the generator expressions on at least CMake 3.22, but not 3.28 or later
 target_link_libraries(IrrlichtMt PRIVATE
 	tiniergltf::tiniergltf
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
-	"$<$<BOOL:${USE_SDL2}>:SDL2::SDL2>"
-
-	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-	${EGL_LIBRARY}
-
+	SDL2::SDL2
 	# incl. transitive SDL2 dependencies for static linking
 	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
-	${COCOA_LIB}
-	${IOKIT_LIB}
-	"$<$<PLATFORM_ID:Windows>:gdi32>"
-	"$<$<PLATFORM_ID:Windows>:winmm>"
-	"$<$<BOOL:${USE_X11}>:${X11_X11_LIB}>"
-	"$<$<BOOL:${USE_X11}>:${X11_Xi_LIB}>"
-)
 
-if(WIN32)
-	target_compile_definitions(IrrlichtMt INTERFACE _IRR_WINDOWS_API_) # used in _IRR_DEBUG_BREAK_IF definition in a public header
-endif()
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	target_compile_definitions(IrrlichtMt INTERFACE _DEBUG) # same
-endif()
-if(APPLE OR ANDROID OR EMSCRIPTEN)
-	target_compile_definitions(IrrlichtMt PUBLIC IRR_MOBILE_PATHS)
-endif()
+	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
+)
