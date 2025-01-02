@@ -24,7 +24,7 @@ void Texture2D::initTexture(void *data)
 
 	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
 
-	if (isRenderTarget) {
+    if (texSettings.isRenderTarget) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -47,7 +47,7 @@ void Texture2D::initTexture(void *data)
 
 		if (texSettings.hasMipMaps) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (GLint)texSettings.maxMipLevel);
-			glGenerateMipMap(GL_TEXTURE_2D);
+            glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
 
@@ -56,7 +56,7 @@ void Texture2D::initTexture(void *data)
 	TEST_GL_ERROR();
 }
 
-void Texture2D::uploadData(Image *img, img::ImageModifier *imgMod)
+void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
 {
 	uploadSubData(width, height, img, imgMod);
 }
@@ -80,10 +80,11 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 
 	utils::v2u imgSize = img->getSize();
 
-	if (imgCache && imgMod)
-		imgMod->copyTo(img, imgCache.get(),
-			utils::rectu(0, 0, imgSize.X, imgSize.Y),
-			utils::rectu(x, y, imgSize.X, imgSize.Y));
+    if (imgCache && imgMod) {
+        utils::rectu srcRect(0, 0, imgSize.X, imgSize.Y);
+        utils::rectu dstRect(x, y, imgSize.X, imgSize.Y);
+        imgMod->copyTo(img, imgCache.get(), &srcRect, &dstRect);
+    }
 
 	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
 
@@ -120,8 +121,8 @@ void Texture2D::regenerateMipMaps(u8 max_level)
 	texSettings.maxMipLevel = max_level;
 
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)maxMipLevel);
-	glGenerateMipMaps(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
+    glGenerateMipMap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

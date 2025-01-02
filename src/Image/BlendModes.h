@@ -1,6 +1,8 @@
 #pragma once
 
 #include "BasicIncludes.h"
+#include "Color.h"
+#include <limits>
 
 namespace img
 {
@@ -35,9 +37,9 @@ inline ColorRGBA<T> AlphaBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
 		src.getFormat(),
-		src.R() * src.A() + dst.R() * (max_v - src.A()),
-		src.G() * src.A() + dst.G() * (max_v - src.A()),
-		src.B() * src.A() + dst.B() * (max_v - src.A()),
+        src.R() * src.A() + dst.R() * (std::numeric_limits<T>::max() - src.A()),
+        src.G() * src.A() + dst.G() * (std::numeric_limits<T>::max() - src.A()),
+        src.B() * src.A() + dst.B() * (std::numeric_limits<T>::max() - src.A()),
 		src.A()
 	);
 }

@@ -6,10 +6,10 @@ namespace render
 
 GLParameters::GLParameters()
 {
-	version = glGetString(GL_VERSION);
+    version = glGetString(GL_VERSION);
 	vendor = glGetString(GL_VENDOR);
 
-	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
 	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &maxCubeMapTextureSize);
@@ -34,18 +34,19 @@ void debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len
 	debugLog << (u32)source << " ";
 	debugLog << (u32)type << " ";
 	debugLog << message;
-	
-	SDL_LogMessage(LC_VIDEO, priority, debugLog.str());
+
+    std::string debugStr = debugLog.str();
+    SDL_LogMessage(LC_VIDEO, priority, debugStr.c_str());
 	//char buf[256];
 	//snprintf_irr(buf, sizeof(buf), "%04x %04x %.*s", source, type, length, message);
 	//os::Printer::log("GL", buf, ll);
 }
 
-void enableErrorTest()
+/*void enableErrorTest()
 {
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(debugCB, nullptr);
-}
+}*/
 
 bool testGLError(const char *file, int line)
 {

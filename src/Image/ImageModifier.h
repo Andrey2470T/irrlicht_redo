@@ -3,6 +3,7 @@
 #include "Image.h"
 #include "BlendModes.h"
 #include "Utils/Rect.h"
+#include "ResizeFilters.h"
 
 namespace img
 {
@@ -50,8 +51,8 @@ public:
 	/// @param "srcRect" - part of the image which will be copied
 	/// @param "dstRect" - part of the image where the copy will be done to
 	/// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
-	void copyTo(
-		const Image *srcImg,
+    bool copyTo(
+        Image *srcImg,
 		Image *dstImg,
 		const utils::rectu *srcRect = nullptr,
 		const utils::rectu *dstRect = nullptr,
@@ -59,16 +60,16 @@ public:
 
 	// Scales (up or down) the image before the given rect.
 	// The convolution algorithm is used with one of filter types.
-	Image *resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
+    void resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	Image *rotate(Image *img, ROTATE_ANGLE angle);
 
 	Image *flip(Image *img, FLIP_DIR dir);
 
-	Image *crop(const Image *img, const utils::rectu &rect);
+    Image *crop(Image *img, const utils::rectu &rect);
 
-	Image *combine(const Image *img1, const Image *img2);
+    Image *combine(Image *img1, Image *img2);
 
 	bool blendEnabled() const
 	{

@@ -9,8 +9,8 @@ namespace render
 
 enum TextureType
 {
-	TT_2D = 0;
-	TT_CUBEMAP;
+    TT_2D = 0,
+    TT_CUBEMAP
 };
 
 enum CubeMapFace
@@ -61,7 +61,7 @@ public:
 		texSettings.isRenderTarget = true;
 	}
 	
-	~Texture2D()
+    ~Texture()
 	{
 		glDeleteTextures(1, &texID);
 	}
@@ -88,7 +88,7 @@ public:
 		return height;
 	}
 
-	img::TextureFormat getFormat() const
+    img::PixelFormat getFormat() const
 	{
 		return format;
 	}
@@ -108,7 +108,7 @@ public:
 	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr);
 	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr);
 
-	virtual std::unique_ptr<img::Image> downloadData() const = 0;
+    virtual img::Image *downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;
 	
 	bool operator==(const Texture *other)

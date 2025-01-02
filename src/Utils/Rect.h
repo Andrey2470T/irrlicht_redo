@@ -34,8 +34,8 @@ public:
 	Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight)
 		: ULC(upperLeft), LRC(lowerRight) {}
 
-	Rect(const Vector2D<T> &pos, const Vector2D<T> &size)
-		: ULC(pos), LRC(pos.X + size.X, pos.Y + size.Y) {}
+    Rect(const Vector2D<T> &pos, T width, T height)
+        : ULC(pos), LRC(pos.X + width, pos.Y + height) {}
 
 	explicit Rect(const Vector2D<T> &size)
 		: ULC(0, 0), LRC(size.X, size.Y) {}
@@ -270,5 +270,4 @@ typedef Rect<s32> recti;
 //! Rectangle with unsigned int values
 typedef Rect<u32> rectu;
 
-} // end namespace core
-} // end namespace irr
+}

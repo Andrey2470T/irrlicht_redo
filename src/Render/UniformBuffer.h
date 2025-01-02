@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "utils/ByteArray.h"
+#include "Utils/ByteArray.h"
 
 namespace render
 {

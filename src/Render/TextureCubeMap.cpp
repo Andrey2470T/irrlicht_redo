@@ -9,13 +9,13 @@ TextureCubeMap::TextureCubeMap(const std::string &name, u32 width, u32 height, i
 	initTexture();
 }
 
-TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, CMF_COUNT> images,
+TextureCubeMap::TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, CMF_COUNT> images,
 		const TextureSettings &settings)
-	: Texture(name, images.at(0)->getWidth(), images.at(0)->getHeight(), image.at(0)->getFormat(), settings)
+    : Texture(name, images.at(0)->getWidth(), images.at(0)->getHeight(), images.at(0)->getFormat(), settings)
 {
 	std::array<img::Image *, CMF_COUNT> imgs;
 	for (u8 i = 0; i < CMF_COUNT; i++) {
-		imgCache[i] = images.at(i).release();
+        imgCache[i] = std::unique_ptr<img::Image>(images.at(i).release());
 		imgs[i] = imgCache[i].get();
 	}
 
@@ -28,7 +28,9 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
 	
-	if (isRenderTarget) {
+    img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+
+    if (texSettings.isRenderTarget) {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -36,7 +38,7 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 
 		for (u8 i = 0; i < CMF_COUNT; i++)
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-				formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+                formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
 	}
 	else {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));

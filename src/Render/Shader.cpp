@@ -28,7 +28,7 @@ Shader::Shader(const std::string &vsPath, const std::string &fsPath, const std::
 {
 	if (vsPath == "" || fsPath == "")
 	{
-		SDL_LogError(VC_VIDEO, "Shader:Shader() empty paths to the vertex or fragment shaders");
+        SDL_LogError(LC_VIDEO, "Shader:Shader() empty paths to the vertex or fragment shaders");
 		return;
 	}
 

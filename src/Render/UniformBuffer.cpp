@@ -6,7 +6,7 @@ namespace render
 UniformBuffer::UniformBuffer(u32 bindingPoint, const utils::ByteArray &uniforms)
 {
 	glGenBuffers(1, &uboID);
-	glBindBuffer(GL_UNIFORM_BUFFER, uboID);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboID);
 	glBufferData(GL_UNIFORM_BUFFER, uniforms.bytesCount(), uniforms.data(), GL_STATIC_DRAW);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, uboID);

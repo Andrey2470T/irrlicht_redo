@@ -26,7 +26,7 @@ public:
 	void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
 	void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
 
-	img::Image *downloadData() const override {}
+    img::Image *downloadData() const override { return nullptr; }
 	void regenerateMipMaps(u8 max_level) override {}
 private:
 	void initTexture(const std::array<img::Image *, CMF_COUNT> &data = std::array<img::Image *, CMF_COUNT>());

@@ -67,8 +67,8 @@ std::vector<f32> Kernel(f32 center, u32 border, f32 rk, RESAMPLE_FILTER type)
 {
 	f32 radius = getFilterRadius(type);
 
-	u32 min = std::max(0, (int)(std::floor(center - radius)));
-	u32 max = std::min((int)(std::ceil(center + radius)), border);
+    u32 min = std::max<s32>(0, (s32)(std::floor(center - radius)));
+    u32 max = std::min<s32>((s32)(std::ceil(center + radius)), border);
 	
 	std::vector<f32> weights(max - min);
 	for (u32 x = min; x < max; x++) {

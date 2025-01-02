@@ -64,7 +64,7 @@ void Image::setPaletteColors(const std::vector<color8> &colors)
 {
 	palette->colors.clear();
 	palette->size = colors.size();
-	palette->hasAlpha = pixelFormatInfo.at(colors.at(0)->getFormat()).hasAlpha;
+    palette->hasAlpha = pixelFormatInfo.at(colors.at(0).getFormat()).hasAlpha;
     u8 size = std::min<u32>(255u, colors.size());
 	palette->colors.reserve(size);
 		

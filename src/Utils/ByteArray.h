@@ -41,10 +41,10 @@ public:
 	
     u32 bytesCount() const;
 	
-    void *data()
+    const void *data() const
 	{
-        u8 *bytes_data = bytes.data();
-        return reinterpret_cast<void*>(bytes_data);
+        const u8 *bytes_data = bytes.data();
+        return reinterpret_cast<const void*>(bytes_data);
 	}
 
 	//! Setters

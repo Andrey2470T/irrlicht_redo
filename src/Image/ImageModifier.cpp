@@ -19,12 +19,14 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 	u8 *data = img->getData();
 
 	switch(img->getFormat()) {
-		case PF_RGB8:
-			u8 *pixel = data[y * 3 * width + 3 * x];
-			return color8(PF_RGB8, *pixel, *pixel++, *pixel++);
-		case PF_RGBA8:
-			u8 *pixel = data[y * 4 * width + 4 * x];
-			return color8(PF_RGBA8, *pixel, *pixel++, *pixel++, *pixel++);
+        case PF_RGB8: {
+            u8 *pixel = &data[y * 3 * width + 3 * x];
+            return color8(PF_RGB8, *pixel, *(++pixel), *(++pixel));
+        }
+        case PF_RGBA8: {
+            u8 *pixel = &data[y * 4 * width + 4 * x];
+            return color8(PF_RGBA8, *pixel, *(++pixel), *(++pixel), *(++pixel));
+        }
 		case PF_INDEX_RGBA8:
 			return color8(PF_INDEX_RGBA8, data[y * width + x]);
 		default:
@@ -54,11 +56,11 @@ void ImageModifier::setPixel(
 	color8 newColor(format);
 
 	if (format == PF_RGB8) {
-		pixel = data[y * 3 * width + 3 * x];
+        pixel = &data[y * 3 * width + 3 * x];
 		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, 0);
 	}
 	else if (format == PF_RGBA8) {
-		pixel = data[y * 4 * width + 4 * x];
+        pixel = &data[y * 4 * width + 4 * x];
 		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, *(pixel)+3);
 	}
 	else if (format == PF_INDEX_RGBA8) {
@@ -113,13 +115,13 @@ void ImageModifier::fill(
 /// @param "dstRect" - part of the image where the copy will be done to
 /// @param "allowScale" - if true, the copy will occur with scaling before the "dstRect" bounds (upscaling or downscaling)
 bool ImageModifier::copyTo(
-	const Image *srcImg,
+    Image *srcImg,
 	Image *dstImg,
 	const utils::rectu *srcRect,
 	const utils::rectu *dstRect,
 	bool allowScale)
 {
-	Image *srcPart = srcImg;
+    Image *srcPart = srcImg;
 
 	if (srcRect) {
 		srcPart = new Image(srcImg->getFormat(), srcRect->getWidth(), srcRect->getHeight());
@@ -153,30 +155,30 @@ bool ImageModifier::copyTo(
 
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
-Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
+void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
 {
-	f32 scaleX, scaleY = 1.0f, 1.0f;
-	f32 fscaleX, fscaleY = scaleX, scaleY;
+    f32 scaleX = 1.0f;
+    f32 scaleY = 1.0f;
+    f32 fscaleX = scaleX;
+    f32 fscaleY = scaleY;
 	
 	utils::v2u imgSize = img->getSize();
 
 	if (imgSize.X != rect.getWidth()) {
-		scaleX = imgSize.X / (1.0f)rect.getWidth();
+        scaleX = imgSize.X / (f32)rect.getWidth();
 		fscaleX = std::max(1.0f, scaleX);
 	}
 	if (imgSize.Y != rect.getHeight()) {
-		scaleY = imgSize.Y / (1.0f)rect.getHeight();
+        scaleY = imgSize.Y / (f32)rect.getHeight();
 		fscaleY = std::max(1.0f, scaleY);
 	}
 
 	if (scaleX == 1.0f || scaleY == 1.0f) {
 		SDL_LogWarn(LC_VIDEO, "ImageModifier::resize() no need in scaling (scale factor = 1.0)");
-		return;
+        return;
 	}
 	
 	f32 radius = getFilterRadius(filter);
-	f32 radiusX = radius * fscaleX;
-	f32 radiusY = radius * fscaleY;
 	
 	auto axisScale = [&] (Image *inImg, Image *outImg, u8 axis)
 	{
@@ -201,10 +203,10 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 		for (u32 imgOut_axis = 0; imgOut_axis < axis1; imgOut_axis++) {
 			f32 imgIn_center = (imgOut_axis + 0.5f) * scale;
 			
-			u32 min = std::max(0.0f, (s32)std::floor(imgOut_center - radius));
-			u32 max = std::min((s32)std::ceil(imgOut_center + radius), inImgWidth);
+            u32 min = std::max<f32>(0.0f, (s32)std::floor(imgIn_center - radius));
+            u32 max = std::min<f32>((s32)std::ceil(imgIn_center + radius), inImgWidth);
 			
-			std::vector<f32> weights = Kernel(imgOut_center, inImgWidth, ss, filter);
+            std::vector<f32> weights = Kernel(imgIn_center, inImgWidth, ss, filter);
 			
 			f32 w_s = 0.0f;
 			
@@ -234,8 +236,8 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 				resColor.G((u32)std::floor(resColor.G() * w_s + 0.5f));
 				resColor.B((u32)std::floor(resColor.B() * w_s + 0.5f));
 				
-				x = axis == 0 ? imgOut_axis : imgOut_axis2;
-				y = axis == 0 ? imgOut_axis2 : imgOut_axis;
+                u32 x = axis == 0 ? imgOut_axis : imgOut_axis2;
+                u32 y = axis == 0 ? imgOut_axis2 : imgOut_axis;
 				
 				if (outImg->getFormat() == PF_INDEX_RGBA8) {
 					u8 colorIndex = outImg->getPalette()->findColorIndex(resColor);
@@ -250,20 +252,20 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 	Image *newImg = nullptr;
 	
 	if (scaleX != 1.0f) {
-		newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight()
-			color8(PF_RGB, 0, 0, 0), img->getPalette());
+        newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight(),
+            color8(PF_RGB8, 0, 0, 0), img->getPalette());
 		axisScale(img, newImg, 0);
 	}
 	if (scaleY != 1.0f) {
 		Image *newImgCopy = nullptr;
 		if (!newImg) {
-			newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight()
-				color8(PF_RGB, 0, 0, 0), img->getPalette());
+            newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight(),
+                color8(PF_RGB8, 0, 0, 0), img->getPalette());
 			axisScale(img, newImgCopy, 1);
 		}
 		else {
 			newImgCopy = new Image(img->getFormat(), newImg->getWidth(), rect.getHeight(),
-				color8(PF_RGB, 0, 0, 0), img->getPalette());
+                color8(PF_RGB8, 0, 0, 0), img->getPalette());
 			axisScale(newImg, newImgCopy, 1);
 			delete newImg;
 		}
@@ -278,8 +280,10 @@ Image *ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILT
 // Rotates the given image by the angle multiple by 90 degrees
 Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 {
-	u32 oldWidth, oldHeight = img->getWidth(), img->getHeight();
-	u32 newWidth, newHeight = oldWidth, oldHeight;
+    u32 oldWidth = img->getWidth();
+    u32 oldHeight = img->getHeight();
+    u32 newWidth = oldWidth;
+    u32 newHeight = oldHeight;
 
 	if (angle == RA_90 || angle == RA_270)
 		std::swap(newWidth, newHeight);
@@ -288,7 +292,7 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 
 	utils::v2u center = img->getSize() / 2;
 
-	u8 degrees = 0;
+    u16 degrees = 0;
 
 	if (angle == RA_90)
 		degrees = 90;
@@ -304,7 +308,7 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 			utils::v2u relPos = utils::v2u(x, y) - center;
 			relPos.rotateBy(degrees);
 
-			setPixel(newImg, relPos.X + center.X, relPos.Y + center.Y);
+            setPixel(newImg, relPos.X + center.X, relPos.Y + center.Y, curColor);
 		}
 
 	return newImg;
@@ -312,7 +316,8 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 
 Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
 {
-	u32 width, height = img->getWidth(), img->getHeight();
+    u32 width = img->getWidth();
+    u32 height = img->getHeight();
 	Image *newImg = new Image(img->getFormat(), width, height);
 
 	for (u32 x = 0; x < width; x++)
@@ -329,24 +334,26 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
 
 			setPixel(newImg, curPoint.X, curPoint.Y, curColor);
 		}
+
+    return newImg;
 }
 
-Image *ImageModifier::crop(const Image *img, const utils::rectu &rect)
+Image *ImageModifier::crop(Image *img, const utils::rectu &rect)
 {
 	if (rect.getSize() == img->getSize())
 		return img;
 
 	Image *newImg = new Image(img->getFormat(), rect.getWidth(), rect.getHeight());
-	copyTo(img, newImg, rect);
+    copyTo(img, newImg, &rect);
 
 	return newImg;
 }
 
-Image *ImageModifier::combine(const Image *img1, const Image *img2)
+Image *ImageModifier::combine(Image *img1, Image *img2)
 {
 	if (img1->getFormat() != img2->getFormat()) {
 		SDL_LogError(LC_VIDEO, "ImageModifier::combine() pixel formats of both images must be same");
-		return;
+        return nullptr;
 	}
 	Image *newImg = new Image(img2->getFormat(), img2->getWidth(), img2->getHeight());
 	copyTo(img2, newImg);

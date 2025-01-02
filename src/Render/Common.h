@@ -23,16 +23,16 @@ namespace render
 
 struct GLParameters
 {
-	std::string version;
-	std::string vendor;
+    const u8 *version;
+    const u8 *vendor;
 
-	u8 maxTextureUnits;
-	u8 maxColorAttachments;
+    s32 maxTextureUnits;
+    s32 maxColorAttachments;
 
-	u32 maxTextureSize;
-	u32 maxCubeMapTextureSize;
+    s32 maxTextureSize;
+    s32 maxCubeMapTextureSize;
 
-	u32 maxIndexCount;
+    s32 maxIndexCount;
 	f32 maxTextureLODBias;
 
 	GLParameters();
