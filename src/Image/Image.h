@@ -3,17 +3,19 @@
 #include "Render/Common.h"
 #include "PixelFormats.h"
 #include "Color.h"
+#include <algorithm>
 
 namespace img {
+
+class ImageModifier;
 
 bool isFormatSupportedForImage(PixelFormat format)
 {
 	switch (format) {
-		case PF_RGB:
-		case PF_RGBA:
-		case PF_INDEX_RGB:
-		case PF_INDEX_RGBA:
-			return true
+        case PF_RGB8:
+        case PF_RGBA8:
+        case PF_INDEX_RGBA8:
+            return true;
 		default:
 			return false;
 	}
@@ -57,7 +59,8 @@ class Image
 
 	bool ownPixelData;
 public:
-	Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB, 0, 0, 0), Palette *_palette = nullptr);
+    Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB8, 0, 0, 0),
+          Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 		  bool _copyData = true, Palette *palette = nullptr);
@@ -91,7 +94,7 @@ public:
 
 	u8* getData() const
 	{
-		return data.get();
+        return data;
 	}
 
 	void setPaletteColors(const std::vector<color8> &colors);

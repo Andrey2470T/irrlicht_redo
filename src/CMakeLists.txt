@@ -39,23 +39,17 @@ endif()
 # Platforms
 
 if(WIN32)
-	set(Platform "Windows")
+	set(Platform "WINDOWS")
 elseif(APPLE)
-	set(Platform "MacOS")
+	set(Platform "OSX")
 elseif(ANDROID)
-	set(Platform "Android")
-elseif(LINUX)
-	set(Platform "Linux")
-elseif(BSD)
-	set(Platform "BSD")
-elseif(IOS)
-	set(Platform "IOS")
+	set(Platform "ANDROID")
 elseif(EMSCRIPTEN)
-	set(Platform "Emscripten")
+	set(Platform "EMSCRIPTEN")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-	set(Platform "Solaris")
+	set(Platform "SOLARIS")
 else()
-	message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+	set(Platform "LINUX")
 endif()
 
 add_compile_definitions(PLATFORM=${Platform})
@@ -74,7 +68,7 @@ endif()
 
 # OpenGL
 
-if(ANDROID OR IOS)
+if(ANDROID)
 	set(Renderer "OpenGLES2")
 elseif(EMSCRIPTEN)
 	set(Renderer "WebGL1")
@@ -113,7 +107,7 @@ if(Renderer STREQUAL "OpenGLES2")
 elseif(Renderer STREQUAL "WebGL1")
 	find_package(WebGL1 REQUIRED)
 else()
-	find_package(OpenGL3 REQUIRED)
+	find_package(OpenGL REQUIRED)
 endif()
 
 # unfortunately older SDL does not provide its version to cmake, so check header.
@@ -139,7 +133,12 @@ endif()
 
 # Adding library
 
-file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE SOURCES
+	${CMAKE_CURRENT_SOURCE_DIR}/Image/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Main/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Render/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Utils/*.cpp
+)
 
 set(PRIVATE_HEADERS
 	${ZLIB_INCLUDE_DIR}
@@ -154,18 +153,20 @@ set(PRIVATE_HEADERS
 add_library(IrrlichtMt SHARED ${SOURCES})
 
 target_include_directories(IrrlichtMt
-	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-	PRIVATE ${PRIVATE_HEADERS}
+	PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}
+	PRIVATE
+		${PRIVATE_HEADERS}
 )
 
-target_link_libraries(IrrlichtMt PRIVATE
-	tiniergltf::tiniergltf
-	${ZLIB_LIBRARY}
-	${JPEG_LIBRARY}
-	${PNG_LIBRARY}
-	SDL2::SDL2
-	# incl. transitive SDL2 dependencies for static linking
-	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
+target_link_libraries(IrrlichtMt
+	PRIVATE
+		${ZLIB_LIBRARY}
+		${JPEG_LIBRARY}
+		${PNG_LIBRARY}
+		SDL2::SDL2
+		# incl. transitive SDL2 dependencies for static linking
+		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 
-	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
+		"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
 )

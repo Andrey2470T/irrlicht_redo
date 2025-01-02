@@ -1,6 +1,8 @@
 #pragma once
 
-#include "utils/ByteArray.h"
+#include "Utils/ByteArray.h"
+#include "PixelFormats.h"
+#include "Utils/MathFuncs.h"
 
 namespace img {
 
@@ -93,7 +95,7 @@ public:
 		else if (channelsCount == 2)
 			return (R() == other.R() && G() == other.G());
 		else if (channelsCount == 3)
-			return (R() == other.R() && G() == other.G() && B == other.B());
+            return (R() == other.R() && G() == other.G() && B() == other.B());
 		else
 			return (R() == other.R() && G() == other.G() && B() == other.B() && A() == other.A());
 	}
@@ -124,7 +126,7 @@ public:
 			R() + other.R(),
 			G() + other.G(),
 			B() + other.B(),
-			A() + other.A())
+            A() + other.A());
 	}
 
 	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other) const
@@ -151,7 +153,7 @@ public:
 	{
 		R(R() + val);
 		G(G() + val);
-		B(B) + val);
+        B(B() + val);
 		A(A() + val);
 
 		return *this;
@@ -205,9 +207,9 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			lerp<T>(other.R(), R(), d),
-			lerp<T>(other.G(), G(), d),
-			lerp<T>(other.B(), B(), d),
+            utils::lerp<T>(other.R(), R(), d),
+            utils::lerp<T>(other.G(), G(), d),
+            utils::lerp<T>(other.B(), B(), d),
 			A());
 	}
 
@@ -219,9 +221,9 @@ public:
 	{
 		return ColorRGBA<T>(
 			getFormat(),
-			qerp<T>(R(), c1.R(), c2.R(), d),
-			qerp<T>(G(), c1.G(), c2.G(), d),
-			qerp<T>(B(), c1.B(), c2.B(), d),
+            utils::qerp<T>(R(), c1.R(), c2.R(), d),
+            utils::qerp<T>(G(), c1.G(), c2.G(), d),
+            utils::qerp<T>(B(), c1.B(), c2.B(), d),
 			A());
 	}
 private:
@@ -244,13 +246,13 @@ private:
 		BasicType type = pixelFormatInfo[format].type;
 
 		switch (type) {
-			case UINT8:
+            case BasicType::UINT8:
 				return color.getUInt8(n);
-			case UINT16:
+            case BasicType::UINT16:
 				return color.getUInt16(n);
-			case UINT32:
+            case BasicType::UINT32:
 				return color.getUInt32(n);
-			case FLOAT:
+            case BasicType::FLOAT:
 				return color.getFloat(n);
 			default:
 				return 0;
@@ -262,16 +264,16 @@ private:
 		BasicType type = pixelFormatInfo[format].type;
 
 		switch (type) {
-			case UINT8:
+            case BasicType::UINT8:
 				color.setUInt8(v, n);
 				break;
-			case UINT16:
+            case BasicType::UINT16:
 				color.setUInt16(v, n);
 				break;
-			case UINT32:
+            case BasicType::UINT32:
 				color.setUInt32(v, n);
 				break;
-			case FLOAT:
+            case BasicType::FLOAT:
 				color.setFloat(v, n);
 				break;
 			default:
@@ -308,12 +310,12 @@ private:
 
 inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 {
-	const f32 maxVal = std::max(color.R, color.G, color.B);
-	const f32 minVal = std::min(color.R, color.G, color.B);
+    const f32 maxVal = utils::max3<f32>(color.R(), color.G(), color.B());
+    const f32 minVal = utils::min3<f32>(color.R(), color.G(), color.B());
 
 	L = (maxVal + minVal) * 50;
 
-	if (equals<f32>(maxVal, minVal)) {
+    if (utils::equals(maxVal, minVal)) {
 		H = 0.0f;
 		S = 0.0f;
 		return;
@@ -327,12 +329,12 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 	}
 	S *= 100;
 
-	if (equals<f32>(maxVal, color.R))
-		H = (color.G - color.B) / delta;
-	else if (equals<f32>(maxVal, color.G))
-		H = 2 + ((color.B - color.R) / delta);
+    if (utils::equals(maxVal, color.R()))
+        H = (color.G() - color.B()) / delta;
+    else if (utils::equals(maxVal, color.G()))
+        H = 2 + ((color.B() - color.R()) / delta);
 	else // blue is max
-		H = 4 + ((color.R - color.G) / delta);
+        H = 4 + ((color.R() - color.G()) / delta);
 
 	H *= 60.0f;
 	while (H < 0.0f)
@@ -342,10 +344,10 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 inline void ColorHSL::toRGBA(ColorRGBA<f32> &color) const
 {
 	const f32 l = L / 100;
-	if (equals<f32>(S, 0.0f)) { // grey
-		color.R = l;
-		color.G = l;
-		color.B = l;
+    if (utils::equals(S, 0.0f)) { // grey
+        color.R(l);
+        color.G(l);
+        color.B(l);
 		return;
 	}
 
@@ -360,9 +362,9 @@ inline void ColorHSL::toRGBA(ColorRGBA<f32> &color) const
 	const f32 rm1 = 2.0f * l - rm2;
 
 	const f32 h = H / 360.0f;
-	color.R = toRGBA1(rm1, rm2, h + 1.0f / 3.0f);
-	color.G = toRGBA1(rm1, rm2, h);
-	color.B = toRGBA1(rm1, rm2, h - 1.0f / 3.0f);
+    color.R(toRGBA1(rm1, rm2, h + 1.0f / 3.0f));
+    color.G(toRGBA1(rm1, rm2, h));
+    color.B(toRGBA1(rm1, rm2, h - 1.0f / 3.0f));
 }
 
 // algorithm from Foley/Van-Dam

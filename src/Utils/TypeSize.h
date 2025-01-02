@@ -7,7 +7,7 @@ namespace utils
 {
 
 extern size_t getSizeOfType(BasicType type) {
-	switch (attr.ComponentType) {
+    switch (type) {
 		case BasicType::UINT8:
 			return sizeof(u8);
 		case BasicType::UINT16:

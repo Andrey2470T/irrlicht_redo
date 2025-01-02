@@ -32,7 +32,7 @@ public:
 	{
 		X = other.X;
 		Y = other.Y;
-		Z = other.Z
+        Z = other.Z;
 		return *this;
 	}
 
@@ -51,7 +51,7 @@ public:
 	{
 		X += other.X;
 		Y += other.Y;
-		Z += other.Z
+        Z += other.Z;
 		return *this;
 	}
 
@@ -249,7 +249,7 @@ public:
 	To have this work the same way as rest of Irrlicht (nodes, matrices, other rotateBy functions) pass -1*degrees in here.
 	\param degrees Number of degrees to rotate around the Y axis.
 	\param center The center of the rotation. */
-	void rotateXZBy(f64 degrees, const vector3d<T> &center = Vector3D<T>())
+    void rotateXZBy(f64 degrees, const Vector3D<T> &center = Vector3D<T>())
 	{
 		f32 radians = degToRad(degrees);
 		f64 cs = std::cos(radians);

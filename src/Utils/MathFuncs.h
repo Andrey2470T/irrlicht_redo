@@ -2,7 +2,8 @@
 
 #include <cmath>
 #include <limits>
-#include "Typedefs.h"
+#include "Types.h"
+#include <algorithm>
 
 namespace utils
 {
@@ -46,7 +47,7 @@ template <class T>
 inline T lerp(const T a, const T b, const f32 d)
 {
 	// a*(1 - d) + b*d
-	f32 c_d = std::clamp(d, 0.0f, 1.0f);
+    f32 c_d = std::clamp(d, 0.0f, 1.0f);
 	return (T)(a * (1.0f - c_d)) + (b * c_d);
 }
 
@@ -76,13 +77,13 @@ inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERRO
 }
 
 template <class T>
-inline min3(T v1, T v2, T v3)
+inline T min3(T v1, T v2, T v3)
 {
 	return std::min<T>(std::min<T>(v1, v2), v3);
 }
 
 template <class T>
-inline max3(T v1, T v2, T v3)
+inline T max3(T v1, T v2, T v3)
 {
 	return std::max<T>(std::max<T>(v1, v2), v3);
 }

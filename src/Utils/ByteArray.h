@@ -39,31 +39,29 @@ public:
 		return elements.size();
 	}
 	
-	u32 bytesCount() const
-	{
-		return countBytesBefore(count());
-	}
+    u32 bytesCount() const;
 	
-	void *data() const
+    void *data()
 	{
-		return static_cast<void*>(bytes.data());
+        u8 *bytes_data = bytes.data();
+        return reinterpret_cast<void*>(bytes_data);
 	}
 
 	//! Setters
 	// 'n' is a number of the byte array element which is necessary to replace
 	// '-1' means inserting at the end
-	void setUInt8(u8 elem, s32 n=-1) 		{ setElement(ByteArrayElement(UINT8, 1), &elem, n) }
-	void setUInt16(u16 elem, s32 n=-1) 		{ setElement(ByteArrayElement(UINT16, 2), &elem, n) }
-	void setUInt32(u32 elem, s32 n=-1);		{ setElement(ByteArrayElement(UINT32, 4), &elem, n) }
-	void setUInt64(u64 elem, s32 n=-1);		{ setElement(ByteArrayElement(UINT64, 8), &elem, n) }
+    void setUInt8(u8 elem, s32 n=-1) 		{ setElement({BasicType::UINT8, 1}, &elem, n); }
+    void setUInt16(u16 elem, s32 n=-1) 		{ setElement({BasicType::UINT16, 2}, &elem, n); }
+    void setUInt32(u32 elem, s32 n=-1)		{ setElement({BasicType::UINT32, 4}, &elem, n); }
+    void setUInt64(u64 elem, s32 n=-1)		{ setElement({BasicType::UINT64, 8}, &elem, n); }
 
-	void setChar(c8 elem, s32 n=-1) 		{ setElement(ByteArrayElement(CHAR, 1), &elem, n) }
-	void setShort(s16 elem, s32 n=-1) 		{ setElement(ByteArrayElement(SHORT, 2), &elem, n) }
-	void setInt(s32 elem, s32 n=-1); 		{ setElement(ByteArrayElement(INT, 4), &elem, n) }
-	void setLongInt(s64 elem, s32 n=-1);	{ setElement(ByteArrayElement(LONG_INT, 8), &elem, n) }
+    void setChar(c8 elem, s32 n=-1) 		{ setElement({BasicType::CHAR, 1}, &elem, n); }
+    void setShort(s16 elem, s32 n=-1) 		{ setElement({BasicType::SHORT, 2}, &elem, n); }
+    void setInt(s32 elem, s32 n=-1) 		{ setElement({BasicType::INT, 4}, &elem, n); }
+    void setLongInt(s64 elem, s32 n=-1)     { setElement({BasicType::LONG_INT, 8}, &elem, n); }
 
-	void setFloat(f32 elem, s32 n=-1); 		{ setElement(ByteArrayElement(FLOAT, 4), &elem, n) }
-	void setDouble(f64 elem, s32 n=-1); 	{ setElement(ByteArrayElement(DOUBLE, 8), &elem, n) }
+    void setFloat(f32 elem, s32 n=-1) 		{ setElement({BasicType::FLOAT, 4}, &elem, n); }
+    void setDouble(f64 elem, s32 n=-1)      { setElement({BasicType::DOUBLE, 8}, &elem, n); }
 
 	void setV2U(v2u elem, s32 n=-1)
 	{
@@ -73,8 +71,8 @@ public:
 
 	void setV2I(v2i elem, s32 n=-1)
 	{
-		setInt32(elem.X, n);
-		setInt32(elem.Y, n != -1 ? n + 1 : n);
+        setInt(elem.X, n);
+        setInt(elem.Y, n != -1 ? n + 1 : n);
 	}
 
 	void setV2F(v2f elem, s32 n=-1)
@@ -85,9 +83,9 @@ public:
 
 	void setV3I(v3i elem, s32 n=-1)
 	{
-		setInt32(elem.X, n);
-		setInt32(elem.Y, n != -1 ? n + 1 : n);
-		setInt32(elem.Z, n != -1 ? n + 2 : n);
+        setInt(elem.X, n);
+        setInt(elem.Y, n != -1 ? n + 1 : n);
+        setInt(elem.Z, n != -1 ? n + 2 : n);
 	}
 
 	void setV3F(v3f elem, s32 n=-1)
@@ -146,7 +144,7 @@ public:
 
 	v2i getV2I(u32 n) const
 	{
-		return v2i(getInt32(n), getInt32(n + 1));
+        return v2i(getInt(n), getInt(n + 1));
 	}
 
 	v2f getV2F(u32 n) const
@@ -156,7 +154,7 @@ public:
 
 	v3i getV3I(u32 n) const
 	{
-		return v3i(getInt32(n), getInt32(n + 1), getInt32(n + 2));
+        return v3i(getInt(n), getInt(n + 1), getInt(n + 2));
 	}
 
 	v3f getV3F(u32 n) const
@@ -192,7 +190,7 @@ private:
 	u32 countBytesBefore(u32 n) const;
 
 	std::vector<u8> getElement(u32 n) const;
-	void setElement(const ByteArrayElement &elem, void *data, s32 n=-1);
+    void setElement(ByteArrayElement &&elem, void *data, s32 n=-1);
 };
 
 }

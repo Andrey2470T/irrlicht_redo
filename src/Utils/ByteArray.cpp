@@ -3,7 +3,12 @@
 namespace utils
 {
 
-u32 ByteArray::countBytesBefore(u32 n)
+u32 ByteArray::bytesCount() const
+{
+    return countBytesBefore(count());
+}
+
+u32 ByteArray::countBytesBefore(u32 n) const
 {
 	if (n > count()) {
 		SDL_LogWarn(LC_ASS, "ByteArray::countBytesBefore() Access to the element outside of the byte array");
@@ -33,26 +38,26 @@ std::vector<u8> ByteArray::getElement(u32 n) const
 	return elem_bytes;
 }
 
-ByteArray::setElement(const ByteArrayElement &elem, void *data, s32 n)
+void ByteArray::setElement(ByteArrayElement &&elem, void *data, s32 n)
 {
 	std::vector<u8> elem_bytes;
 
 	switch (elem.type) {
-		case UINT8:
-		case CHAR: {
+        case BasicType::UINT8:
+        case BasicType::CHAR: {
 			elem_bytes.push_back(*(u8*)(data));
 			break;
 		}
-		case UINT16:
-		case SHORT: {
+        case BasicType::UINT16:
+        case BasicType::SHORT: {
 			u16 elem_u16 = *(u16*)(data);
 			elem_bytes.push_back((u8)elem_u16 >> 8);
 			elem_bytes.push_back((u8)elem_u16 & 0xFF);
 			break;
 		}
-		case UINT32:
-		case INT:
-		case FLOAT: {
+        case BasicType::UINT32:
+        case BasicType::INT:
+        case BasicType::FLOAT: {
 			u16 elem_u32 = *(u32*)(data);
 			elem_bytes.push_back((u8)elem_u32 >> 24);
 			elem_bytes.push_back((u8)elem_u32 >> 16 & 0xFF);
@@ -60,20 +65,22 @@ ByteArray::setElement(const ByteArrayElement &elem, void *data, s32 n)
 			elem_bytes.push_back((u8)elem_u32 & 0xFF);
 			break;
 		}
-		case UINT64:
-		case LONG_INT:
-		case DOUBLE: {
-			u16 elem_u64 = *(u64*)(data);
-			elem_bytes.push_back((u8)elem_u64 >> 56);
-			elem_bytes.push_back((u8)elem_u64 >> 48 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 40 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 32 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 24 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 16 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 >> 8 & 0xFF);
-			elem_bytes.push_back((u8)elem_u64 & 0xFF);
+        case BasicType::UINT64:
+        case BasicType::LONG_INT:
+        case BasicType::DOUBLE: {
+            u64 elem_u64 = *(u64*)(data);
+            elem_bytes.push_back((u8)(elem_u64 >> 56));
+            elem_bytes.push_back((u8)(elem_u64 >> 48 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 >> 40 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 >> 32 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 >> 24 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 >> 16 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 >> 8 & 0xFF));
+            elem_bytes.push_back((u8)(elem_u64 & 0xFF));
 			break;
 		}
+        default:
+            break;
 	}
 
 	bool replace = n < count() && n != -1;
@@ -82,7 +89,7 @@ ByteArray::setElement(const ByteArrayElement &elem, void *data, s32 n)
 		auto &n_elem = elements.at(n);
 
 		if (n_elem.type != elem.type || n_elem.bytes_count != elem.bytes_count) {
-			SDL_LogWarn("ByteArray::setElement() Can not replace the element to the another one with differing bytes count and type");
+            SDL_LogWarn(LC_APP, "ByteArray::setElement() Can not replace the element to the another one with differing bytes count and type");
 			return;
 		}
 	}
