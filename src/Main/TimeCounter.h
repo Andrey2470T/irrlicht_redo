@@ -79,7 +79,7 @@ public:
 		return curVirtualTime - LastFixedVirtualTime;
 	}
 
-	static u32 getRealTime() const
+    static u32 getRealTime()
 	{
 		return std::chrono::system_clock::now().time_since_epoch().count();
 	}

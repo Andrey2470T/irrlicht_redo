@@ -3,10 +3,11 @@
 #include "BasicIncludes.h"
 #include "CursorControl.h"
 #include "TimeCounter.h"
+#include "Image/Image.h"
 
 #include <SDL.h>
 
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#ifdef EMSCRIPTEN
 #include <emscripten/html5.h>
 #endif
 
@@ -74,17 +75,19 @@ struct MainWindowParameters
 	bool InitVideo = true;
 
 	u8 AntiAlias = 0;
+
+    bool DriverDebug = false;
 };
 
 class MainWindow
 {
 	SDL_Window* Window;
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#ifdef EMSCRIPTEN
 	SDL_Renderer* Renderer;
 #else
-	SDL_GLContext* Context;
+    SDL_GLContext Context;
 #endif
-#ifdef _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+#ifdef COMPILE_WITH_JOYSTICK_EVENTS
 	std::vector<SDL_Joystick*> Joysticks;
 #endif
 	SDL_version SDLVersion;
@@ -113,8 +116,8 @@ public:
 	~MainWindow();
 
 	// Window params adjusting methods
-	void setIcon(std::shared_ptr<Image> newImg);
-	void setCaption(const std::wstring &newCaption);
+    void setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier *mdf);
+    void setCaption(const std::string &newCaption);
 
 	// Window time counter
 	void startTimer();
@@ -131,20 +134,20 @@ public:
 	void minimize();
 	void maximize();
 	void restore();
-	bool setFullscreen();
+    bool setFullscreen(bool fullscreen);
 
 	void SwapWindow();
 private:
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#ifdef EMSCRIPTEN
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
 	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 #endif
 
-	u32 getFullScreenFlag(bool fullscreen);
+    u32 getFullscreenFlag(bool fullscreen);
 	void updateViewportAndScale();
 
-	void initWindow();
+    bool initWindow();
 	
 	friend class CursorControl;
 };

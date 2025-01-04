@@ -1,4 +1,9 @@
 #include "CursorControl.h"
+#include "MainWindow.h"
+
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 namespace main
 {
@@ -35,10 +40,9 @@ void CursorControl::setPosition(utils::v2i newPos)
 //! Returns the current position of the mouse cursor.
 const utils::v2i &CursorControl::getPosition(bool updateCursor)
 {
-	if (updateCursor) {
+    if (updateCursor)
 		updateCursorPos();
-		return Pos;
-	}
+    return Pos;
 }
 
 //! Returns the current position of the mouse cursor.
@@ -46,7 +50,7 @@ utils::v2f CursorControl::getRelativePosition(bool updateCursor)
 {
 	if (updateCursor)
 		updateCursorPos();
-		return utils::v2f(Pos.X / (f32)Wnd->Params.Width,
+    return utils::v2f(Pos.X / (f32)Wnd->Params.Width,
 			Pos.Y / (f32)Wnd->Params.Height);
 }
 
@@ -72,7 +76,7 @@ void CursorControl::setActiveIcon(CURSOR_ICON icon)
 
 void CursorControl::updateCursorPos()
 {
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#ifdef EMSCRIPTEN
 	EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
 	if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
 		if (pointerlockStatus.isActive) {
@@ -83,8 +87,8 @@ void CursorControl::updateCursorPos()
 			Pos = Wnd->MousePos;
 	}
 #else
-	Pos.X = std::clamp(Wnd->MousePos.X, 0, (s32)Wnd->Width);
-	Pos.Y = std::clamp(Wnd->MousePos.Y, 0, (s32)Wnd->Height);
+    Pos.X = std::clamp(Wnd->MousePos.X, 0, (s32)Wnd->Params.Width);
+    Pos.Y = std::clamp(Wnd->MousePos.Y, 0, (s32)Wnd->Params.Height);
 #endif
 }
 

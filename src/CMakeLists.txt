@@ -40,19 +40,23 @@ endif()
 
 if(WIN32)
 	set(Platform "WINDOWS")
+	add_definitions(-DWINDOWS)
 elseif(APPLE)
 	set(Platform "OSX")
+	add_definitions(-DOSX)
 elseif(ANDROID)
 	set(Platform "ANDROID")
+	add_definitions(-DANDROID)
 elseif(EMSCRIPTEN)
 	set(Platform "EMSCRIPTEN")
+	add_definitions(-DEMSCRIPTEN)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 	set(Platform "SOLARIS")
+	add_definitions(-DSOLARIS)
 else()
 	set(Platform "LINUX")
+	add_definitions(-DLINUX)
 endif()
-
-add_compile_definitions(PLATFORM=${Platform})
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -70,13 +74,14 @@ endif()
 
 if(ANDROID)
 	set(Renderer "OpenGLES2")
+	add_definitions(-DOPENGL_ES_2)
 elseif(EMSCRIPTEN)
 	set(Renderer "WebGL1")
+	add_definitions(-DWEBGL_1)
 else()
 	set(Renderer "OpenGL3+")
+	add_definitions(-DOPENGL_3_PLUS)
 endif()
-
-add_compile_definitions(RENDERER=${Renderer})
 
 
 # Misc

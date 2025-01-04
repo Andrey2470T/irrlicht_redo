@@ -1,12 +1,14 @@
 #pragma once
 
 #include "BasicIncludes.h"
-#include "utils/Rect.h"
+#include "Utils/Rect.h"
 
-#include <SDL_Cursor.h>
+#include <SDL_mouse.h>
 
 namespace main
 {
+
+class MainWindow;
 
 //! Default icons for cursors
 enum CURSOR_ICON
@@ -30,7 +32,7 @@ enum CURSOR_ICON
 	// then I would recommend using a naming scheme like ECI_W32_CROSS, ECI_X11_CROSSHAIR and adding those
 	// additionally.
 
-	ECI_COUNT // maximal of defined cursors. Note that higher values can be created at runtime
+    CI_COUNT // maximal of defined cursors. Note that higher values can be created at runtime
 };
 
 class CursorControl
