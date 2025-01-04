@@ -11,7 +11,7 @@ enum ClearBufferFlags
 	CBF_STENCIL
 };
 
-FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments)
+FrameBuffer::FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments)
 	: width(_width), height(_height), maxColorAttachments(_maxColorAttachments)
 {
 	colorTextures.resize(maxColorAttachments, nullptr);
@@ -53,7 +53,7 @@ void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
 	glClear(mask);
 }
 
-void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings)
+void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings)
 {
 	if (textures.size() == 0)
 		return;
@@ -73,7 +73,7 @@ void setColorTextures(const std::vector<Texture*> &textures, const std::vector<C
 		Texture *tex = textures[i];
 		
 		if (colorTextures[i] != nullptr) {
-			if (tex->getType() == TT_2D && *tex == *colorTextures[i])
+            if (tex->getType() == TT_2D && *tex == *colorTextures[i])
 				continue;
 			else if (tex->getType() == TT_CUBEMAP && *tex == *colorTextures[i]
 				&& cubeMapFaceMappings[i] == colorCubeMapFaces[i])
@@ -148,12 +148,6 @@ bool FrameBuffer::checkStatus() const
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 			SDL_LogError(LC_VIDEO, "FBO has one or several incomplete image attachments");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-			SDL_LogError(LC_VIDEO, "FBO has one or several image attachments with different internal formats");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-			SDL_LogError(LC_VIDEO, "FBO has one or several image attachments with different dimensions");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			SDL_LogError(LC_VIDEO, "FBO missing an image attachment");

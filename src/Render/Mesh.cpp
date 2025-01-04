@@ -8,8 +8,9 @@ Mesh::Mesh(const VertexTypeDescriptor &descr)
 {
 	init(descriptor);
 }
+
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
-	u32 indicesCount, const VertexTypeDescriptor &descr);
+    u32 indicesCount, const VertexTypeDescriptor &descr)
 	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
 {
 	init(descriptor);
@@ -88,17 +89,17 @@ void Mesh::init(VertexTypeDescriptor descr)
 	
 	glBindVertexArray(vaoID);
 	
-	u32 offset = 0;
+    std::size_t offset = 0;
 	for (int i = 0; i < descr.Attributes.size(); i++) {
 		auto &attr = descr.Attributes[i];
 		size_t vertexSize = sizeOfVertexType(descr);
 		switch (attr.Format) {
 			case VertexAttribute::DataFormat::Regular:
-				glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[attr.ComponentType], GL_FALSE, vertexSize, (void*)offset);
+                glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], GL_FALSE, vertexSize, (void*)offset);
 			case VertexAttribute::DataFormat::Normalized:
-				glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[attr.ComponentType], GL_TRUE, vertexSize, (void*)offset);
+                glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], GL_TRUE, vertexSize, (void*)offset);
 			case VertexAttribute::DataFormat::Integral:
-				glVertexAttribIPointer(i, (int)attr.ComponentCount, toGLType[attr.ComponentType], vertexSize, (void*)offset);
+                glVertexAttribIPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], vertexSize, (void*)offset);
 		};
 		glEnableVertexAttribArray(i);
 		

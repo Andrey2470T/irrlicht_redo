@@ -56,7 +56,7 @@ public:
 		for (const auto &attr : attributes)
 			Attributes.push_back(attr);
 	}
-	bool operator==(const VertexType &other)
+    bool operator==(const VertexTypeDescriptor &other)
 	{
 		return Attributes == other.Attributes;
 	}
@@ -70,14 +70,14 @@ private:
 			Attributes.push_back({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 		
 		if (init_uv)
-			Attributes.push_back({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regulard});
+            Attributes.push_back({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 	}
 };
 
 // Returns size of the vertex type in bytes.
 extern size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 {
-	size_t size;
+    size_t size = 0;
 	for (const auto &attr : vtype.Attributes)
 		size += attr.ComponentCount * utils::getSizeOfType(attr.ComponentType);
 

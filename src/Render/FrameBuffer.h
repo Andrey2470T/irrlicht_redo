@@ -53,7 +53,7 @@ public:
 	void clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil);
 
 	void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings);
-	void setDepthStencilTexture(Texture *texture);
+    void setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMapFace);
 	
 	bool operator==(const FrameBuffer *other)
 	{

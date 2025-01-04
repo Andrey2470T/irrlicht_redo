@@ -24,7 +24,7 @@ enum FLIP_DIR
 //! Does blitting without/with scaling and filling with some color in the set blend mode.
 class ImageModifier
 {
-	BLEND_MODE Mode;
+    BlendMode Mode;
 	bool BlendEnabled;
 public:
 	ImageModifier() {}
@@ -81,7 +81,7 @@ public:
 		BlendEnabled = !BlendEnabled;
 	}
 
-	void setBlendMode(BLEND_MODE newMode)
+    void setBlendMode(BlendMode newMode)
 	{
 		Mode = newMode;
 	}

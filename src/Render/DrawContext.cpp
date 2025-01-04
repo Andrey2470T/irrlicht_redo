@@ -1,4 +1,5 @@
 #include "DrawContext.h"
+#include <map>
 
 namespace render
 {
@@ -8,7 +9,7 @@ static const std::vector<img::BlendMode> supportedBlendModes = {
 	img::BM_NORMAL,
 	img::BM_ALPHA,
 	img::BM_ADD,
-	img::BM_SUBTRACT
+    img::BM_SUBTRACTION
 };
 
 // Various blend modes setup functions
@@ -43,7 +44,7 @@ static const std::map<img::BlendMode, std::function<void()>> setupBlendFunctions
 	{img::BM_NORMAL, &setNormalMode},
 	{img::BM_ALPHA, &setAlphaMode},
 	{img::BM_ADD, &setAddMode},
-	{img::BM_SUBTRACT, &setSubtractMode}
+    {img::BM_SUBTRACTION, &setSubtractMode}
 };
 
 
@@ -149,10 +150,10 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
 		return;
 	}
 
-	if (texture && activeUnits[i] != texture) {
+    if (texture && activeUnits[index] != texture) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		texture->bind();
-		activeUnits[i] = texture;
+        activeUnits[index] = texture;
 	}
 }
 
@@ -165,14 +166,14 @@ void DrawContext::setBlendMode(img::BlendMode blendmode)
 		return;
 	}
 
-	setupBlendFunctions[blendmode]();
+    setupBlendFunctions.at(blendmode)();
 	curMode = blendmode;
 }
 
 void DrawContext::enableDepthTest(bool depthtest)
 {
-	if (curDepthTest.enabled != depthTest) {
-		if (depthTest)
+    if (curDepthTest.enabled != depthtest) {
+        if (depthtest)
 			glEnable(GL_DEPTH_TEST);
 		else
 			glDisable(GL_DEPTH_TEST);
@@ -252,7 +253,7 @@ void DrawContext::setStencilMask(u32 stencilmask)
 	if (!curStencilTest.enabled)
 		return;
 	if (curStencilTest.mask != stencilmask) {
-		glStencilMask(stencilfunc);
+        glStencilMask(stencilmask);
 		curStencilTest.mask = stencilmask;
 	}
 }
@@ -287,7 +288,7 @@ void DrawContext::setScissorBox(utils::recti box)
 	if (!curScissorTest.enabled)
 		return;
 	if (curScissorTest.box != box) {
-		glScissor(box.X, box.Y, box.Width, box.Height);
+        glScissor(box.ULC.X, box.ULC.Y, box.getWidth(), box.getHeight());
 		curScissorTest.box = box;
 	}
 }
@@ -311,7 +312,7 @@ void DrawContext::setLineWidth(f32 linewidth)
 void DrawContext::setViewportSize(utils::recti viewportSize)
 {
 	if (viewport != viewportSize) {
-		glViewport(viewportSize.X, viewportSize.Y, viewportSize.Width, viewportSize.Height);
+        glViewport(viewportSize.ULC.X, viewportSize.ULC.Y, viewportSize.getWidth(), viewportSize.getHeight());
 		viewport = viewportSize;
 	}
 }

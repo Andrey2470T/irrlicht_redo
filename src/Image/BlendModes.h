@@ -7,7 +7,7 @@
 namespace img
 {
 
-enum BLEND_MODE
+enum BlendMode
 {
 	BM_NORMAL = 0,
 	BM_ALPHA,
@@ -185,7 +185,7 @@ inline ColorRGBA<T> LightenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T>
 
 
 template <class T>
-ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BLEND_MODE mode)
+ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BlendMode mode)
 {
 	switch (mode) {
 		case BM_NORMAL:
