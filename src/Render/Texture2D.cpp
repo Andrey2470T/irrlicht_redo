@@ -122,7 +122,7 @@ void Texture2D::regenerateMipMaps(u8 max_level)
 
 	glBindTexture(GL_TEXTURE_2D, texID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
-    glGenerateMipMap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

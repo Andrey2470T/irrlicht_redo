@@ -54,7 +54,7 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 
 		if (texSettings.hasMipMaps) {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, (GLint)texSettings.maxMipLevel);
-			glGenerateMipMap(GL_TEXTURE_CUBE_MAP);
+            glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 		}
 	}
 

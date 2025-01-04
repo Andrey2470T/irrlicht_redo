@@ -21,11 +21,11 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 	switch(img->getFormat()) {
         case PF_RGB8: {
             u8 *pixel = &data[y * 3 * width + 3 * x];
-            return color8(PF_RGB8, *pixel, *(++pixel), *(++pixel));
+            return color8(PF_RGB8, *pixel, *(pixel+1), *(pixel+2));
         }
         case PF_RGBA8: {
             u8 *pixel = &data[y * 4 * width + 4 * x];
-            return color8(PF_RGBA8, *pixel, *(++pixel), *(++pixel), *(++pixel));
+            return color8(PF_RGBA8, *pixel, *(pixel+1), *(pixel+2), *(pixel+3));
         }
 		case PF_INDEX_RGBA8:
 			return color8(PF_INDEX_RGBA8, data[y * width + x]);

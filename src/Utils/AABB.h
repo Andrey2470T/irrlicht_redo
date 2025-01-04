@@ -6,7 +6,7 @@
 
 #include "BasicIncludes.h"
 #include "MathFuncs.h"
-#include "plane3d.h"
+#include "Plane3D.h"
 #include "Line3D.h"
 
 namespace utils
@@ -357,5 +357,4 @@ typedef AABB<f32> aabbf;
 //! Typedef for an integer 3d bounding box.
 typedef AABB<s32> aabbi;
 
-} // end namespace core
-} // end namespace irr
+}

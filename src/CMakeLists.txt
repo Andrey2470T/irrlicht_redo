@@ -97,6 +97,7 @@ message(STATUS "Renderer: ${Renderer}")
 
 include(CheckCXXSourceCompiles)
 
+find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
@@ -164,6 +165,7 @@ target_link_libraries(IrrlichtMt
 		${ZLIB_LIBRARY}
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
+		GLEW::GLEW
 		SDL2::SDL2
 		# incl. transitive SDL2 dependencies for static linking
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"

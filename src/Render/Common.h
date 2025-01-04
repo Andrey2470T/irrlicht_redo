@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL_video.h>
-#include <SDL_opengl.h>
+#include <GL/glew.h>
 
 #include "BasicIncludes.h"
 

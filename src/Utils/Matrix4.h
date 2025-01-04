@@ -258,10 +258,10 @@ public:
 	void translateVect(v3f &vect) const;
 
 	//! Transforms a plane by this matrix
-	void transformPlane(utils::plane3d<f32> &plane) const;
+    void transformPlane(utils::plane3f &plane3f) const;
 
 	//! Transforms a plane by this matrix
-	void transformPlane(const utils::plane3d<f32> &in, utils::plane3d<f32> &out) const;
+	void transformPlane(const utils::plane3f &in, utils::plane3f &out) const;
 
 	//! Transforms a axis aligned bounding box
 	void transformBoxEx(aabbf &box) const;
@@ -322,7 +322,7 @@ public:
 	\param plane: plane into which the geometry if flattened into
 	\param point: value between 0 and 1, describing the light source.
 	If this is 1, it is a point light, if it is 0, it is a directional light. */
-	Matrix4<T> &buildShadowMatrix(const v3f &light, utils::plane3df plane, f32 point = 1.0f);
+    Matrix4<T> &buildShadowMatrix(const v3f &light, utils::plane3f plane, f32 point = 1.0f);
 
 	//! Builds a matrix which transforms a normalized Device Coordinate to Device Coordinates.
 	/** Used to scale <-1,-1><1,1> to viewport, for example from <-1,-1> <1,1> to the viewport <0,0><0,640> */
@@ -753,9 +753,9 @@ inline Vector3D<T> Matrix4<T>::getScale() const
 
 	// Deal with the 0 rotation case first
 	// Prior to Irrlicht 1.6, we always returned this value.
-	if (utils::iszero(M[1]) && utils::iszero(M[2]) &&
-			utils::iszero(M[4]) && utils::iszero(M[6]) &&
-			utils::iszero(M[8]) && utils::iszero(M[9]))
+    if (equals(M[1], 0) && equals(M[2], 0) &&
+            equals(M[4], 0) && equals(M[6], 0) &&
+            equals(M[8], 0) && equals(M[9], 0))
 		return Vector3D<T>(M[0], M[5], M[10]);
 
 	// We have to do the full calculation.
@@ -1123,7 +1123,7 @@ inline void Matrix4<T>::transformVec4(T *out, const T *in) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(utils::plane3d<f32> &plane) const
+inline void Matrix4<T>::transformPlane(utils::<f32> &plane) const
 {
 	v3f member;
 	// Transform the plane member point, i.e. rotate, translate and scale it.
@@ -1137,7 +1137,7 @@ inline void Matrix4<T>::transformPlane(utils::plane3d<f32> &plane) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(const utils::plane3d<f32> &in, utils::plane3d<f32> &out) const
+inline void Matrix4<T>::transformPlane(const utils::plane3f> &in, utils::plane3f &out) const
 {
 	out = in;
 	transformPlane(out);
@@ -1623,7 +1623,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveLH(
 
 // Builds a matrix that flattens geometry into a plane.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildShadowMatrix(const v3f &light, utils::plane3df plane, f32 point)
+inline Matrix4<T> &Matrix4<T>::buildShadowMatrix(const v3f &light, utils::plane3f plane, f32 point)
 {
 	plane.Normal.normalize();
 	const f32 d = plane.Normal.dotProduct(light);

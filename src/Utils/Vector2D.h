@@ -127,37 +127,37 @@ public:
 	}
 
 	//! Less or equal comparison
-	constexpr bool operator<=(const Vector2D<T> &other) const
+	bool operator<=(const Vector2D<T> &other) const
 	{
 		return !(*this > other);
 	}
 
 	//! Greater or equal comparison
-	constexpr bool operator>=(const Vector2D<T> &other) const
+	bool operator>=(const Vector2D<T> &other) const
 	{
 		return !(*this < other);
 	}
 
 	//! Less comparison
-	constexpr bool operator<(const Vector2D<T> &other) const
+	bool operator<(const Vector2D<T> &other) const
 	{
 		return X < other.X || (X == other.X && Y < other.Y);
 	}
 
 	//! Greater comparison
-	constexpr bool operator>(const Vector2D<T> &other) const
+	bool operator>(const Vector2D<T> &other) const
 	{
 		return X > other.X || (X == other.X && Y > other.Y);
 	}
 
 	//! Equality
-	constexpr bool operator==(const Vector2D<T> &other) const
+	bool operator==(const Vector2D<T> &other) const
 	{
 		return equals(X, other.X) && equals(Y, other.Y);
 	}
 
 	//! Inequality
-	constexpr bool operator!=(const Vector2D<T> &other) const
+	bool operator!=(const Vector2D<T> &other) const
 	{
 		return !(*this == other);
 	}
