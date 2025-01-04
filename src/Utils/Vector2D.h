@@ -268,6 +268,11 @@ public:
 
 		return *this;
 	}
+
+    Vector2D<T> apply(const std::function<void(T)> &func)
+    {
+        return Vector2D<T>(func(X), func(Y));
+    }
 };
 
 typedef Vector2D<f32> v2f;

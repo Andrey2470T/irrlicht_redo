@@ -415,6 +415,11 @@ public:
 						forwards.Y * pseudoMatrix[5] +
 						forwards.Z * pseudoMatrix[8]));
 	}
+
+    Vector3D<T> apply(const std::function<void(T)> &func)
+    {
+        return Vector3D<T>(func(X), func(Y), func(Z));
+    }
 };
 
 typedef Vector3D<f32> v3f;

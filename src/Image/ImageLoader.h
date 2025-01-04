@@ -1,6 +1,6 @@
 #pragma once
 
-#include <filesystem.h>
+#include <filesystem>
 #include "Converting.h"
 
 namespace img
@@ -27,7 +27,7 @@ public:
 	
 	static void free()
 	{
-		IMG_Quit(0);
+        IMG_Quit();
 	}
 	
 	static Image *load(const std::string &path)
@@ -53,7 +53,7 @@ public:
 		
 		SDL_Surface *surf = convertImageToSDLSurface(img);
 		if (ext == ".png")
-			IMG_SavePNG(surf, path.c_str(), 35);
+            IMG_SavePNG(surf, path.c_str());
 		else if (ext == ".jpg" || ext == ".jpeg")
 			IMG_SaveJPG(surf, path.c_str(), 35);
 	}

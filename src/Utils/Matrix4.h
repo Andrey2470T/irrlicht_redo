@@ -10,6 +10,7 @@
 #include "Plane3D.h"
 #include "AABB.h"
 #include "Rect.h"
+#include <assert.h>
 
 
 namespace utils
@@ -326,7 +327,7 @@ public:
 
 	//! Builds a matrix which transforms a normalized Device Coordinate to Device Coordinates.
 	/** Used to scale <-1,-1><1,1> to viewport, for example from <-1,-1> <1,1> to the viewport <0,0><0,640> */
-	Matrix4<T> &buildNDCToDCMatrix(const recti &area, f32 zScale);
+    Matrix4<T> &buildNDCToDCMatrix(recti &viewport, f32 zScale);
 
 	//! Creates a new matrix as interpolated matrix from two other ones.
 	/** \param b: other matrix to interpolate with
@@ -767,13 +768,13 @@ inline Vector3D<T> Matrix4<T>::getScale() const
 template <class T>
 inline Matrix4<T> &Matrix4<T>::setRotationDegrees(const Vector3D<T> &rotation)
 {
-	return setRotationRadians(rotation * utils::DEGTORAD);
+    return setRotationRadians(rotation.apply(&degToRad));
 }
 
 template <class T>
 inline Matrix4<T> &Matrix4<T>::setInverseRotationDegrees(const Vector3D<T> &rotation)
 {
-	return setInverseRotationRadians(rotation * utils::DEGTORAD);
+    return setInverseRotationRadians(rotation.apply(&degToRad));
 }
 
 template <class T>
@@ -813,28 +814,28 @@ template <class T>
 inline Vector3D<T> Matrix4<T>::getRotationDegrees(const Vector3D<T> &scale_) const
 {
 	const Matrix4<T> &mat = *this;
-	const Vector3D<f64> scale(utils::iszero(scale_.X) ? FLT_MAX : scale_.X, utils::iszero(scale_.Y) ? FLT_MAX : scale_.Y, utils::iszero(scale_.Z) ? FLT_MAX : scale_.Z);
-	const Vector3D<f64> invScale(utils::reciprocal(scale.X), utils::reciprocal(scale.Y), utils::reciprocal(scale.Z));
+    const Vector3D<f64> scale(equals(scale_.X, 0) ? FLT_MAX : scale_.X, equals(scale_.Y, 0) ? FLT_MAX : scale_.Y, equals(scale_.Z, 0) ? FLT_MAX : scale_.Z);
+    const Vector3D<f64> invScale(1.0 / scale.X, 1.0 / scale.Y, 1.0 / scale.Z);
 
-	f64 Y = -asin(utils::clamp(mat[2] * invScale.X, -1.0, 1.0));
+    f64 Y = -asin(clamp(mat[2] * invScale.X, -1.0, 1.0));
 	const f64 C = cos(Y);
-	Y *= RADTODEG64;
+    Y *= radToDeg(Y);
 
 	f64 rotx, roty, X, Z;
 
-	if (!utils::iszero((T)C)) {
-		const f64 invC = utils::reciprocal(C);
+    if (!equals((T)C, 0)) {
+        const f64 invC = 1.0 / C;
 		rotx = mat[10] * invC * invScale.Z;
 		roty = mat[6] * invC * invScale.Y;
-		X = atan2(roty, rotx) * RADTODEG64;
+        X = radToDeg(atan2(roty, rotx));
 		rotx = mat[0] * invC * invScale.X;
 		roty = mat[1] * invC * invScale.X;
-		Z = atan2(roty, rotx) * RADTODEG64;
+        Z = radToDeg(atan2(roty, rotx));
 	} else {
 		X = 0.0;
 		rotx = mat[5] * invScale.Y;
 		roty = -mat[4] * invScale.Y;
-		Z = atan2(roty, rotx) * RADTODEG64;
+        Z = radToDeg(atan2(roty, rotx));
 	}
 
 	// fix values that get below zero
@@ -1005,54 +1006,6 @@ inline bool Matrix4<T>::isOrthogonal() const
 	return (iszero(dp));
 }
 
-/*
-	doesn't solve floating range problems..
-	but takes care on +/- 0 on translation because we are changing it..
-	reducing floating point branches
-	but it needs the floats in memory..
-*/
-template <class T>
-inline bool Matrix4<T>::isIdentity_integer_base() const
-{
-	if (IR(M[0]) != F32_VALUE_1)
-		return false;
-	if (IR(M[1]) != 0)
-		return false;
-	if (IR(M[2]) != 0)
-		return false;
-	if (IR(M[3]) != 0)
-		return false;
-
-	if (IR(M[4]) != 0)
-		return false;
-	if (IR(M[5]) != F32_VALUE_1)
-		return false;
-	if (IR(M[6]) != 0)
-		return false;
-	if (IR(M[7]) != 0)
-		return false;
-
-	if (IR(M[8]) != 0)
-		return false;
-	if (IR(M[9]) != 0)
-		return false;
-	if (IR(M[10]) != F32_VALUE_1)
-		return false;
-	if (IR(M[11]) != 0)
-		return false;
-
-	if (IR(M[12]) != 0)
-		return false;
-	if (IR(M[13]) != 0)
-		return false;
-	if (IR(M[13]) != 0)
-		return false;
-	if (IR(M[15]) != F32_VALUE_1)
-		return false;
-
-	return true;
-}
-
 template <class T>
 inline Vector3D<T> Matrix4<T>::rotateAndScaleVect(const Vector3D<T> &v) const
 {
@@ -1123,7 +1076,7 @@ inline void Matrix4<T>::transformVec4(T *out, const T *in) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(utils::<f32> &plane) const
+inline void Matrix4<T>::transformPlane(plane3f &plane) const
 {
 	v3f member;
 	// Transform the plane member point, i.e. rotate, translate and scale it.
@@ -1137,7 +1090,7 @@ inline void Matrix4<T>::transformPlane(utils::<f32> &plane) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(const utils::plane3f> &in, utils::plane3f &out) const
+inline void Matrix4<T>::transformPlane(const plane3f &in, utils::plane3f &out) const
 {
 	out = in;
 	transformPlane(out);
@@ -1238,10 +1191,10 @@ inline bool Matrix4<T>::getInverse(Matrix4<T> &out) const
 			(m[1] * m[7] - m[3] * m[5]) * (m[8] * m[14] - m[10] * m[12]) +
 			(m[2] * m[7] - m[3] * m[6]) * (m[8] * m[13] - m[9] * m[12]);
 
-	if (utils::iszero(d, FLT_MIN))
+    if (equals(d, 0, FLT_MIN))
 		return false;
 
-	d = utils::reciprocal(d);
+    d = 1.0 / d;
 
 	out[0] = d * (m[5] * (m[10] * m[15] - m[11] * m[14]) +
 						 m[6] * (m[11] * m[13] - m[9] * m[15]) +
@@ -1352,11 +1305,11 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovRH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	const f64 h = reciprocal(tan(fieldOfViewRadians * 0.5));
-	_IRR_DEBUG_BREAK_IF(aspectRatio == 0.f); // divide by zero
+    const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
+    assert(aspectRatio != 0.f); // divide by zero
 	const T w = static_cast<T>(h / aspectRatio);
 
-	_IRR_DEBUG_BREAK_IF(zNear == zFar); // divide by zero
+    assert(zNear != zFar); // divide by zero
 	M[0] = w;
 	M[1] = 0;
 	M[2] = 0;
@@ -1394,11 +1347,11 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovLH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	const f64 h = reciprocal(tan(fieldOfViewRadians * 0.5));
-	_IRR_DEBUG_BREAK_IF(aspectRatio == 0.f); // divide by zero
+    const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
+    assert(aspectRatio != 0.f); // divide by zero
 	const T w = static_cast<T>(h / aspectRatio);
 
-	_IRR_DEBUG_BREAK_IF(zNear == zFar); // divide by zero
+    assert(zNear != zFar); // divide by zero
 	M[0] = w;
 	M[1] = 0;
 	M[2] = 0;
@@ -1436,8 +1389,8 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovInfinityLH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 epsilon)
 {
-	const f64 h = reciprocal(tan(fieldOfViewRadians * 0.5));
-	_IRR_DEBUG_BREAK_IF(aspectRatio == 0.f); // divide by zero
+    const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
+    assert(aspectRatio != 0.f); // divide by zero
 	const T w = static_cast<T>(h / aspectRatio);
 
 	M[0] = w;
@@ -1468,9 +1421,9 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoLH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	_IRR_DEBUG_BREAK_IF(widthOfViewVolume == 0.f);  // divide by zero
-	_IRR_DEBUG_BREAK_IF(heightOfViewVolume == 0.f); // divide by zero
-	_IRR_DEBUG_BREAK_IF(zNear == zFar);             // divide by zero
+    assert(widthOfViewVolume != 0.f);  // divide by zero
+    assert(heightOfViewVolume != 0.f); // divide by zero
+    assert(zNear != zFar);             // divide by zero
 	M[0] = (T)(2 / widthOfViewVolume);
 	M[1] = 0;
 	M[2] = 0;
@@ -1507,9 +1460,9 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoRH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	_IRR_DEBUG_BREAK_IF(widthOfViewVolume == 0.f);  // divide by zero
-	_IRR_DEBUG_BREAK_IF(heightOfViewVolume == 0.f); // divide by zero
-	_IRR_DEBUG_BREAK_IF(zNear == zFar);             // divide by zero
+    assert(widthOfViewVolume != 0.f);  // divide by zero
+    assert(heightOfViewVolume != 0.f); // divide by zero
+    assert(zNear != zFar);             // divide by zero
 	M[0] = (T)(2 / widthOfViewVolume);
 	M[1] = 0;
 	M[2] = 0;
@@ -1546,9 +1499,9 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveRH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	_IRR_DEBUG_BREAK_IF(widthOfViewVolume == 0.f);  // divide by zero
-	_IRR_DEBUG_BREAK_IF(heightOfViewVolume == 0.f); // divide by zero
-	_IRR_DEBUG_BREAK_IF(zNear == zFar);             // divide by zero
+    assert(widthOfViewVolume != 0.f);  // divide by zero
+    assert(heightOfViewVolume != 0.f); // divide by zero
+    assert(zNear != zFar);             // divide by zero
 	M[0] = (T)(2 * zNear / widthOfViewVolume);
 	M[1] = 0;
 	M[2] = 0;
@@ -1586,9 +1539,9 @@ template <class T>
 inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveLH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
-	_IRR_DEBUG_BREAK_IF(widthOfViewVolume == 0.f);  // divide by zero
-	_IRR_DEBUG_BREAK_IF(heightOfViewVolume == 0.f); // divide by zero
-	_IRR_DEBUG_BREAK_IF(zNear == zFar);             // divide by zero
+    assert(widthOfViewVolume != 0.f);  // divide by zero
+    assert(heightOfViewVolume != 0.f); // divide by zero
+    assert(zNear != zFar);             // divide by zero
 	M[0] = (T)(2 * zNear / widthOfViewVolume);
 	M[1] = 0;
 	M[2] = 0;
@@ -2055,8 +2008,5 @@ inline Matrix4<T> operator*(const T scalar, const Matrix4<T> &mat)
 
 //! Typedef for f32 matrix
 typedef Matrix4<f32> matrix4;
-
-//! global const identity matrix
-IRRLICHT_API extern const matrix4 IdentityMatrix;
 
 }

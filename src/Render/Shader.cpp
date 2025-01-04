@@ -24,7 +24,7 @@ std::string readFile(const std::string &path)
 	return strBuffer.str();
 }
 
-Shader::Shader(const std::string &vsPath, const std::string &fsPath, const std::string &gsPath)
+Shader::Shader(const fs::path &vsPath, const fs::path &fsPath, const fs::path &gsPath)
 {
 	if (vsPath == "" || fsPath == "")
 	{
@@ -41,9 +41,9 @@ Shader::Shader(const std::string &vsPath, const std::string &fsPath, const std::
 
 Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::string &gsCode)
 {
-	if (vsCode == "" || fSCode == "")
+    if (vsCode == "" || fsCode == "")
 	{
-		SDL_LogError(VC_VIDEO, "Shader:Shader() empty code strings of the vertex or fragment shaders");
+        SDL_LogError(LC_VIDEO, "Shader:Shader() empty code strings of the vertex or fragment shaders");
 		return;
 	}
 
@@ -91,33 +91,33 @@ void Shader::setUniformUIntArray(const std::string &name, std::vector<u32> value
 	glUniform1uiv(getUniformLocation(name), values.size(), values.data());
 }
 
-void Shader::setUniform2Float(const std::string &name, utils::vec2f value)
+void Shader::setUniform2Float(const std::string &name, utils::v2f value)
 {
 	glUniform2f(getUniformLocation(name), value.X, value.Y);
 }
-void Shader::setUniform2Int(const std::string &name, utils::vec2i value)
+void Shader::setUniform2Int(const std::string &name, utils::v2i value)
 {
 	glUniform2i(getUniformLocation(name), value.X, value.Y);
 }
-void Shader::setUniform2UInt(const std::string &name, utils::vec2u value)
+void Shader::setUniform2UInt(const std::string &name, utils::v2u value)
 {
 	glUniform2ui(getUniformLocation(name), value.X, value.Y);
 }
 
-void Shader::setUniform3Float(const std::string &name, utils::vec3f value)
+void Shader::setUniform3Float(const std::string &name, utils::v3f value)
 {
 	glUniform3f(getUniformLocation(name), value.X, value.Y, value.Z);
 }
-void Shader::setUniform3Int(const std::string &name, utils::vec3i value)
+void Shader::setUniform3Int(const std::string &name, utils::v3i value)
 {
 	glUniform3i(getUniformLocation(name), value.X, value.Y, value.Z);
 }
-void Shader::setUniform3UInt(const std::string &name, utils::vec3u value)
+void Shader::setUniform3UInt(const std::string &name, utils::v3u value)
 {
 	glUniform3ui(getUniformLocation(name), value.X, value.Y, value.Z);
 }
 
-void Shader::setUniform4x4Matrix(const std::string &name, utils::Matrix4 value)
+void Shader::setUniform4x4Matrix(const std::string &name, utils::matrix4 value)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.pointer());
 }
@@ -135,10 +135,11 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 		return 0;
 
 	GLuint shader = glCreateShader(shaderType);
-	glShaderSource(shader, 1, &code, nullptr);
+    const char *cstr_code = code.c_str();
+    glShaderSource(shader, 1, &cstr_code, nullptr);
 	glCompileShader(shader);
 
-	GLuint success;
+    GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
 	if (!success) {
@@ -148,7 +149,8 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 		GLchar *infoLog = new GLchar[maxLength];
 		glGetShaderInfoLog(shader, maxLength, nullptr, infoLog);
 
-		SDL_LogError(VC_VIDEO, "Shader::createShader() the shader failed to compile: " + std::string(infoLog));
+        std::string logErr = "Shader::createShader() the shader failed to compile: " + std::string(infoLog);
+        SDL_LogError(LC_VIDEO, logErr.c_str());
 		return 0;
 	}
 
@@ -158,15 +160,15 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 u32 Shader::createProgram()
 {
 	GLuint program = glCreateProgram();
-	glAttachShader(program, &vertexShaderID);
-	glAttachShader(program, &fragmentShaderID);
+    glAttachShader(program, vertexShaderID);
+    glAttachShader(program, fragmentShaderID);
 
 	if (geometryShaderID != 0)
-		glAttachShader(program, &geometryShaderID);
+        glAttachShader(program, geometryShaderID);
 
 	glLinkProgram(program);
 
-	GLuint success;
+    GLint success;
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 
 	if (!success) {
@@ -176,7 +178,8 @@ u32 Shader::createProgram()
 		GLchar *infoLog = new GLchar[maxLength];
 		glGetProgramInfoLog(program, maxLength, nullptr, infoLog);
 
-		SDL_LogError(VC_VIDEO, "Shader::createProgram() the program failed to link: " + std::string(infoLog));
+        std::string logErr = "Shader::createProgram() the program failed to link: " + std::string(infoLog);
+        SDL_LogError(LC_VIDEO, logErr.c_str());
 		return 0;
 	}
 
@@ -188,7 +191,7 @@ u32 Shader::getUniformLocation(const std::string &name)
 	auto found = uniforms.find(name);
 
 	if (found != uniforms.end())
-		return found.second;
+        return found->second;
 	else {
 		u32 location = glGetUniformLocation(programID, name.c_str());
 		uniforms[name] = location;
