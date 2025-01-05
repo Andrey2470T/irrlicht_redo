@@ -1,9 +1,16 @@
-IrrlichtMt version 1.9
+IrrlichtRedo 2.0-beta
 ======================
 
-IrrlichtMt is the 3D engine of [Minetest](https://github.com/minetest).
-It is based on the [Irrlicht Engine](https://irrlicht.sourceforge.io/) but is now developed independently.
-It is intentionally not compatible to upstream and is planned to be eventually absorbed into Minetest.
+My fork of the IrrlichtMt [Minetest](https://github.com/minetest/lib/irr). Represents the fully rewritten and refactored version of the 3D engine which aiming to be more modern and readable. Many crusty stuff like the GUI, fixed-pipeline, scene management, manual loading of the OpenGL functions were removed, the part of which has been replaced to more lighweight and transparent abstractions like DrawContext, FrameBuffer, Shader and another part will be updated and re-added to the MT since the common goal of the library is to provide the low-level access to the OpenGL and SDL.
+
+Features
+-----
+
+* Support of OpenGL 3.1+ and ES 2.0+ with using their new features.
+* Low-level graphics API representing the abstraction wrappers over OpenGL.
+* Much more simplified and more simply readable comparing to the original.
+* Support of SDL2_image for reading/writing images.
+* Doesn't expose the GUI and Scene interfaces anymore (later they will be integrated to the MT itself).
 
 Build
 -----
@@ -11,30 +18,26 @@ Build
 The build system is CMake.
 
 The following libraries are required to be installed:
-* zlib, libPNG, libJPEG
+* zlib
+* libPNG
+* libJPEG
 * OpenGL
   * or on mobile: OpenGL ES (can be optionally enabled on desktop too)
-* on Unix: X11
-* SDL2 (see below)
-
-Aside from standard search options (`ZLIB_INCLUDE_DIR`, `ZLIB_LIBRARY`, ...) the following options are available:
-* `ENABLE_OPENGL` - Enable OpenGL driver
-* `ENABLE_OPENGL3` (default: `OFF`) - Enable OpenGL 3+ driver
-* `ENABLE_GLES2` - Enable OpenGL ES 2+ driver
-* `USE_SDL2` (default: ON for Android, OFF for other platforms) - Use SDL2 instead of older native device code
+* SDL2
+* SDL2_image
+* GLEW
 
 However, IrrlichtMt cannot be built or installed separately.
 
 Platforms
 ---------
 
-We aim to support these platforms:
 * Windows via MinGW
 * Linux (GL or GLES)
 * macOS
 * Android
-
-This doesn't mean other platforms don't work or won't be supported, if you find something that doesn't work contributions are welcome.
+* Solaris
+* Emscripten
 
 License
 -------
