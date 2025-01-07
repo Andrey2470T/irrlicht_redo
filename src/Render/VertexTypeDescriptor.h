@@ -75,23 +75,9 @@ private:
 };
 
 // Returns size of the vertex type in bytes.
-extern size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
-{
-    size_t size = 0;
-	for (const auto &attr : vtype.Attributes)
-		size += attr.ComponentCount * utils::getSizeOfType(attr.ComponentType);
-
-	return size;
-}
-
+extern size_t sizeOfVertexType(const VertexTypeDescriptor &vtype);
 
 // Default 3D vertex type (position, color, normal and uv).
-extern const VertexTypeDescriptor DefaultVType{
-	"3D_Default",
-	{},
-	true,
-	true,
-	2
-};
+extern const VertexTypeDescriptor DefaultVType;
 
 }

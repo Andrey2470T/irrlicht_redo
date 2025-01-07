@@ -9,17 +9,7 @@ namespace img {
 
 class ImageModifier;
 
-bool isFormatSupportedForImage(PixelFormat format)
-{
-	switch (format) {
-        case PF_RGB8:
-        case PF_RGBA8:
-        case PF_INDEX_RGBA8:
-            return true;
-		default:
-			return false;
-	}
-}
+bool isFormatSupportedForImage(PixelFormat format);
 
 /* 
  * 8-bit palette (can be with alpha or without).

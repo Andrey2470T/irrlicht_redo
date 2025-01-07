@@ -5,6 +5,18 @@
 namespace img
 {
 
+bool isFormatSupportedForImage(PixelFormat format)
+{
+	switch (format) {
+		case PF_RGB8:
+		case PF_RGBA8:
+		case PF_INDEX_RGBA8:
+			return true;
+		default:
+			return false;
+	}
+}
+
 Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
     Palette *_palette, ImageModifier *mdf)
 	: format(_format), width(_width), height(_height)
