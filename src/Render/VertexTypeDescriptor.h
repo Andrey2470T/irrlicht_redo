@@ -20,7 +20,7 @@ struct VertexAttribute
 	BasicType ComponentType;
 	DataFormat Format;
 
-	bool operator==(const VertexAttribute &other)
+	bool operator==(const VertexAttribute other) const
 	{
 		return (ComponentCount == other.ComponentCount &&
 			ComponentType == other.ComponentType && Format == other.Format);
@@ -56,7 +56,7 @@ public:
 		for (const auto &attr : attributes)
 			Attributes.push_back(attr);
 	}
-    bool operator==(const VertexTypeDescriptor &other)
+    bool operator==(const VertexTypeDescriptor &other) const
 	{
 		return Attributes == other.Attributes;
 	}
