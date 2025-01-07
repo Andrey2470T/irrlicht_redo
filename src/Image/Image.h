@@ -32,6 +32,10 @@ struct Palette
 	
 	std::vector<color8> colors;
 	
+	Palette(bool _hasAlpha, u32 _size, const std::vector<color8> &_colors=std::vector<color8>())
+		: hasAlpha(_hasAlpha), size(_size), colors(_colors)
+	{}
+
 	u8 findColorIndex(const color8 &c)
 	{
 		auto it = std::find(colors.begin(), colors.end(), c);

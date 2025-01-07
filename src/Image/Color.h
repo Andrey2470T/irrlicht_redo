@@ -86,7 +86,7 @@ public:
 			return (R() + G() + B()) / 3;
 	}
 
-	void operator==(const ColorRGBA<T> &other)
+	bool operator==(const ColorRGBA<T> &other) const
 	{
 		u8 channelsCount = pixelFormatInfo[format].channels;
 
@@ -100,12 +100,12 @@ public:
 			return (R() == other.R() && G() == other.G() && B() == other.B() && A() == other.A());
 	}
 
-	void operator!=(const ColorRGBA<T> &other)
+	bool operator!=(const ColorRGBA<T> &other) const
 	{
 		return !(*this == other);
 	}
 
-	void operator<(const ColorRGBA<T> &other)
+	bool operator<(const ColorRGBA<T> &other) const
 	{
 		u8 channelsCount = pixelFormatInfo[format].channels;
 
@@ -129,12 +129,12 @@ public:
             A() + other.A());
 	}
 
-	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other) const
+	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other)
 	{
-		R(R() + other.R);
-		G(G() + other.G);
-		B(B() + other.B);
-		A(A() + other.A);
+		R(R() + other.R());
+		G(G() + other.G());
+		B(B() + other.B());
+		A(A() + other.A());
 
 		return *this;
 	}
@@ -149,12 +149,52 @@ public:
 			A() + val);
 	}
 
-	ColorRGBA<T> &operator+=(T val) const
+	ColorRGBA<T> &operator+=(T val)
 	{
 		R(R() + val);
 		G(G() + val);
         B(B() + val);
 		A(A() + val);
+
+		return *this;
+	}
+
+	ColorRGBA<T> operator-(const ColorRGBA<T> &other) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() - other.R(),
+			G() - other.G(),
+			B() - other.B(),
+            A() - other.A());
+	}
+
+	ColorRGBA<T> &operator-=(const ColorRGBA<T> &other)
+	{
+		R(R() - other.R());
+		G(G() - other.G());
+		B(B() - other.B());
+		A(A() - other.A());
+
+		return *this;
+	}
+
+	ColorRGBA<T> operator-(T val) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() - val,
+			G() - val,
+			B() - val,
+			A() - val);
+	}
+
+	ColorRGBA<T> &operator-=(T val)
+	{
+		R(R() - val);
+		G(G() - val);
+        B(B() - val);
+		A(A() - val);
 
 		return *this;
 	}
@@ -169,7 +209,7 @@ public:
 			A() * other.A());
 	}
 
-	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other) const
+	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other)
 	{
 		R(R() * other.R());
 		G(G() * other.G());
@@ -189,7 +229,7 @@ public:
 			A() * val);
 	}
 
-	ColorRGBA<T> &operator*=(T val) const
+	ColorRGBA<T> &operator*=(T val)
 	{
 		R(R() * val);
 		G(G() * val);

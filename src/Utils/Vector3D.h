@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MathFuncs.h"
-#include "BasicIncludes.h"
+#include <functional>
 
 namespace utils
 {

@@ -20,7 +20,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
 	if (_palette)
 		palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
 	else
-		palette = std::make_unique<Palette>(false, 0, 0);
+		palette = std::make_unique<Palette>(false, 0);
 
     if (mdf) {
         mdf->fill(this, _initColor);
@@ -42,7 +42,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 	if (_palette)
 		palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
 	else
-		palette = std::make_unique<Palette>(false, 0, 0);
+		palette = std::make_unique<Palette>(false, 0);
 
 	if (!ownPixelData)
 		data = _data;
