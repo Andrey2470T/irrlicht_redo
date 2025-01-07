@@ -1,0 +1,46 @@
+name: macos
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths_ignore:
+      - '.github/workflows/android.yml'
+      - '.github/workflows/linux.yml'
+      - '.github/workflows/windows.yml'
+  workflow_dispatch:
+    branches:
+      - 'main'
+    paths_ignore:
+      - '.github/workflows/linux.yml'
+      - '.github/workflows/macos.yml'
+      - '.github/workflows/windows.yml'
+jobs:
+  build-intel-macos:
+    # use lowest possible macOS running on x86_64 supported by brew to support more users
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          source ./scripts/install.sh
+          install_macos_deps
+
+      - name: Build
+        run: |
+          source ./scripts/build.sh
+          build_on_macos 10.14
+
+      # Zipping the built .app preserves permissions on the contained files,
+      #   which the GitHub artifact pipeline would otherwise strip away.
+      - name: CPack
+        run: |
+          cd build
+          rm -rf macos
+          cmake ..
+          cpack -G ZIP -B macos
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: irr-macos
+          path: ./build/macos/*.zip
