@@ -7,15 +7,15 @@
 namespace utils
 {
 
-std::string utf8_to_wide(std::string str)
+std::wstring utf8_to_wide(std::string str)
 {
-	string_convert<codecvt_utf8<char_t>> converter;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 	return converter.from_bytes(str);
 }
 
-std::string wide_to_utf8(std::string str)
+std::string wide_to_utf8(std::wstring str)
 {
-	string_convert<codecvt_utf8<char_t>> converter;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 	return converter.to_bytes(str);
 }
 

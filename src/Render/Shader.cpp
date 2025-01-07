@@ -1,13 +1,10 @@
 #include "Shader.h"
-#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include "UniformBuffer.h"
 
 namespace render
 {
-
-namespace fs = std::filesystem;
 
 std::string readFile(const std::string &path)
 {

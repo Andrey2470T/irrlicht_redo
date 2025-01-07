@@ -149,7 +149,7 @@ void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier 
     return;
 }
 
-void MainWindow::setCaption(const std::string &newCaption)
+void MainWindow::setCaption(const std::wstring &newCaption)
 {
     std::string utf8_str = utils::wide_to_utf8(newCaption);
 	SDL_SetWindowTitle(Window, utf8_str.c_str());
