@@ -13,7 +13,7 @@ install_linux_deps() {
 # macOS build only
 install_macos_deps() {
 	local pkgs=(
-		cmake glew jpeg-turbo libpng zstd
+		cmake glew jpeg-turbo libpng zstd sdl2 sdl2_image
 	)
 	export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 	export HOMEBREW_NO_INSTALL_CLEANUP=1

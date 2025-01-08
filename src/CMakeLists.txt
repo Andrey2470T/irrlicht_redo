@@ -173,7 +173,7 @@ target_link_libraries(${PROJECT_NAME}
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
-		SDL2::Main
+		SDL2::SDL2
 		${SDL2_IMAGE_LIBRARIES}
 		# incl. transitive SDL2 dependencies for static linking
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
