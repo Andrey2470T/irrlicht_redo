@@ -158,22 +158,22 @@ set(PRIVATE_HEADERS
 	${WEBGL1_INCLUDE_DIR}
 )
 
-add_library(IrrlichtMt SHARED ${SOURCES})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-target_include_directories(IrrlichtMt
+target_include_directories(${PROJECT_NAME}
 	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE
 		${PRIVATE_HEADERS}
 )
 
-target_link_libraries(IrrlichtMt
+target_link_libraries(${PROJECT_NAME}
 	PRIVATE
 		${ZLIB_LIBRARY}
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
-		${SDL2_LIBRARIES}
+		SDL2::Main
 		${SDL2_IMAGE_LIBRARIES}
 		# incl. transitive SDL2 dependencies for static linking
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
