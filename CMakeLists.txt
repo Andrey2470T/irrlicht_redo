@@ -21,3 +21,26 @@ set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug or Release")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 add_subdirectory(src)
+
+
+# CPack
+
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_RELOCATABLE "true")
+set(CPACK_PACKAGE_VENDOR "Andrey01")
+set(CPACK_PACKAGE_DEFAULT_LOCATION "/")
+set(CPACK_PACKAGE_FILE_NAME "irrlicht_redo-2.0-beta-linux")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "irrlicht_redo 2.0-beta")
+set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "irrlicht_redo 2.0-beta")
+set(CPACK_PACKAGE_VERSION "2.0-beta")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My fork of the IrrlichtMt Minetest.")
+set(CPACK_PACKAGE_VERSION_MAJOR ${IRRLICHTMT_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${IRRLICHTMT_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${IRRLICHTMT_PATCH_VERSION})
+
+include(CPackComponent)
+
+cpack_add_component(Docs
+	DISPLAY_NAME "Documentation"
+	DESCRIPTION "Documentation"
+)

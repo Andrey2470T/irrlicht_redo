@@ -6,6 +6,10 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
+if(APPLE)
+	set(CMAKE_INSTALL_PREFIX "/Users/runner/work/irrlicht_redo/")
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 	set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -159,6 +163,10 @@ set(PRIVATE_HEADERS
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+if(APPLE)
+	install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
