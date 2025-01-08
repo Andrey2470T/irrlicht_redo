@@ -12,7 +12,7 @@ build_on_macos() {
 	mkdir build
 	cd build
 	cmake .. \
-		-DCMAKE_OSX_DEPLOYMENT_TARGET=$1 \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
 		-DCMAKE_FIND_FRAMEWORK=LAST \
 		-DCMAKE_INSTALL_PREFIX=../build/macos/
 	cmake --build . -j$(sysctl -n hw.logicalcpu)

@@ -3,12 +3,10 @@
 #include "Common.h"
 #include "Utils/Matrix4.h"
 #include <unordered_map>
-#include <experimental/filesystem>
+#include "FilesystemVersions.h"
 
 namespace render
 {
-
-namespace fs = std::experimental::filesystem;
 
 class UniformBuffer;
 

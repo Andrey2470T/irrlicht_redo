@@ -1,12 +1,10 @@
 #pragma once
 
-#include <experimental/filesystem>
+#include "FilesystemVersions.h"
 #include "Converting.h"
 
 namespace img
 {
-
-namespace fs = std::experimental::filesystem;
 	
 enum ImageFormat
 {

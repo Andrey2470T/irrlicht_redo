@@ -53,18 +53,9 @@ protected:
 	TextureSettings texSettings;
 public:
 	Texture(const std::string &_name, u32 _width, u32 _height, img::PixelFormat _format,
-			const TextureSettings &_texSettings=TextureSettings())
-		: name(_name), width(_width), height(_height), format(_format), texSettings(_texSettings)
-	{
-		texSettings.hasMipMaps = false;
-		texSettings.maxMipLevel = 0;
-		texSettings.isRenderTarget = true;
-	}
+			const TextureSettings &_texSettings=TextureSettings());
 	
-    ~Texture()
-	{
-		glDeleteTextures(1, &texID);
-	}
+    virtual ~Texture();
 
 	std::string getName() const
 	{
@@ -105,8 +96,8 @@ public:
 	virtual void bind() const = 0;
 	virtual void unbind() const = 0;
 
-	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr);
-	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr);
+	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
+	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 
     virtual img::Image *downloadData() const = 0;
 	virtual void regenerateMipMaps(u8 max_level) = 0;

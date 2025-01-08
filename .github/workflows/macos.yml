@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: |
           source ./scripts/build.sh
-          build_on_macos 10.14
+          build_on_macos
 
       # Zipping the built .app preserves permissions on the contained files,
       #   which the GitHub artifact pipeline would otherwise strip away.
