@@ -29,17 +29,9 @@ jobs:
       with:
           distribution: 'temurin'
           java-version: '17'
-    - name: Build AAB with Gradle
-      # We build an AAB as well for uploading to the the Play Store.
-      run: cd android; ./gradlew bundlerelease
     - name: Build APKs with Gradle
       # "assemblerelease" is very fast after "bundlerelease".
       run: cd android; ./gradlew assemblerelease
-    - name: Save AAB artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: irr-release.aab
-        path: android/app/build/outputs/bundle/release/app-release.aab
     - name: Save armeabi artifact
       uses: actions/upload-artifact@v4
       with:
