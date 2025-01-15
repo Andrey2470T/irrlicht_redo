@@ -25,13 +25,13 @@ jobs:
 
       - name: Build
         run: |
-          cmake . -DRENDERER=OpenGL3+
-          make -j$(nproc)
+          cmake -B . -DRENDERER=OpenGL3+
+          cmake --build . --parallel $(nproc)
 
       - uses: actions/upload-artifact@v4
         with:
           name: IrrlichtMt-linux-gl3-plus
-          path: ./libIrrlichtMt
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.so
   
   linux-gles2:
     runs-on: ubuntu-latest
@@ -44,10 +44,10 @@ jobs:
 
       - name: Build
         run: |
-          cmake . -DRENDERER=OpenGLES2
-          make -j$(nproc)
+          cmake -B . -DRENDERER=OpenGLES2
+          cmake --build . --parallel $(nproc)
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: IrrlichtMt-linux-gles2
-          path: ./IrrlichtMt
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.so
