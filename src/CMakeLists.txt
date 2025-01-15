@@ -77,16 +77,20 @@ endif()
 # OpenGL
 
 if(ANDROID)
-	set(Renderer "OpenGLES2")
-	add_definitions(-DOPENGL_ES_2)
+	set(RENDERER "OpenGLES2")
 elseif(EMSCRIPTEN)
-	set(Renderer "WebGL1")
-	add_definitions(-DWEBGL_1)
+	set(RENDERER "WebGL1")
 else()
-	set(Renderer "OpenGL3+")
-	add_definitions(-DOPENGL_3_PLUS)
+	set(RENDERER "OpenGL3+")
 endif()
 
+if(RENDERER STREQUAL "OpenGL3+")
+	add_definitions(-DOPENGL_3_PLUS)
+elseif(RENDERER STREQUAL "OpenGLES2")
+	add_definitions(-DOPENGL_ES_2)
+else()
+	add_definitions(-DWEBGL_1)
+endif()
 
 # Misc
 
@@ -99,7 +103,7 @@ endif()
 
 # Print the current configuration
 message(STATUS "Platform: ${Platform}")
-message(STATUS "Renderer: ${Renderer}")
+message(STATUS "Renderer: ${RENDERER}")
 
 
 # Required libs
@@ -113,9 +117,9 @@ find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
-if(Renderer STREQUAL "OpenGLES2")
+if(RENDERER STREQUAL "OpenGLES2")
 	find_package(OpenGLES2 REQUIRED)
-elseif(Renderer STREQUAL "WebGL1")
+elseif(RENDERER STREQUAL "WebGL1")
 	find_package(WebGL1 REQUIRED)
 else()
 	find_package(OpenGL REQUIRED)

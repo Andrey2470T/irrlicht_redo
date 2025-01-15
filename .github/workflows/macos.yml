@@ -5,7 +5,6 @@ on:
     branches:
       - 'main'
     paths_ignore:
-      - '.github/workflows/android.yml'
       - '.github/workflows/linux.yml'
       - '.github/workflows/windows.yml'
   workflow_dispatch:
@@ -13,25 +12,44 @@ on:
       - 'main'
     paths_ignore:
       - '.github/workflows/linux.yml'
-      - '.github/workflows/macos.yml'
       - '.github/workflows/windows.yml'
 jobs:
-  build-intel-macos:
-    # use lowest possible macOS running on x86_64 supported by brew to support more users
-    runs-on: macos-13
+  macos-gl3-plus:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
-          source ./scripts/install.sh
-          install_macos_deps
+          brew update
+          brew install cmake libpng jpeg sdl2 sdl2_image glew
 
       - name: Build
         run: |
-          source ./scripts/build.sh
-          build_on_macos
+          cmake . -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+          -DCMAKE_FIND_FRAMEWORK=LAST -DRENDERER=OpenGL3+
+          make -j$(nproc)
 
       - uses: actions/upload-artifact@v4
         with:
-          name: libIrrlichtMt
-          path: /Users/runner/work/irrlicht_redo/libIrrlichtMt.dylib
+          name: IrrlichtMt-macos-gl3-plus
+          path: ./libIrrlichtMt.dylib
+          
+  macos-gles2:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          brew update
+          brew install cmake libpng jpeg sdl2 sdl2_image glew
+
+      - name: Build
+        run: |
+          cmake . -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+          -DCMAKE_FIND_FRAMEWORK=LAST -DRENDERER=OpenGLES2
+          make -j$(nproc)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IrrlichtMt-macos-gles2
+          path: ./libIrrlichtMt.dylib
