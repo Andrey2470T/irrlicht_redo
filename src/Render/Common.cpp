@@ -17,7 +17,7 @@ GLParameters::GLParameters()
 	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxTextureLODBias);
 }
 
-void debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message)
+void GLAPIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
 	// shader compiler can be very noisy
 	if (source == GL_DEBUG_SOURCE_SHADER_COMPILER && severity == GL_DEBUG_SEVERITY_NOTIFICATION)
@@ -28,25 +28,21 @@ void debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len
 		priority = SDL_LOG_PRIORITY_ERROR;
 	else if (severity == GL_DEBUG_SEVERITY_MEDIUM)
 		priority = SDL_LOG_PRIORITY_WARN;
-	
+
 	std::stringstream debugLog;
-	
+
 	debugLog << (u32)source << " ";
 	debugLog << (u32)type << " ";
 	debugLog << message;
 
-    std::string debugStr = debugLog.str();
-    SDL_LogMessage(LC_VIDEO, priority, debugStr.c_str());
-	//char buf[256];
-	//snprintf_irr(buf, sizeof(buf), "%04x %04x %.*s", source, type, length, message);
-	//os::Printer::log("GL", buf, ll);
+    SDL_LogMessage(LC_VIDEO, priority, debugLog.str().c_str());
 }
 
-/*void enableErrorTest()
+void enableErrorTest()
 {
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(debugCB, nullptr);
-}*/
+}
 
 bool testGLError(const char *file, int line)
 {
@@ -98,10 +94,16 @@ bool testGLError(const char *file, int line)
 			file_p = file_p.substr(basename_pos+1);
 	}
 
-	std::string log_output = err + " " + file_p + ":" + std::to_string(line);
-	log_output += (multiple ? " (older errors exist)" : "");
+	std::stringstream debugLog;
 
-	SDL_LogError(LC_VIDEO, log_output.c_str());
+	debugLog << err << " ";
+	debugLog << file_p << ":";
+	debugLog << line;
+
+	if (multiple)
+		debugLog << " (older errors exist)";
+
+	SDL_LogError(LC_VIDEO, debugLog.str().c_str());
 
 	return true;
 }

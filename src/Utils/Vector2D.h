@@ -276,7 +276,9 @@ public:
 };
 
 typedef Vector2D<f32> v2f;
+typedef Vector2D<s16> v2s16;
 typedef Vector2D<s32> v2i;
 typedef Vector2D<u32> v2u;
+typedef Vector2D<f64> v2f64;
 
 }

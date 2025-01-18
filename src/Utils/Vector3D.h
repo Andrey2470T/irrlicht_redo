@@ -423,7 +423,9 @@ public:
 };
 
 typedef Vector3D<f32> v3f;
+typedef Vector3D<s16> v3s16;
 typedef Vector3D<s32> v3i;
 typedef Vector3D<u32> v3u;
+typedef Vector3D<f64> v3f64;
 
 }
