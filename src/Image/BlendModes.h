@@ -2,7 +2,6 @@
 
 #include "BasicIncludes.h"
 #include "Color.h"
-#include <limits>
 
 namespace img
 {
@@ -37,9 +36,9 @@ inline ColorRGBA<T> AlphaBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	return ColorRGBA<T>(
 		src.getFormat(),
-        src.R() * src.A() + dst.R() * (std::numeric_limits<T>::max() - src.A()),
-        src.G() * src.A() + dst.G() * (std::numeric_limits<T>::max() - src.A()),
-        src.B() * src.A() + dst.B() * (std::numeric_limits<T>::max() - src.A()),
+        src.R() * src.A() + dst.R() * (T_MAX(T) - src.A()),
+        src.G() * src.A() + dst.G() * (T_MAX(T) - src.A()),
+        src.B() * src.A() + dst.B() * (T_MAX(T) - src.A()),
 		src.A()
 	);
 }
@@ -77,7 +76,7 @@ inline ColorRGBA<T> DivisionBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &d
 template <class T>
 inline ColorRGBA<T> ScreenBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 	return ColorRGBA<T>(
 		src.getFormat(),
 		max_v - (max_v - src.R())*(max_v - dst.R()),
@@ -89,7 +88,7 @@ inline ColorRGBA<T> ScreenBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst
 template <class T>
 inline ColorRGBA<T> OverlayBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 
 	ColorRGBA<T> newColor(src.getFormat());
 
@@ -112,7 +111,7 @@ inline ColorRGBA<T> OverlayBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &ds
 template <class T>
 inline ColorRGBA<T> HardLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 
 	ColorRGBA<T> newColor(src.getFormat());
 
@@ -135,7 +134,7 @@ inline ColorRGBA<T> HardLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &
 template <class T>
 inline ColorRGBA<T> SoftLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 
 	return ColorRGBA<T>(
 		src.getFormat(),
@@ -148,7 +147,7 @@ inline ColorRGBA<T> SoftLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &
 template <class T>
 inline ColorRGBA<T> GrainExtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 
 	return dst - src + max_v/2;
 }
@@ -156,7 +155,7 @@ inline ColorRGBA<T> GrainExtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T
 template <class T>
 inline ColorRGBA<T> GrainMergeBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	T max_v = std::numeric_limits<T>::max();
+	T max_v = T_MAX(T);
 
 	return dst + src - max_v/2;
 }

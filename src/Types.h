@@ -1,6 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
+
+#define T_MIN(t) \
+	std::numeric_limits<t>::min()
+
+#define T_MAX(t) \
+	std::numeric_limits<t>::max()
 
 typedef uint8_t u8;
 typedef int8_t s8;
