@@ -30,8 +30,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IrrlichtMt-linux-gl3-plus
-          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.so
+          name: IrrlichtRedo-linux-gl3-plus
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.so
   
   linux-gles2:
     runs-on: ubuntu-latest
@@ -49,5 +49,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IrrlichtMt-linux-gles2
-          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.so
+          name: IrrlichtRedo-linux-gles2
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.so

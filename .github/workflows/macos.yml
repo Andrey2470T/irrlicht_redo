@@ -32,8 +32,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IrrlichtMt-macos-gl3-plus
-          path: /Users/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.dylib
+          name: IrrlichtRedo-macos-gl3-plus
+          path: /Users/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.dylib
           
   macos-gles2:
     runs-on: macos-latest
@@ -53,5 +53,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IrrlichtMt-macos-gles2
-          path: /Users/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtMt.dylib
+          name: IrrlichtRedo-macos-gles2
+          path: /Users/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.dylib
