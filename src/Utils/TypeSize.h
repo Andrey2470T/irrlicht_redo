@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include "Types.h"
 
 namespace utils
 {

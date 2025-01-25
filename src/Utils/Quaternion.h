@@ -260,8 +260,6 @@ inline void Quaternion::getMatrixFast(matrix4 &dest) const
 	dest[13] = 0.f;
 	dest[14] = 0.f;
 	dest[15] = 1.f;
-
-	dest.setDefinitelyIdentityMatrix(false);
 }
 
 /*!
@@ -299,8 +297,6 @@ inline void Quaternion::getMatrix(matrix4 &dest,
 	dest[13] = center.Y;
 	dest[14] = center.Z;
 	dest[15] = 1.f;
-
-	dest.setDefinitelyIdentityMatrix(false);
 }
 
 /*!
@@ -373,8 +369,6 @@ inline void Quaternion::getMatrix_transposed(matrix4 &dest) const
 	dest[7] = 0.f;
 	dest[11] = 0.f;
 	dest[15] = 1.f;
-
-	dest.setDefinitelyIdentityMatrix(false);
 }
 
 // Inverts this Quaternion
@@ -452,7 +446,7 @@ inline Quaternion &Quaternion::normalize()
 {
 	// removed conditional branch since it may slow down and anyway the condition was
 	// false even after normalization in some cases.
-	return (*this *= (f32)reciprocal_squareroot((f64)(X * X + Y * Y + Z * Z + W * W)));
+    return (*this *= (f32)(1.0 / sqrt((f64)(X * X + Y * Y + Z * Z + W * W))));
 }
 
 // Set this Quaternion to the result of the linear interpolation between two Quaternions
@@ -482,7 +476,7 @@ inline Quaternion &Quaternion::slerp(Quaternion q1, Quaternion q2, f32 time, f32
 
 	if (angle <= (1 - threshold)) { // spherical interpolation
 		const f32 theta = acosf(angle);
-		const f32 invsintheta = reciprocal(sinf(theta));
+        const f32 invsintheta = 1.0f / sinf(theta);
 		const f32 scale = sinf(theta * (1.0f - time)) * invsintheta;
 		const f32 invscale = sinf(theta * time) * invsintheta;
 		return (*this = (q1 * scale) + (q2 * invscale));
@@ -512,13 +506,13 @@ inline void Quaternion::toAngleAxis(f32 &angle, v3f &axis) const
 {
 	const f32 scale = sqrtf(X * X + Y * Y + Z * Z);
 
-	if (utils::iszero(scale) || W > 1.0f || W < -1.0f) {
+    if (utils::equals(scale, 0.0f) || W > 1.0f || W < -1.0f) {
 		angle = 0.0f;
 		axis.X = 0.0f;
 		axis.Y = 1.0f;
 		axis.Z = 0.0f;
 	} else {
-		const f32 invscale = reciprocal(scale);
+        const f32 invscale = 1.0f / scale;
 		angle = 2.0f * acosf(W);
 		axis.X = X * invscale;
 		axis.Y = Y * invscale;
@@ -540,21 +534,21 @@ inline void Quaternion::toEuler(v3f &euler) const
 		// bank = rotation about x-axis
 		euler.X = 0;
 		// attitude = rotation about y-axis
-		euler.Y = (f32)(utils::PI64 / 2.0);
+        euler.Y = (f32)(utils::PI / 2.0);
 	} else if (utils::equals(test, -1.0, 0.000001)) {
 		// heading = rotation about z-axis
 		euler.Z = (f32)(2.0 * atan2(X, W));
 		// bank = rotation about x-axis
 		euler.X = 0;
 		// attitude = rotation about y-axis
-		euler.Y = (f32)(utils::PI64 / -2.0);
+        euler.Y = (f32)(utils::PI / -2.0);
 	} else {
 		// heading = rotation about z-axis
 		euler.Z = (f32)atan2(2.0 * (X * Y + Z * W), (sqx - sqy - sqz + sqw));
 		// bank = rotation about x-axis
 		euler.X = (f32)atan2(2.0 * (Y * Z + X * W), (-sqx - sqy + sqz + sqw));
 		// attitude = rotation about y-axis
-		euler.Y = (f32)asin(clamp(test, -1.0, 1.0));
+        euler.Y = (f32)asin(std::clamp(test, -1.0, 1.0));
 	}
 }
 
@@ -600,7 +594,7 @@ inline utils::Quaternion &Quaternion::rotationFromTo(const v3f &from, const v3f 
 		v3f axis(1.0f, 0.f, 0.f);
 		axis = axis.crossProduct(v0);
 		if (axis.getLength() == 0) {
-			axis.set(0.f, 1.f, 0.f);
+            axis = v3f(0.f, 1.f, 0.f);
 			axis = axis.crossProduct(v0);
 		}
 		// same as fromAngleAxis(utils::PI, axis).normalize();

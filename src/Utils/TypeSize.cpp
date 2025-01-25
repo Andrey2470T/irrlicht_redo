@@ -1,4 +1,3 @@
-#include "BasicIncludes.h"
 #include "TypeSize.h"
 
 namespace utils
