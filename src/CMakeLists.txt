@@ -138,13 +138,6 @@ if(NOT CHECK_SDL_VERSION)
 	message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
 endif()
 
-# ...no target either.
-if(NOT TARGET SDL2::SDL2)
-	add_library(SDL2::SDL2 SHARED IMPORTED)
-	set_target_properties(SDL2::SDL2 PROPERTIES
-		IMPORTED_LOCATION "${SDL2_LIBRARIES}")
-endif()
-
 
 # Adding library
 
@@ -175,7 +168,6 @@ endif()
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}
-	PRIVATE
 		${PRIVATE_HEADERS}
 )
 
@@ -185,7 +177,7 @@ target_link_libraries(${PROJECT_NAME}
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
-		SDL2::SDL2
+		${SDL2_LIBRARIES}
 		${SDL2_IMAGE_LIBRARIES}
 		# incl. transitive SDL2 dependencies for static linking
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
