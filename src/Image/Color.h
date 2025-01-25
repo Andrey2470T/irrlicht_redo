@@ -20,6 +20,7 @@ class ColorRGBA
 	//! depending on the format
 	utils::ByteArray color;
 public:
+    ColorRGBA() = default;
 	ColorRGBA(PixelFormat _format)
 		: format(_format), color(pixelFormatInfo[format].size / 8)
 	{}

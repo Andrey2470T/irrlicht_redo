@@ -17,10 +17,10 @@ namespace img
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
 		u8 *data = static_cast<u8*>(surf->pixels);
-		
+
 		return new Image(format, w, h, data);
 	}
-	
+
 	SDL_Surface *convertImageToSDLSurface(Image *img)
 	{
 		s32 pixelBits = static_cast<s32>(pixelFormatInfo.at(img->getFormat()).size);
@@ -32,8 +32,19 @@ namespace img
 		u32 greenMask = getGreenMask(img->getFormat());
 		u32 blueMask = getBlueMask(img->getFormat());
 		u32 alphaMask = getAlphaMask(img->getFormat());
-		
-		
+
+
 		return SDL_CreateRGBSurfaceFrom(data, w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
+	}
+
+	// Convert the numerical u32 color representation (ARGB) to the color8 object
+	img::color8 colorU32NumberToObject(u32 color)
+	{
+		u8 alpha = color >> 24;
+		u8 red = (color >> 16) & 0xFF;
+		u8 green = (color >> 8) & 0xFF;
+		u8 blue = color & 0xFF;
+
+		return img::color8(img::PF_RGBA8, red, green, blue, alpha);
 	}
 }
