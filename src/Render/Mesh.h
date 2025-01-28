@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Common.h"
 #include "VertexTypeDescriptor.h"
 
 namespace render

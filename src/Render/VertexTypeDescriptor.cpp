@@ -1,4 +1,5 @@
 #include "VertexTypeDescriptor.h"
+#include "Utils/TypeSize.h"
 
 namespace render
 {

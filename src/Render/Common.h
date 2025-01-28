@@ -3,7 +3,7 @@
 #include <SDL_video.h>
 #include <GL/glew.h>
 
-#include "BasicIncludes.h"
+#include "ExtBasicIncludes.h"
 
 #include "toGLEnum.h"
 

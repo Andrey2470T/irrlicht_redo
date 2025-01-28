@@ -1,6 +1,5 @@
 #include <algorithm>
 #include "ImageModifier.h"
-#include "ResizeFilters.h"
 
 namespace img
 {
@@ -149,6 +148,8 @@ bool ImageModifier::copyTo(
 			else
 				setPixel(dstImg, x + dstRect->ULC.X, y + dstRect->ULC.Y, curColor);
 		}
+
+    delete srcPart;
 
 	return true;
 }

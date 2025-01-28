@@ -1,6 +1,5 @@
 #include <SDL_image.h>
 #include "Image.h"
-#include <map>
 
 namespace img
 {

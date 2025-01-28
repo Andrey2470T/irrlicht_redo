@@ -1,6 +1,5 @@
 #include "Image.h"
 #include "ImageModifier.h"
-#include <algorithm>
 
 namespace img
 {

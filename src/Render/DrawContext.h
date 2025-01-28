@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Common.h"
 #include "Image/BlendModes.h"
 #include "FrameBuffer.h"
 #include "Shader.h"

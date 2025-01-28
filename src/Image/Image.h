@@ -3,7 +3,6 @@
 #include "Render/Common.h"
 #include "PixelFormats.h"
 #include "Color.h"
-#include <algorithm>
 
 namespace img {
 

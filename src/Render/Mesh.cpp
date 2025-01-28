@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Utils/TypeSize.h"
 
 namespace render
 {

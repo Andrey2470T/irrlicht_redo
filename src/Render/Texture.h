@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Common.h"
 #include "Image/Image.h"
 #include "Image/ImageModifier.h"
 

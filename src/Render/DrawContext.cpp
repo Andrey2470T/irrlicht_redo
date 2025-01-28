@@ -1,5 +1,4 @@
 #include "DrawContext.h"
-#include <map>
 
 namespace render
 {

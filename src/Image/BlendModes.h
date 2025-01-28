@@ -1,6 +1,5 @@
 #pragma once
 
-#include "BasicIncludes.h"
 #include "Color.h"
 
 namespace img
