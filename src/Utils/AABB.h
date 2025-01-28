@@ -26,18 +26,18 @@ public:
 	Vector3D<T> MaxEdge;
 
 	//! Default Constructor.
-	AABB() : MinEdge(-1, -1, -1), MaxEdge(1, 1, 1) {}
+    constexpr AABB() : MinEdge(-1, -1, -1), MaxEdge(1, 1, 1) {}
 	//! Constructor with min edge and max edge.
-	AABB(const Vector3D<T> &min, const Vector3D<T> &max)
+    constexpr AABB(const Vector3D<T> &min, const Vector3D<T> &max)
 		: MinEdge(min), MaxEdge(max) {}
 	//! Constructor with only one point.
-	AABB(const Vector3D<T> &init)
+    constexpr AABB(const Vector3D<T> &init)
 		: MinEdge(init), MaxEdge(init) {}
 	//! Constructor with min edge and max edge as single values, not vectors.
-	AABB(T minx, T miny, T minz, T maxx, T maxy, T maxz)
+    constexpr AABB(T minx, T miny, T minz, T maxx, T maxy, T maxz)
 		: MinEdge(minx, miny, minz), MaxEdge(maxx, maxy, maxz) {}
 
-	AABB(const AABB<T> &other)
+    constexpr AABB(const AABB<T> &other)
 		: MinEdge(other.MinEdge), MaxEdge(other.MaxEdge) {}
 
 	AABB<T> &operator=(const AABB<T> &other)
@@ -352,9 +352,8 @@ public:
 	}
 };
 
-//! Typedef for a f32 3d bounding box.
 typedef AABB<f32> aabbf;
-//! Typedef for an integer 3d bounding box.
 typedef AABB<s32> aabbi;
+typedef AABB<s16> aabbs16;
 
 }

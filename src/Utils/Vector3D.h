@@ -20,13 +20,13 @@ public:
 	//! Z coordinate of vector.
 	T Z;
 
-	Vector3D() : X(0), Y(0), Z(0) {}
+	constexpr Vector3D() : X(0), Y(0), Z(0) {}
 
-	Vector3D(T x, T y, T z) : X(x), Y(y), Z(z) {}
+	constexpr Vector3D(T x, T y, T z) : X(x), Y(y), Z(z) {}
 
-	explicit Vector3D(T n) : X(n), Y(n), Z(n) {}
+	constexpr explicit Vector3D(T n) : X(n), Y(n), Z(n) {}
 
-	Vector3D(const Vector3D<T> &other) : X(other.X), Y(other.Y), Z(other.Z) {}
+    constexpr Vector3D(const Vector3D<T> &other) : X(other.X), Y(other.Y), Z(other.Z) {}
 
 	Vector3D<T> &operator=(const Vector3D<T> &other)
 	{

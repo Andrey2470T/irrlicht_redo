@@ -18,15 +18,15 @@ class Line3D
 	//! End point of the line.
 	Vector3D<T> End;
 public:
-	Line3D() : Start(0, 0, 0), End(1, 1, 1) {}
+	constexpr Line3D() : Start(0, 0, 0), End(1, 1, 1) {}
 
-	Line3D(T xa, T ya, T za, T xb, T yb, T zb)
+	constexpr Line3D(T xa, T ya, T za, T xb, T yb, T zb)
 		: Start(xa, ya, za), End(xb, yb, zb) {}
 
-	Line3D(const Vector3D<T> &start, const Vector3D<T> &end)
+	constexpr Line3D(const Vector3D<T> &start, const Vector3D<T> &end)
 		: Start(start), End(end) {}
 
-	Line3D(const Line3D &other)
+	constexpr Line3D(const Line3D &other)
 		: Start(other.Start), End(other.End) {}
 
 	Line3D<T> &operator=(const Line3D<T> &other)

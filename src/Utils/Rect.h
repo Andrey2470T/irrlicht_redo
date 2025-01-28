@@ -26,21 +26,21 @@ public:
 	//! Lower right corner
 	Vector2D<T> LRC;
 
-	Rect() : ULC(0, 0), LRC(0) {}
+	constexpr Rect() : ULC(0, 0), LRC(0) {}
 
-	Rect(T x, T y, T x2, T y2)
+	constexpr Rect(T x, T y, T x2, T y2)
 		: ULC(x, y), LRC(x2, y2) {}
 
-	Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight)
+	constexpr Rect(const Vector2D<T> &upperLeft, const Vector2D<T> &lowerRight)
 		: ULC(upperLeft), LRC(lowerRight) {}
 
-    Rect(const Vector2D<T> &pos, T width, T height)
+    constexpr Rect(const Vector2D<T> &pos, T width, T height)
         : ULC(pos), LRC(pos.X + width, pos.Y + height) {}
 
-	explicit Rect(const Vector2D<T> &size)
+	constexpr explicit Rect(const Vector2D<T> &size)
 		: ULC(0, 0), LRC(size.X, size.Y) {}
 
-	Rect(const Rect &other)
+	constexpr Rect(const Rect &other)
 		: ULC(other.ULC), LRC(other.LRC) {}
 
 	Rect<T> &operator=(const Rect<T> &other)

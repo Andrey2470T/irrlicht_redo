@@ -27,22 +27,22 @@ public:
 	T D;
 
 	// Constructors
-	Plane3D() : Normal(0, 1, 0) { recalculateD(Vector3D<T>(0, 0, 0)); }
+	constexpr Plane3D() : Normal(0, 1, 0) { recalculateD(Vector3D<T>(0, 0, 0)); }
 
-	Plane3D(const Vector3D<T> &MPoint, const Vector3D<T> &Normal)
-		: Normal(Normal) 
-	{ 
+	constexpr Plane3D(const Vector3D<T> &MPoint, const Vector3D<T> &Normal)
+		: Normal(Normal)
+	{
 		recalculateD(MPoint);
 	}
 
-	Plane3D(const Vector3D<T> &point1, const Vector3D<T> &point2, const Vector3D<T> &point3)
+	constexpr Plane3D(const Vector3D<T> &point1, const Vector3D<T> &point2, const Vector3D<T> &point3)
 	{
 		setPlane(point1, point2, point3);
 	}
 
-	Plane3D(const Vector3D<T> &normal, const T d) : Normal(normal), D(d) {}
-	
-	Plane3D(const Plane3D &other) : Normal(other.Normal), D(other.D) {}
+	constexpr Plane3D(const Vector3D<T> &normal, const T d) : Normal(normal), D(d) {}
+
+	constexpr Plane3D(const Plane3D &other) : Normal(other.Normal), D(other.D) {}
 
 	// operators
 

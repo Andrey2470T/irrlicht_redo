@@ -18,15 +18,15 @@ class Line2D
 	//! End point of the line.
 	Vector2D<T> End;
 public:
-	Line2D() : Start(0, 0), End(1, 1) {}
+	constexpr Line2D() : Start(0, 0), End(1, 1) {}
 
-	Line2D(T xa, T ya, T xb, T yb)
+	constexpr Line2D(T xa, T ya, T xb, T yb)
 		: Start(xa, ya), End(xb, yb) {}
 
-	Line2D(const Vector2D<T> &start, const Vector2D<T> &end)
+	constexpr Line2D(const Vector2D<T> &start, const Vector2D<T> &end)
 		: Start(start), End(end) {}
 
-	Line2D(const Line2D &other)
+	constexpr Line2D(const Line2D &other)
 		: Start(other.Start), End(other.End) {}
 
 	Line2D<T> &operator=(const Line2D<T> &other)

@@ -17,13 +17,13 @@ public:
 	//! Y coordinate of vector.
 	T Y;
 
-	Vector2D() : X(0), Y(0) {}
+	constexpr Vector2D() : X(0), Y(0) {}
 
-	Vector2D(T x, T y) : X(x), Y(y) {}
+	constexpr Vector2D(T x, T y) : X(x), Y(y) {}
 
-	explicit Vector2D(T n) : X(n), Y(n) {}
+	constexpr explicit Vector2D(T n) : X(n), Y(n) {}
 
-	Vector2D(const Vector2D<T> &other) : X(other.X), Y(other.Y) {}
+	constexpr Vector2D(const Vector2D<T> &other) : X(other.X), Y(other.Y) {}
 
 	Vector2D<T> &operator=(const Vector2D<T> &other)
 	{
