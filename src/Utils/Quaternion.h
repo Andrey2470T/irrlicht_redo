@@ -32,10 +32,10 @@ public:
 			X(x), Y(y), Z(z), W(w) {}
 
 	//! Constructor which converts Euler angles (radians) to a Quaternion
-	constexpr Quaternion(f32 x, f32 y, f32 z);
+	Quaternion(f32 x, f32 y, f32 z);
 
 	//! Constructor which converts Euler angles (radians) to a Quaternion
-	constexpr Quaternion(const v3f &vec);
+	Quaternion(const v3f &vec);
 
 	//! Equality operator
 	bool operator==(const Quaternion &other) const

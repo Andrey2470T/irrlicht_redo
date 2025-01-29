@@ -3,14 +3,14 @@
 namespace utils {
 
 // Constructor which converts Euler angles to a Quaternion
-constexpr inline Quaternion::Quaternion(f32 x, f32 y, f32 z)
+inline Quaternion::Quaternion(f32 x, f32 y, f32 z)
 	: X(0.0f), Y(0.0f), Z(0.0f), W(1.0f)
 {
     set(x, y, z);
 }
 
 // Constructor which converts Euler angles to a Quaternion
-constexpr inline Quaternion::Quaternion(const v3f &vec)
+inline Quaternion::Quaternion(const v3f &vec)
 	: X(0.0f), Y(0.0f), Z(0.0f), W(1.0f)
 {
 	set(vec.X, vec.Y, vec.Z);
