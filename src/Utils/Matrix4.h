@@ -235,7 +235,7 @@ public:
 
 	//! Transforms the vector by this matrix
 	/** This operation is performed as if the vector was 4d with the 4th component =1 */
-	void transformVect(v3f &vect) const;
+    v3f &transformVect(v3f &vect) const;
 
 	//! Transforms input vector by this matrix and stores result in output vector
 	/** This operation is performed as if the vector was 4d with the 4th component =1 */

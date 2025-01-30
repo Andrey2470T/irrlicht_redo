@@ -598,7 +598,7 @@ inline Vector3D<T> Matrix4<T>::scaleThenInvRotVect(const Vector3D<T> &v) const
 }
 
 template <class T>
-inline void Matrix4<T>::transformVect(v3f &vect) const
+inline v3f &Matrix4<T>::transformVect(v3f &vect) const
 {
 	T vector[3];
 
@@ -609,6 +609,8 @@ inline void Matrix4<T>::transformVect(v3f &vect) const
 	vect.X = static_cast<f32>(vector[0]);
 	vect.Y = static_cast<f32>(vector[1]);
 	vect.Z = static_cast<f32>(vector[2]);
+
+    return vect;
 }
 
 template <class T>

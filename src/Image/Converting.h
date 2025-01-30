@@ -46,4 +46,16 @@ namespace img
 
 		return img::color8(img::PF_RGBA8, red, green, blue, alpha);
 	}
+
+	u32 colorObjectToU32Number(img::color8 color)
+	{
+		u32 coloru32;
+
+		coloru32 |= ((u32)color.A() << 24);
+		coloru32 |= ((u32)color.R() << 16);
+		coloru32 |= ((u32)color.G() << 8);
+		coloru32 |= ((u32)color.B());
+
+		return coloru32;
+	}
 }
