@@ -113,7 +113,6 @@ include(CheckCXXSourceCompiles)
 find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
-find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
@@ -149,7 +148,6 @@ file(GLOB_RECURSE SOURCES
 )
 
 set(PRIVATE_HEADERS
-	${ZLIB_INCLUDE_DIR}
 	${JPEG_INCLUDE_DIR}
 	${PNG_INCLUDE_DIR}
 	${SDL2_INCLUDE_DIRS}
@@ -173,7 +171,6 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
-		${ZLIB_LIBRARY}
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
