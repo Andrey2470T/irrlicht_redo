@@ -1,4 +1,4 @@
-IrrlichtRedo 2.0-beta
+IrrlichtRedo 2.0-Release
 ======================
 
 My fork of the IrrlichtMt [Minetest](https://github.com/minetest/lib/irr). Represents the fully rewritten and refactored version of the 3D engine which aiming to be more modern and readable. Many crusty stuff like the GUI, fixed-pipeline, scene management, manual loading of the OpenGL functions were removed, the part of which has been replaced to more lighweight and transparent abstractions like DrawContext, FrameBuffer, Shader and another part will be updated and re-added to the MT since the common goal of the library is to provide the low-level access to the OpenGL and SDL.
@@ -8,9 +8,9 @@ Features
 
 * Support of OpenGL 3.1+ and ES 2.0+ with using their new features.
 * Low-level graphics API representing the abstraction wrappers over OpenGL.
-* Much more simplified and more simply readable comparing to the original.
+* Much more flexible and readable comparing to the original, free from the the messed and invent-biked code.
 * Support of SDL2_image for reading/writing images.
-* Doesn't expose the GUI and Scene interfaces anymore (later they will be integrated to the MT itself).
+* Doesn't expose the GUI, Mesh loaders and Scene interfaces anymore (later they will be integrated to the MT itself).
 
 Build
 -----
@@ -18,7 +18,6 @@ Build
 The build system is CMake.
 
 The following libraries are required to be installed:
-* zlib
 * libPNG
 * libJPEG
 * OpenGL
