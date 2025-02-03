@@ -33,11 +33,11 @@ public:
 
 	ColorRGBA(const ColorRGBA &other)
 		: format(other.format), color(other.color) {}
-		
+
 	ColorRGBA<T> &operator=(const ColorRGBA<T> &other)
 	{
 		set(other.R(), other.G(), other.B(), other.A());
-		
+
 		return *this;
 	}
 
@@ -428,6 +428,26 @@ inline f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 
 typedef ColorRGBA<u8> color8;
 typedef ColorRGBA<f32> colorf;
+
+color8 getColor8(ByteArray *arr, u32 n)
+{
+	color8 c(PF_RGBA8);
+
+	c.R(arr->getUInt8(n));
+	c.G(arr->getUInt8(n+1));
+	c.B(arr->getUInt8(n+2));
+	c.A(arr->getUInt8(n+3));
+
+	return c;
+}
+
+void setColor8(ByteArray *arr, color8 c, u32 n)
+{
+	arr->setUInt8(c.R(), n);
+	arr->setUInt8(c.G(), n+1);
+	arr->setUInt8(c.B(), n+2);
+	arr->setUInt8(c.A(), n+3);
+}
 
 }
 

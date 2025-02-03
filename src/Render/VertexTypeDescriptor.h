@@ -19,6 +19,7 @@ struct VertexAttribute
 	u8 ComponentCount;
 	BasicType ComponentType;
 	DataFormat Format;
+	u8 Offset; // in summary components count from the beginning
 
 	bool operator==(const VertexAttribute other) const
 	{
@@ -52,7 +53,7 @@ public:
 		:Name(name)
 	{
 		initAttributes(init_normal, init_uv, uv_count);
-		
+
 		for (const auto &attr : attributes)
 			Attributes.push_back(attr);
 	}
@@ -63,14 +64,14 @@ public:
 private:
 	void initAttributes(bool init_normal=false, bool init_uv=false, u8 uv_count=0)
 	{
-		Attributes.push_back({"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
-		Attributes.push_back({"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
-		
+		Attributes.push_back({"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 0});
+		Attributes.push_back({"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized, 3});
+
 		if (init_normal)
-			Attributes.push_back({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
-		
+			Attributes.push_back({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 7});
+
 		if (init_uv)
-            Attributes.push_back({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+            Attributes.push_back({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 10});
 	}
 };
 

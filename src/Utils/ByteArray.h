@@ -82,6 +82,13 @@ public:
 		setFloat(elem.Y, n ? n.value() + 1 : n);
 	}
 
+	void setV3U(v3u elem, std::optional<u32> n)
+	{
+        setUInt32(elem.X, n);
+        setUInt32(elem.Y, n ? n.value() + 1 : n);
+        setUInt32(elem.Z, n ? n.value() + 2 : n);
+	}
+
 	void setV3I(v3i elem, std::optional<u32> n)
 	{
         setInt(elem.X, n);
@@ -151,6 +158,11 @@ public:
 	v2f getV2F(u32 n) const
 	{
 		return v2f(getFloat(n), getFloat(n + 1));
+	}
+
+	v3u getV3U(u32 n) const
+	{
+        return v3u(getUInt32(n), getUInt32(n + 1), getUInt32(n + 2));
 	}
 
 	v3i getV3I(u32 n) const
