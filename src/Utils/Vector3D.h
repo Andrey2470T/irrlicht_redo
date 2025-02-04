@@ -416,7 +416,7 @@ public:
 						forwards.Z * pseudoMatrix[8]));
 	}
 
-    Vector3D<T> apply(const std::function<void(T)> &func)
+    Vector3D<T> apply(const std::function<T(T)> &func)
     {
         return Vector3D<T>(func(X), func(Y), func(Z));
     }

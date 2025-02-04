@@ -80,7 +80,7 @@ inline f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 	return rm1;
 }
 
-color8 getColor8(ByteArray *arr, u32 n)
+color8 getColor8(const ByteArray *arr, u32 n)
 {
 	color8 c(PF_RGBA8);
 
@@ -92,7 +92,7 @@ color8 getColor8(ByteArray *arr, u32 n)
 	return c;
 }
 
-void setColor8(ByteArray *arr, color8 c, std::optional<u32> n)
+void setColor8(ByteArray *arr, const color8 &c, std::optional<u32> n)
 {
 	arr->setUInt8(c.R(), n);
 	arr->setUInt8(c.G(), n ? n.value()+1 : n);

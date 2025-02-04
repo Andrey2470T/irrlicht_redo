@@ -48,6 +48,12 @@ public:
         return reinterpret_cast<const void*>(bytes_data);
 	}
 
+	void *data()
+	{
+        u8 *bytes_data = bytes.data();
+        return reinterpret_cast<void*>(bytes_data);
+	}
+
 	//! Setters
 	// 'n' is a number of the byte array element which is necessary to replace
 	// or if it is not initialized, just set it at the end

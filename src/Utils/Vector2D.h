@@ -269,7 +269,7 @@ public:
 		return *this;
 	}
 
-    Vector2D<T> apply(const std::function<void(T)> &func)
+    Vector2D<T> apply(const std::function<T(T)> &func)
     {
         return Vector2D<T>(func(X), func(Y));
     }

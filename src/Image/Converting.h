@@ -37,17 +37,17 @@ namespace img
 	}
 
 	// Convert the numerical u32 color representation (ARGB) to the color8 object
-	img::color8 colorU32NumberToObject(u32 color)
+	color8 colorU32NumberToObject(u32 color)
 	{
 		u8 alpha = color >> 24;
 		u8 red = (color >> 16) & 0xFF;
 		u8 green = (color >> 8) & 0xFF;
 		u8 blue = color & 0xFF;
 
-		return img::color8(img::PF_RGBA8, red, green, blue, alpha);
+		return color8(PF_RGBA8, red, green, blue, alpha);
 	}
 
-	u32 colorObjectToU32Number(img::color8 color)
+	u32 colorObjectToU32Number(color8 color)
 	{
 		u32 coloru32;
 
@@ -57,5 +57,23 @@ namespace img
 		coloru32 |= ((u32)color.B());
 
 		return coloru32;
+	}
+
+	color8 colorfToColor8(colorf c)
+	{
+		u8 red = static_cast<u8>(round32(c.R() * 255.0f));
+		u8 green = static_cast<u8>(round32(c.G() * 255.0f));
+		u8 blue = static_cast<u8>(round32(c.B() * 255.0f));
+		u8 alpha = static_cast<u8>(round32(c.A() * 255.0f));
+
+		return color8(PF_RGBA8, red, green, blue, alpha);
+	}
+
+	colorf color8ToColorf(color8 c)
+	{
+		f32 red = std::clamp<f32>(c.R() / 255.0f, 0.0f, 1.0f);
+		f32 green = std::clamp<f32>(c.G() / 255.0f, 0.0f, 1.0f);
+		f32 blue = std::clamp<f32>(c.B() / 255.0f, 0.0f, 1.0f);
+		f32 alpha = std::clamp<f32>(c.A() / 255.0f, 0.0f, 1.0f);
 	}
 }
