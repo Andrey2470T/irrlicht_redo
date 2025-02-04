@@ -19,7 +19,7 @@ struct VertexAttribute
 	u8 ComponentCount;
 	BasicType ComponentType;
 	DataFormat Format;
-	u8 Offset; // in summary components count from the beginning
+	u8 Offset = 0; // in summary components count from the beginning
 
 	bool operator==(const VertexAttribute other) const
 	{
@@ -40,6 +40,7 @@ public:
 	std::string Name;
 	// List of all attributes.
 	std::vector<VertexAttribute> Attributes;
+	u32 ComponentsCount = 0;
 
 	// Constructor with optional passing the normal and uv.
 	VertexTypeDescriptor(bool init_normal=false, bool init_uv=false, u8 uv_count=0)
@@ -55,23 +56,30 @@ public:
 		initAttributes(init_normal, init_uv, uv_count);
 
 		for (const auto &attr : attributes)
-			Attributes.push_back(attr);
+			appendAttr(attr);
 	}
     bool operator==(const VertexTypeDescriptor &other) const
 	{
 		return Attributes == other.Attributes;
 	}
 private:
+	void appendAttr(const VertexAttribute &attr)
+	{
+		VertexAttribute custom_attr(attr);
+		custom_attr.Offset = ComponentsCount;
+		ComponentsCount += custom_attr.ComponentCount;
+		Attributes.push_back(custom_attr);
+	}
 	void initAttributes(bool init_normal=false, bool init_uv=false, u8 uv_count=0)
 	{
-		Attributes.push_back({"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 0});
-		Attributes.push_back({"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized, 3});
+		appendAttr({"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+		appendAttr({"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
 
 		if (init_normal)
-			Attributes.push_back({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 7});
+			appendAttr({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 
 		if (init_uv)
-            Attributes.push_back({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regular, 10});
+            appendAttr({"UV", uv_count, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 	}
 };
 

@@ -22,6 +22,11 @@ static const f64 RADTODEG = 180.0 / PI;
 static const f32 ROUNDING_ERROR_f32 = 0.000001f;
 static const f64 ROUNDING_ERROR_f64 = 0.00000001;
 
+inline s32 round32(f32 x)
+{
+	return (s32)std::round(x);
+}
+
 //! Utility function to convert a radian value to degrees
 /** Provided as it can be clearer to write radToDeg(X) than RADTODEG * X
 \param radians The radians value to convert to degrees.

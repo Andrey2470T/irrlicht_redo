@@ -17,7 +17,7 @@ size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 
 // Default 3D vertex type (position, color, normal and uv).
 const VertexTypeDescriptor DefaultVType{
-	"3D_Default",
+	"Standard3D",
 	{},
 	true,
 	true,
