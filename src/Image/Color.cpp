@@ -3,6 +3,262 @@
 namespace img
 {
 
+template <class T>
+inline bool ColorRGBA<T>::operator==(const ColorRGBA<T> &other) const
+{
+	u8 channelsCount = pixelFormatInfo[format].channels;
+
+	if (channelsCount == 1)
+		return R() == other.R();
+	else if (channelsCount == 2)
+		return (R() == other.R() && G() == other.G());
+	else if (channelsCount == 3)
+		return (R() == other.R() && G() == other.G() && B() == other.B());
+	else
+		return (R() == other.R() && G() == other.G() && B() == other.B() && A() == other.A());
+}
+
+template <class T>
+inline bool ColorRGBA<T>::operator!=(const ColorRGBA<T> &other) const
+{
+	return !(*this == other);
+}
+
+template <class T>
+inline bool ColorRGBA<T>::operator<(const ColorRGBA<T> &other) const
+{
+	u8 channelsCount = pixelFormatInfo[format].channels;
+
+	if (channelsCount == 1)
+		return R() <= other.R();
+	else if (channelsCount == 2)
+		return (R() <= other.R && G() <= other.G());
+	else if (channelsCount == 3)
+		return (R() <= other.R() && G() <= other.G() && B() <= other.B());
+	else
+		return (R() <= other.R() && G() <= other.G() && B() <= other.B() && A() <= other.A());
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator+(const ColorRGBA<T> &other) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() + other.R(),
+		G() + other.G(),
+		B() + other.B(),
+		A() + other.A());
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator+=(const ColorRGBA<T> &other)
+{
+	R(R() + other.R());
+	G(G() + other.G());
+	B(B() + other.B());
+	A(A() + other.A());
+
+	return *this;
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator+(T val) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() + val,
+		G() + val,
+		B() + val,
+		A() + val);
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator+=(T val)
+{
+	R(R() + val);
+	G(G() + val);
+	B(B() + val);
+	A(A() + val);
+
+	return *this;
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator-(const ColorRGBA<T> &other) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() - other.R(),
+		G() - other.G(),
+		B() - other.B(),
+		A() - other.A());
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator-=(const ColorRGBA<T> &other)
+{
+	R(R() - other.R());
+	G(G() - other.G());
+	B(B() - other.B());
+	A(A() - other.A());
+
+	return *this;
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator-(T val) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() - val,
+		G() - val,
+		B() - val,
+		A() - val);
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator-=(T val)
+{
+	R(R() - val);
+	G(G() - val);
+	B(B() - val);
+	A(A() - val);
+
+	return *this;
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator*(const ColorRGBA<T> &other) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() * other.R(),
+		G() * other.G(),
+		B() * other.B(),
+		A() * other.A());
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator*=(const ColorRGBA<T> &other)
+{
+	R(R() * other.R());
+	G(G() * other.G());
+	B(B() * other.B());
+	B(A() * other.A());
+
+	return *this;
+}
+
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::operator*(T val) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		R() * val,
+		G() * val,
+		B() * val,
+		A() * val);
+}
+
+template <class T>
+inline ColorRGBA<T> &ColorRGBA<T>::operator*=(T val)
+{
+	R(R() * val);
+	G(G() * val);
+	B(B() * val);
+	A(A() * val);
+
+	return *this;
+}
+
+//! Interpolates the color with a f32 value to another color
+/** \param other: Other color
+\param d: value between 0.0f and 1.0f. d=0 returns other, d=1 returns this, values between interpolate.
+\return Interpolated color. */
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::linInterp(const ColorRGBA<T> &other, f32 d) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		utils::lerp<T>(other.R(), R(), d),
+		utils::lerp<T>(other.G(), G(), d),
+		utils::lerp<T>(other.B(), B(), d),
+		A());
+}
+
+//! Returns interpolated color. ( quadratic )
+/** \param c1: first color to interpolate with
+\param c2: second color to interpolate with
+\param d: value between 0.0f and 1.0f. */
+template <class T>
+inline ColorRGBA<T> ColorRGBA<T>::quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const
+{
+	return ColorRGBA<T>(
+		getFormat(),
+		utils::qerp<T>(R(), c1.R(), c2.R(), d),
+		utils::qerp<T>(G(), c1.G(), c2.G(), d),
+		utils::qerp<T>(B(), c1.B(), c2.B(), d),
+		A());
+}
+
+template <class T>
+inline void ColorRGBA<T>::set(T R, T G, T B, T A)
+{
+	u8 channelsCount = pixelFormatInfo[format].channels;
+
+	setChannel(R);
+
+	if (channelsCount > 1)
+		setChannel(G);
+	if (channelsCount > 2)
+		setChannel(B);
+	if (channelsCount > 3)
+		setChannel(A);
+}
+
+template <class T>
+inline T ColorRGBA<T>::getChannel(u32 n) const
+{
+	BasicType type = pixelFormatInfo[format].type;
+
+	switch (type) {
+		case BasicType::UINT8:
+			return color.getUInt8(n);
+		case BasicType::UINT16:
+			return color.getUInt16(n);
+		case BasicType::UINT32:
+			return color.getUInt32(n);
+		case BasicType::FLOAT:
+			return color.getFloat(n);
+		default:
+			return 0;
+	};
+}
+
+template <class T>
+inline void ColorRGBA<T>::setChannel(T v, s32 n)
+{
+	BasicType type = pixelFormatInfo[format].type;
+
+	switch (type) {
+		case BasicType::UINT8:
+			color.setUInt8(v, n);
+			break;
+		case BasicType::UINT16:
+			color.setUInt16(v, n);
+			break;
+		case BasicType::UINT32:
+			color.setUInt32(v, n);
+			break;
+		case BasicType::FLOAT:
+			color.setFloat(v, n);
+			break;
+		default:
+			break;
+	};
+}
+
+
 inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 {
     const f32 maxVal = utils::max3<f32>(color.R(), color.G(), color.B());
