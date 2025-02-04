@@ -88,53 +88,240 @@ public:
 			return (R() + G() + B()) / 3;
 	}
 
-	bool operator==(const ColorRGBA<T> &other) const;
+	bool operator==(const ColorRGBA<T> &other) const
+	{
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
-	bool operator!=(const ColorRGBA<T> &other) const;
+		if (channelsCount == 1)
+			return R() == other.R();
+		else if (channelsCount == 2)
+			return (R() == other.R() && G() == other.G());
+		else if (channelsCount == 3)
+            return (R() == other.R() && G() == other.G() && B() == other.B());
+		else
+			return (R() == other.R() && G() == other.G() && B() == other.B() && A() == other.A());
+	}
 
-	bool operator<(const ColorRGBA<T> &other) const;
+	bool operator!=(const ColorRGBA<T> &other) const
+	{
+		return !(*this == other);
+	}
 
-	ColorRGBA<T> operator+(const ColorRGBA<T> &other) const;
+	bool operator<(const ColorRGBA<T> &other) const
+	{
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
-	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other);
+		if (channelsCount == 1)
+			return R() <= other.R();
+		else if (channelsCount == 2)
+			return (R() <= other.R && G() <= other.G());
+		else if (channelsCount == 3)
+			return (R() <= other.R() && G() <= other.G() && B() <= other.B());
+		else
+			return (R() <= other.R() && G() <= other.G() && B() <= other.B() && A() <= other.A());
+	}
 
-	ColorRGBA<T> operator+(T val) const;
+	ColorRGBA<T> operator+(const ColorRGBA<T> &other) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() + other.R(),
+			G() + other.G(),
+			B() + other.B(),
+            A() + other.A());
+	}
 
-	ColorRGBA<T> &operator+=(T val);
+	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other)
+	{
+		R(R() + other.R());
+		G(G() + other.G());
+		B(B() + other.B());
+		A(A() + other.A());
 
-	ColorRGBA<T> operator-(const ColorRGBA<T> &other) const;
+		return *this;
+	}
 
-	ColorRGBA<T> &operator-=(const ColorRGBA<T> &other);
+	ColorRGBA<T> operator+(T val) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() + val,
+			G() + val,
+			B() + val,
+			A() + val);
+	}
 
-	ColorRGBA<T> operator-(T val) const;
+	ColorRGBA<T> &operator+=(T val)
+	{
+		R(R() + val);
+		G(G() + val);
+        B(B() + val);
+		A(A() + val);
 
-	ColorRGBA<T> &operator-=(T val);
+		return *this;
+	}
 
-	ColorRGBA<T> operator*(const ColorRGBA<T> &other) const;
+	ColorRGBA<T> operator-(const ColorRGBA<T> &other) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() - other.R(),
+			G() - other.G(),
+			B() - other.B(),
+            A() - other.A());
+	}
 
-	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other);
+	ColorRGBA<T> &operator-=(const ColorRGBA<T> &other)
+	{
+		R(R() - other.R());
+		G(G() - other.G());
+		B(B() - other.B());
+		A(A() - other.A());
 
-	ColorRGBA<T> operator*(T val) const;
+		return *this;
+	}
 
-	ColorRGBA<T> &operator*=(T val);
+	ColorRGBA<T> operator-(T val) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() - val,
+			G() - val,
+			B() - val,
+			A() - val);
+	}
+
+	ColorRGBA<T> &operator-=(T val)
+	{
+		R(R() - val);
+		G(G() - val);
+        B(B() - val);
+		A(A() - val);
+
+		return *this;
+	}
+
+	ColorRGBA<T> operator*(const ColorRGBA<T> &other) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() * other.R(),
+			G() * other.G(),
+			B() * other.B(),
+			A() * other.A());
+	}
+
+	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other)
+	{
+		R(R() * other.R());
+		G(G() * other.G());
+		B(B() * other.B());
+		B(A() * other.A());
+
+		return *this;
+	}
+
+	ColorRGBA<T> operator*(T val) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+			R() * val,
+			G() * val,
+			B() * val,
+			A() * val);
+	}
+
+	ColorRGBA<T> &operator*=(T val)
+	{
+		R(R() * val);
+		G(G() * val);
+		B(B() * val);
+		A(A() * val);
+
+		return *this;
+	}
 
 	//! Interpolates the color with a f32 value to another color
 	/** \param other: Other color
 	\param d: value between 0.0f and 1.0f. d=0 returns other, d=1 returns this, values between interpolate.
 	\return Interpolated color. */
-	ColorRGBA<T> linInterp(const ColorRGBA<T> &other, f32 d) const;
+	ColorRGBA<T> linInterp(const ColorRGBA<T> &other, f32 d) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+            utils::lerp<T>(other.R(), R(), d),
+            utils::lerp<T>(other.G(), G(), d),
+            utils::lerp<T>(other.B(), B(), d),
+			A());
+	}
 
 	//! Returns interpolated color. ( quadratic )
 	/** \param c1: first color to interpolate with
 	\param c2: second color to interpolate with
 	\param d: value between 0.0f and 1.0f. */
-	ColorRGBA<T> quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const;
+	ColorRGBA<T> quadInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d) const
+	{
+		return ColorRGBA<T>(
+			getFormat(),
+            utils::qerp<T>(R(), c1.R(), c2.R(), d),
+            utils::qerp<T>(G(), c1.G(), c2.G(), d),
+            utils::qerp<T>(B(), c1.B(), c2.B(), d),
+			A());
+	}
 private:
-	void set(T R, T G, T B, T A);
+	void set(T R, T G, T B, T A)
+	{
+		u8 channelsCount = pixelFormatInfo[format].channels;
 
-	T getChannel(u32 n) const;
+		setChannel(R);
 
-	void setChannel(T v, s32 n=-1);
+		if (channelsCount > 1)
+			setChannel(G);
+		if (channelsCount > 2)
+			setChannel(B);
+		if (channelsCount > 3)
+			setChannel(A);
+	}
+
+	T getChannel(u32 n) const
+	{
+		BasicType type = pixelFormatInfo[format].type;
+
+		switch (type) {
+            case BasicType::UINT8:
+				return color.getUInt8(n);
+            case BasicType::UINT16:
+				return color.getUInt16(n);
+            case BasicType::UINT32:
+				return color.getUInt32(n);
+            case BasicType::FLOAT:
+				return color.getFloat(n);
+			default:
+				return 0;
+		};
+	}
+
+	void setChannel(T v, s32 n=-1)
+	{
+		BasicType type = pixelFormatInfo[format].type;
+
+		switch (type) {
+            case BasicType::UINT8:
+				color.setUInt8(v, n);
+				break;
+            case BasicType::UINT16:
+				color.setUInt16(v, n);
+				break;
+            case BasicType::UINT32:
+				color.setUInt32(v, n);
+				break;
+            case BasicType::FLOAT:
+				color.setFloat(v, n);
+				break;
+			default:
+				break;
+		};
+	}
 };
 
 typedef ColorRGBA<u8> color8;
