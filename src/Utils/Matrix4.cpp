@@ -2,51 +2,6 @@
 
 namespace utils {
 
-// Default constructor
-template <class T>
-constexpr inline Matrix4<T>::Matrix4(eConstructor constructor)
-{
-	switch (constructor) {
-	case EM4CONST_NOTHING:
-	case EM4CONST_COPY:
-		break;
-	case EM4CONST_IDENTITY:
-	case EM4CONST_INVERSE:
-	default:
-		makeIdentity();
-		break;
-	}
-}
-
-// Copy constructor
-template <class T>
-constexpr inline Matrix4<T>::Matrix4(const Matrix4<T> &other, eConstructor constructor)
-{
-	switch (constructor) {
-	case EM4CONST_IDENTITY:
-		makeIdentity();
-		break;
-	case EM4CONST_NOTHING:
-		break;
-	case EM4CONST_COPY:
-		*this = other;
-		break;
-	case EM4CONST_TRANSPOSED:
-		other.getTransposed(*this);
-		break;
-	case EM4CONST_INVERSE:
-		if (!other.getInverse(*this))
-			memset(M, 0, 16 * sizeof(T));
-		break;
-	case EM4CONST_INVERSE_TRANSPOSED:
-		if (!other.getInverse(*this))
-			memset(M, 0, 16 * sizeof(T));
-		else
-			*this = getTransposed();
-		break;
-	}
-}
-
 //! Add another matrix.
 template <class T>
 inline Matrix4<T> Matrix4<T>::operator+(const Matrix4<T> &other) const

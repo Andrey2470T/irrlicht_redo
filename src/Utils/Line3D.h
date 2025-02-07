@@ -13,11 +13,12 @@ namespace utils
 template <class T>
 class Line3D
 {
+public:
 	//! Start point of the line.
 	Vector3D<T> Start;
 	//! End point of the line.
 	Vector3D<T> End;
-public:
+
 	constexpr Line3D() : Start(0, 0, 0), End(1, 1, 1) {}
 
 	constexpr Line3D(T xa, T ya, T za, T xb, T yb, T zb)

@@ -40,7 +40,19 @@ public:
 
 	//! Default constructor
 	/** \param constructor Choose the initialization style */
-	constexpr Matrix4(eConstructor constructor = EM4CONST_IDENTITY);
+    constexpr Matrix4(eConstructor constructor = EM4CONST_IDENTITY)
+    {
+        switch (constructor) {
+        case EM4CONST_NOTHING:
+        case EM4CONST_COPY:
+            break;
+        case EM4CONST_IDENTITY:
+        case EM4CONST_INVERSE:
+        default:
+            makeIdentity();
+            break;
+        }
+    }
 
 	//! Constructor with value initialization
 	constexpr Matrix4(const T &r0c0, const T &r0c1, const T &r0c2, const T &r0c3,
@@ -69,7 +81,32 @@ public:
 	//! Copy constructor
 	/** \param other Other matrix to copy from
 	\param constructor Choose the initialization style */
-	constexpr Matrix4(const Matrix4<T> &other, eConstructor constructor = EM4CONST_COPY);
+    constexpr Matrix4(const Matrix4<T> &other, eConstructor constructor = EM4CONST_COPY)
+    {
+        switch (constructor) {
+        case EM4CONST_IDENTITY:
+            makeIdentity();
+            break;
+        case EM4CONST_NOTHING:
+            break;
+        case EM4CONST_COPY:
+            *this = other;
+            break;
+        case EM4CONST_TRANSPOSED:
+            other.getTransposed(*this);
+            break;
+        case EM4CONST_INVERSE:
+            if (!other.getInverse(*this))
+                memset(M, 0, 16 * sizeof(T));
+            break;
+        case EM4CONST_INVERSE_TRANSPOSED:
+            if (!other.getInverse(*this))
+                memset(M, 0, 16 * sizeof(T));
+            else
+                *this = getTransposed();
+            break;
+        }
+    }
 
 	//! Simple operator for directly accessing every element of the matrix.
 	T &operator()(const s32 row, const s32 col)

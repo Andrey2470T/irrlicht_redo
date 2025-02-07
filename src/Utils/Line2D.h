@@ -13,11 +13,12 @@ namespace utils
 template <class T>
 class Line2D
 {
+public:
 	//! Start point of the line.
 	Vector2D<T> Start;
 	//! End point of the line.
 	Vector2D<T> End;
-public:
+
 	constexpr Line2D() : Start(0, 0), End(1, 1) {}
 
 	constexpr Line2D(T xa, T ya, T xb, T yb)
