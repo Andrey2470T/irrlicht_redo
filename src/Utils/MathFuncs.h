@@ -13,10 +13,10 @@ const f64 PI = std::atan(1.0) * 4;
 #endif
 
 //! Constant for converting from degrees to radians
-static const f64 DEGTORAD = PI / 180.0;
+const f64 DEGTORAD = PI / 180.0;
 
 //! Constant for converting from radians to degrees
-static const f64 RADTODEG = 180.0 / PI;
+const f64 RADTODEG = 180.0 / PI;
 
 //! Rounding error constants
 static const f32 ROUNDING_ERROR_f32 = 0.000001f;
@@ -31,6 +31,12 @@ inline s32 round32(f32 x)
 /** Provided as it can be clearer to write radToDeg(X) than RADTODEG * X
 \param radians The radians value to convert to degrees.
 */
+
+inline f32 radToDeg(f32 radians)
+{
+	return (f32)RADTODEG * radians;
+}
+
 inline f64 radToDeg(f64 radians)
 {
 	return RADTODEG * radians;
@@ -40,6 +46,12 @@ inline f64 radToDeg(f64 radians)
 /** Provided as it can be clearer to write degToRad(X) than DEGTORAD * X
 \param degrees The degrees value to convert to radians.
 */
+
+inline f32 degToRad(f32 degrees)
+{
+	return (f32)DEGTORAD * degrees;
+}
+
 inline f64 degToRad(f64 degrees)
 {
 	return DEGTORAD * degrees;
