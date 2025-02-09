@@ -35,12 +35,12 @@ void Mesh::uploadData(const void *vertices, u32 verticesCount, const u32 *indice
 	bool indices_valid = indices != nullptr && indicesCount > 0;
 
 	if (!vertices_valid && !indices_valid) {
-		SDL_LogWarn(LC_VIDEO, "Mesh::uploadSubData() vertices and indices are invalid");
+		WarnStream << "Mesh::uploadSubData() vertices and indices are invalid\n";
 		return;
 	}
 
 	glBindVertexArray(vaoID);
-	
+
 	if (vertices_valid) {
 		glBindBuffer(GL_ARRAY_BUFFER, vboID);
 		glBufferData(GL_ARRAY_BUFFER, verticesCount * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
@@ -53,9 +53,9 @@ void Mesh::uploadData(const void *vertices, u32 verticesCount, const u32 *indice
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(u32), indices, GL_STATIC_DRAW);
 	}
-	
+
 	glBindVertexArray(0);
-	
+
 	TEST_GL_ERROR();
 }
 
@@ -79,7 +79,7 @@ void Mesh::draw(PrimitiveType mode, u32 indicesCount) const
 		default:
 			break;
 	};
-	
+
 	TEST_GL_ERROR();
 }
 
@@ -87,9 +87,9 @@ void Mesh::init(VertexTypeDescriptor descr)
 {
 	glGenVertexArrays(1, &vaoID);
 	glGenBuffers(1, &vboID);
-	
+
 	glBindVertexArray(vaoID);
-	
+
     std::size_t offset = 0;
 	for (int i = 0; i < descr.Attributes.size(); i++) {
 		auto &attr = descr.Attributes[i];
@@ -103,12 +103,12 @@ void Mesh::init(VertexTypeDescriptor descr)
                 glVertexAttribIPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], vertexSize, (void*)offset);
 		};
 		glEnableVertexAttribArray(i);
-		
+
 		offset += attr.ComponentCount * utils::getSizeOfType(attr.ComponentType);
 	}
-	
+
 	glBindVertexArray(0);
-	
+
 	TEST_GL_ERROR();
 }
 

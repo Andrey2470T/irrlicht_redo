@@ -12,7 +12,7 @@ std::string readFile(const std::string &path)
 	file.open(fs::path(path));
 
 	if (!file.is_open()) {
-		SDL_LogError(LC_SYS, "readFile() failed to open the file");
+		ErrorStream << "readFile() failed to open the file\n";
 		return "";
 	}
 	std::stringstream strBuffer;
@@ -25,7 +25,7 @@ Shader::Shader(const fs::path &vsPath, const fs::path &fsPath, const fs::path &g
 {
 	if (vsPath == "" || fsPath == "")
 	{
-        SDL_LogError(LC_VIDEO, "Shader:Shader() empty paths to the vertex or fragment shaders");
+        ErrorStream << "Shader:Shader() empty paths to the vertex or fragment shaders\n";
 		return;
 	}
 
@@ -40,7 +40,7 @@ Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::
 {
     if (vsCode == "" || fsCode == "")
 	{
-        SDL_LogError(LC_VIDEO, "Shader:Shader() empty code strings of the vertex or fragment shaders");
+        ErrorStream << "Shader:Shader() empty code strings of the vertex or fragment shaders\n";
 		return;
 	}
 
@@ -138,7 +138,7 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 
     GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	
+
 	if (!success) {
 		GLint maxLength = 0;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
@@ -146,8 +146,7 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 		GLchar *infoLog = new GLchar[maxLength];
 		glGetShaderInfoLog(shader, maxLength, nullptr, infoLog);
 
-        std::string logErr = "Shader::createShader() the shader failed to compile: " + std::string(infoLog);
-        SDL_LogError(LC_VIDEO, logErr.c_str());
+        ErrorStream << "Shader::createShader() the shader failed to compile: " << std::string(infoLog) << "\n";
 		return 0;
 	}
 
@@ -175,8 +174,7 @@ u32 Shader::createProgram()
 		GLchar *infoLog = new GLchar[maxLength];
 		glGetProgramInfoLog(program, maxLength, nullptr, infoLog);
 
-        std::string logErr = "Shader::createProgram() the program failed to link: " + std::string(infoLog);
-        SDL_LogError(LC_VIDEO, logErr.c_str());
+		ErrorStream << "Shader::createProgram() the program failed to link: " << std::string(infoLog) << "\n";
 		return 0;
 	}
 

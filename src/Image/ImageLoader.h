@@ -5,7 +5,7 @@
 
 namespace img
 {
-	
+
 enum ImageFormat
 {
 	IF_PNG,
@@ -22,33 +22,33 @@ public:
 	{
 		IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 	}
-	
+
 	static void free()
 	{
         IMG_Quit();
 	}
-	
+
 	static Image *load(const std::string &path)
 	{
 		if (!isFormatSupported(path)) {
-			SDL_LogError(LC_VIDEO, "ImageLoader::load() unsupported image format");
+			ErrorStream << "ImageLoader::load() unsupported image format\n";
 			return nullptr;
 		}
-		
+
 		SDL_Surface *surf = IMG_Load(path.c_str());
-		
+
 		return convertSDLSurfaceToImage(surf);
 	}
-	
+
 	static void save(Image *img, const std::string &path)
 	{
 		if (!isFormatSupported(path, true)) {
-			SDL_LogError(LC_VIDEO, "ImageLoader::save() unsupported image format");
+			ErrorStream << "ImageLoader::save() unsupported image format\n";
 			return;
 		}
-		
+
 		fs::path ext = fs::path(path).extension();
-		
+
 		SDL_Surface *surf = convertImageToSDLSurface(img);
 		if (ext == ".png")
             IMG_SavePNG(surf, path.c_str());
@@ -59,7 +59,7 @@ private:
 	static bool isFormatSupported(const std::string &path, bool for_write=false)
 	{
 		fs::path ext = fs::path(path).extension();
-		
+
 		if (!for_write) {
 			if (ext == ".png" || ext == ".jpeg" || ext == ".jpg" ||
 				ext == ".tga" || ext == ".bmp" || ext == ".tif")
@@ -69,7 +69,7 @@ private:
 			if (ext == ".png" || ext == ".jpeg" || ext == ".jpg")
 				return true;
 		}
-		
+
 		return false;
 	}
 };

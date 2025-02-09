@@ -21,7 +21,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForImage(format)) {
-		SDL_LogError(LC_VIDEO, "Image::Image() unsupported format for Image");
+		ErrorStream << "Image::Image() unsupported format for Image\n";
 		return;
 	}
 	u32 pixelSize = pixelFormatInfo.at(format).size / 8;
@@ -45,7 +45,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForImage(format)) {
-		SDL_LogError(LC_VIDEO, "Image::Image() unsupported format for Image");
+		ErrorStream << "Image::Image() unsupported format for Image\n";
 		return;
 	}
 	ownPixelData = _copyData;
@@ -78,7 +78,7 @@ void Image::setPaletteColors(const std::vector<color8> &colors)
     palette->hasAlpha = pixelFormatInfo.at(colors.at(0).getFormat()).hasAlpha;
     u8 size = std::min<u32>(255u, colors.size());
 	palette->colors.reserve(size);
-		
+
 	for (u8 i = 0; i < size; i++)
 		palette->colors.push_back(colors[i]);
 }

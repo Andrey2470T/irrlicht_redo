@@ -1,7 +1,6 @@
 #include "MainWindow.h"
 #include "Image/Converting.h"
 #include "Utils/String.h"
-#include <sstream>
 #include "Image/ImageModifier.h"
 
 #ifdef EMSCRIPTEN
@@ -12,7 +11,7 @@ namespace main
 {
 
 MainWindow::MainWindow(const MainWindowParameters &params)
-    : GLVersion(params.GLType), Timer(false), Cursor(this), Params(std::move(params)),
+    : GLVersion(params.GLType), Timer(false), Cursor(this), Params(params),
       IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
 {
 #ifdef ANDROID
@@ -68,25 +67,22 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 #endif
 
 	if (SDL_Init(flags) < 0) {
-        std::string logErr = "Unable to initialize SDL: " + std::string(SDL_GetError());
-        SDL_LogError(LC_APP, logErr.c_str());
+        ErrorStream << "Unable to initialize SDL: " << SDL_GetError() << "\n";
 		Close = true;
 	} else {
-		SDL_LogInfo(LC_APP, "SDL initialized");
+		InfoStream << "SDL initialized\n";
 	}
 
 	if (Params.InitVideo)
 		if (!initWindow()) {
 			Close = true;
-			SDL_LogError(LC_APP, "Unable to initialize SDL window and context (InitVideo = true)");
+			ErrorStream << "Unable to initialize SDL window and context (InitVideo = true)\n";
 		}
 
 	SDL_VERSION(&SDLVersion);
 
-    std::stringstream logInfo;
-    logInfo << "SDL Version: " << std::to_string(SDLVersion.major) << ".";
-    logInfo << SDLVersion.minor << "." << SDLVersion.patch;
-    SDL_LogInfo(LC_APP, logInfo.str().c_str());
+    InfoStream << "SDL Version: " << SDLVersion.major << "." <<
+		SDLVersion.minor << "." << SDLVersion.patch;
 }
 
 MainWindow::~MainWindow()
@@ -94,7 +90,7 @@ MainWindow::~MainWindow()
 
 	if (Window)
 		SDL_DestroyWindow(Window);
-	
+
 #ifdef EMSCRIPTEN
 	if (Renderer)
 		SDL_DestroyRenderer(Renderer);
@@ -102,13 +98,13 @@ MainWindow::~MainWindow()
 	if (Context)
 		SDL_GL_DeleteContext(Context);
 #endif
-	
+
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
 	for (auto &joystick : Joysticks)
 		if (joystick)
 			SDL_JoystickClose(joystick);
 #endif
-	SDL_LogInfo(LC_APP, "Quit SDL");
+	InfoStream << "Quit SDL\n";
 }
 
 
@@ -125,12 +121,12 @@ void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier 
 			0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 
 	if (!surface) {
-		SDL_LogError(LC_APP, "Failed to create SDL suface");
+		ErrorStream << "Failed to create SDL suface\n";
         return;
 	}
 
 	SDL_LockSurface(surface);
-	
+
     img::Image *tempImg = img::convertSDLSurfaceToImage(surface);
 	bool succ = mdf->copyTo(newImg.get(), tempImg);
 	delete tempImg;
@@ -199,7 +195,7 @@ bool MainWindow::isFullScreen() const
 void MainWindow::setResizable(bool resize)
 {
 #ifdef EMSCRIPTEN
-	SDL_LogWarn("Resizable not available on the web.");
+	WarnStream << "Resizable not available on the web.\n";
 	return;
 #else
 	if (resize != Resizable) {
@@ -237,9 +233,7 @@ bool MainWindow::setFullscreen(bool fullscreen)
 	// relevant to us.
 	bool success = SDL_SetWindowFullscreen(Window, getFullscreenFlag(fullscreen)) == 0;
     if (!success) {
-        std::stringstream logErr;
-        logErr << "SDL_SetWindowFullscreen failed: " << SDL_GetError();
-        SDL_LogError(LC_VIDEO, logErr.str().c_str());
+        ErrorStream << "SDL_SetWindowFullscreen failed: " << SDL_GetError() << "\n";
     }
 	return success;
 }
@@ -315,9 +309,9 @@ bool MainWindow::initWindow()
 		emscripten_get_canvas_size(&Params.Width, &Params.Height, nullptr);
 
 	SDL_CreateWindowAndRenderer(0, 0, Wnd_Flags, &Window, &Renderer); // 0,0 will use the canvas size
-	
+
 	if (!Window || !Renderer) {
-		SDL_LogError(LC_APP, "Could not create window or renderer: " + SDL_GetError());
+		ErrorStream << "Could not create window or renderer: " << SDL_GetError() << "\n";
 		Close = true;
 		return false;
 	}
@@ -338,18 +332,14 @@ bool MainWindow::initWindow()
 	Window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Params.Width, Params.Height, Wnd_Flags);
 
 	if (!Window) {
-        std::stringstream logErr;
-        logErr << "Could not create window: " << SDL_GetError();
-        SDL_LogError(LC_APP, logErr.str().c_str());
+        ErrorStream << "Could not create window: " << SDL_GetError() << "\n";
 		Close = true;
 		return false;
 	}
 
 	Context = SDL_GL_CreateContext(Window);
     if (!Context) {
-        std::stringstream logErr;
-        logErr << "Could not create context: " << SDL_GetError();
-        SDL_LogError(LC_APP, logErr.str().c_str());
+        ErrorStream << "Could not create context: " << SDL_GetError() << "\n";
 		Close = true;
 		return false;
 	}

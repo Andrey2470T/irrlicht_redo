@@ -35,7 +35,7 @@ void GLAPIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, 
 	debugLog << (u32)type << " ";
 	debugLog << message;
 
-    SDL_LogMessage(LC_VIDEO, priority, debugLog.str().c_str());
+    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, debugLog.str().c_str());
 }
 
 void enableErrorTest()
@@ -94,16 +94,8 @@ bool testGLError(const char *file, int line)
 			file_p = file_p.substr(basename_pos+1);
 	}
 
-	std::stringstream debugLog;
-
-	debugLog << err << " ";
-	debugLog << file_p << ":";
-	debugLog << line;
-
-	if (multiple)
-		debugLog << " (older errors exist)";
-
-	SDL_LogError(LC_VIDEO, debugLog.str().c_str());
+	ErrorStream << err << " " << file_p << ":" << line <<
+		(multiple ? " (older errors exist)" : "") << "\n";
 
 	return true;
 }

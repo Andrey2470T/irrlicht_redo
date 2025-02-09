@@ -34,7 +34,7 @@ void Texture2D::initTexture(void *data)
 	}
 	else {
 		if (data == nullptr) {
-			SDL_LogError(LC_VIDEO, "Texture2D::initTexture() the data is invalid");
+			ErrorStream << "Texture2D::initTexture() the data is invalid\n";
 			glBindTexture(GL_TEXTURE_2D, 0);
 			return;
 		}
@@ -64,17 +64,17 @@ void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
 void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
 {
 	if (img == nullptr) {
-		SDL_LogError(LC_VIDEO, "Texture2D::uploadData() the image data is invalid");
+		ErrorStream << "Texture2D::uploadData() the image data is invalid\n";
 		return;
 	}
 
 	if (texSettings.isRenderTarget) {
-		SDL_LogError(LC_VIDEO, "Texture2D::uploadData() can not upload the user image data to the RTT");
+		ErrorStream << "Texture2D::uploadData() can not upload the user image data to the RTT\n";
 		return;
 	}
 
 	if (img->getFormat() != format) {
-		SDL_LogError(LC_VIDEO, "Texture2D::uploadData() the format of the uploaded image data is different");
+		ErrorStream << "Texture2D::uploadData() the format of the uploaded image data is different\n";
 		return;
 	}
 

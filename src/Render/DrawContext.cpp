@@ -71,7 +71,7 @@ UniformBuffer *DrawContext::getUniformBuffer() const
 Texture *DrawContext::getActiveUnit(u32 index) const
 {
 	if (index >= activeUnits.size()) {
-		SDL_LogError(LC_VIDEO, "DrawContext::getActiveUnit() indexing the active unit out of the range");
+		ErrorStream << "DrawContext::getActiveUnit() indexing the active unit out of the range\n";
 		return nullptr;
 	}
 
@@ -145,7 +145,7 @@ void DrawContext::setUniformBuffer(UniformBuffer *ubo)
 void DrawContext::setActiveUnit(u32 index, Texture *texture)
 {
 	if (index >= activeUnits.size()) {
-		SDL_LogError(LC_VIDEO, "DrawContext::setActiveUnit() setting the new active unit index out of the range");
+		ErrorStream << "DrawContext::setActiveUnit() setting the new active unit index out of the range\n";
 		return;
 	}
 
@@ -161,7 +161,7 @@ void DrawContext::setBlendMode(img::BlendMode blendmode)
 	auto supported_mode = std::find(supportedBlendModes.begin(), supportedBlendModes.end(), blendmode);
 
 	if (supported_mode == supportedBlendModes.end()) {
-		SDL_LogError(LC_VIDEO, "DrawContext::setBlendMode() unsupported blend mode");
+		ErrorStream << "DrawContext::setBlendMode() unsupported blend mode\n";
 		return;
 	}
 
@@ -321,7 +321,7 @@ void DrawContext::initContext(utils::recti viewportSize)
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_LINE_SMOOTH);
-	
+
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	setBlendMode(curMode);

@@ -11,7 +11,7 @@ u32 ByteArray::bytesCount() const
 u32 ByteArray::countBytesBefore(u32 n) const
 {
 	if (n > count()) {
-		SDL_LogWarn(LC_ASS, "ByteArray::countBytesBefore() Access to the element outside of the byte array");
+		WarnStream << "ByteArray::countBytesBefore() Access to the element outside of the byte array\n";
 		return 0;
 	}
 
@@ -25,7 +25,7 @@ u32 ByteArray::countBytesBefore(u32 n) const
 std::vector<u8> ByteArray::getElement(u32 n) const
 {
 	if (n >= count()) {
-		SDL_LogWarn(LC_ASS, "ByteArray::getElement() Access to the element outside of the byte array");
+		WarnStream << "ByteArray::getElement() Access to the element outside of the byte array\n";
 		return {};
 	}
 
@@ -98,8 +98,8 @@ void ByteArray::setElement(ByteArrayElement &&elem, void *data, std::optional<u3
 		auto &n_elem = elements.at(n.value());
 
 		if (n_elem.type != elem.type || n_elem.bytes_count != elem.bytes_count) {
-			SDL_LogWarn(LC_APP, "ByteArray::setElement() Can not replace the\
-				element to the another one with differing bytes count and type");
+			WarnStream << "ByteArray::setElement() Can not replace the\
+				element to the another one with differing bytes count and type\n";
 			return;
 		}
 		offset = countBytesBefore(n.value());
@@ -110,7 +110,7 @@ void ByteArray::setElement(ByteArrayElement &&elem, void *data, std::optional<u3
 
 	if (!n) {
 		elem.offset = offset;
-		elements.push_back(std::move(elem));
+        elements.push_back(elem);
 	}
 }
 

@@ -3,7 +3,7 @@
 namespace render
 {
 
-enum ClearBufferFlags
+enum ClearBufferFlags : u8
 {
 	CBF_NONE,
 	CBF_COLOR,
@@ -59,8 +59,8 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 		return;
 
 	if (textures.size() > maxColorAttachments || cubeMapFaceMappings.size() > maxColorAttachments) {
-		SDL_LogWarn(LC_VIDEO, "FrameBuffer::setColorTextures() can not attach the textures count\
-			higher than GL_MAX_COLOR_ATTACHMENTS, limiting up to the maximum count");
+		WarnStream << "FrameBuffer::setColorTextures() can not attach the textures count" <<
+			"higher than GL_MAX_COLOR_ATTACHMENTS, limiting up to the maximum count\n";
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
@@ -71,7 +71,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 
 	for (u8 i = 0; i < maxTextureCount; i++) {
 		Texture *tex = textures[i];
-		
+
 		if (colorTextures[i] != nullptr) {
             if (tex->getType() == TT_2D && *tex == *colorTextures[i])
 				continue;
@@ -141,22 +141,22 @@ bool FrameBuffer::checkStatus() const
 		case GL_FRAMEBUFFER_COMPLETE:
 			return true;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			SDL_LogError(LC_VIDEO, "FBO has invalid read buffer");
+			ErrorStream << "FBO has invalid read buffer\n";
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			SDL_LogError(LC_VIDEO, "FBO has invalid draw buffer");
+			ErrorStream << "FBO has invalid draw buffer\n";
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			SDL_LogError(LC_VIDEO, "FBO has one or several incomplete image attachments");
+			ErrorStream << "FBO has one or several incomplete image attachments\n";
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			SDL_LogError(LC_VIDEO, "FBO missing an image attachment");
+			ErrorStream << "FBO missing an image attachment\n";
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			SDL_LogError(LC_VIDEO, "FBO format unsupported");
+			ErrorStream << "FBO format unsupported\n";
 			break;
 		default:
-			SDL_LogError(LC_VIDEO, "FBO error");
+			ErrorStream << "FBO error\n";
 			break;
 	}
 

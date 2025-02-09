@@ -7,5 +7,7 @@
 
 #include "BasicIncludes.h"
 
-#include "SDL_logging.h"
+#include "Main/LogStream.h"
 #include <SDL_error.h>
+
+using namespace main;
