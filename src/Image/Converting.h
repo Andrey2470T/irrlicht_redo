@@ -50,7 +50,7 @@ namespace img
 
 	u32 colorObjectToU32Number(color8 color)
 	{
-		u32 coloru32;
+		u32 coloru32 = 0;
 
 		coloru32 |= ((u32)color.A() << 24);
 		coloru32 |= ((u32)color.R() << 16);
@@ -76,5 +76,7 @@ namespace img
 		f32 green = std::clamp<f32>(c.G() / 255.0f, 0.0f, 1.0f);
 		f32 blue = std::clamp<f32>(c.B() / 255.0f, 0.0f, 1.0f);
 		f32 alpha = std::clamp<f32>(c.A() / 255.0f, 0.0f, 1.0f);
+
+		return colorf(c.getFormat(), red, green, blue, alpha);
 	}
 }

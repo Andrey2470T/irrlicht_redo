@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 namespace main
 {
 
@@ -177,5 +179,8 @@ enum KEY_CODE
 
 	KEY_KEY_CODES_COUNT = 0x100 // this is not a key, but the amount of keycodes there are.
 };
+
+bool keyIsKnownSpecial(KEY_CODE irrlichtKey);
+int findCharToPassToIrrlicht(uint32_t sdlKey, KEY_CODE irrlichtKey, bool numlock);
 
 }
