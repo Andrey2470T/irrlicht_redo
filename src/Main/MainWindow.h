@@ -1,9 +1,11 @@
 #pragma once
 
-#include "BasicIncludes.h"
+#include "Render/Common.h"
 #include "CursorControl.h"
 #include "TimeCounter.h"
 #include "Image/Image.h"
+#include "Events.h"
+#include <queue>
 
 #include <SDL.h>
 
@@ -19,6 +21,8 @@
 
 namespace main
 {
+
+struct JoystickInfo;
 
 enum OpenGLType
 {
@@ -90,8 +94,43 @@ class MainWindow
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
 	std::vector<SDL_Joystick*> Joysticks;
 #endif
+    std::queue<std::unique_ptr<Event>> Events;
+
 	SDL_version SDLVersion;
 	OpenGLVersion GLVersion;
+
+    struct KeysMap
+    {
+        KeysMap() {}
+        KeysMap(s32 x11, s32 win32) :
+            SDLKey(x11), Win32Key(win32)
+        {
+        }
+
+        s32 SDLKey;
+        s32 Win32Key;
+
+        bool operator<(const KeysMap &o) const
+        {
+            return SDLKey < o.SDLKey;
+        }
+    };
+    std::vector<KeysMap> KeysMaps;
+
+    struct MouseMultiClicks
+    {
+        MouseMultiClicks() :
+            DoubleClickTime(500), CountSuccessiveClicks(0), LastClickTime(0), LastMouseInputEvent(MIE_COUNT)
+        {
+        }
+
+        u32 DoubleClickTime;
+        u32 CountSuccessiveClicks;
+        u32 LastClickTime;
+        v2i LastClick;
+        MouseInputEventType LastMouseInputEvent;
+    };
+    MouseMultiClicks MultiClicks;
 
 	TimeCounter Timer;
 	CursorControl Cursor;
@@ -107,6 +146,8 @@ class MainWindow
 
 	s32 CurrentTouchCount;
 	bool IsInBackground;
+
+    recti LastTextArea;
 
 	bool Resizable;
 	bool Close;
@@ -129,6 +170,7 @@ public:
 	bool isMinimized() const;
 	bool isMaximized() const;
 	bool isFullScreen() const;
+    bool isClosed() const;
 
 	void setResizable(bool resize = false);
 	void minimize();
@@ -137,6 +179,12 @@ public:
     bool setFullscreen(bool fullscreen);
 
 	void SwapWindow();
+
+    bool isUsingWayland() const;
+
+    bool activateJoysticks(std::vector<JoystickInfo> &joysticksInfo);
+    bool pollEventsFromQueue();
+    void resetReceiveTextInputEvents(const recti &textarea, bool acceptIME);
 private:
 #ifdef EMSCRIPTEN
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
@@ -148,8 +196,61 @@ private:
 	void updateViewportAndScale();
 
     bool initWindow();
+    void createKeysMaps();
+
+    u32 checkSuccessiveClicks(s32 mouseX, s32 mouseY, MouseInputEventType inputEvent);
 	
 	friend class CursorControl;
+};
+
+//! Information on a joystick, returned from @ref irr::IrrlichtDevice::activateJoysticks()
+struct JoystickInfo
+{
+    //! The ID of the joystick
+    /** This is an internal Irrlicht index; it does not map directly
+     * to any particular hardware joystick. It corresponds to the
+     * irr::SJoystickEvent Joystick ID. */
+    u8 Joystick;
+
+    //! The name that the joystick uses to identify itself.
+    std::string Name;
+
+    //! The number of buttons that the joystick has.
+    u32 Buttons;
+
+    //! The number of axes that the joystick has, i.e. X, Y, Z, R, U, V.
+    /** Note: with a Linux device, the POV hat (if any) will use two axes. These
+     *  will be included in this count. */
+    u32 Axes;
+
+    //! An indication of whether the joystick has a POV hat.
+    /** A Windows device will identify the presence or absence of the POV hat.
+     *  A Linux device cannot, and will always return POV_HAT_UNKNOWN. */
+    enum
+    {
+        //! A hat is definitely present.
+        POV_HAT_PRESENT,
+
+        //! A hat is definitely not present.
+        POV_HAT_ABSENT,
+
+        //! The presence or absence of a hat cannot be determined.
+        POV_HAT_UNKNOWN
+    } PovHat;
+};
+
+struct MouseMultiClicks
+{
+    MouseMultiClicks() :
+        DoubleClickTime(500), CountSuccessiveClicks(0), LastClickTime(0), LastMouseInputEvent(MIE_COUNT)
+    {
+    }
+
+    u32 DoubleClickTime;
+    u32 CountSuccessiveClicks;
+    u32 LastClickTime;
+    v2i LastClick;
+    MouseInputEventType LastMouseInputEvent;
 };
 
 }

@@ -9,6 +9,7 @@ namespace img
 		{SDL_PIXELFORMAT_INDEX8, PF_INDEX_RGBA8}
 	};
 
+    // Note: converting doesn't copy the input data, but just transform it to another form
 	Image *convertSDLSurfaceToImage(SDL_Surface *surf)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
@@ -17,7 +18,7 @@ namespace img
         u32 h = static_cast<u32>(surf->h);
 		u8 *data = static_cast<u8*>(surf->pixels);
 
-		return new Image(format, w, h, data);
+        return new Image(format, w, h, data, false);
 	}
 
 	SDL_Surface *convertImageToSDLSurface(Image *img)

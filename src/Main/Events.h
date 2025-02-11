@@ -155,7 +155,7 @@ struct Event
 	struct StringInputEvent
 	{
 		//! The string that is entered
-        std::wstring Str;
+        wchar_t *Str;
 	};
 
 	//! Any kind of touch event.
@@ -303,6 +303,7 @@ struct Event
 		// zero the biggest union member we have, which clears all others too
 		memset(&Joystick, 0, sizeof(Joystick));
 	}
+    ~Event() {};
 };
 
 bool keyIsKnownSpecial(KEY_CODE irrlichtKey)
