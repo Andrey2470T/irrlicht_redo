@@ -1,9 +1,16 @@
 #include "LogStream.h"
+#include "IEventReceiver.h"
+#include "Events.h"
 
 namespace main
 {
 
-LogStream &LogStream::operator<<(const std::string &str)
+void IrrLogStream::setEventReceiver(IEventReceiver *receiver)
+{
+    Receiver = receiver;
+}
+
+IrrLogStream &IrrLogStream::operator<<(const std::string &str)
 {
 	std::string str_c = str;
 
@@ -20,26 +27,45 @@ LogStream &LogStream::operator<<(const std::string &str)
 	return *this;
 }
 
-void LogStream::log(const std::string &str)
+void IrrLogStream::log(const std::string &str)
 {
 	const char *cstr = str.c_str();
 
-	switch (Type) {
-		case LT_WARNING:
+    if (Receiver) {
+        Event event;
+        event.Type = ET_LOG_TEXT_EVENT;
+        event.Log.Text = cstr;
+        event.Log.Level = Level;
+
+        if (Receiver->OnEvent(event))
+            return;
+    }
+
+    switch (Level) {
+        case LL_ERROR:
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, cstr);
+            break;
+        case LL_WARNING:
 			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, cstr);
 			break;
-		case LT_INFO:
+        case LL_ACTION:
+        case LL_INFO:
 			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, cstr);
 			break;
-		case LT_ERROR:
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, cstr);
-			break;
+        case LL_VERBOSE:
+            SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, cstr);
+            break;
+        case LL_TRACE:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, cstr);
+            break;
+        default:
+            break;
 	}
 }
 
 // Standard log streams
-LogStream WarnStream(LT_WARNING);
-LogStream InfoStream(LT_INFO);
-LogStream ErrorStream(LT_ERROR);
+IrrLogStream WarnStream(LL_WARNING);
+IrrLogStream InfoStream(LL_INFO);
+IrrLogStream ErrorStream(LL_ERROR);
 
 }

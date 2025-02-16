@@ -7,40 +7,61 @@
 namespace main
 {
 
-enum LogType
+class IEventReceiver;
+
+enum LogLevel
 {
-	LT_WARNING,
-	LT_INFO,
-	LT_ERROR
+    LL_NONE,
+    LL_ERROR,
+    LL_WARNING,
+    LL_ACTION,
+    LL_INFO,
+    LL_VERBOSE,
+    LL_TRACE,
+    LL_MAX
 };
 
 // Simple class wrapper over the SDL_Log* functions for simpler and shorter calls
-class LogStream
+class IrrLogStream
 {
-	const LogType Type;
+    LogLevel Level;
 
 	std::ostringstream Stream;
 
+    IEventReceiver *Receiver = nullptr;
+
 public:
-	LogStream(LogType type)
-		: Type(type)
+    IrrLogStream(LogLevel level)
+        : Level(level)
 	{}
 
-	LogStream(const LogStream &other) = delete; // prohibit the copying
+    IrrLogStream(const IrrLogStream &other) = delete; // prohibit the copying
 
-    LogStream &operator<<(const std::string &str);
+    LogLevel getLogLevel() const
+    {
+        return Level;
+    }
 
-    LogStream &operator<<(s32 num)
+    void setLogLevel(LogLevel level)
+    {
+        Level = level;
+    }
+
+    void setEventReceiver(IEventReceiver *receiver);
+
+    IrrLogStream &operator<<(const std::string &str);
+
+    IrrLogStream &operator<<(s32 num)
 	{
 		return *this << std::to_string(num);
 	}
 
-    LogStream &operator<<(u32 num)
+    IrrLogStream &operator<<(u32 num)
 	{
 		return *this << std::to_string(num);
 	}
 
-    LogStream &operator<<(f32 num)
+    IrrLogStream &operator<<(f32 num)
 	{
 		return *this << std::to_string(num);
 	}
@@ -50,8 +71,8 @@ private:
 };
 
 // Standard log streams
-extern LogStream WarnStream;
-extern LogStream InfoStream;
-extern LogStream ErrorStream;
+extern IrrLogStream WarnStream;
+extern IrrLogStream InfoStream;
+extern IrrLogStream ErrorStream;
 
 }

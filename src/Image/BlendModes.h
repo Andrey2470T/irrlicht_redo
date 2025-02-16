@@ -5,7 +5,7 @@
 namespace img
 {
 
-enum BlendMode
+enum BlendMode : u8
 {
 	BM_NORMAL = 0,
 	BM_ALPHA,

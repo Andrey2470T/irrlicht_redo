@@ -203,42 +203,6 @@ private:
 	friend class CursorControl;
 };
 
-//! Information on a joystick, returned from @ref irr::IrrlichtDevice::activateJoysticks()
-struct JoystickInfo
-{
-    //! The ID of the joystick
-    /** This is an internal Irrlicht index; it does not map directly
-     * to any particular hardware joystick. It corresponds to the
-     * irr::SJoystickEvent Joystick ID. */
-    u8 Joystick;
-
-    //! The name that the joystick uses to identify itself.
-    std::string Name;
-
-    //! The number of buttons that the joystick has.
-    u32 Buttons;
-
-    //! The number of axes that the joystick has, i.e. X, Y, Z, R, U, V.
-    /** Note: with a Linux device, the POV hat (if any) will use two axes. These
-     *  will be included in this count. */
-    u32 Axes;
-
-    //! An indication of whether the joystick has a POV hat.
-    /** A Windows device will identify the presence or absence of the POV hat.
-     *  A Linux device cannot, and will always return POV_HAT_UNKNOWN. */
-    enum
-    {
-        //! A hat is definitely present.
-        POV_HAT_PRESENT,
-
-        //! A hat is definitely not present.
-        POV_HAT_ABSENT,
-
-        //! The presence or absence of a hat cannot be determined.
-        POV_HAT_UNKNOWN
-    } PovHat;
-};
-
 struct MouseMultiClicks
 {
     MouseMultiClicks() :
