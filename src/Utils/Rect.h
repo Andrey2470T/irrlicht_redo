@@ -107,9 +107,9 @@ public:
 		return LRC.Y - ULC.Y;
 	}
 
-	v2u getSize() const
+	Vector2D<T> getSize() const
 	{
-		return v2u(getWidth(), getHeight());
+		return Vector2D<T>(getWidth(), getHeight());
 	}
 
 	//! Returns size of Rectangle
