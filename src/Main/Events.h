@@ -4,6 +4,7 @@
 #include "Keycodes.h"
 #include <string.h>
 #include "LogStream.h"
+#include <optional>
 
 namespace main
 {
@@ -11,7 +12,8 @@ namespace main
 //! Enumeration for all event types there are.
 enum EventType
 {
-	ET_MOUSE_INPUT_EVENT = 1,
+	ET_GUI_EVENT = 1,
+	ET_MOUSE_INPUT_EVENT,
 	ET_KEY_INPUT_EVENT,
 	ET_STRING_INPUT_EVENT,
 	ET_TOUCH_INPUT_EVENT,
@@ -89,9 +91,101 @@ enum ApplicationEventType
 	AET_COUNT
 };
 
+//! Enumeration for all events which are sendable by the gui system
+enum GUIEventType
+{
+	//! A gui element has lost its focus.
+	/** GUIEvent.Caller is losing the focus to GUIEvent.Element.
+	If the event is absorbed then the focus will not be changed. */
+	GET_ELEMENT_FOCUS_LOST = 0,
+
+	//! A gui element has got the focus.
+	/** If the event is absorbed then the focus will not be changed. */
+	GET_ELEMENT_FOCUSED,
+
+	//! The mouse cursor hovered over a gui element.
+	/** If an element has sub-elements you also get this message for the subelements */
+	GET_ELEMENT_HOVERED,
+
+	//! The mouse cursor left the hovered element.
+	/** If an element has sub-elements you also get this message for the subelements */
+	GET_ELEMENT_LEFT,
+
+	//! An element would like to close.
+	/** Windows and context menus use this event when they would like to close,
+	this can be canceled by absorbing the event. */
+	GET_ELEMENT_CLOSED,
+
+	//! A button was clicked.
+	GET_BUTTON_CLICKED,
+
+	//! A scrollbar has changed its position.
+	GET_SCROLL_BAR_CHANGED,
+
+	//! A checkbox has changed its check state.
+	GET_CHECKBOX_CHANGED,
+
+	//! A listbox would like to open.
+	/** You can prevent the listbox from opening by absorbing the event. */
+	GET_LISTBOX_OPENED,
+
+	//! A new item in a listbox was selected.
+	/** NOTE: You also get this event currently when the same item was clicked again after more than 500 ms. */
+	GET_LISTBOX_CHANGED,
+
+	//! An item in the listbox was selected, which was already selected.
+	/** NOTE: You get the event currently only if the item was clicked again within 500 ms or selected by "enter" or "space". */
+	GET_LISTBOX_SELECTED_AGAIN,
+
+	//! A file has been selected in the file dialog
+	GET_FILE_SELECTED,
+
+	//! A directory has been selected in the file dialog
+	GET_DIRECTORY_SELECTED,
+
+	//! A file open dialog has been closed without choosing a file
+	GET_FILE_CHOOSE_DIALOG_CANCELLED,
+
+	//! In an editbox 'ENTER' was pressed
+	GET_EDITBOX_ENTER,
+
+	//! The text in an editbox was changed. This does not include automatic changes in text-breaking.
+	GET_EDITBOX_CHANGED,
+
+	//! The marked area in an editbox was changed.
+	GET_EDITBOX_MARKING_CHANGED,
+
+	//! The tab was changed in an tab control
+	GET_TAB_CHANGED,
+
+	//! The selection in a combo box has been changed
+	GET_COMBO_BOX_CHANGED,
+
+	//! A table has changed
+	GET_TABLE_CHANGED,
+	GET_TABLE_HEADER_CHANGED,
+	GET_TABLE_SELECTED_AGAIN,
+
+	//! No real event. Just for convenience to get number of events
+	GET_COUNT
+};
+
 //! Holds information about an event
 struct Event
 {
+	//! Any kind of GUI event.
+	struct GUIEvent
+	{
+		//! IGUIElement who called the event
+		std::optional<u32> Caller;
+
+		//! If the event has something to do with another element, it will be held here.
+		std::optional<u32> Element;
+
+		//! Type of GUI Event
+		GUIEventType Type;
+	};
+
 	//! Any kind of mouse event.
 	struct MouseInputEvent
 	{
@@ -297,6 +391,7 @@ struct Event
 	EventType Type;
 	union
 	{
+		struct GUIEvent GUI;
 		struct MouseInputEvent MouseInput;
 		struct KeyInputEvent KeyInput;
 		struct StringInputEvent StringInput;
