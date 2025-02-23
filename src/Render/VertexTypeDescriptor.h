@@ -42,21 +42,27 @@ public:
 	std::vector<VertexAttribute> Attributes;
 	u32 ComponentsCount = 0;
 
+    u8 PosCoordsCount = 3;
+    u8 ColorCmpCount = 4;
     bool InitNormal = false;
     bool InitUV = false;
     u8 UVCount = 0;
 
 	// Constructor with optional passing the normal and uv.
-	VertexTypeDescriptor(bool init_normal=false, bool init_uv=false, u8 uv_count=0)
-        : Name(""), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
+    VertexTypeDescriptor(u8 pos_coords_count=3, u8 color_cmp_count=4, bool init_normal=false, bool init_uv=false, u8 uv_count=0)
+        : Name(""), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 	{
+        if (!checkForAttrsCmpsCount())
+            return;
         initAttributes();
 	}
 	// Constructor with passing the vertex type name, custom attributes and optionally the normal and uv.
 	VertexTypeDescriptor(const std::string &name, const std::vector<VertexAttribute> &attributes,
-		bool init_normal=false, bool init_uv=false, u8 uv_count=0)
-        :Name(name), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
+         u8 pos_coords_count=3, u8 color_cmp_count=4, bool init_normal=false, bool init_uv=false, u8 uv_count=0)
+        : Name(name), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 	{
+        if (!checkForAttrsCmpsCount())
+            return;
         initAttributes();
 
 		for (const auto &attr : attributes)
@@ -76,8 +82,8 @@ private:
 	}
     void initAttributes()
 	{
-		appendAttr({"Position", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
-		appendAttr({"Color", 4, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
+        appendAttr({"Position", PosCoordsCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+        appendAttr({"Color", ColorCmpCount, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
 
         if (InitNormal)
 			appendAttr({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
@@ -85,6 +91,26 @@ private:
         if (InitUV)
             appendAttr({"UV", UVCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 	}
+
+    bool checkForAttrsCmpsCount()
+    {
+        if (PosCoordsCount != 2 && PosCoordsCount != 3) {
+            ErrorStream << "VertexTypeDescriptor(): Position coordinates count can be only either 2 or 3\n";
+            return false;
+        }
+
+        if (ColorCmpCount != 3 && ColorCmpCount != 4) {
+            ErrorStream << "VertexTypeDescriptor(): Color components count can be only either 3 or 4\n";
+            return false;
+        }
+
+        if (UVCount != 2 && UVCount != 3) {
+            ErrorStream << "VertexTypeDescriptor(): UV count can be only either 2 or 3\n";
+            return false;
+        }
+
+        return true;
+    }
 };
 
 // Returns size of the vertex type in bytes.

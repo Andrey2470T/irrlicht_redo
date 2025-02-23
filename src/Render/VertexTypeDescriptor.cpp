@@ -19,6 +19,8 @@ size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 const VertexTypeDescriptor DefaultVType{
 	"Standard3D",
 	{},
+    3,
+    4,
 	true,
 	true,
 	2
