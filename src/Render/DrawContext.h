@@ -64,7 +64,7 @@ class DrawContext
 	utils::recti viewport;
 public:
 	//! Constructor
-	DrawContext(utils::recti viewportSize, u32 maxTextureUnits)
+    DrawContext(const utils::recti &viewportSize, u32 maxTextureUnits)
 	{
 		activeUnits.resize(maxTextureUnits, nullptr);
 
@@ -112,7 +112,7 @@ public:
 	void setStencilOp(StencilOp _sfail_op, StencilOp _dpfail_op, StencilOp _dppass_op);
 	
 	void enableScissorTest(bool scissortest);
-	void setScissorBox(utils::recti box);
+    void setScissorBox(const recti &box);
 
 	void setPointSize(f32 pointsize);
 	void setLineWidth(f32 linewidth);

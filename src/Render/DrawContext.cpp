@@ -282,7 +282,7 @@ void DrawContext::enableScissorTest(bool scissortest)
 		curScissorTest.enabled = scissortest;
 	}
 }
-void DrawContext::setScissorBox(utils::recti box)
+void DrawContext::setScissorBox(const utils::recti &box)
 {
 	if (!curScissorTest.enabled)
 		return;
