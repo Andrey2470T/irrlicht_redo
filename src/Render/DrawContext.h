@@ -47,6 +47,7 @@ class DrawContext
 	Mesh *curMesh;
 	UniformBuffer *curUBO;
 
+    u32 maxTextureUnits;
 	std::vector<Texture *> activeUnits;
 
 	img::BlendMode curMode;
@@ -64,9 +65,10 @@ class DrawContext
 	utils::recti viewport;
 public:
 	//! Constructor
-    DrawContext(const utils::recti &viewportSize, u32 maxTextureUnits)
+    DrawContext(const utils::recti &viewportSize, u32 _maxTextureUnits)
+		: maxTextureUnits(_maxTextureUnits)
 	{
-		activeUnits.resize(maxTextureUnits, nullptr);
+		activeUnits.resize(_maxTextureUnits, nullptr);
 
 		initContext(viewportSize);
 	}
