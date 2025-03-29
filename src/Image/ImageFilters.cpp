@@ -61,7 +61,7 @@ img::color8 imageAverageColor(const img::Image *img, img::ImageModifier *mdf)
         stepy = std::max(1U, size.Y / 16);
     for (u32 x = 0; x < size.X; x += stepx) {
         for (u32 y = 0; y < size.Y; y += stepy) {
-            img::color8 c = mdf->getPixel(img, x, y);
+            img::color8 c = mdf->getPixelColor(img, x, y);
             if (c.A() > 0) {
                 total++;
                 col_acc += srgb_to_linear(c);
@@ -142,7 +142,7 @@ void imageScaleNNAA(img::Image *src, const recti &srcrect, img::Image *dest, img
 
             // Get source pixel and add it to totals, weighted
             // by covered area and alpha.
-            pxl = mdf->getPixel(src, (u32)sx, (u32)sy);
+            pxl = mdf->getPixelColor(src, (u32)sx, (u32)sy);
             area += pa;
             ra += pa * pxl.R();
             ga += pa * pxl.G();
@@ -162,7 +162,7 @@ void imageScaleNNAA(img::Image *src, const recti &srcrect, img::Image *dest, img
             pxl.B(0);
             pxl.A(0);
         }
-        mdf->setPixel(dest, dx, dy, pxl);
+        mdf->setPixelColor(dest, dx, dy, pxl);
     }
 }
 

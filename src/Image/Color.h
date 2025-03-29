@@ -114,7 +114,7 @@ public:
 		if (channelsCount == 1)
 			return R() <= other.R();
 		else if (channelsCount == 2)
-			return (R() <= other.R && G() <= other.G());
+			return (R() <= other.R() && G() <= other.G());
 		else if (channelsCount == 3)
 			return (R() <= other.R() && G() <= other.G() && B() <= other.B());
 		else

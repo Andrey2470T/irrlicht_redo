@@ -16,6 +16,28 @@ bool isFormatSupportedForImage(PixelFormat format)
 	}
 }
 
+u8 Palette::findColorIndex(const color8 &c)
+{
+	color8 minColorDiff(c.getFormat());
+	u32 index = 0;
+
+	for (u32 i = 0; i < size; i++) {
+		color8 &cur_c = colors.at(i);
+		color8 colorDiff(c.getFormat(),
+			(u8)std::abs((s16)c.R()-(s16)cur_c.R()),
+			(u8)std::abs((s16)c.G()-(s16)cur_c.G()),
+			(u8)std::abs((s16)c.B()-(s16)cur_c.B()),
+			(u8)std::abs((s16)c.A()-(s16)cur_c.A()));
+
+		if (colorDiff < minColorDiff) {
+			minColorDiff = colorDiff;
+			index = i;
+		}
+	}
+		
+	return index;
+}
+
 Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
     Palette *_palette, ImageModifier *mdf)
 	: format(_format), width(_width), height(_height)
@@ -77,10 +99,10 @@ void Image::setPaletteColors(const std::vector<color8> &colors)
 	palette->size = colors.size();
     palette->hasAlpha = pixelFormatInfo.at(colors.at(0).getFormat()).hasAlpha;
     u8 size = std::min<u32>(255u, colors.size());
-	palette->colors.reserve(size);
+	palette->colors.resize(size);
 
 	for (u8 i = 0; i < size; i++)
-		palette->colors.push_back(colors[i]);
+		palette->colors.at(i) = colors[i];
 }
 
 Image *Image::copy() const

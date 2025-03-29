@@ -8,14 +8,14 @@
 namespace img
 {
 
-enum ROTATE_ANGLE
+enum ROTATE_ANGLE : u8
 {
 	RA_90,
 	RA_180,
 	RA_270
 };
 
-enum FLIP_DIR
+enum FLIP_DIR : u8
 {
 	FD_X,
 	FD_Y
@@ -32,11 +32,16 @@ public:
 	// Returns a pixel from the image
 	color8 getPixel(const Image *img, u32 x, u32 y) const;
 
-	//! Sets a pixel for the image
-	void setPixel(
-		Image *img,
-		u32 x, u32 y,
-		const color8 &color);
+	// Sets a pixel for the image
+	void setPixel(Image *img, u32 x, u32 y, const color8 &color);
+
+	// Return (only) a pixel color from the image
+	// If the format is indexed, it will extract the color from the palette, not its index
+	color8 getPixelColor(const Image *img, u32 x, u32 y) const;
+
+	// Sets (only) a pixel color for the image
+	// If the format is indexed, it will find the closest pixel color from the palette, so "color" shoudln't be indexed
+	void setPixelColor(Image *img, u32 x, u32 y, const color8 &color);
 
 	// Fills the whole (or part) of the image with the given color
 	// Absence of the passed rect means filling the whole image
@@ -76,9 +81,9 @@ public:
 		return BlendEnabled;
 	}
 
-	void toggleBlend()
+	void enableBlend(bool enable)
 	{
-		BlendEnabled = !BlendEnabled;
+		BlendEnabled = enable;
 	}
 
     void setBlendMode(BlendMode newMode)

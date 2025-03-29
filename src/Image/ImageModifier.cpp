@@ -79,6 +79,28 @@ void ImageModifier::setPixel(
 	*(pixel+3) = newColor.A();
 }
 
+// Return (only) a pixel color from the image
+// If the format is indexed, it will extract the color from the palette, not its index
+color8 ImageModifier::getPixelColor(const Image *img, u32 x, u32 y) const
+{
+	color8 c = getPixel(img, x, y);
+
+	if (img->getFormat() == img::PF_INDEX_RGBA8)
+		return img->getPalette()->colors.at(c.R());
+
+	return c;
+}
+
+// Sets (only) a pixel color for the image
+// If the format is indexed, it will find the closest pixel color from the palette, so "color" shoudln't be indexed
+void ImageModifier::setPixelColor(Image *img, u32 x, u32 y, const color8 &color)
+{
+	if (img->getFormat() == img::PF_INDEX_RGBA8)
+		setPixel(img, x, y, color8(img->getFormat(), img->getPalette()->findColorIndex(color)));
+	else
+		setPixel(img, x, y, color);
+}
+
 // Fills the whole (or part) of the image with the given color
 // Absence of the passed rect means filling the whole image
 void ImageModifier::fill(
@@ -226,10 +248,7 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
 					u32 x = axis == 0 ? r : imgOut_axis2;
 					u32 y = axis == 0 ? imgOut_axis2 : r;
 
-					color8 curPixel = getPixel(inImg, x, y);
-
-					if (inImg->getFormat() == PF_INDEX_RGBA8)
-						curPixel = inImg->getPalette()->colors.at(curPixel.R());
+					color8 curPixel = getPixelColor(inImg, x, y);
 					resColor += curPixel * weights[r - min];
 				}
 
@@ -240,12 +259,7 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
                 u32 x = axis == 0 ? imgOut_axis : imgOut_axis2;
                 u32 y = axis == 0 ? imgOut_axis2 : imgOut_axis;
 
-				if (outImg->getFormat() == PF_INDEX_RGBA8) {
-					u8 colorIndex = outImg->getPalette()->findColorIndex(resColor);
-					setPixel(outImg, x, y, color8(PF_INDEX_RGBA8, colorIndex));
-				}
-				else
-					setPixel(outImg, x, y, resColor);
+				setPixelColor(outImg, x, y, resColor);
 			}
 		}
 	};

@@ -21,19 +21,16 @@ struct Palette
 	
 	std::vector<color8> colors;
 	
-	Palette(bool _hasAlpha, u32 _size, const std::vector<color8> &_colors=std::vector<color8>())
+	Palette(bool _hasAlpha, u32 _size)
+		: hasAlpha(_hasAlpha), size(_size)
+	{
+		colors.resize(size);
+	}
+	Palette(bool _hasAlpha, u32 _size, const std::vector<color8> &_colors)
 		: hasAlpha(_hasAlpha), size(_size), colors(_colors)
 	{}
 
-	u8 findColorIndex(const color8 &c)
-	{
-		auto it = std::find(colors.begin(), colors.end(), c);
-		
-		if (it == colors.end())
-			return 0;
-		
-		return static_cast<u8>(std::distance(colors.begin(), it));
-	}
+	u8 findColorIndex(const color8 &c);
 };
 
 /* Image representation class referring or saving directly
