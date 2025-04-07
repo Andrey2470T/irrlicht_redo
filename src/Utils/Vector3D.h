@@ -176,6 +176,9 @@ public:
 
 	// functions
 
+	//! Checks if the length of the vector is null
+	bool isNull() const { return getLengthSQ() == 0; }
+
 	//! Gets the length of the vector.
 	/** \return The length of the vector. */
 	T getLength() const { return std::sqrt(X * X + Y * Y + Z * Z); }

@@ -160,10 +160,6 @@ public:
     void setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier *mdf);
     void setCaption(const std::wstring &newCaption);
 
-	// Window time counter
-	void startTimer();
-	void stopTimer();
-
 	bool isActive() const;
 	bool isFocused() const;
 	bool isVisible() const;
