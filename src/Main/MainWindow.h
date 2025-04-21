@@ -2,7 +2,6 @@
 
 #include "Render/Common.h"
 #include "CursorControl.h"
-#include "TimeCounter.h"
 #include "Image/Image.h"
 #include "Events.h"
 #include <queue>
@@ -132,7 +131,6 @@ class MainWindow
     };
     MouseMultiClicks MultiClicks;
 
-	TimeCounter Timer;
 	CursorControl Cursor;
 
 	MainWindowParameters Params;
@@ -188,6 +186,8 @@ private:
 	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 #endif
 
+    v2u getWindowSize() const;
+    v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
 	void updateViewportAndScale();
 

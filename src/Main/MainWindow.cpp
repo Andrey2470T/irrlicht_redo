@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "TimeCounter.h"
 #include "Image/Converting.h"
 #include "Utils/String.h"
 #include "Image/ImageModifier.h"
@@ -12,7 +13,7 @@ namespace main
 {
 
 MainWindow::MainWindow(const MainWindowParameters &params)
-    : GLVersion(params.GLType), Timer(false), Cursor(this), Params(params),
+    : GLVersion(params.GLType), Cursor(this), Params(params),
       IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
 {
 #ifdef ANDROID
@@ -703,6 +704,21 @@ EM_BOOL MainWindow::MouseLeaveCallback(int eventType, const EmscriptenMouseEvent
     return EM_FALSE;
 }
 #endif
+
+v2u MainWindow::getWindowSize() const
+{
+	int width, height;
+	SDL_GetWindowSize(Window, &width, &height);
+	
+	return v2u((u32)width, (u32)height);
+}
+
+v2u MainWindow::getViewportSize() const
+{
+	int width, height;
+	SDL_GL_GetDrawableSize(Window, &width, &height);
+	return v2u((u32)width, (u32)height);
+}
 
 u32 MainWindow::getFullscreenFlag(bool fullscreen)
 {
