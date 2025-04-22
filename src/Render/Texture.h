@@ -78,6 +78,11 @@ public:
 		return height;
 	}
 
+    v2u getSize() const
+    {
+        return v2u(width, height);
+    }
+
     img::PixelFormat getFormat() const
 	{
 		return format;
