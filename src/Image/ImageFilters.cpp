@@ -1,10 +1,86 @@
 #include "ImageFilters.h"
+#include "Utils/Bitmap.h"
 
 namespace img
 {
 
-void imageCleanTransparent(img::Image *src, u32 threshold)
-{}
+void imageCleanTransparent(img::Image *src, u8 threshold, img::ImageModifier *mdf)
+{
+    v2u size = src->getSize();
+    Bitmap bitmap(size.X, size.Y);
+
+    for (u32 x = 0; x < size.X; x++)
+        for (u32 y = 0; y < size.Y; y++)
+            if (mdf->getPixelColor(src, x, y).A() > threshold)
+                bitmap.set(x, y, true);
+    
+    auto allOpaque = [&bitmap] ()
+    {
+        bool all = true;
+
+        for (u32 i = 0; i < bitmap.size(); i++)
+            if (bitmap.getByte(i) != 0xff) {
+                all = false;
+                break;
+            }
+
+        if (all)
+            return; // all pixels are opaque
+    };
+
+    allOpaque();
+
+    // Cap iterations to keep runtime reasonable, for higher-res textures we can
+	// get away with filling less pixels.
+	u32 iter_max = 11 - std::max(size.X, size.Y) / 16;
+    iter_max = std::max(iter_max, 2u);
+
+	// Then repeatedly look for transparent pixels, filling them in until
+	// we're finished.
+	for (u32 iter = 0; iter < iter_max; iter++) {
+
+	    for (u32 y = 0; y < size.Y; y++)
+	    for (u32 x = 0; x < size.X; x++) {
+		    // Skip pixels we have already processed
+		    if (bitmap.get(x, y))
+			    continue;
+
+		    // Sample size and total weighted r, g, b values
+		    u32 ss = 0, sr = 0, sg = 0, sb = 0;
+
+		    // Walk each neighbor pixel (clipped to image bounds)
+		    for (u32 sy = (y < 1) ? 0 : (y - 1);
+				    sy <= (y + 1) && sy < size.Y; sy++)
+		    for (u32 sx = (x < 1) ? 0 : (x - 1);
+				    sx <= (x + 1) && sx < size.X; sx++) {
+			    // Ignore pixels we haven't processed
+			    if (!bitmap.get(sx, sy))
+				    continue;
+
+			    // Add RGB values weighted by alpha IF the pixel is opaque, otherwise
+			    // use full weight since we want to propagate colors.
+			    img::color8 c = mdf->getPixelColor(src, sx, sy);
+			    u32 a = c.A() <= threshold ? 255 : c.A();
+			    ss += a;
+			    sr += a * c.R();
+                sg += a * c.G();
+                sb += a * c.B();
+		    }
+
+		    // Set pixel to average weighted by alpha
+		    if (ss > 0) {
+			    img::color8 c = mdf->getPixelColor(src, x, y);
+			    c.R(sr / ss);
+			    c.G(sg / ss);
+			    c.B(sb / ss);
+			    mdf->setPixelColor(src, x, y, c);
+			    bitmap.set(x, y, true);
+		    }
+	    }
+
+	    allOpaque();
+    }
+}
 
 // For more colorspace transformations, see for example
 // <https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl>
@@ -30,7 +106,7 @@ struct LUT8 {
     }
 } srgb_to_linear_lut;
 
-v3f srgb_to_linear(const img::color8 col_srgb)
+v3f srgb_to_linear(const img::color8 &col_srgb)
 {
     return v3f(srgb_to_linear_lut.t[col_srgb.R()],
         srgb_to_linear_lut.t[col_srgb.G()],

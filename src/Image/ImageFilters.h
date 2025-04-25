@@ -17,7 +17,7 @@ namespace img
  * transparent. Should be 127 when the texture is used with ALPHA_CHANNEL_REF,
  * 0 when alpha blending is used.
  */
-void imageCleanTransparent(img::Image *src, u32 threshold);
+void imageCleanTransparent(img::Image *src, u8 threshold, img::ImageModifier *mdf);
 
 /* Returns the gamma-correct average color of the image, with transparent pixels
  * ignored. */
