@@ -39,4 +39,7 @@ void imageScaleNNAA(img::Image *src, const recti &srcrect, img::Image *dest, Ima
  */
 img::Image *Align2Npot2(img::Image *image, ImageModifier *mdf);
 
+img::Image *applyCleanScalePowerOf2(img::Image *src, const v2i &src_size,
+    const v2i &dest_size, img::ImageModifier *mdf);
+
 }

@@ -283,4 +283,25 @@ img::Image *Align2Npot2(img::Image *image, img::ImageModifier *mdf)
     return targetimage;
 }
 
+img::Image *applyCleanScalePowerOf2(img::Image *src, const v2i &src_size,
+    const v2i &dest_size, img::ImageModifier *mdf)
+{
+    img::Image *img_copy = src->copy();
+    imageCleanTransparent(img_copy, 0, mdf);
+
+    v2u scaled_size(
+        npot2(dest_size.X),
+        npot2(dest_size.Y)
+    );
+
+    if (dest_size.Y > scaled_size.Y)
+        scaled_size.Y *= 2;
+    if (dest_size.X > scaled_size.X)
+        scaled_size.X *= 2;
+    img::Image *img_scaled = new img::Image(src->getFormat(), scaled_size.X, scaled_size.Y);
+    imageScaleNNAA(img_copy, recti(src_size), img_scaled, mdf);
+
+    return img_scaled;
+}
+
 }
