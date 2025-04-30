@@ -3,48 +3,35 @@
 namespace render
 {
 
-// The standard glBlend* functions limit the blending opportunities
-static const std::vector<img::BlendMode> supportedBlendModes = {
-	img::BM_NORMAL,
-	img::BM_ALPHA,
-	img::BM_ADD,
-    img::BM_SUBTRACTION
-};
-
-// Various blend modes setup functions
-static void setNormalMode()
+// Standard blend modes setup functions
+static void setNormalMode(DrawContext *ctxt)
 {
-	glBlendFunc(toGLBlendFunc[BF_ONE], toGLBlendFunc[BF_ZERO]);
-	glBlendEquation(toGLBlendOp[BO_ADD]);
+    ctxt->setBlendFunc(BF_ONE, BF_ZERO);
+    ctxt->setBlendOp(BO_ADD);
 }
 
-static void setAlphaMode()
+static void setAlphaMode(DrawContext *ctxt)
 {
-	glBlendFunc(toGLBlendFunc[BF_SRC_ALPHA], toGLBlendFunc[BF_ONE_MINUS_SRC_ALPHA]);
-	glBlendEquation(toGLBlendOp[BO_ADD]);
+    ctxt->enableBlend(true);
+    ctxt->setBlendFunc(BF_SRC_ALPHA, BF_ONE_MINUS_SRC_ALPHA);
+    ctxt->setBlendOp(BO_ADD);
 }
 
-static void setAddMode()
+static void setAddMode(DrawContext *ctxt)
 {
-	glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glBlendFunc(toGLBlendFunc[BF_SRC_COLOR], toGLBlendFunc[BF_DST_COLOR]);
-	glBlendEquation(toGLBlendOp[BO_ADD]);
+    ctxt->enableBlend(true);
+    ctxt->setBlendColor(img::colorf(img::PF_RGBA32F, 1.0f, 1.0f, 1.0f, 1.0f));
+    ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
+    ctxt->setBlendOp(BO_ADD);
 }
 
-static void setSubtractMode()
+static void setSubtractMode(DrawContext *ctxt)
 {
-	glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glBlendFunc(toGLBlendFunc[BF_SRC_COLOR], toGLBlendFunc[BF_DST_COLOR]);
-	glBlendEquation(toGLBlendOp[BO_SUBTRACT]);
+    ctxt->enableBlend(true);
+    ctxt->setBlendColor(img::colorf(img::PF_RGBA32F, 1.0f, 1.0f, 1.0f, 1.0f));
+    ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
+    ctxt->setBlendOp(BO_SUBTRACT);
 }
-
-// Mapping the blend mode to the corresponding setup function
-static const std::map<img::BlendMode, std::function<void()>> setupBlendFunctions = {
-	{img::BM_NORMAL, &setNormalMode},
-	{img::BM_ALPHA, &setAlphaMode},
-	{img::BM_ADD, &setAddMode},
-    {img::BM_SUBTRACTION, &setSubtractMode}
-};
 
 
 //! Getters
@@ -83,9 +70,9 @@ std::vector<Texture *> DrawContext::getActiveUnits() const
 	return activeUnits;
 }
 
-img::BlendMode DrawContext::getBlendMode() const
+BlendState DrawContext::getBlendState() const
 {
-	return curMode;
+    return curBlend;
 }
 
 DepthTestState DrawContext::getDepthTest() const
@@ -156,17 +143,81 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
 	}
 }
 
-void DrawContext::setBlendMode(img::BlendMode blendmode)
+void DrawContext::enableBlend(bool blend)
 {
-	auto supported_mode = std::find(supportedBlendModes.begin(), supportedBlendModes.end(), blendmode);
+    if (curBlend.enabled != blend) {
+        if (blend)
+            glEnable(GL_BLEND);
+        else
+            glDisable(GL_BLEND);
 
-	if (supported_mode == supportedBlendModes.end()) {
-		ErrorStream << "DrawContext::setBlendMode() unsupported blend mode\n";
-		return;
-	}
+        curBlend.enabled = blend;
+    }
+}
 
-    setupBlendFunctions.at(blendmode)();
-	curMode = blendmode;
+void DrawContext::setBlendMode(GLBlendMode mode)
+{
+    switch (mode) {
+    case GLBlendMode::NORMAL:
+        setNormalMode(this);
+        break;
+    case GLBlendMode::ALPHA:
+        setAlphaMode(this);
+        break;
+    case GLBlendMode::ADD:
+        setAddMode(this);
+        break;
+    case GLBlendMode::SUBTRACT:
+        setSubtractMode(this);
+        break;
+    default:
+        break;
+    }
+
+    curBlend.mode = mode;
+}
+
+void DrawContext::setBlendColor(const img::colorf &color)
+{
+    if (curBlend.color != color) {
+        glBlendColor(color.R(), color.G(), color.B(), color.A());
+
+        curBlend.color = color;
+    }
+}
+
+void DrawContext::setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc)
+{
+    if (curBlend.func_srcrgb != srcfunc || curBlend.func_destrgb != destfunc) {
+        glBlendFunc(toGLBlendFunc[srcfunc], toGLBlendFunc[destfunc]);
+
+        curBlend.func_srcrgb = srcfunc;
+        curBlend.func_destrgb = destfunc;
+    }
+}
+
+void DrawContext::setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_func,
+                          BlendFunc srca_func, BlendFunc desta_func)
+{
+    if (curBlend.func_srcrgb != srcrgb_func || curBlend.func_destrgb != destrgb_func ||
+            curBlend.func_srca != srca_func || curBlend.func_desta != desta_func) {
+        glBlendFuncSeparate(toGLBlendFunc[srcrgb_func], toGLBlendFunc[destrgb_func],
+            toGLBlendFunc[srca_func], toGLBlendFunc[desta_func]);
+
+        curBlend.func_srcrgb = srcrgb_func;
+        curBlend.func_destrgb = destrgb_func;
+        curBlend.func_srca = srca_func;
+        curBlend.func_desta = desta_func;
+    }
+}
+
+void DrawContext::setBlendOp(BlendOp op)
+{
+    if (curBlend.op != op) {
+        glBlendEquation(toGLBlendOp[op]);
+
+        curBlend.op = op;
+    }
 }
 
 void DrawContext::enableDepthTest(bool depthtest)
@@ -324,7 +375,7 @@ void DrawContext::initContext(utils::recti viewportSize)
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
-	setBlendMode(curMode);
+    setBlendMode(GLBlendMode::ALPHA);
 
 	enableCullFace(curCullFace.enabled);
 	setCullMode(curCullFace.mode);

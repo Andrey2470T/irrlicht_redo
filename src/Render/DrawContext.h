@@ -10,6 +10,27 @@
 namespace render
 {
 
+enum class GLBlendMode : u8
+{
+    NORMAL,
+    ALPHA,
+    ADD,
+    SUBTRACT,
+    CUSTOM
+};
+
+struct BlendState
+{
+    bool enabled = true;
+    GLBlendMode mode = GLBlendMode::NORMAL;
+    img::colorf color;
+    BlendFunc func_srcrgb = BF_SRC_ALPHA;
+    BlendFunc func_srca = BF_SRC_ALPHA;
+    BlendFunc func_destrgb = BF_ONE_MINUS_SRC_ALPHA;
+    BlendFunc func_desta = BF_ONE_MINUS_SRC_ALPHA;
+    BlendOp op = BO_ADD;
+};
+
 struct DepthTestState
 {
 	bool enabled = false;
@@ -50,7 +71,7 @@ class DrawContext
     u32 maxTextureUnits;
 	std::vector<Texture *> activeUnits;
 
-	img::BlendMode curMode;
+    BlendState curBlend;
 	DepthTestState curDepthTest;
 
 	CullFaceState curCullFace;
@@ -86,7 +107,7 @@ public:
 	Texture *getActiveUnit(u32 index) const;
 	std::vector<Texture *> getActiveUnits() const;
 
-	img::BlendMode getBlendMode() const;
+    BlendState getBlendState() const;
 	DepthTestState getDepthTest() const;
 	CullFaceState getCullFace() const;
 	StencilTestState getStencilTest() const;
@@ -99,7 +120,13 @@ public:
 	void setUniformBuffer(UniformBuffer *ubo);
 	void setActiveUnit(u32 index, Texture *texture);
 
-	void setBlendMode(img::BlendMode blendmode);
+    void enableBlend(bool blend);
+    void setBlendMode(GLBlendMode mode);
+    void setBlendColor(const img::colorf &color);
+    void setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc);
+    void setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_func,
+        BlendFunc srca_func, BlendFunc desta_func);
+    void setBlendOp(BlendOp op);
 
 	void enableDepthTest(bool depthtest);
 	void setDepthMask(bool depthmask);
