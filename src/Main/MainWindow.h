@@ -33,6 +33,8 @@ struct MainWindowParameters
 	std::wstring Caption = L"";
 
     OpenGLType GLType = OGL_TYPE_DESKTOP;
+    std::optional<u8> GLVersionMajor;
+    std::optional<u8> GLVersionMinor;
 
 	u8 ColorChannelBits = 8;
 	u8 DepthBits = 24;
@@ -66,6 +68,7 @@ class MainWindow
 
 	SDL_version SDLVersion;
     OpenGLVersion GLVersion;
+    GLParameters GLParams;
 
     struct KeysMap
     {
@@ -154,6 +157,9 @@ private:
 	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 #endif
+
+    std::string getVendorName() const;
+    std::string getGLVersion() const;
 
     v2u getWindowSize() const;
     v2u getViewportSize() const;

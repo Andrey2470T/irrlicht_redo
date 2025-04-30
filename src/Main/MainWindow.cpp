@@ -13,8 +13,8 @@ namespace main
 {
 
 MainWindow::MainWindow(const MainWindowParameters &params)
-    : GLVersion(params.GLType), Cursor(this), Params(params),
-      IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
+    : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor), GLParams(params.GLType, GLVersion),
+      Cursor(this), Params(params), IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
 {
 #ifdef ANDROID
 	// Blocking on pause causes problems with multiplayer.
@@ -706,6 +706,20 @@ EM_BOOL MainWindow::MouseLeaveCallback(int eventType, const EmscriptenMouseEvent
     return EM_FALSE;
 }
 #endif
+
+std::string MainWindow::getVendorName() const
+{
+    std::string vendorStr = (const char*)GLParams.vendor;
+
+    return vendorStr;
+}
+
+std::string MainWindow::getGLVersion() const
+{
+    std::string versionStr = (const char*)GLParams.version;
+
+    return versionStr;
+}
 
 v2u MainWindow::getWindowSize() const
 {
