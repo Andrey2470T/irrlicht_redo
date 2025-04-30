@@ -108,6 +108,8 @@ MainWindow::~MainWindow()
 			SDL_JoystickClose(joystick);
 #endif
 	InfoStream << "Quit SDL\n";
+
+    SDL_Quit();
 }
 
 
@@ -833,9 +835,15 @@ bool MainWindow::initWindow()
 		SDL_SetWindowPosition(Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		updateViewportAndScale();
 	}
-
-	return true;
 #endif
+
+    if (!glewInit()) {
+        ErrorStream << "Could not initialize GLEW\n";
+        Close = true;
+        return false;
+    }
+
+    return true;
 }
 
 void MainWindow::createKeysMaps()

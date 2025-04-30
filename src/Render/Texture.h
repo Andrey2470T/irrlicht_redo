@@ -35,6 +35,8 @@ struct TextureSettings
 	bool isRenderTarget;
 	bool hasMipMaps;
 	u8 maxMipLevel;
+
+    f32 lodBias;
 };
 
 

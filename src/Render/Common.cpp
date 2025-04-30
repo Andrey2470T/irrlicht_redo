@@ -4,19 +4,6 @@
 namespace render
 {
 
-GLParameters::GLParameters()
-{
-    version = glGetString(GL_VERSION);
-	vendor = glGetString(GL_VENDOR);
-
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
-	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &maxCubeMapTextureSize);
-	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndexCount);
-	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxTextureLODBias);
-}
-
 void GLAPIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
 	// shader compiler can be very noisy

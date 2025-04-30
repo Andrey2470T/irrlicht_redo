@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Render/Common.h"
+#include "GLVersionSpecific.h"
 #include "CursorControl.h"
 #include "Image/Image.h"
 #include "Events.h"
@@ -23,37 +23,6 @@ namespace main
 
 struct JoystickInfo;
 
-enum OpenGLType
-{
-	OGL_TYPE_DESKTOP,
-	OGL_TYPE_ES,
-	OGL_TYPE_WEB
-};
-
-struct OpenGLVersion
-{
-	SDL_GLprofile Profile;
-
-	u8 Major;
-	u8 Minor;
-public:
-	OpenGLVersion(OpenGLType type)
-	{
-		switch (type) {
-		case OGL_TYPE_DESKTOP:
-			Profile = SDL_GL_CONTEXT_PROFILE_CORE;
-			Major = 3;
-			Minor = 2;
-		case OGL_TYPE_ES:
-		case OGL_TYPE_WEB:
-			Profile = SDL_GL_CONTEXT_PROFILE_ES;
-			Major = 2;
-			Minor = 0;
-		}
-	}
-};
-
-
 struct MainWindowParameters
 {
 	u32 Width = 800;
@@ -63,7 +32,7 @@ struct MainWindowParameters
 
 	std::wstring Caption = L"";
 
-	OpenGLType GLType = OGL_TYPE_DESKTOP;
+    OpenGLType GLType = OGL_TYPE_DESKTOP;
 
 	u8 ColorChannelBits = 8;
 	u8 DepthBits = 24;
@@ -96,7 +65,7 @@ class MainWindow
     std::queue<std::unique_ptr<Event>> Events;
 
 	SDL_version SDLVersion;
-	OpenGLVersion GLVersion;
+    OpenGLVersion GLVersion;
 
     struct KeysMap
     {
