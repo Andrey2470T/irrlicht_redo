@@ -63,4 +63,80 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 	TEST_GL_ERROR();
 }
 
+std::vector<img::Image *> TextureCubeMap::downloadData() const
+{
+    std::vector<img::Image *> imgs(CMF_COUNT);
+
+    bool cubemapBinded = false;
+    for (u8 i = 0; i < CMF_COUNT; i++) {
+        if (imgCache[i])
+            imgs[i] = imgCache[i].get();
+        else {
+            img::Image *img = new img::Image(format, width, height);
+
+            img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+
+            if (!cubemapBinded) {
+                glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+                cubemapBinded = true;
+            }
+            glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
+            imgs[i] = img;
+        }
+    }
+
+    if (cubemapBinded) {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+        TEST_GL_ERROR();
+    }
+
+    return imgs;
+}
+
+void TextureCubeMap::updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy)
+{
+    if (texSettings.isRenderTarget) {
+        ErrorStream << "TextureCubeMap::updateParameters() can not update settings for RTT\n";
+        return;
+    }
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    if (texSettings.wrapU != newTexSettings.wrapU) {
+        texSettings.wrapU = newTexSettings.wrapU;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLWrap.at(texSettings.wrapU));
+    }
+    if (texSettings.wrapV != newTexSettings.wrapV) {
+        texSettings.wrapV = newTexSettings.wrapV;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
+    }
+    if (texSettings.wrapW != newTexSettings.wrapW) {
+        texSettings.wrapW = newTexSettings.wrapW;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLWrap.at(texSettings.wrapW));
+    }
+    if (texSettings.minF != newTexSettings.minF) {
+        texSettings.minF = newTexSettings.minF;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));
+    }
+    if (texSettings.magF != newTexSettings.magF) {
+        texSettings.magF = newTexSettings.magF;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLMagFilter.at(texSettings.magF));
+    }
+
+    if (updateLodBias && texSettings.lodBias != newTexSettings.lodBias) {
+        f32 clampedBias = std::clamp<f32>(newTexSettings.lodBias * 0.125, -texSettings.maxLodBias, texSettings.maxLodBias);
+        texSettings.lodBias = clampedBias;
+        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_LOD_BIAS, clampedBias);
+    }
+    if (updateAnisotropy && texSettings.anisotropyFilter != newTexSettings.anisotropyFilter) {
+        u8 clampedAnisotropy = std::clamp<u8>(newTexSettings.anisotropyFilter, 1, texSettings.maxAnisotropyFilter);
+        texSettings.anisotropyFilter = clampedAnisotropy;
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY, clampedAnisotropy);
+    }
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    TEST_GL_ERROR();
+}
+
 }

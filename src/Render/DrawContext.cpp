@@ -179,6 +179,8 @@ void DrawContext::setBlendMode(GLBlendMode mode)
 
 void DrawContext::setBlendColor(const img::colorf &color)
 {
+	if (!curBlend.enabled)
+	    return;
     if (curBlend.color != color) {
         glBlendColor(color.R(), color.G(), color.B(), color.A());
 
@@ -188,6 +190,8 @@ void DrawContext::setBlendColor(const img::colorf &color)
 
 void DrawContext::setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc)
 {
+	if (!curBlend.enabled)
+	    return;
     if (curBlend.func_srcrgb != srcfunc || curBlend.func_destrgb != destfunc) {
         glBlendFunc(toGLBlendFunc[srcfunc], toGLBlendFunc[destfunc]);
 
@@ -199,6 +203,8 @@ void DrawContext::setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc)
 void DrawContext::setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_func,
                           BlendFunc srca_func, BlendFunc desta_func)
 {
+	if (!curBlend.enabled)
+	    return;
     if (curBlend.func_srcrgb != srcrgb_func || curBlend.func_destrgb != destrgb_func ||
             curBlend.func_srca != srca_func || curBlend.func_desta != desta_func) {
         glBlendFuncSeparate(toGLBlendFunc[srcrgb_func], toGLBlendFunc[destrgb_func],
@@ -213,6 +219,8 @@ void DrawContext::setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_
 
 void DrawContext::setBlendOp(BlendOp op)
 {
+	if (!curBlend.enabled)
+	    return;
     if (curBlend.op != op) {
         glBlendEquation(toGLBlendOp[op]);
 
@@ -369,7 +377,6 @@ void DrawContext::setViewportSize(utils::recti viewportSize)
 
 void DrawContext::initContext(utils::recti viewportSize)
 {
-	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_LINE_SMOOTH);
 

@@ -46,7 +46,7 @@ void Texture2D::initTexture(void *data)
 		glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
 
 		if (texSettings.hasMipMaps) {
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (GLint)texSettings.maxMipLevel);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
             glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
@@ -97,10 +97,10 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 	TEST_GL_ERROR();
 }
 
-img::Image *Texture2D::downloadData() const
+std::vector<img::Image *> Texture2D::downloadData() const
 {
 	if (imgCache)
-		return imgCache.get();
+        return {imgCache.get()};
 	else {
 		img::Image *img = new img::Image(format, width, height);
 
@@ -110,23 +110,66 @@ img::Image *Texture2D::downloadData() const
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		return img;
+        return {img};
 	}
 
 	TEST_GL_ERROR();
 }
 
-void Texture2D::regenerateMipMaps(u8 max_level)
+void Texture2D::regenerateMipMaps()
 {
-	texSettings.maxMipLevel = max_level;
+    if (!texSettings.hasMipMaps) {
+        ErrorStream << "Texture2D::regenerateMipMaps() mip maps are disabled\n";
+        return;
+    }
 
 	glBindTexture(GL_TEXTURE_2D, texID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
     glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	TEST_GL_ERROR();
+}
+
+void Texture2D::updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy)
+{
+    if (texSettings.isRenderTarget) {
+        ErrorStream << "Texture2D::updateParameters() can not update settings for RTT\n";
+        return;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texID);
+    if (texSettings.wrapU != newTexSettings.wrapU) {
+        texSettings.wrapU = newTexSettings.wrapU;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLWrap.at(texSettings.wrapU));
+    }
+    if (texSettings.wrapV != newTexSettings.wrapV) {
+        texSettings.wrapV = newTexSettings.wrapV;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
+    }
+    if (texSettings.minF != newTexSettings.minF) {
+        texSettings.minF = newTexSettings.minF;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));
+    }
+    if (texSettings.magF != newTexSettings.magF) {
+        texSettings.magF = newTexSettings.magF;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLMagFilter.at(texSettings.magF));
+    }
+
+    if (updateLodBias && texSettings.lodBias != newTexSettings.lodBias) {
+        f32 clampedBias = std::clamp<f32>(newTexSettings.lodBias * 0.125, -texSettings.maxLodBias, texSettings.maxLodBias);
+        texSettings.lodBias = clampedBias;
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, clampedBias);
+    }
+    if (updateAnisotropy && texSettings.anisotropyFilter != newTexSettings.anisotropyFilter) {
+        u8 clampedAnisotropy = std::clamp<u8>(newTexSettings.anisotropyFilter, 1, texSettings.maxAnisotropyFilter);
+        texSettings.anisotropyFilter = clampedAnisotropy;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, clampedAnisotropy);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    TEST_GL_ERROR();
 }
 
 }

@@ -6,13 +6,13 @@
 namespace render
 {
 
-enum TextureType
+enum TextureType : u8
 {
     TT_2D = 0,
     TT_CUBEMAP
 };
 
-enum CubeMapFace
+enum CubeMapFace : u8
 {
 	CMF_POS_X = 0,
 	CMF_NEG_X,
@@ -32,11 +32,15 @@ struct TextureSettings
 	TextureMinFilter minF = TMF_NEAREST;
 	TextureMagFilter magF = TMAGF_NEAREST;
 
-	bool isRenderTarget;
-	bool hasMipMaps;
-	u8 maxMipLevel;
-
     f32 lodBias;
+    u8 anisotropyFilter = 0;
+
+    bool isRenderTarget = true;
+    bool hasMipMaps = false;
+    u8 maxMipLevel = 0;
+
+    f32 maxLodBias = 0.0f;
+    u8 maxAnisotropyFilter = 0;
 };
 
 
@@ -105,8 +109,10 @@ public:
 	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 
-    virtual img::Image *downloadData() const = 0;
-	virtual void regenerateMipMaps(u8 max_level) = 0;
+    virtual std::vector<img::Image *> downloadData() const = 0;
+    virtual void regenerateMipMaps() = 0;
+
+    virtual void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) = 0;
 	
     bool operator==(const Texture &other)
 	{
