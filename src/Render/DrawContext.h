@@ -61,6 +61,13 @@ struct ScissorTestState
 	utils::recti box;
 };
 
+struct PolygonOffsetState
+{
+    bool enabled = false;
+    f32 slope_scale;
+    f32 depth_bias;
+};
+
 class DrawContext
 {
 	FrameBuffer *curFBO;
@@ -80,8 +87,12 @@ class DrawContext
 	
 	ScissorTestState curScissorTest;
 
+    PolygonOffsetState curPolygonOffset;
+
 	f32 pointSize = 1.0f;
 	f32 lineWidth = 1.0f;
+
+    bool sampleCoverage;
 
 	utils::recti viewport;
 public:
@@ -112,6 +123,7 @@ public:
 	CullFaceState getCullFace() const;
 	StencilTestState getStencilTest() const;
 	ScissorTestState getScissorTest() const;
+    PolygonOffsetState getPolygonOffset() const;
 
 	//! Setters
 	void setFrameBuffer(FrameBuffer *fbo);
@@ -143,8 +155,13 @@ public:
 	void enableScissorTest(bool scissortest);
     void setScissorBox(const recti &box);
 
+    void enablePolygonOffset(bool polygonoffset);
+    void setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias);
+
 	void setPointSize(f32 pointsize);
 	void setLineWidth(f32 linewidth);
+
+    void enableSampleCoverage(bool samplecoverage);
 
 	void setViewportSize(utils::recti viewportSize);
 private:

@@ -95,6 +95,11 @@ ScissorTestState DrawContext::getScissorTest() const
 	return curScissorTest;
 }
 
+PolygonOffsetState DrawContext::getPolygonOffset() const
+{
+    return curPolygonOffset;
+}
+
 
 //! Setters
 void DrawContext::setFrameBuffer(FrameBuffer *fbo)
@@ -341,6 +346,7 @@ void DrawContext::enableScissorTest(bool scissortest)
 		curScissorTest.enabled = scissortest;
 	}
 }
+
 void DrawContext::setScissorBox(const utils::recti &box)
 {
 	if (!curScissorTest.enabled)
@@ -349,6 +355,29 @@ void DrawContext::setScissorBox(const utils::recti &box)
         glScissor(box.ULC.X, box.ULC.Y, box.getWidth(), box.getHeight());
 		curScissorTest.box = box;
 	}
+}
+
+void DrawContext::enablePolygonOffset(bool polygonoffset)
+{
+    if (curPolygonOffset.enabled != polygonoffset) {
+        if (polygonoffset)
+            glEnable(GL_POLYGON_OFFSET_FILL);
+        else
+            glDisable(GL_POLYGON_OFFSET_FILL);
+
+        curPolygonOffset.enabled = polygonoffset;
+    }
+}
+
+void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
+{
+    if (!curPolygonOffset.enabled)
+        return;
+    if (curPolygonOffset.slope_scale != slope_scaled || curPolygonOffset.depth_bias != depth_bias) {
+        glPolygonOffset(slope_scaled, depth_bias);
+        curPolygonOffset.slope_scale = slope_scaled;
+        curPolygonOffset.depth_bias = depth_bias;
+    }
 }
 
 void DrawContext::setPointSize(f32 pointsize)
@@ -365,6 +394,18 @@ void DrawContext::setLineWidth(f32 linewidth)
 		glLineWidth(linewidth);
 		lineWidth = linewidth;
 	}
+}
+
+void DrawContext::enableSampleCoverage(bool samplecoverage)
+{
+    if (sampleCoverage != samplecoverage) {
+        if (samplecoverage)
+            glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        else
+            glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+
+        sampleCoverage = samplecoverage;
+    }
 }
 
 void DrawContext::setViewportSize(utils::recti viewportSize)
