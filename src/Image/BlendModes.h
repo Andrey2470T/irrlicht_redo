@@ -83,14 +83,7 @@ inline ColorRGBA<T> MultiplyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &d
 template <class T>
 inline ColorRGBA<T> DivisionBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-    T max_v = T_MAX(T);
-	return ColorRGBA<T>(
-		src.getFormat(),
-        (src.R() / dst.R()) * max_v,
-        (src.G() / dst.G()) * max_v,
-        (src.B() / dst.B()) * max_v,
-        dst.A()
-	);
+    return (src / dst) * T_MAX(T);
 }
 
 template <class T>
@@ -99,7 +92,8 @@ inline ColorRGBA<T> ScreenBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst
     CHECK_SAME_FORMAT(src, dst);
 
 	T max_v = T_MAX(T);
-    BLEND_OP(max_v - (max_v - src)*(max_v - dst) / max_v, dst.A());
+    ColorRGBA<T> max_c(src.getFormat(), max_v, max_v, max_v);
+    BLEND_OP(max_c - (max_c - src)*(max_c - dst) / max_v, dst.A());
 }
 
 template <class T>
@@ -152,8 +146,8 @@ template <class T>
 inline ColorRGBA<T> SoftLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
 	T max_v = T_MAX(T);
-
-    BLEND_OP(((max_v - 2*dst)*src*src + 2*dst*src) / max_v, dst.A());
+    ColorRGBA<T> max_c(src.getFormat(), max_v, max_v, max_v);
+    BLEND_OP(((max_c - dst*2)*src*src + dst*src*2) / max_v, dst.A());
 }
 
 template <class T>

@@ -238,6 +238,45 @@ public:
 		return *this;
 	}
 
+    ColorRGBA<T> operator/(const ColorRGBA<T> &other) const
+    {
+        return ColorRGBA<T>(
+            getFormat(),
+            R() / other.R(),
+            G() / other.G(),
+            B() / other.B(),
+            other.A());
+    }
+
+    ColorRGBA<T> &operator/=(const ColorRGBA<T> &other)
+    {
+        R(R() / other.R());
+        G(G() / other.G());
+        B(B() / other.B());
+        B(other.A());
+
+        return *this;
+    }
+
+    ColorRGBA<T> operator/(T val) const
+    {
+        return ColorRGBA<T>(
+            getFormat(),
+            R() / val,
+            G() / val,
+            B() / val,
+            A());
+    }
+
+    ColorRGBA<T> &operator/=(T val)
+    {
+        R(R() / val);
+        G(G() / val);
+        B(B() / val);
+
+        return *this;
+    }
+
 	//! Interpolates the color with a f32 value to another color
 	/** \param other: Other color
 	\param d: value between 0.0f and 1.0f. d=0 returns other, d=1 returns this, values between interpolate.
