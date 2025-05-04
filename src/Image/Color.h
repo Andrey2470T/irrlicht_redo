@@ -128,7 +128,7 @@ public:
 			R() + other.R(),
 			G() + other.G(),
 			B() + other.B(),
-            A() + other.A());
+            other.A());
 	}
 
 	ColorRGBA<T> &operator+=(const ColorRGBA<T> &other)
@@ -136,7 +136,7 @@ public:
 		R(R() + other.R());
 		G(G() + other.G());
 		B(B() + other.B());
-		A(A() + other.A());
+        A(other.A());
 
 		return *this;
 	}
@@ -148,7 +148,7 @@ public:
 			R() + val,
 			G() + val,
 			B() + val,
-			A() + val);
+            A());
 	}
 
 	ColorRGBA<T> &operator+=(T val)
@@ -156,7 +156,6 @@ public:
 		R(R() + val);
 		G(G() + val);
         B(B() + val);
-		A(A() + val);
 
 		return *this;
 	}
@@ -168,7 +167,7 @@ public:
 			R() - other.R(),
 			G() - other.G(),
 			B() - other.B(),
-            A() - other.A());
+            other.A());
 	}
 
 	ColorRGBA<T> &operator-=(const ColorRGBA<T> &other)
@@ -176,7 +175,7 @@ public:
 		R(R() - other.R());
 		G(G() - other.G());
 		B(B() - other.B());
-		A(A() - other.A());
+        A(other.A());
 
 		return *this;
 	}
@@ -188,7 +187,7 @@ public:
 			R() - val,
 			G() - val,
 			B() - val,
-			A() - val);
+            A());
 	}
 
 	ColorRGBA<T> &operator-=(T val)
@@ -196,7 +195,6 @@ public:
 		R(R() - val);
 		G(G() - val);
         B(B() - val);
-		A(A() - val);
 
 		return *this;
 	}
@@ -208,7 +206,7 @@ public:
 			R() * other.R(),
 			G() * other.G(),
 			B() * other.B(),
-			A() * other.A());
+            other.A());
 	}
 
 	ColorRGBA<T> &operator*=(const ColorRGBA<T> &other)
@@ -216,7 +214,7 @@ public:
 		R(R() * other.R());
 		G(G() * other.G());
 		B(B() * other.B());
-		B(A() * other.A());
+        B(other.A());
 
 		return *this;
 	}
@@ -228,7 +226,7 @@ public:
 			R() * val,
 			G() * val,
 			B() * val,
-			A() * val);
+            A());
 	}
 
 	ColorRGBA<T> &operator*=(T val)
@@ -236,7 +234,6 @@ public:
 		R(R() * val);
 		G(G() * val);
 		B(B() * val);
-		A(A() * val);
 
 		return *this;
 	}

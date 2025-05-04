@@ -24,6 +24,18 @@ enum BlendMode : u8
 	BM_COUNT
 };
 
+#define CHECK_SAME_FORMAT(src_c, dst_c) \
+    if (src_c.getFormat() != dst_c.getFormat()) {\
+        ErrorStream << "BlendModes function: the source and destination images formats have to be equal\n"; \
+        return ColorRGBA<T>(src_c.getFormat(), 0, 0, 0, 0); \
+    }
+
+#define BLEND_OP(res_c, dst_a) \
+    ColorRGBA<T> res_copy(res_c); \
+    res_copy.A(dst_a); \
+    return res_copy;
+
+
 template <class T>
 inline ColorRGBA<T> NormalBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
@@ -33,13 +45,21 @@ inline ColorRGBA<T> NormalBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst
 template <class T>
 inline ColorRGBA<T> AlphaBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	return ColorRGBA<T>(
-		src.getFormat(),
-        src.R() * src.A() + dst.R() * (T_MAX(T) - src.A()),
-        src.G() * src.A() + dst.G() * (T_MAX(T) - src.A()),
-        src.B() * src.A() + dst.B() * (T_MAX(T) - src.A()),
-		src.A()
-	);
+    T src_a = src.A();
+    T dst_a = dst.A();
+    T max_v = T_MAX(T);
+
+    if (dst_a == 255) {
+        BLEND_OP((src * src_a + dst * (max_v - src_a)) / max_v, dst_a);
+    }
+    else {
+        T res_a = src_a + dst_a * (max_v - src_a);
+
+        if (res_a == 0)
+            return ColorRGBA<T>(src.getFormat(), 0, 0, 0, 0);
+
+        BLEND_OP((src * src_a + dst * dst_a * (max_v - src_a) / max_v) / (res_a * max_v), res_a);
+    }
 }
 
 template <class T>
@@ -57,31 +77,29 @@ inline ColorRGBA<T> SubtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &d
 template <class T>
 inline ColorRGBA<T> MultiplyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
-	return src * dst;
+    return (src * dst) / T_MAX(T);
 }
 
 template <class T>
 inline ColorRGBA<T> DivisionBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
+    T max_v = T_MAX(T);
 	return ColorRGBA<T>(
 		src.getFormat(),
-		src.R() / dst.R(),
-		src.G() / dst.G(),
-		src.B() / dst.B(),
-		src.A() / dst.A()
+        (src.R() / dst.R()) * max_v,
+        (src.G() / dst.G()) * max_v,
+        (src.B() / dst.B()) * max_v,
+        dst.A()
 	);
 }
 
 template <class T>
 inline ColorRGBA<T> ScreenBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
+    CHECK_SAME_FORMAT(src, dst);
+
 	T max_v = T_MAX(T);
-	return ColorRGBA<T>(
-		src.getFormat(),
-		max_v - (max_v - src.R())*(max_v - dst.R()),
-		max_v - (max_v - src.G())*(max_v - dst.G()),
-		max_v - (max_v - src.B())*(max_v - dst.B())
-	);
+    BLEND_OP(max_v - (max_v - src)*(max_v - dst) / max_v, dst.A());
 }
 
 template <class T>
@@ -89,20 +107,20 @@ inline ColorRGBA<T> OverlayBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &ds
 {
 	T max_v = T_MAX(T);
 
-	ColorRGBA<T> newColor(src.getFormat());
+    ColorRGBA<T> newColor(src.getFormat(), 0, 0, 0, dst.A());
 
 	if (src.R() < max_v / 2)
-		newColor.R(2 * src.R() * dst.R());
+        newColor.R(2 * src.R() * dst.R() / max_v);
 	else
-		newColor.R(max_v - 2*(max_v - src.R())*(max_v - dst.R()));
+        newColor.R(max_v - 2*(max_v - src.R())*(max_v - dst.R()) / max_v);
 	if (src.G() < max_v / 2)
-		newColor.G(2 * src.G() * dst.G());
+        newColor.G(2 * src.G() * dst.G() / max_v);
 	else
-		newColor.G(max_v - 2*(max_v - src.G())*(max_v - dst.G()));
+        newColor.G(max_v - 2*(max_v - src.G())*(max_v - dst.G()) / max_v);
 	if (src.B() < max_v / 2)
-		newColor.B(2 * src.B() * dst.B());
+        newColor.B(2 * src.B() * dst.B() / max_v);
 	else
-		newColor.B(max_v - 2*(max_v - src.B())*(max_v - dst.B()));
+        newColor.B(max_v - 2*(max_v - src.B())*(max_v - dst.B()) / max_v);
 
 	return newColor;
 }
@@ -112,20 +130,20 @@ inline ColorRGBA<T> HardLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &
 {
 	T max_v = T_MAX(T);
 
-	ColorRGBA<T> newColor(src.getFormat());
+    ColorRGBA<T> newColor(src.getFormat(), 0, 0, 0, dst.A());
 
 	if (dst.R() < max_v / 2)
-		newColor.R(2 * src.R() * dst.R());
+        newColor.R(2 * src.R() * dst.R() / max_v);
 	else
-		newColor.R(max_v - 2*(max_v - src.R())*(max_v - dst.R()));
+        newColor.R(max_v - 2*(max_v - src.R())*(max_v - dst.R()) / max_v);
 	if (dst.G() < max_v / 2)
-		newColor.G(2 * src.G() * dst.G());
+        newColor.G(2 * src.G() * dst.G() / max_v);
 	else
-		newColor.G(max_v - 2*(max_v - src.G())*(max_v - dst.G()));
+        newColor.G(max_v - 2*(max_v - src.G())*(max_v - dst.G()) / max_v);
 	if (dst.B() < max_v / 2)
-		newColor.B(2 * src.B() * dst.B());
+        newColor.B(2 * src.B() * dst.B() / max_v);
 	else
-		newColor.B(max_v - 2*(max_v - src.B())*(max_v - dst.B()));
+        newColor.B(max_v - 2*(max_v - src.B())*(max_v - dst.B()) / max_v);
 
 	return newColor;
 }
@@ -135,12 +153,7 @@ inline ColorRGBA<T> SoftLightBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &
 {
 	T max_v = T_MAX(T);
 
-	return ColorRGBA<T>(
-		src.getFormat(),
-		(max_v - 2*dst.R())*src.R()*src.R() + 2*dst.R()*src.R(),
-		(max_v - 2*dst.G())*src.G()*src.G() + 2*dst.G()*src.G(),
-		(max_v - 2*dst.B())*src.B()*src.B() + 2*dst.B()*src.B()
-	);
+    BLEND_OP(((max_v - 2*dst)*src*src + 2*dst*src) / max_v, dst.A());
 }
 
 template <class T>
@@ -148,15 +161,17 @@ inline ColorRGBA<T> GrainExtractBlend(const ColorRGBA<T> &src, const ColorRGBA<T
 {
 	T max_v = T_MAX(T);
 
-	return dst - src + max_v/2;
+    BLEND_OP(dst - src + max_v/2, dst.A());
 }
 
 template <class T>
 inline ColorRGBA<T> GrainMergeBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
+    CHECK_SAME_FORMAT(src, dst);
+
 	T max_v = T_MAX(T);
 
-	return dst + src - max_v/2;
+    BLEND_OP(dst + src - max_v/2, dst.A());
 }
 
 template <class T>
@@ -166,7 +181,8 @@ inline ColorRGBA<T> DarkenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T> 
 		src.getFormat(),
 		std::min<T>(src.R(), dst.R()),
 		std::min<T>(src.G(), dst.G()),
-		std::min<T>(src.B(), dst.B())
+        std::min<T>(src.B(), dst.B()),
+        dst.A()
 	);
 }
 
@@ -177,7 +193,8 @@ inline ColorRGBA<T> LightenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T>
 		src.getFormat(),
 		std::max<T>(src.R(), dst.R()),
 		std::max<T>(src.G(), dst.G()),
-		std::max<T>(src.B(), dst.B())
+        std::max<T>(src.B(), dst.B()),
+        dst.A()
 	);
 }
 
@@ -185,6 +202,8 @@ inline ColorRGBA<T> LightenOnlyBlend(const ColorRGBA<T> &src, const ColorRGBA<T>
 template <class T>
 ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BlendMode mode)
 {
+    CHECK_SAME_FORMAT(src, dst);
+
 	switch (mode) {
 		case BM_NORMAL:
 			return NormalBlend(src, dst);
