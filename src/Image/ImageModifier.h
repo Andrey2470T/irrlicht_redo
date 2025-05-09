@@ -25,7 +25,6 @@ enum FLIP_DIR : u8
 class ImageModifier
 {
     BlendMode Mode;
-	bool BlendEnabled;
 public:
 	ImageModifier() {}
 
@@ -75,16 +74,6 @@ public:
     Image *crop(Image *img, const utils::rectu &rect);
 
     Image *combine(Image *img1, Image *img2);
-
-	bool blendEnabled() const
-	{
-		return BlendEnabled;
-	}
-
-	void enableBlend(bool enable)
-	{
-		BlendEnabled = enable;
-	}
 
     void setBlendMode(BlendMode newMode)
 	{

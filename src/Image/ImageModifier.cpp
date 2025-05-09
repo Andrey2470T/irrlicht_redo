@@ -142,23 +142,32 @@ bool ImageModifier::copyTo(
 	const utils::rectu *dstRect,
 	bool allowScale)
 {
-    Image *srcPart = srcImg;
+    utils::rectu targetRect;
 
-	if (srcRect) {
-		srcPart = new Image(srcImg->getFormat(), srcRect->getWidth(), srcRect->getHeight());
+    if (srcRect) {
+        targetRect.ULC = srcRect->ULC;
+        targetRect.LRC = srcRect->LRC;
+    }
+    else {
+        targetRect.ULC = utils::v2u(0, 0);
+        targetRect.LRC = srcImg->getSize();
+    }
 
-		for (u32 x = srcRect->ULC.X; x < srcRect->LRC.X; x++)
-			for (u32 y = srcRect->ULC.Y; y < srcRect->LRC.Y; y++)
-				setPixel(srcPart, x - srcRect->ULC.X, y - srcRect->ULC.Y, getPixel(srcImg, x, y));
-	}
+    Image *srcPart = new Image(srcImg->getFormat(), targetRect.getWidth(), targetRect.getHeight());
 
-	if (dstRect && srcRect->getSize() != dstRect->getSize()) {
+    for (u32 x = targetRect.ULC.X; x < targetRect.LRC.X; x++) {
+        for (u32 y = targetRect.ULC.Y; y < targetRect.LRC.Y; y++)
+            setPixel(srcPart, x - targetRect.ULC.X, y - targetRect.ULC.Y, getPixel(srcImg, x, y));
+    }
+
+    if (dstRect && targetRect.getSize() != dstRect->getSize()) {
 		if (!allowScale) {
 			ErrorStream << "ImageModifier::copyTo() copying to destination image with another size is not allowed\n";
+            delete srcPart;
 			return false;
 		}
 
-		resize(srcPart, *dstRect, RF_BICUBIC);
+        resize(srcPart, *dstRect, RF_BICUBIC);
 	}
 
 	for (u32 x = 0; x < srcPart->getWidth(); x++)
