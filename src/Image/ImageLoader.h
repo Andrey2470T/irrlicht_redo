@@ -34,6 +34,7 @@ public:
 	}
 
 	static Image *load(const std::string &path);
+    static Image *loadFromMem(void *mem, s32 size);
 
 	static void save(Image *img, const std::string &path);
 private:

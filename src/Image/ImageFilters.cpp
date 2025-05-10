@@ -277,7 +277,7 @@ img::Image *Align2Npot2(img::Image *image, img::ImageModifier *mdf)
         width *= 2;
 
     img::Image *targetimage = new Image(img::PF_RGBA8, width, height);
-    mdf->copyTo(image, targetimage);
+    mdf->copyTo(image, targetimage, nullptr, nullptr, true);
     delete image;
 
     return targetimage;

@@ -20,6 +20,14 @@ Image *ImageLoader::load(const std::string &path)
 	return convertSDLSurfaceToImage(surf);
 }
 
+Image *ImageLoader::loadFromMem(void *mem, s32 size)
+{
+    SDL_RWops *rw = SDL_RWFromMem(mem, size);
+    SDL_Surface *surf = IMG_Load_RW(rw, 0);
+
+    return convertSDLSurfaceToImage(surf);
+}
+
 void ImageLoader::save(Image *img, const std::string &path)
 {
 	if (!isFormatSupported(path, true)) {

@@ -383,8 +383,8 @@ public:
 	ColorHSL(f32 h, f32 s, f32 l)
 		: H(h), S(s), L(l) {}
 
-	inline void fromRGBA(const ColorRGBA<f32> &color);
-	inline void toRGBA(ColorRGBA<f32> &color) const;
+    void fromRGBA(const ColorRGBA<f32> &color);
+    void toRGBA(ColorRGBA<f32> &color) const;
 private:
 	inline f32 toRGBA1(f32 rm1, f32 rm2, f32 rh) const;
 };
