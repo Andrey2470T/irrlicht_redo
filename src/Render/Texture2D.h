@@ -30,7 +30,7 @@ public:
 	void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override;
 	void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;
 
-    std::vector<img::Image *> downloadData() const override;
+    std::vector<img::Image *> downloadData() override;
     void regenerateMipMaps() override;
 
     void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) override;

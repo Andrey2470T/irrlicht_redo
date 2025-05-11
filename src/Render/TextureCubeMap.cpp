@@ -63,15 +63,13 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 	TEST_GL_ERROR();
 }
 
-std::vector<img::Image *> TextureCubeMap::downloadData() const
+std::vector<img::Image *> TextureCubeMap::downloadData()
 {
     std::vector<img::Image *> imgs(CMF_COUNT);
-
     bool cubemapBinded = false;
+
     for (u8 i = 0; i < CMF_COUNT; i++) {
-        if (imgCache[i])
-            imgs[i] = imgCache[i].get();
-        else {
+        if (!imgCache[i]) {
             img::Image *img = new img::Image(format, width, height);
 
             img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
@@ -81,8 +79,9 @@ std::vector<img::Image *> TextureCubeMap::downloadData() const
                 cubemapBinded = true;
             }
             glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
-            imgs[i] = img;
+            imgCache[i].reset(img);
         }
+        imgs[i] = imgCache[i].get();
     }
 
     if (cubemapBinded) {

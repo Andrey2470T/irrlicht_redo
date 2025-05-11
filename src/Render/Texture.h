@@ -94,6 +94,11 @@ public:
 		return format;
 	}
 
+    TextureSettings getParameters() const
+    {
+        return texSettings;
+    }
+
 	bool hasMipMaps() const
 	{
 		return texSettings.hasMipMaps;
@@ -109,7 +114,7 @@ public:
 	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 
-    virtual std::vector<img::Image *> downloadData() const = 0;
+    virtual std::vector<img::Image *> downloadData() = 0;
     virtual void regenerateMipMaps() = 0;
 
     virtual void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) = 0;

@@ -97,11 +97,9 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 	TEST_GL_ERROR();
 }
 
-std::vector<img::Image *> Texture2D::downloadData() const
+std::vector<img::Image *> Texture2D::downloadData()
 {
-	if (imgCache)
-        return {imgCache.get()};
-	else {
+    if (!imgCache) {
 		img::Image *img = new img::Image(format, width, height);
 
 		img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
@@ -110,10 +108,12 @@ std::vector<img::Image *> Texture2D::downloadData() const
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-        return {img};
+        imgCache.reset(img);
+
+        TEST_GL_ERROR();
 	}
 
-	TEST_GL_ERROR();
+    return {imgCache.get()};
 }
 
 void Texture2D::regenerateMipMaps()
