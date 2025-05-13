@@ -172,4 +172,11 @@ void Texture2D::updateParameters(const TextureSettings &newTexSettings, bool upd
     TEST_GL_ERROR();
 }
 
+Texture2D *Texture2D::copy(const std::string &name)
+{
+	img::Image *cache = downloadData().at(0);
+    std::string texName = name.empty() ? getName() : name;
+    return new Texture2D(texName, std::unique_ptr<img::Image>(cache->copy()), texSettings);
+}
+
 }

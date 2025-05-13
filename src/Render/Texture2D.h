@@ -34,6 +34,8 @@ public:
     void regenerateMipMaps() override;
 
     void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) override;
+    
+    Texture2D *copy(const std::string &name="");
 private:
 	void initTexture(void *data = nullptr);
 };
