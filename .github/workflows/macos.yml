@@ -21,7 +21,7 @@ jobs:
       - name: Install deps
         run: |
           brew update
-          brew install cmake libpng jpeg sdl2 sdl2_image glew
+          brew install cmake libpng jpeg sdl2 sdl2_image sdl2_ttf glew
 
       - name: Build
         run: |
@@ -42,7 +42,7 @@ jobs:
       - name: Install deps
         run: |
           brew update
-          brew install cmake libpng jpeg sdl2 sdl2_image glew
+          brew install cmake libpng jpeg sdl2 sdl2_image sdl2_ttf glew
 
       - name: Build
         run: |

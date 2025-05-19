@@ -9,7 +9,7 @@ Features
 * Support of OpenGL 3.1+ and ES 2.0+ with using their new features.
 * Low-level graphics API representing the abstraction wrappers over OpenGL.
 * Much more flexible and readable comparing to the original, free from the the messed and invent-biked code.
-* Support of SDL2_image for reading/writing images.
+* Support of SDL2_image for reading/writing images, SDL2_ttf for loading TrueType fonts.
 * Doesn't expose the GUI, Mesh loaders and Scene interfaces anymore (later they will be integrated to the MT itself).
 
 Build
@@ -24,6 +24,7 @@ The following libraries are required to be installed:
   * or on mobile: OpenGL ES (can be optionally enabled on desktop too)
 * SDL2
 * SDL2_image
+* SDL2_ttf
 * GLEW
 
 However, IrrlichtMt cannot be built or installed separately.
