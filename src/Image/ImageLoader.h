@@ -7,7 +7,7 @@
 namespace img
 {
 
-enum ImageFormat
+enum ImageFormat : u8
 {
 	IF_PNG,
 	IF_JPEG,
@@ -23,9 +23,14 @@ extern std::vector<std::string> SIE;
 class ImageLoader
 {
 public:
-	static void init()
+    static bool init()
 	{
-		IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+        if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) != 0) {
+            ErrorStream << "ImageLoader::init() failed to init SDL2_image: " << IMG_GetError() << "\n";
+            return false;
+        }
+
+        return true;
 	}
 
 	static void free()
