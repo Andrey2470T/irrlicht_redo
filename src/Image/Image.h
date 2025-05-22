@@ -90,6 +90,13 @@ public:
 	void setPaletteColors(const std::vector<color8> &colors);
 	
 	Image *copy() const;
+	
+	bool operator==(const Image *other)
+	{
+		u32 pixelSize = pixelFormatInfo.at(format).size / 8;
+		return (format == other->format && width == other->getWidth() && height == other->getHeight() &&
+		    !memcmp(data, other->getData(), width * height * pixelSize));
+    }
 };
 
 }
