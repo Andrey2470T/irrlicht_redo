@@ -144,14 +144,22 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     SDL_Surface *surf = TTF_RenderGlyph_Solid(
         font, *reinterpret_cast<Uint16 *>(&ch_16), fg_color);
 
-    SDL_LockSurface(surf);
     img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
     img::Image *img_copy = surf_img->copy();
 
     delete surf_img;
-    SDL_FreeSurface(surf);
 
     return img_copy;
+}
+
+u8 TTFont::hash() const
+{
+    return (hasTransparency << 4) | ((u8)style << 1) | (u8)mode;
+}
+
+bool TTFont::operator==(const TTFont *other) const
+{
+    return hash() == other->hash();
 }
 
 }

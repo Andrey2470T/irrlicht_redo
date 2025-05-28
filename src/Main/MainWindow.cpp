@@ -130,13 +130,9 @@ void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier 
         return;
 	}
 
-	SDL_LockSurface(surface);
-
     img::Image *tempImg = img::convertSDLSurfaceToImage(surface);
 	bool succ = mdf->copyTo(newImg.get(), tempImg);
 	delete tempImg;
-
-	SDL_UnlockSurface(surface);
 
 	if (!succ) {
 		SDL_FreeSurface(surface);

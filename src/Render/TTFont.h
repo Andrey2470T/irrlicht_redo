@@ -60,6 +60,9 @@ public:
     void setSize(u32 size);
 
     img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
+
+    u8 hash() const;
+    bool operator==(const TTFont *other) const;
 };
 
 }
