@@ -36,7 +36,7 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		for (u8 i = 0; i < CMF_COUNT; i++)
+        for (u8 i = 0; i < CMF_COUNT; i++)
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
                 formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
 	}
@@ -47,9 +47,11 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
 
 		for (u8 i = 0; i < CMF_COUNT; i++) {
-			if (data[i] != nullptr)
+            if (data[i] != nullptr) {
+                v2u size = data[i]->getClipSize();
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, formatInfo.internalFormat,
-					width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void*>(data[i]->getData()));
+                    size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void*>(data[i]->getData()));
+            }
 		}
 
 		if (texSettings.hasMipMaps) {

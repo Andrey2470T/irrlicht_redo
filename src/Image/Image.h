@@ -39,17 +39,23 @@ class Image
 {
 	PixelFormat format;
 
-	u32 width;
-	u32 height;
+    u32 width;
+    u32 height;
 
 	u8* data;
 	
 	std::unique_ptr<Palette> palette;
 
 	bool ownPixelData;
+
+    // Defines an active subimage area
+    struct ClipRegion {
+        v2u pos;
+        v2u size;
+    } clipregion;
 public:
-    Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor=color8(PF_RGB8, 0, 0, 0),
-          Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
+    Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor=color8(PF_RGB8, 0, 0, 0),
+          const Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 		  bool _copyData = true, Palette *palette = nullptr);
@@ -63,30 +69,39 @@ public:
 
 	u32 getWidth() const
 	{
-		return width;
+        return width;
 	}
 
 	u32 getHeight() const
 	{
-		return height;
+        return height;
 	}
 
-	utils::v2u getSize() const
+    v2u getSize() const
 	{
-		return utils::v2u(width, height);
+        return v2u(width, height);
 	}
+
+    v2u getClipPos() const
+    {
+        return clipregion.pos;
+    }
+
+    v2u getClipSize() const
+    {
+        return clipregion.size;
+    }
 
 	Palette *getPalette() const
 	{
 		return palette.get();
 	}
 
-	u8* getData() const
-	{
-        return data;
-	}
+    u8* getData() const;
 
 	void setPaletteColors(const std::vector<color8> &colors);
+
+    void setClipRegion(u32 x, u32 y, u32 size_x, u32 size_y);
 	
 	Image *copy() const;
 	

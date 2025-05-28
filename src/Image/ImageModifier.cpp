@@ -15,6 +15,12 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 		return color8(PF_RGB8);
 	}
 
+    rectu clipRect(img->getClipPos(), img->getClipSize());
+    if (!clipRect.isPointInside(v2u(x, y))) {
+        WarnStream << "ImageModifier::getPixel() coordinates are out of current clip region\n";
+        return color8(PF_RGB8);
+    }
+
 	u8 *data = img->getData();
 
 	switch(img->getFormat()) {
@@ -47,6 +53,12 @@ void ImageModifier::setPixel(
 		WarnStream << "ImageModifier::setPixel() coordinates are out of image canvas\n";
 		return;
 	}
+
+    rectu clipRect(img->getClipPos(), img->getClipSize());
+    if (!clipRect.isPointInside(v2u(x, y))) {
+        WarnStream << "ImageModifier::setPixel() coordinates are out of current clip region\n";
+        return;
+    }
 
 	PixelFormat format = img->getFormat();
 	u8 *data = img->getData();

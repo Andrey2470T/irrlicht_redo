@@ -6,17 +6,17 @@ namespace render
 Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format)
 	: Texture(name, width, height, format)
 {
-	initTexture();
+    initTexture(nullptr, v2u(width, height));
 }
 
 Texture2D::Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings)
 	: Texture(name, image->getWidth(), image->getHeight(), image->getFormat(), settings),
 	  imgCache(image.release())
 {
-	initTexture(imgCache->getData());
+    initTexture(imgCache->getData(), image->getClipSize());
 }
 
-void Texture2D::initTexture(void *data)
+void Texture2D::initTexture(u8 *data, v2u size)
 {
 	glGenTextures(1, &texID);
 
@@ -30,20 +30,20 @@ void Texture2D::initTexture(void *data)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
 	}
 	else {
-		if (data == nullptr) {
-			ErrorStream << "Texture2D::initTexture() the data is invalid\n";
-			glBindTexture(GL_TEXTURE_2D, 0);
-			return;
-		}
+        if (data == nullptr) {
+            ErrorStream << "Texture2D::initTexture() the data is invalid\n";
+            glBindTexture(GL_TEXTURE_2D, 0);
+            return;
+        }
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLMagFilter.at(texSettings.magF));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLWrap.at(texSettings.wrapU));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
 
-		glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
 
 		if (texSettings.hasMipMaps) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
@@ -73,18 +73,19 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 		return;
 	}
 
-	utils::v2u imgSize = img->getSize();
+    v2u pos = img->getClipPos();
+    v2u size = img->getClipSize();
 
     if (imgCache && imgMod) {
-        utils::rectu srcRect(0, 0, imgSize.X, imgSize.Y);
-        utils::rectu dstRect(x, y, imgSize.X, imgSize.Y);
+        rectu srcRect(pos.X, pos.Y, size.X, size.Y);
+        rectu dstRect(x, y, size.X, size.Y);
         imgMod->copyTo(img, imgCache.get(), &srcRect, &dstRect);
     }
 
 	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
 
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)imgSize.X, (s32)imgSize.Y,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
 		formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(img->getData()));
 
 	glBindTexture(GL_TEXTURE_2D, 0);

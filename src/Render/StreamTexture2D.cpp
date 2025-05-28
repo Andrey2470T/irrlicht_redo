@@ -51,17 +51,19 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
         return;
     }
 
-    v2u imgSize = img->getSize();
+    v2u pos = img->getClipPos();
+    v2u size = img->getClipSize();
     auto pixelSize = img::pixelFormatInfo.at(format).size;
 
     if (imgMod) {
-        rectu srcRect(0, 0, imgSize.X, imgSize.Y);
-        rectu destRect(x, y, imgSize.X, imgSize.Y);
+        rectu srcRect(pos.X, pos.Y, size.X, size.Y);
+        rectu destRect(x, y, size.X, size.Y);
         imgMod->copyTo(img, imgCache.get(), &srcRect, &destRect);
     }
-    memcpy(pboData + (y * imgSize.X + x) * pixelSize, img->getData(), imgSize.X * imgSize.Y * pixelSize);
+    v2u imgSize = img->getSize();
+    memcpy(pboData + (y * imgSize.X + x) * pixelSize, img->getData(), size.X * size.Y * pixelSize);
 
-    dirtyRegions.emplace_back(x, y, imgSize.X, imgSize.Y);
+    dirtyRegions.emplace_back(x, y, size.X, size.Y);
 }
 
 void StreamTexture2D::flush()
@@ -74,7 +76,7 @@ void StreamTexture2D::flush()
         glDeleteSync(fence);
     }
 
-    std::vector<rectu> mergedRegions;
+    std::list<rectu> mergedRegions;
     mergeRegions(mergedRegions);
 
     auto formatInfo = img::pixelFormatInfo.at(format);
@@ -94,7 +96,7 @@ void StreamTexture2D::flush()
     dirtyRegions.clear();
 }
 
-void StreamTexture2D::mergeRegions(std::vector<rectu> &mregions) const
+void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
 {
     if (dirtyRegions.empty())
         return;

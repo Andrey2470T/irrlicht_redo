@@ -38,8 +38,8 @@ u8 Palette::findColorIndex(const color8 &c)
 	return index;
 }
 
-Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
-    Palette *_palette, ImageModifier *mdf)
+Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor,
+        const Palette *_palette, ImageModifier *mdf)
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForImage(format)) {
@@ -60,6 +60,9 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, color8 _initColor,
     }
 
 	ownPixelData = true;
+
+    clipregion.pos = v2u(0, 0);
+    clipregion.size = v2u(width, height);
 }
 
 Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
@@ -85,12 +88,20 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 		data = new u8[width * height * pixelSize];
         memcpy(data, _data, width * height * pixelSize);
 	}
+
+    clipregion.pos = v2u(0, 0);
+    clipregion.size = v2u(width, height);
 }
 
 Image::~Image()
 {
 	if (ownPixelData)
 		delete[] data;
+}
+
+u8* Image::getData() const
+{
+    return data + clipregion.pos.Y * width + clipregion.pos.X;
 }
 
 void Image::setPaletteColors(const std::vector<color8> &colors)
@@ -107,7 +118,8 @@ void Image::setPaletteColors(const std::vector<color8> &colors)
 
 Image *Image::copy() const
 {
-	Image *newImg = new Image(getFormat(), getWidth(), getHeight(), getData(), true);
+    v2u clipSize = getClipSize();
+    Image *newImg = new Image(getFormat(), clipSize.X, clipSize.Y, getData(), true);
 	return newImg;
 }
 

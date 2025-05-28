@@ -38,7 +38,7 @@ public:
     
     Texture2D *copy(const std::string &name="");
 private:
-	void initTexture(void *data = nullptr);
+    void initTexture(u8 *data, v2u size);
 };
 
 }

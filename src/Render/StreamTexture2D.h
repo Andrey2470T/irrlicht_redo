@@ -1,18 +1,19 @@
 #pragma once
 
 #include "Texture2D.h"
+#include <list>
 
 namespace render
 {
 
 // Texture + PBO for the fast data transfer to GPU providing the minimal delays
 // It fits for the situations when the frquent texture updates are necessary like atlases
-class StreamTexture2D : Texture2D {
+class StreamTexture2D : public Texture2D {
     u32 pboID;
     u8 *pboData = nullptr;
     GLsync fence = nullptr;
 
-    std::vector<rectu> dirtyRegions;
+    std::list<rectu> dirtyRegions;
 public:
     StreamTexture2D(const std::string &name, u32 width, u32 height,
         img::PixelFormat format, const TextureSettings &settings=TextureSettings());
@@ -26,7 +27,7 @@ public:
 
     void flush();
 private:
-    void mergeRegions(std::vector<rectu> &mregions) const;
+    void mergeRegions(std::list<rectu> &mregions) const;
 };
 
 }
