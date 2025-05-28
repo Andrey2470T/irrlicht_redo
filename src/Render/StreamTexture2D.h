@@ -5,6 +5,8 @@
 namespace render
 {
 
+// Texture + PBO for the fast data transfer to GPU providing the minimal delays
+// It fits for the situations when the frquent texture updates are necessary like atlases
 class StreamTexture2D : Texture2D {
     u32 pboID;
     u8 *pboData = nullptr;

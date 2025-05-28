@@ -73,9 +73,9 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 		Texture *tex = textures[i];
 
 		if (colorTextures[i] != nullptr) {
-            if (tex->getType() == TT_2D && *tex == *colorTextures[i])
+            if (tex->getType() == TT_2D && *tex == colorTextures[i])
 				continue;
-			else if (tex->getType() == TT_CUBEMAP && *tex == *colorTextures[i]
+            else if (tex->getType() == TT_CUBEMAP && *tex == colorTextures[i]
 				&& cubeMapFaceMappings[i] == colorCubeMapFaces[i])
 				continue;
 		}
@@ -105,9 +105,9 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 	bool already_attached = false;
 
 	if (depthStencilTexture != nullptr) {
-		if (texture->getType() == TT_2D && *texture == *depthStencilTexture)
+        if (texture->getType() == TT_2D && *texture == depthStencilTexture)
 			already_attached = true;
-		else if (texture->getType() == TT_CUBEMAP && *texture == *depthStencilTexture &&
+        else if (texture->getType() == TT_CUBEMAP && *texture == depthStencilTexture &&
 			dsCubeMapFace == depthStencilCubeMapFace)
 			already_attached = true;
 	}

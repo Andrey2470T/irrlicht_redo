@@ -5,17 +5,6 @@
 namespace render
 {
 
-enum CubeMapFace : u8
-{
-    CMF_POS_X = 0,
-    CMF_NEG_X,
-    CMF_POS_Y,
-    CMF_NEG_Y,
-    CMF_POS_Z,
-    CMF_NEG_Z,
-    CMF_COUNT
-};
-
 class TextureCubeMap : public Texture
 {
 protected:
