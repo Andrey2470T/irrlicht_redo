@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Render/Common.h"
 #include "PixelFormats.h"
 #include "Color.h"
 

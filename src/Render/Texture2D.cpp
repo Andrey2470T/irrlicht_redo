@@ -63,11 +63,6 @@ void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
 
 void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
 {
-	if (img == nullptr) {
-		ErrorStream << "Texture2D::uploadData() the image data is invalid\n";
-		return;
-	}
-
 	if (texSettings.isRenderTarget) {
 		ErrorStream << "Texture2D::uploadData() can not upload the user image data to the RTT\n";
 		return;

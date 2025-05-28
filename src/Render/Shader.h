@@ -58,11 +58,6 @@ public:
 	{
 		return programID == other->programID;
 	}
-	
-	bool operator!=(const Shader *other)
-	{
-		return programID != other->programID;
-	}
 private:
 	u32 createShader(GLenum shaderType, const std::string &code);
 	u32 createProgram();

@@ -5,13 +5,25 @@
 namespace render
 {
 
+enum CubeMapFace : u8
+{
+    CMF_POS_X = 0,
+    CMF_NEG_X,
+    CMF_POS_Y,
+    CMF_NEG_Y,
+    CMF_POS_Z,
+    CMF_NEG_Z,
+    CMF_COUNT
+};
+
 class TextureCubeMap : public Texture
 {
+protected:
 	std::array<std::unique_ptr<img::Image>, CMF_COUNT> imgCache;
 public:
 	TextureCubeMap(const std::string &name, u32 width, u32 height, img::PixelFormat format);
 	TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, CMF_COUNT> images,
-		const TextureSettings &settings);
+        const TextureSettings &settings=TextureSettings());
 	
 	void bind() const override
 	{

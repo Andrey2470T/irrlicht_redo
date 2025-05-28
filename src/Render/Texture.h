@@ -12,17 +12,6 @@ enum TextureType : u8
     TT_CUBEMAP
 };
 
-enum CubeMapFace : u8
-{
-	CMF_POS_X = 0,
-	CMF_NEG_X,
-	CMF_POS_Y,
-	CMF_NEG_Y,
-	CMF_POS_Z,
-	CMF_NEG_Z,
-	CMF_COUNT
-};
-
 struct TextureSettings
 {
 	TextureWrapping wrapU = TW_REPEAT;
@@ -118,16 +107,8 @@ public:
     virtual void regenerateMipMaps() = 0;
 
     virtual void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) = 0;
-	
-    bool operator==(const Texture &other)
-	{
-        return texID == other.texID;
-	}
-	
-    bool operator!=(const Texture &other)
-	{
-        return texID != other.texID;
-	}
+
+    bool operator==(const Texture *other) const;
 };
 
 }

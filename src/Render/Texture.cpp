@@ -13,4 +13,9 @@ Texture::~Texture()
 	glDeleteTextures(1, &texID);
 }
 
+bool Texture::operator==(const Texture *other) const
+{
+    return texID == other->texID;
+}
+
 }

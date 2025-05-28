@@ -7,10 +7,11 @@ namespace render
 
 class Texture2D : public Texture
 {
+protected:
 	std::unique_ptr<img::Image> imgCache;
 public:
 	Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format);
-	Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings);
+    Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings=TextureSettings());
 
 	TextureType getType() const override
 	{
