@@ -8,8 +8,9 @@ namespace render
 
 enum class FontMode : u8
 {
-    MONO = 0,
-    GRAY
+    MONO        = 0x00,
+    GRAY        = 0x01,
+    FALLBACK    = 0x02
 };
 
 enum class FontStyle : u8
@@ -61,7 +62,7 @@ public:
 
     img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
 
-    u8 hash() const;
+    u64 hash() const;
     bool operator==(const TTFont *other) const;
 };
 

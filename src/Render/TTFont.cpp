@@ -152,9 +152,9 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     return img_copy;
 }
 
-u8 TTFont::hash() const
+u64 TTFont::hash() const
 {
-    return (hasTransparency << 4) | ((u8)style << 1) | (u8)mode;
+    return (curSize << 6) | (hasTransparency << 5) | ((u8)style << 2) | (u8)mode;
 }
 
 bool TTFont::operator==(const TTFont *other) const
