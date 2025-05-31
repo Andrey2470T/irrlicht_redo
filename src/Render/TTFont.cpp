@@ -65,6 +65,16 @@ TTFont *TTFont::loadFromMem(void *mem, u32 size, u32 face, bool antialias,
     return new TTFont(new_font, (FontMode)antialias, size, transparent, shadow_offset, shadow_alpha);
 }
 
+FontMode TTFont::getMode() const
+{
+	return mode;
+}
+
+FontStyle TTFont::getStyle() const
+{
+	return style;
+}
+
 u32 TTFont::getTextWidth(const std::wstring &text) const
 {
     s32 w, h;
@@ -129,6 +139,12 @@ std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) 
     return std::nullopt;
 }
 
+bool TTFont::hasGlyph(wchar_t ch) const
+{
+	std::u16string ch_16 = wide_to_utf16(&ch);
+	return TTF_GlyphIsProvided(font, ch_16[0]);
+}
+
 void TTFont::setSize(u32 size)
 {
     TTF_SetFontSize(font, (s32)size);
@@ -137,6 +153,9 @@ void TTFont::setSize(u32 size)
 
 img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
 {
+	if (!hasGlyph(ch))
+	    return nullptr;
+
     SDL_Color fg_color = {
         char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
@@ -152,9 +171,9 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     return img_copy;
 }
 
-u8 TTFont::hash() const
+u64 TTFont::hash() const
 {
-    return (hasTransparency << 4) | ((u8)style << 1) | (u8)mode;
+    return (curSize << 6) | (hasTransparency << 5) | ((u8)style << 2) | (u8)mode;
 }
 
 bool TTFont::operator==(const TTFont *other) const

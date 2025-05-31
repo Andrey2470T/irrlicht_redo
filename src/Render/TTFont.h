@@ -8,16 +8,17 @@ namespace render
 
 enum class FontMode : u8
 {
-    MONO = 0,
-    GRAY
+    MONO        = 0x00,
+    GRAY          = 0x01,
+    FALLBACK = 0x02
 };
 
 enum class FontStyle : u8
 {
-    NORMAL          = 0x00,
-    BOLD            = 0x01,
-    ITALIC          = 0x02,
-    UNDERLINE       = 0x04,
+    NORMAL                   = 0x00,
+    BOLD                         = 0x01,
+    ITALIC                       = 0x02,
+    UNDERLINE              = 0x04,
     STRIKETHROUGH   = 0x08
 };
 
@@ -45,6 +46,9 @@ public:
     static TTFont *loadFromMem(void *mem, u32 size, u32 face=0, bool antialias=true,
         bool transparent=true, u32 shadow_offset=0, u32 shadow_alpha=255);
 
+    FontMode getMode() const;
+    FontStyle getStyle() const;
+
     u32 getTextWidth(const std::wstring &text) const;
     u32 getTextHeight(const std::wstring &text) const;
     v2u getTextSize(const std::wstring &text) const;
@@ -56,12 +60,14 @@ public:
     u32 getCurrentSize() const;
 
     std::optional<u32> getCharFromPos(const std::wstring &str, s32 pixel_x) const;
+    
+    bool hasGlyph(wchar_t c) const;
 
     void setSize(u32 size);
 
     img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
 
-    u8 hash() const;
+    u64 hash() const;
     bool operator==(const TTFont *other) const;
 };
 

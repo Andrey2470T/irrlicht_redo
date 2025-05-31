@@ -94,6 +94,8 @@ void StreamTexture2D::flush()
 
     fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     dirtyRegions.clear();
+    
+    TEST_GL_ERROR();
 }
 
 void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
@@ -104,7 +106,6 @@ void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
     for (auto &region : dirtyRegions) {
         auto rsize = region.getSize();
 
-        bool merged = false;
         for (auto &mregion : mregions) {
             auto mrsize = mregion.getSize();
             v2u dist = region.getCenter() - mregion.getCenter();
@@ -113,11 +114,10 @@ void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
                 dist.Y == (rsize.Y/2 + mrsize.Y/2)) {
                 mregion.addInternalPoint(region.ULC);
                 mregion.addInternalPoint(region.LRC);
-                merged = true;
+
                 break;
             }
-
-            if (!merged)
+            else
                 mregions.emplace_back(region);
         }
     }
