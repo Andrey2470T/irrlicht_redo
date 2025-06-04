@@ -9,34 +9,41 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
 {
 	u32 width = img->getWidth();
 	u32 height = img->getHeight();
+	PixelFormat format = img->getFormat();
 
 	if (x >= width || y >= height) {
-		WarnStream << "ImageModifier::getPixel() coordinates are out of image canvas\n";
-		return color8(PF_RGB8);
+		ErrorStream << "ImageModifier::getPixel() coordinates are out of image canvas\n";
+		return color8(format);
 	}
 
     rectu clipRect(img->getClipPos(), img->getClipSize());
     if (!clipRect.isPointInside(v2u(x, y))) {
-        WarnStream << "ImageModifier::getPixel() coordinates are out of current clip region\n";
-        return color8(PF_RGB8);
+        ErrorStream << "ImageModifier::getPixel() coordinates are out of current clip region\n";
+        return color8(format);
     }
 
 	u8 *data = img->getData();
 
-	switch(img->getFormat()) {
-        case PF_RGB8: {
-            u8 *pixel = &data[y * 3 * width + 3 * x];
-            return color8(PF_RGB8, *pixel, *(pixel+1), *(pixel+2));
-        }
-        case PF_RGBA8: {
-            u8 *pixel = &data[y * 4 * width + 4 * x];
-            return color8(PF_RGBA8, *pixel, *(pixel+1), *(pixel+2), *(pixel+3));
-        }
-		case PF_INDEX_RGBA8:
-			return color8(PF_INDEX_RGBA8, data[y * width + x]);
-		default:
-            WarnStream << "ImageModifier::getPixel() unsupported/unknown format";
-			return color8(PF_RGB8);
+    switch(format) {
+    case PF_R8:
+        return color8(PF_R8, data[y * width + x]);
+    case PF_RG8: {
+        u8 *pixel = &data[y * 2 * width + 2 * x];
+        return color8(PF_RG8, *pixel, *(pixel+1));
+    }
+    case PF_RGB8: {
+         u8 *pixel = &data[y * 3 * width + 3 * x];
+        return color8(PF_RGB8, *pixel, *(pixel+1), *(pixel+2));
+    }
+    case PF_RGBA8: {
+         u8 *pixel = &data[y * 4 * width + 4 * x];
+        return color8(PF_RGBA8, *pixel, *(pixel+1), *(pixel+2), *(pixel+3));
+    }
+    case PF_INDEX_RGBA8:
+        return color8(PF_INDEX_RGBA8, data[y * width + x]);
+    default:
+         WarnStream << "ImageModifier::getPixel() unsupported/unknown format";
+        return color8(format);
 	}
 }
 
@@ -60,35 +67,47 @@ void ImageModifier::setPixel(
         return;
     }
 
-	PixelFormat format = img->getFormat();
+    color8 newColor = getPixel(img, x, y);
+
+    PixelFormat format = img->getFormat();
+
+    if (format != PF_INDEX_RGBA8)
+        newColor = doBlend<u8>(color, newColor, Mode);
+    else newColor.R(color.R());
+
 	u8 *data = img->getData();
+    u8 *pixel = nullptr;
 
-	u8 *pixel = nullptr;
-	color8 newColor(format);
-
-	if (format == PF_RGB8) {
+    switch(format) {
+    case PF_R8:
+    case PF_INDEX_RGBA8: {
+        data[y * width + x] = newColor.R();
+        break;
+    }
+    case PF_RG8: {
+        pixel = &data[y * 2 * width + 2 * x];
+        *pixel = newColor.R();
+        *(pixel+1) = newColor.G();
+        break;
+    }
+    case PF_RGB8: {
         pixel = &data[y * 3 * width + 3 * x];
-		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, 0);
-	}
-	else if (format == PF_RGBA8) {
+        *pixel = newColor.R();
+        *(pixel+1) = newColor.G();
+        *(pixel+2) = newColor.B();
+        break;
+    }
+    case PF_RGBA8: {
         pixel = &data[y * 4 * width + 4 * x];
-		newColor = color8(format, *pixel, *(pixel)+1, *(pixel)+2, *(pixel)+3);
-	}
-	else if (format == PF_INDEX_RGBA8) {
-		data[y * width + x] = color.R();
-		return;
-	}
-	else {
-		WarnStream << "ImageModifier::setPixel() unsupported/unknown format\n";
-		return;
-	}
-
-	newColor = doBlend<u8>(color, newColor, Mode);
-
-	*pixel = newColor.R();
-	*(pixel+1) = newColor.G();
-	*(pixel+2) = newColor.B();
-	*(pixel+3) = newColor.A();
+        *pixel = newColor.R();
+        *(pixel+1) = newColor.G();
+        *(pixel+2) = newColor.B();
+        *(pixel+3) = newColor.A();
+        break;
+    default:
+        WarnStream << "ImageModifier::setPixel() unsupported/unknown format\n";
+        break;
+    }}
 }
 
 // Return (only) a pixel color from the image

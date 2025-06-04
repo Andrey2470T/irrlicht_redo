@@ -7,6 +7,8 @@ namespace img
 bool isFormatSupportedForImage(PixelFormat format)
 {
 	switch (format) {
+		case PF_R8:
+		case PF_RG8:
 		case PF_RGB8:
 		case PF_RGBA8:
 		case PF_INDEX_RGBA8:
@@ -50,10 +52,12 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 
 	data = new u8[width * height * pixelSize];
 
-	if (_palette)
-		palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
-	else
-		palette = std::make_unique<Palette>(false, 0);
+    if (format == PF_INDEX_RGBA8) {
+	    if (_palette)
+		    palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
+	    else
+		    palette = std::make_unique<Palette>(false, 0);
+	}
 
     if (mdf) {
         mdf->fill(this, _initColor);
@@ -75,10 +79,12 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 	}
 	ownPixelData = _copyData;
 
-	if (_palette)
-		palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
-	else
-		palette = std::make_unique<Palette>(false, 0);
+    if (format == PF_INDEX_RGBA8) {
+	    if (_palette)
+		    palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
+	    else
+		    palette = std::make_unique<Palette>(false, 0);
+	}
 
 	if (!ownPixelData)
 		data = _data;
@@ -101,7 +107,8 @@ Image::~Image()
 
 u8* Image::getData() const
 {
-    return data + clipregion.pos.Y * width + clipregion.pos.X;
+	u32 pixelSize = pixelFormatInfo.at(format).size / 8;
+    return data + (clipregion.pos.Y * width + clipregion.pos.X) * pixelSize;
 }
 
 void Image::setPaletteColors(const std::vector<color8> &colors)
