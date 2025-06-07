@@ -8,6 +8,10 @@ Mesh::Mesh(const VertexTypeDescriptor &descr)
 	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
 {
     init();
+
+    bind();
+    reallocate(0);
+    unbind();
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
@@ -16,32 +20,10 @@ Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
 {
     init();
 
-    bool vertices_valid = vertices != nullptr && verticesCount > 0;
-    bool indices_valid = indices != nullptr && indicesCount > 0;
-
-    if (!vertices_valid && !indices_valid) {
-        WarnStream << "Mesh::Mesh() vertices and indices are invalid\n";
-        return;
-    }
-
     bind();
-
-    if (vertices_valid) {
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, verticesCount * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
-    }
-
-    if (indices_valid) {
-        if (iboID == 0)
-            glGenBuffers(1, &iboID);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(u32), indices, GL_STATIC_DRAW);
-    }
-
+    reallocateVBO(vertices, verticesCount);
+    reallocateIBO(indices, indicesCount);
     unbind();
-
-    TEST_GL_ERROR();
 }
 
 Mesh::~Mesh()
@@ -53,6 +35,29 @@ Mesh::~Mesh()
 		glDeleteBuffers(1, &iboID);
 
 	TEST_GL_ERROR();
+}
+
+void Mesh::reallocateVBO(const void *vertices, u32 count)
+{
+    bind();
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glBufferData(GL_ARRAY_BUFFER, count * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
+
+    if (iboID == 0)
+        glGenBuffers(1, &iboID);
+
+     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(u32), indices, GL_STATIC_DRAW);
+
+    unbind();
+
+    TEST_GL_ERROR();
+}
+
+void Mesh::reallocateIBO(const u32 *indices, u32 count)
+{
+
 }
 
 void Mesh::uploadVertexData(const void *vertices, u32 count, u32 offset)
@@ -140,10 +145,10 @@ void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u3
 
 void Mesh::init()
 {
-    bind();
+    glGenVertexArrays(1, &vaoID);
 	glGenBuffers(1, &vboID);
 
-	glBindVertexArray(vaoID);
+    bind();
 
     std::size_t offset = 0;
     for (int i = 0; i < descriptor.Attributes.size(); i++) {

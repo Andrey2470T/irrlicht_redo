@@ -8,8 +8,8 @@ namespace render
 class Mesh
 {
 	u32 vaoID;
-	u32 vboID;
-	u32 iboID;
+    u32 vboID;
+    u32 iboID;
 
 	VertexTypeDescriptor descriptor;
 
@@ -43,6 +43,8 @@ public:
         bound = false;
 	}
 
+    void reallocateVBO(const void *vertices=nullptr, u32 count=0);
+    void reallocateIBO(const u32 *indices=nullptr, u32 count=0);
     void uploadVertexData(const void *vertices, u32 count, u32 offset=0);
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
 
