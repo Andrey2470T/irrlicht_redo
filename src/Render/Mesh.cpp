@@ -7,15 +7,41 @@ namespace render
 Mesh::Mesh(const VertexTypeDescriptor &descr)
 	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
 {
-	init(descriptor);
+    init();
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
     u32 indicesCount, const VertexTypeDescriptor &descr)
 	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
 {
-	init(descriptor);
-	uploadData(vertices, verticesCount, indices, indicesCount);
+    init();
+
+    bool vertices_valid = vertices != nullptr && verticesCount > 0;
+    bool indices_valid = indices != nullptr && indicesCount > 0;
+
+    if (!vertices_valid && !indices_valid) {
+        WarnStream << "Mesh::Mesh() vertices and indices are invalid\n";
+        return;
+    }
+
+    bind();
+
+    if (vertices_valid) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, verticesCount * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
+    }
+
+    if (indices_valid) {
+        if (iboID == 0)
+            glGenBuffers(1, &iboID);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(u32), indices, GL_STATIC_DRAW);
+    }
+
+    unbind();
+
+    TEST_GL_ERROR();
 }
 
 Mesh::~Mesh()
@@ -29,44 +55,45 @@ Mesh::~Mesh()
 	TEST_GL_ERROR();
 }
 
-void Mesh::uploadData(const void *vertices, u32 verticesCount, const u32 *indices, u32 indicesCount)
+void Mesh::uploadVertexData(const void *vertices, u32 count, u32 offset)
 {
-	bool vertices_valid = vertices != nullptr && verticesCount > 0;
-	bool indices_valid = indices != nullptr && indicesCount > 0;
+    auto vertexSize = sizeOfVertexType(descriptor);
 
-	if (!vertices_valid && !indices_valid) {
-		WarnStream << "Mesh::uploadSubData() vertices and indices are invalid\n";
-		return;
-	}
+    bind();
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glBufferSubData(GL_ARRAY_BUFFER, offset * vertexSize, count * vertexSize, vertices);
+    unbind();
 
-	glBindVertexArray(vaoID);
-
-	if (vertices_valid) {
-		glBindBuffer(GL_ARRAY_BUFFER, vboID);
-		glBufferData(GL_ARRAY_BUFFER, verticesCount * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
-	}
-
-	if (indices_valid) {
-		if (iboID == 0)
-			glGenBuffers(1, &iboID);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(u32), indices, GL_STATIC_DRAW);
-	}
-
-	glBindVertexArray(0);
-
-	TEST_GL_ERROR();
+    TEST_GL_ERROR();
 }
 
-void Mesh::draw(PrimitiveType mode, u32 indicesCount) const
+void Mesh::uploadIndexData(const u32 *indices, u32 count, u32 offset)
 {
+    if (iboID == 0) {
+        WarnStream << "Mesh::uploadIndexData() index buffer is not initialized\n";
+        return;
+    }
+
+    bind();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(u32), count * sizeof(u32), indices);
+    unbind();
+
+    TEST_GL_ERROR();
+}
+
+void Mesh::draw(PrimitiveType mode, u32 count, u32 offset) const
+{
+    if (!bound) {
+        WarnStream << "Mesh::draw() VAO is not bound\n";
+        return;
+    }
 	GLenum glPType = toGLPrimitiveType[mode];
 
 	switch (mode) {
 		case PT_POINTS:
 		case PT_POINT_SPRITES:
-			glDrawArrays(glPType, 0, indicesCount);
+            glDrawArrays(glPType, offset, count);
 			break;
 		case PT_LINE_STRIP:
 		case PT_LINE_LOOP:
@@ -74,7 +101,7 @@ void Mesh::draw(PrimitiveType mode, u32 indicesCount) const
 		case PT_TRIANGLE_STRIP:
 		case PT_TRIANGLE_FAN:
 		case PT_TRIANGLES:
-			glDrawElements(glPType, indicesCount, GL_UNSIGNED_INT, 0);
+            glDrawElements(glPType, count, GL_UNSIGNED_INT, (void*)(offset * sizeof(u32)));
 			break;
 		default:
 			break;
@@ -83,17 +110,45 @@ void Mesh::draw(PrimitiveType mode, u32 indicesCount) const
 	TEST_GL_ERROR();
 }
 
-void Mesh::init(VertexTypeDescriptor descr)
+void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u32 drawCount)
 {
-	glGenVertexArrays(1, &vaoID);
+    if (!bound) {
+        WarnStream << "Mesh::multiDraw() VAO is not bound\n";
+        return;
+    }
+    GLenum glPType = toGLPrimitiveType[mode];
+
+    switch (mode) {
+    case PT_POINTS:
+    case PT_POINT_SPRITES:
+        glMultiDrawArrays(glPType, offset, count, drawCount);
+        break;
+    case PT_LINE_STRIP:
+    case PT_LINE_LOOP:
+    case PT_LINES:
+    case PT_TRIANGLE_STRIP:
+    case PT_TRIANGLE_FAN:
+    case PT_TRIANGLES:
+        glMultiDrawElements(glPType, count, GL_UNSIGNED_INT, (const void *const *)(&offset), drawCount);
+        break;
+    default:
+        break;
+    };
+
+    TEST_GL_ERROR();
+}
+
+void Mesh::init()
+{
+    bind();
 	glGenBuffers(1, &vboID);
 
 	glBindVertexArray(vaoID);
 
     std::size_t offset = 0;
-	for (int i = 0; i < descr.Attributes.size(); i++) {
-		auto &attr = descr.Attributes[i];
-		size_t vertexSize = sizeOfVertexType(descr);
+    for (int i = 0; i < descriptor.Attributes.size(); i++) {
+        auto &attr = descriptor.Attributes[i];
+        size_t vertexSize = sizeOfVertexType(descriptor);
 		switch (attr.Format) {
 			case VertexAttribute::DataFormat::Regular:
                 glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], GL_FALSE, vertexSize, (void*)offset);
@@ -104,10 +159,10 @@ void Mesh::init(VertexTypeDescriptor descr)
 		};
 		glEnableVertexAttribArray(i);
 
-		offset += attr.ComponentCount * utils::getSizeOfType(attr.ComponentType);
+        offset += attr.ComponentCount * getSizeOfType(attr.ComponentType);
 	}
 
-	glBindVertexArray(0);
+    unbind();
 
 	TEST_GL_ERROR();
 }
