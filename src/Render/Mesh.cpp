@@ -4,85 +4,94 @@
 namespace render
 {
 
-Mesh::Mesh(const VertexTypeDescriptor &descr)
-	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
+inline u32 BufConst(bool isVBO)
 {
-    init();
+    return isVBO ? GL_ARRAY_BUFFER : GL_ELEMENT_ARRAY_BUFFER;
+}
+
+Mesh::BufferObject::~BufferObject()
+{
+	if (ID != 0) {
+	    glDeleteBuffers(1, &ID);
+	
+	    TEST_GL_ERROR();
+	}
+}
+
+void Mesh::BufferObject::generate()
+{
+	glGenBuffers(1, &ID);
+}
+
+void Mesh::BufferObject::reallocate(const void *data, u32 count)
+{
+    glBindBuffer(BufConst(isVBO), ID);
+    glBufferData(BufConst(isVBO), count * elemSize, data, GL_STATIC_DRAW);
+}
+
+void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
+{
+    glBindBuffer(BufConst(isVBO), ID);
+    glBufferSubData(BufConst(isVBO), offset * elemSize, count * elemSize, data);
+}
+
+Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO)
+	: vaoID(0), vbo(true, sizeOfVertexType(descr)), ibo(false, sizeof(u32)), descriptor(descr)
+{
+    init(initIBO);
 
     bind();
-    reallocate(0);
+    reallocate();
     unbind();
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
-    u32 indicesCount, const VertexTypeDescriptor &descr)
-	: vaoID(0), vboID(0), iboID(0), descriptor(descr)
+    u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr)), ibo(false, sizeof(u32)), descriptor(descr)
 {
-    init();
+    init(initIBO);
 
     bind();
-    reallocateVBO(vertices, verticesCount);
-    reallocateIBO(indices, indicesCount);
+    reallocate(vertices, verticesCount, indices, indicesCount);
     unbind();
 }
 
 Mesh::~Mesh()
 {
 	glDeleteVertexArrays(1, &vaoID);
-	glDeleteBuffers(1, &vboID);
-
-	if (iboID != 0)
-		glDeleteBuffers(1, &iboID);
 
 	TEST_GL_ERROR();
 }
 
-void Mesh::reallocateVBO(const void *vertices, u32 count)
+void Mesh::reallocate(const void *vertices, u32 vertexCount, const u32 *indices, u32 indexCount)
 {
     bind();
 
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glBufferData(GL_ARRAY_BUFFER, count * sizeOfVertexType(descriptor), vertices, GL_STATIC_DRAW);
-
-    if (iboID == 0)
-        glGenBuffers(1, &iboID);
-
-     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(u32), indices, GL_STATIC_DRAW);
+    vbo.reallocate(vertices, vertexCount);
+    
+    if (ibo.ID != 0)
+        ibo.reallocate(indices, indexCount);
 
     unbind();
 
     TEST_GL_ERROR();
 }
 
-void Mesh::reallocateIBO(const u32 *indices, u32 count)
-{
-
-}
-
 void Mesh::uploadVertexData(const void *vertices, u32 count, u32 offset)
 {
-    auto vertexSize = sizeOfVertexType(descriptor);
-
-    bind();
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glBufferSubData(GL_ARRAY_BUFFER, offset * vertexSize, count * vertexSize, vertices);
-    unbind();
+    vbo.upload(vertices, count, offset);
 
     TEST_GL_ERROR();
 }
 
 void Mesh::uploadIndexData(const u32 *indices, u32 count, u32 offset)
 {
-    if (iboID == 0) {
+    if (ibo.ID == 0) {
         WarnStream << "Mesh::uploadIndexData() index buffer is not initialized\n";
         return;
     }
 
-    bind();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(u32), count * sizeof(u32), indices);
-    unbind();
+    ibo.upload(indices, count, offset);
 
     TEST_GL_ERROR();
 }
@@ -143,10 +152,13 @@ void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u3
     TEST_GL_ERROR();
 }
 
-void Mesh::init()
+void Mesh::init(bool initIBO)
 {
     glGenVertexArrays(1, &vaoID);
-	glGenBuffers(1, &vboID);
+	vbo.generate();
+	
+	if (initIBO)
+        ibo.generate();
 
     bind();
 

@@ -7,18 +7,33 @@ namespace render
 
 class Mesh
 {
+	struct BufferObject
+	{
+		u32 ID;
+		bool isVBO;
+		u32 elemSize;
+
+	    BufferObject(bool _isVBO, u32 size)
+	        : isVBO(_isVBO), elemSize(size)
+	    {}
+	    ~BufferObject();
+	
+	    void generate();
+	    void reallocate(const void *data=nullptr, u32 count=0);
+	    void upload(const void *data, u32 count, u32 offset=0);
+	};
 	u32 vaoID;
-    u32 vboID;
-    u32 iboID;
+    BufferObject vbo;
+    BufferObject ibo;
 
 	VertexTypeDescriptor descriptor;
 
     bool bound = false;
 public:
-	Mesh(const VertexTypeDescriptor &descr = DefaultVType);
+	Mesh(const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true);
 
 	Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr,
-		 u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType);
+		 u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true);
 	
 	~Mesh();
 
@@ -43,8 +58,8 @@ public:
         bound = false;
 	}
 
-    void reallocateVBO(const void *vertices=nullptr, u32 count=0);
-    void reallocateIBO(const u32 *indices=nullptr, u32 count=0);
+    void reallocate(const void *vertices=nullptr, u32 vertexCount=0,
+        const u32 *indices=nullptr, u32 indexCount=0);
     void uploadVertexData(const void *vertices, u32 count, u32 offset=0);
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
 
@@ -56,7 +71,7 @@ public:
 		return vaoID == other->vaoID;
 	}
 private:
-    void init();
+    void init(bool initIBO=true);
 };
 
 }
