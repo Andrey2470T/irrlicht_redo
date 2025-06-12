@@ -47,7 +47,7 @@ public:
 	void fill(
 		Image *img,
 		const color8 &color,
-		const utils::rectu *rect = nullptr);
+        const rectu *rect = nullptr);
 
 	// Copies the whole (or part) of the source image to the whole (or part) of the dest image
 	/// @param "srcImg" - image whose the pixel data is copied
@@ -58,20 +58,26 @@ public:
     bool copyTo(
         Image *srcImg,
 		Image *dstImg,
-		const utils::rectu *srcRect = nullptr,
-		const utils::rectu *dstRect = nullptr,
+        const rectu *srcRect = nullptr,
+        const rectu *dstRect = nullptr,
 		bool allowScale = false);
+
+    // Copies the whole (or part) of the image to the new image with the power-of-two dimensions
+    Image *copyWith2NPot2Scaling(Image *img, const rectu *rect = nullptr);
+
+    // Returns the gamma-correct average color of the image, with transparent pixels ignored
+    color8 imageAverageColor(Image *img);
 
 	// Scales (up or down) the image before the given rect.
 	// The convolution algorithm is used with one of filter types.
-    void resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
+    void resize(Image *img, const rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	Image *rotate(Image *img, ROTATE_ANGLE angle);
 
 	Image *flip(Image *img, FLIP_DIR dir);
 
-    Image *crop(Image *img, const utils::rectu &rect);
+    Image *crop(Image *img, const rectu &rect);
 
     Image *combine(Image *img1, Image *img2);
 

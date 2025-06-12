@@ -216,6 +216,110 @@ bool ImageModifier::copyTo(
 	return true;
 }
 
+// Compute next-higher power of 2 efficiently, e.g. for power-of-2 texture sizes.
+// Public Domain: https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+inline u32 npot2(u32 orig) {
+    orig--;
+    orig |= orig >> 1;
+    orig |= orig >> 2;
+    orig |= orig >> 4;
+    orig |= orig >> 8;
+    orig |= orig >> 16;
+    return orig + 1;
+}
+
+// Copies the whole (or part) of the image to the new image with the power-of-two dimensions
+Image *ImageModifier::copyWith2NPot2Scaling(Image *img, const rectu *rect)
+{
+    v2u size;
+
+    if (rect)
+        size = rect->getSize();
+    else
+        size = img->getSize();
+
+    u32 newWidth = npot2(size.X);
+    u32 newHeight = npot2(size.Y);
+    rectu scaledRect(0, 0, newWidth, newHeight);
+    Image *scaledImg = new Image(img->getFormat(), newWidth, newHeight);
+    copyTo(img, scaledImg, rect, &scaledRect, true);
+
+    return scaledImg;
+}
+
+// For more colorspace transformations, see for example
+// <https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl>
+
+inline f32 linear_to_srgb_component(f32 v)
+{
+    if (v > 0.0031308f)
+        return 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
+    return 12.92f * v;
+}
+inline f32 srgb_to_linear_component(f32 v)
+{
+    if (v > 0.04045f)
+        return powf((v + 0.055f) / 1.055f, 2.4f);
+    return v / 12.92f;
+}
+
+struct LUT8 {
+    std::array<f32, 256> t;
+    LUT8() {
+        for (size_t i = 0; i < t.size(); i++)
+            t[i] = srgb_to_linear_component(i / 255.0f);
+    }
+} srgb_to_linear_lut;
+
+v3f srgb_to_linear(const color8 &col_srgb)
+{
+    return v3f(srgb_to_linear_lut.t[col_srgb.R()],
+               srgb_to_linear_lut.t[col_srgb.G()],
+               srgb_to_linear_lut.t[col_srgb.B()]);
+}
+
+color8 linear_to_srgb(const v3f col_linear)
+{
+    v3f col;
+    // we can't LUT this without losing precision, but thankfully we call
+    // it just once :)
+    col.X = std::clamp(linear_to_srgb_component(col_linear.X) * 255.0f, 0.0f, 255.0f);
+    col.Y = std::clamp(linear_to_srgb_component(col_linear.Y) * 255.0f, 0.0f, 255.0f);
+    col.Z = std::clamp(linear_to_srgb_component(col_linear.Z) * 255.0f, 0.0f, 255.0f);
+
+    return color8(PF_RGBA8, (u8)std::round(col.X), (u8)std::round(col.Y),
+                       (u8)std::round(col.Z), 0xFF);
+}
+
+// Returns the gamma-correct average color of the image, with transparent pixels ignored
+color8 ImageModifier::imageAverageColor(Image *img)
+{
+    auto size = img->getSize();
+
+    u32 total = 0;
+    v3f col_acc;
+    // limit runtime cost
+    const u32 stepx = std::max(1U, size.X / 16),
+        stepy = std::max(1U, size.Y / 16);
+    for (u32 x = 0; x < size.X; x += stepx) {
+        for (u32 y = 0; y < size.Y; y += stepy) {
+            color8 c = getPixelColor(img, x, y);
+            if (c.A() > 0) {
+                total++;
+                col_acc += srgb_to_linear(c);
+            }
+        }
+    }
+
+    color8 ret;
+    if (total > 0) {
+        col_acc /= total;
+        ret = linear_to_srgb(col_acc);
+    }
+    ret.A(255);
+    return ret;
+}
+
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
 void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
