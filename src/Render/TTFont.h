@@ -58,6 +58,7 @@ public:
     u32 getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const;
 
     u32 getCurrentSize() const;
+    bool isTransparent() const;
 
     std::optional<u32> getCharFromPos(const std::wstring &str, s32 pixel_x) const;
     
@@ -67,7 +68,8 @@ public:
 
     img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
 
-    u64 hash() const;
+    static u64 hash(const TTFont *font);
+    static u64 hash(u32 size, bool transparent, FontStyle style, FontMode mode);
     bool operator==(const TTFont *other) const;
 };
 

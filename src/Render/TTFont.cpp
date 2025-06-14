@@ -120,6 +120,11 @@ u32 TTFont::getCurrentSize() const
     return curSize;
 }
 
+bool TTFont::isTransparent() const
+{
+    return hasTransparency;
+}
+
 std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) const
 {
     s32 x = 0;
@@ -171,14 +176,19 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     return img_copy;
 }
 
-u64 TTFont::hash() const
+u64 TTFont::hash(const TTFont *font)
 {
-    return (curSize << 6) | (hasTransparency << 5) | ((u8)style << 2) | (u8)mode;
+    return (font->getCurrentSize() << 6) | (font->isTransparent() << 5) | ((u8)font->getStyle() << 2) | (u8)font->getMode();
+}
+
+u64 TTFont::hash(u32 size, bool transparent, FontStyle style, FontMode mode)
+{
+    return (size << 6) | (transparent << 5) | ((u8)style << 2) | (u8)mode;
 }
 
 bool TTFont::operator==(const TTFont *other) const
 {
-    return hash() == other->hash();
+    return hash(this) == hash(other);
 }
 
 }
