@@ -39,10 +39,6 @@ Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
     : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
     init(initIBO);
-
-    bind();
-    reallocate();
-    unbind();
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,

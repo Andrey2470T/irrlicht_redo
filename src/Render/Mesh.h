@@ -66,7 +66,7 @@ public:
         bound = false;
 	}
 
-    void reallocate(const void *vertices=nullptr, u32 vertexCount=0,
+    void reallocate(const void *vertices, u32 vertexCount,
         const u32 *indices=nullptr, u32 indexCount=0);
     void uploadVertexData(const void *vertices, u32 count, u32 offset=0);
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
