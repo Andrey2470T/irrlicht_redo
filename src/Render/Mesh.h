@@ -5,6 +5,13 @@
 namespace render
 {
 
+enum class MeshUsage : u8
+{
+    STATIC = 0,
+    DYNAMIC,
+    STREAM
+};
+
 class Mesh
 {
 	struct BufferObject
@@ -12,9 +19,10 @@ class Mesh
 		u32 ID;
 		bool isVBO;
 		u32 elemSize;
+        MeshUsage usage;
 
-	    BufferObject(bool _isVBO, u32 size)
-	        : isVBO(_isVBO), elemSize(size)
+        BufferObject(bool _isVBO, u32 size, MeshUsage _usage)
+            : isVBO(_isVBO), elemSize(size), usage(_usage)
 	    {}
 	    ~BufferObject();
 	
@@ -30,10 +38,10 @@ class Mesh
 
     bool bound = false;
 public:
-	Mesh(const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true);
+    Mesh(const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 
-	Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr,
-		 u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true);
+    Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr, u32 indicesCount=0,
+         const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 	
 	~Mesh();
 

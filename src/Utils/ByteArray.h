@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ExtBasicIncludes.h"
-#include <optional>
 
 namespace utils
 {
@@ -19,20 +18,13 @@ class ByteArray
 	std::vector<u8> bytes;
 	//! Elements (base types) saving inside 'bytes'
 	std::vector<ByteArrayElement> elements;
-	//! Current position of the 'bytes' indicator (offset in bytes)
-	u32 pos_i = 0;
 public:
 	ByteArray() = default;
 
-	//! Constructor. 'count' is an initial bytes count
-	ByteArray(u32 count)
+    //! Constructor. 'count' is an initial bytes count
+    ByteArray(u32 elemCount, u32 bytesCount)
 	{
-		bytes.reserve(count);
-	}
-
-	void setIndicatorPos(u32 pos)
-	{
-		pos_i = pos;
+        reallocate(elemCount, bytesCount);
 	}
 
 	u32 count() const
@@ -40,7 +32,18 @@ public:
 		return elements.size();
 	}
 
-    u32 bytesCount() const;
+    u32 bytesCount() const
+    {
+        return bytes.size();
+    }
+
+    void reallocate(u32 elemCount, u32 bytesCount)
+    {
+        if (elemCount <= count())
+            return;
+        elements.resize(elemCount);
+        bytes.resize(bytesCount);
+    }
 
     const void *data() const
 	{
@@ -55,58 +58,57 @@ public:
 	}
 
 	//! Setters
-	// 'n' is a number of the byte array element which is necessary to replace
-	// or if it is not initialized, just set it at the end
-    void setUInt8(u8 elem, std::optional<u32> n) 		{ setElement({BasicType::UINT8, 1}, &elem, n); }
-    void setUInt16(u16 elem, std::optional<u32> n) 		{ setElement({BasicType::UINT16, 2}, &elem, n); }
-    void setUInt32(u32 elem, std::optional<u32> n)		{ setElement({BasicType::UINT32, 4}, &elem, n); }
-    void setUInt64(u64 elem, std::optional<u32> n)		{ setElement({BasicType::UINT64, 8}, &elem, n); }
+    // 'n' is a number of the byte array element which is necessary to change
+    void setUInt8(u8 elem, u32 n) 		{ setElement({BasicType::UINT8, 1}, &elem, n); }
+    void setUInt16(u16 elem, u32 n) 		{ setElement({BasicType::UINT16, 2}, &elem, n); }
+    void setUInt32(u32 elem, u32 n)		{ setElement({BasicType::UINT32, 4}, &elem, n); }
+    void setUInt64(u64 elem, u32 n)		{ setElement({BasicType::UINT64, 8}, &elem, n); }
 
-    void setChar(c8 elem, std::optional<u32> n) 		{ setElement({BasicType::CHAR, 1}, &elem, n); }
-    void setShort(s16 elem, std::optional<u32> n) 		{ setElement({BasicType::SHORT, 2}, &elem, n); }
-    void setInt(s32 elem, std::optional<u32> n) 		{ setElement({BasicType::INT, 4}, &elem, n); }
-    void setLongInt(s64 elem, std::optional<u32> n)     { setElement({BasicType::LONG_INT, 8}, &elem, n); }
+    void setChar(c8 elem, u32 n) 		{ setElement({BasicType::CHAR, 1}, &elem, n); }
+    void setShort(s16 elem, u32 n) 		{ setElement({BasicType::SHORT, 2}, &elem, n); }
+    void setInt(s32 elem, u32 n) 		{ setElement({BasicType::INT, 4}, &elem, n); }
+    void setLongInt(s64 elem, u32 n)     { setElement({BasicType::LONG_INT, 8}, &elem, n); }
 
-    void setFloat(f32 elem, std::optional<u32> n) 		{ setElement({BasicType::FLOAT, 4}, &elem, n); }
-    void setDouble(f64 elem, std::optional<u32> n)      { setElement({BasicType::DOUBLE, 8}, &elem, n); }
+    void setFloat(f32 elem, u32 n) 		{ setElement({BasicType::FLOAT, 4}, &elem, n); }
+    void setDouble(f64 elem, u32 n)      { setElement({BasicType::DOUBLE, 8}, &elem, n); }
 
-	void setV2U(v2u elem, std::optional<u32> n)
+    void setV2U(v2u elem, u32 n)
 	{
 		setUInt32(elem.X, n);
-		setUInt32(elem.Y, n ? n.value() + 1 : n);
+        setUInt32(elem.Y, n + 1);
 	}
 
-	void setV2I(v2i elem, std::optional<u32> n)
+    void setV2I(v2i elem, u32 n)
 	{
         setInt(elem.X, n);
-        setInt(elem.Y, n ? n.value() + 1 : n);
+        setInt(elem.Y, n + 1);
 	}
 
-	void setV2F(v2f elem, std::optional<u32> n)
+    void setV2F(v2f elem, u32 n)
 	{
 		setFloat(elem.X, n);
-		setFloat(elem.Y, n ? n.value() + 1 : n);
+        setFloat(elem.Y, n + 1);
 	}
 
-	void setV3U(v3u elem, std::optional<u32> n)
+    void setV3U(v3u elem, u32 n)
 	{
         setUInt32(elem.X, n);
-        setUInt32(elem.Y, n ? n.value() + 1 : n);
-        setUInt32(elem.Z, n ? n.value() + 2 : n);
+        setUInt32(elem.Y, n + 1);
+        setUInt32(elem.Z, n + 2);
 	}
 
-	void setV3I(v3i elem, std::optional<u32> n)
+    void setV3I(v3i elem, u32 n)
 	{
         setInt(elem.X, n);
-        setInt(elem.Y, n ? n.value() + 1 : n);
-        setInt(elem.Z, n ? n.value() + 2 : n);
+        setInt(elem.Y, n + 1);
+        setInt(elem.Z, n + 2);
 	}
 
-	void setV3F(v3f elem, std::optional<u32> n)
+    void setV3F(v3f elem, u32 n)
 	{
 		setFloat(elem.X, n);
-		setFloat(elem.Y, n ? n.value() + 1 : n);
-		setFloat(elem.Z, n ? n.value() + 2 : n);
+        setFloat(elem.Y, n + 1);
+        setFloat(elem.Z, n + 2);
 	}
 
 	//! Getters
@@ -209,7 +211,7 @@ private:
 	u32 countBytesBefore(u32 n) const;
 
 	std::vector<u8> getElement(u32 n) const;
-    void setElement(ByteArrayElement &&elem, void *data, std::optional<u32> n);
+    void setElement(ByteArrayElement &&elem, void *data, u32 n);
 };
 
 }

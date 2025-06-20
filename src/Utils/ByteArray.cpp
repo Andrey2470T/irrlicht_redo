@@ -3,11 +3,6 @@
 namespace utils
 {
 
-u32 ByteArray::bytesCount() const
-{
-	return countBytesBefore(count());
-}
-
 u32 ByteArray::countBytesBefore(u32 n) const
 {
 	if (n > count()) {
@@ -40,8 +35,13 @@ std::vector<u8> ByteArray::getElement(u32 n) const
 	return elem_bytes;
 }
 
-void ByteArray::setElement(ByteArrayElement &&elem, void *data, std::optional<u32> n)
+void ByteArray::setElement(ByteArrayElement &&elem, void *data, u32 n)
 {
+    if (n >= count()) {
+        WarnStream << "ByteArray::setElement() Access to the element outside of the byte array\n";
+        return;
+    }
+
 	std::vector<u8> elem_bytes;
 
 	switch (elem.type) {
@@ -88,30 +88,13 @@ void ByteArray::setElement(ByteArrayElement &&elem, void *data, std::optional<u3
 			break;
 	}
 
-	u32 offset;
-
-	if (!n) {
-		offset = bytesCount();
-		bytes.resize(offset + elem_bytes.size());
-	}
-	else if (n.value() < count()) {
-		auto &n_elem = elements.at(n.value());
-
-		if (n_elem.type != elem.type || n_elem.bytes_count != elem.bytes_count) {
-			WarnStream << "ByteArray::setElement() Can not replace the\
-				element to the another one with differing bytes count and type\n";
-			return;
-		}
-		offset = countBytesBefore(n.value());
-	}
+    auto &n_elem = elements.at(n);
+    n_elem.type = elem.type;
+    n_elem.bytes_count = elem.bytes_count;
+    n_elem.offset = countBytesBefore(n);
 
 	for (u32 i = 0; i < elem_bytes.size(); i++)
-		bytes[offset + 1 + i] = elem_bytes[i];
-
-	if (!n) {
-		elem.offset = offset;
-        elements.push_back(elem);
-	}
+        bytes[n_elem.offset + 1 + i] = elem_bytes[i];
 }
 
 }

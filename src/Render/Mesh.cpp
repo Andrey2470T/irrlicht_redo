@@ -26,7 +26,7 @@ void Mesh::BufferObject::generate()
 void Mesh::BufferObject::reallocate(const void *data, u32 count)
 {
     glBindBuffer(BufConst(isVBO), ID);
-    glBufferData(BufConst(isVBO), count * elemSize, data, GL_STATIC_DRAW);
+    glBufferData(BufConst(isVBO), count * elemSize, data, (u8)usage);
 }
 
 void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
@@ -35,8 +35,8 @@ void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
     glBufferSubData(BufConst(isVBO), offset * elemSize, count * elemSize, data);
 }
 
-Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO)
-	: vaoID(0), vbo(true, sizeOfVertexType(descr)), ibo(false, sizeof(u32)), descriptor(descr)
+Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
     init(initIBO);
 
@@ -46,8 +46,8 @@ Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO)
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
-    u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO)
-    : vaoID(0), vbo(true, sizeOfVertexType(descr)), ibo(false, sizeof(u32)), descriptor(descr)
+    u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
     init(initIBO);
 

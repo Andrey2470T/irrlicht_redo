@@ -3,7 +3,6 @@
 #include "Utils/ByteArray.h"
 #include "PixelFormats.h"
 #include "Utils/MathFuncs.h"
-#include <optional>
 
 namespace img {
 
@@ -23,11 +22,11 @@ class ColorRGBA
 public:
     ColorRGBA() = default;
 	ColorRGBA(PixelFormat _format)
-		: format(_format), color(pixelFormatInfo[format].size / 8)
+        : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
 	{}
 
 	ColorRGBA(PixelFormat _format, T _R, T _G = 0, T _B = 0, T _A = 0)
-		: format(_format), color(pixelFormatInfo[format].size / 8)
+        : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
 	{
 		set(_R, _G, _B, _A);
 	}
@@ -309,14 +308,14 @@ private:
 	{
 		u8 channelsCount = pixelFormatInfo[format].channels;
 
-		setChannel(R);
+        setChannel(R, 0);
 
 		if (channelsCount > 1)
-			setChannel(G);
+            setChannel(G, 1);
 		if (channelsCount > 2)
-			setChannel(B);
+            setChannel(B, 2);
 		if (channelsCount > 3)
-			setChannel(A);
+            setChannel(A, 3);
 	}
 
 	T getChannel(u32 n) const
@@ -337,7 +336,7 @@ private:
 		};
 	}
 
-	void setChannel(T v, s32 n=-1)
+    void setChannel(T v, u32 n)
 	{
 		BasicType type = pixelFormatInfo[format].type;
 
@@ -390,7 +389,7 @@ private:
 };
 
 color8 getColor8(const ByteArray *arr, u32 n);
-void setColor8(ByteArray *arr, const color8 &c, std::optional<u32> n);
+void setColor8(ByteArray *arr, const color8 &c, u32 n);
 
 }
 

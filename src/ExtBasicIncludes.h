@@ -4,6 +4,7 @@
 #include <memory>
 #include <map>
 #include <algorithm>
+#include <optional>
 
 #include "BasicIncludes.h"
 

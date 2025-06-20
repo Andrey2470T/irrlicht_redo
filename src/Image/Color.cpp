@@ -92,12 +92,12 @@ color8 getColor8(const ByteArray *arr, u32 n)
 	return c;
 }
 
-void setColor8(ByteArray *arr, const color8 &c, std::optional<u32> n)
+void setColor8(ByteArray *arr, const color8 &c, u32 n)
 {
 	arr->setUInt8(c.R(), n);
-	arr->setUInt8(c.G(), n ? n.value()+1 : n);
-	arr->setUInt8(c.B(), n ? n.value()+2 : n);
-	arr->setUInt8(c.A(), n ? n.value()+3 : n);
+    arr->setUInt8(c.G(), n ? n+1 : n);
+    arr->setUInt8(c.B(), n ? n+2 : n);
+    arr->setUInt8(c.A(), n ? n+3 : n);
 }
 
 }
