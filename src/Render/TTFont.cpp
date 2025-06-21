@@ -102,7 +102,12 @@ v2u TTFont::getTextSize(const std::wstring &text) const
 
 u32 TTFont::getLineHeight() const
 {
-    return getTextHeight(L"S") + (u32)TTF_FontLineSkip(font);
+    return getTextHeight(L"S");
+}
+
+u32 TTFont::getFontHeight() const
+{
+    return TTF_FontHeight(font);
 }
 
 u32 TTFont::getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const
@@ -113,6 +118,22 @@ u32 TTFont::getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const
     return TTF_GetFontKerningSizeGlyphs32(font,
         *reinterpret_cast<const Uint16 *>(ch1_16.data()),
         *reinterpret_cast<const Uint16 *>(ch2_16.data()));
+}
+
+s32 TTFont::getFontAscent() const
+{
+    return TTF_FontAscent(font);
+}
+
+s32 TTFont::getFontDescent() const
+{
+    return TTF_FontDescent(font);
+}
+
+void TTFont::getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const
+{
+    std::u16string ch16 = wide_to_utf16(&ch);
+    TTF_GlyphMetrics(font, ch16[0], offsetx, nullptr, nullptr, offsety, advance);
 }
 
 u32 TTFont::getCurrentSize() const

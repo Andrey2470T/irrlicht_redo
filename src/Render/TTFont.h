@@ -57,6 +57,10 @@ public:
     u32 getFontHeight() const;
     u32 getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const;
 
+    s32 getFontAscent() const;
+    s32 getFontDescent() const;
+    void getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const;
+
     u32 getCurrentSize() const;
     bool isTransparent() const;
 
