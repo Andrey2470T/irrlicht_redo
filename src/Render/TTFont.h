@@ -64,6 +64,12 @@ public:
     u32 getCurrentSize() const;
     bool isTransparent() const;
 
+    void getShadowParameters(u32 *offset, u32 *alpha) const
+    {
+        *offset = shadowOffset;
+        *alpha = shadowAlpha;
+    }
+
     std::optional<u32> getCharFromPos(const std::wstring &str, s32 pixel_x) const;
     
     bool hasGlyph(wchar_t c) const;

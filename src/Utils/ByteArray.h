@@ -45,6 +45,12 @@ public:
         bytes.resize(bytesCount);
     }
 
+    void clear()
+    {
+        elements.clear();
+        bytes.clear();
+    }
+
     const void *data() const
 	{
         const u8 *bytes_data = bytes.data();
