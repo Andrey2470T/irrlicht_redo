@@ -39,7 +39,7 @@ public:
 
     void reallocate(u32 elemCount, u32 bytesCount)
     {
-        if (elemCount <= count())
+        if (elemCount == count())
             return;
         elements.resize(elemCount);
         bytes.resize(bytesCount);
