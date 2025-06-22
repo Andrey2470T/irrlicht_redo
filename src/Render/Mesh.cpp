@@ -26,7 +26,22 @@ void Mesh::BufferObject::generate()
 void Mesh::BufferObject::reallocate(const void *data, u32 count)
 {
     glBindBuffer(BufConst(isVBO), ID);
-    glBufferData(BufConst(isVBO), count * elemSize, data, (u8)usage);
+
+    u32 glUsage;
+
+    switch (usage) {
+    case MeshUsage::STATIC:
+        glUsage = GL_STATIC_DRAW;
+        break;
+    case MeshUsage::DYNAMIC:
+        glUsage = GL_DYNAMIC_DRAW;
+        break;
+    case MeshUsage::STREAM:
+        glUsage = GL_STREAM_DRAW;
+        break;
+    };
+
+    glBufferData(BufConst(isVBO), count * elemSize, data, glUsage);
 }
 
 void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
