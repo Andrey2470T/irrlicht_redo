@@ -3,7 +3,7 @@
 namespace render
 {
 
-UniformBuffer::UniformBuffer(u32 bindingPoint, const utils::ByteArray &uniforms)
+UniformBuffer::UniformBuffer(u32 bindingPoint, const ByteArray &uniforms)
 {
 	glGenBuffers(1, &uboID);
     glBindBuffer(GL_UNIFORM_BUFFER, uboID);
@@ -14,7 +14,7 @@ UniformBuffer::UniformBuffer(u32 bindingPoint, const utils::ByteArray &uniforms)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	uboBP = bindingPoint;
-	uniformsData = std::move(uniforms);
+    uniformsData = uniforms;
 }
 
 UniformBuffer::~UniformBuffer()
@@ -22,10 +22,10 @@ UniformBuffer::~UniformBuffer()
 	glDeleteBuffers(1, &uboID);
 }
 
-void UniformBuffer::uploadSubData(u32 offset, const utils::ByteArray &uniforms)
+void UniformBuffer::uploadSubData(u32 offset, u32 size)
 {
 	glBindBuffer(GL_UNIFORM_BUFFER, uboID);
-	glBufferSubData(GL_UNIFORM_BUFFER, offset, uniforms.bytesCount(), uniforms.data());
+    glBufferSubData(GL_UNIFORM_BUFFER, offset, size, uniformsData.data());
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

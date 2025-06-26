@@ -11,9 +11,9 @@ class UniformBuffer
 	u32 uboID;
 	u32 uboBP;
 
-	utils::ByteArray uniformsData;
+    ByteArray uniformsData;
 public:
-	UniformBuffer(u32 bindingPoint, const utils::ByteArray &uniforms);
+    UniformBuffer(u32 bindingPoint, const ByteArray &uniforms);
 
 	~UniformBuffer();
 
@@ -21,6 +21,11 @@ public:
 	{
 		return uboBP;
 	}
+
+    ByteArray &getUniformsData()
+    {
+        return uniformsData;
+    }
 
 	void bind() const
 	{
@@ -32,16 +37,11 @@ public:
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
-	void uploadSubData(u32 offset, const utils::ByteArray &uniforms);
+    void uploadSubData(u32 offset, u32 size);
 	
 	bool operator==(const UniformBuffer *other)
 	{
 		return uboID == other->uboID;
-	}
-	
-	bool operator!=(const UniformBuffer *other)
-	{
-		return uboID != other->uboID;
 	}
 };
 
