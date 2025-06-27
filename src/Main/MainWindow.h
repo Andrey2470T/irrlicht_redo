@@ -151,12 +151,6 @@ public:
     bool activateJoysticks(std::vector<JoystickInfo> &joysticksInfo);
     bool pollEventsFromQueue();
     void resetReceiveTextInputEvents(const recti &textarea, bool acceptIME);
-private:
-#ifdef EMSCRIPTEN
-	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
-	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
-	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
-#endif
 
     std::string getVendorName() const;
     std::string getGLVersion() const;
@@ -165,6 +159,13 @@ private:
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
     f32 getDisplayDensity() const;
+    GLParameters getGLParams() const;
+private:
+#ifdef EMSCRIPTEN
+	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
+	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
+	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
+#endif
 	void updateViewportAndScale();
 
     bool initWindow();

@@ -748,6 +748,11 @@ f32 MainWindow::getDisplayDensity() const
     return DisplayDensity;
 }
 
+GLParameters MainWindow::getGLParams() const
+{
+    return GLParams;
+}
+
 void MainWindow::updateViewportAndScale()
 {
 	int window_w, window_h;
