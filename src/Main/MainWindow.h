@@ -164,6 +164,7 @@ private:
     v2u getWindowSize() const;
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
+    f32 getDisplayDensity() const;
 	void updateViewportAndScale();
 
     bool initWindow();

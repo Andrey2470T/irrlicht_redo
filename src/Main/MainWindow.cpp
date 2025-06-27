@@ -743,6 +743,11 @@ u32 MainWindow::getFullscreenFlag(bool fullscreen)
 #endif
 }
 
+f32 MainWindow::getDisplayDensity() const
+{
+    return DisplayDensity;
+}
+
 void MainWindow::updateViewportAndScale()
 {
 	int window_w, window_h;
