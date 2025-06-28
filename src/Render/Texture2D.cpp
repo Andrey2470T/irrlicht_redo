@@ -22,7 +22,7 @@ void Texture2D::initTexture(u8 *data, v2u size)
 
 	glBindTexture(GL_TEXTURE_2D, texID);
 
-	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+    auto &formatInfo = img::pixelFormatInfo.at(format);
 
     if (texSettings.isRenderTarget) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -82,7 +82,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
         imgMod->copyTo(img, imgCache.get(), &srcRect, &dstRect);
     }
 
-	img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+    auto &formatInfo = img::pixelFormatInfo.at(format);
 
 	glBindTexture(GL_TEXTURE_2D, texID);
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
@@ -98,7 +98,7 @@ std::vector<img::Image *> Texture2D::downloadData()
     if (!imgCache) {
 		img::Image *img = new img::Image(format, width, height);
 
-		img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+        auto &formatInfo = img::pixelFormatInfo.at(format);
 		glBindTexture(GL_TEXTURE_2D, texID);
 		glGetTexImage(GL_TEXTURE_2D, 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
 

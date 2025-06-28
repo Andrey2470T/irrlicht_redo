@@ -42,7 +42,8 @@ struct PixelFormatInfo
 	bool isIndexed = false;
 };
 
-extern std::array<PixelFormatInfo, PF_COUNT> pixelFormatInfo;
+// Removed A1R5G5B5 and R5G6B5 formats
+extern const std::array<PixelFormatInfo, PF_COUNT> pixelFormatInfo;
 
 //! calculate image data size in bytes for selected format, width and height.
 u32 getDataSizeFromFormat(PixelFormat format, u32 width, u32 height);

@@ -28,7 +28,7 @@ void TextureCubeMap::initTexture(const std::array<img::Image *, CMF_COUNT> &data
 	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
 	
-    img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+    auto &formatInfo = img::pixelFormatInfo.at(format);
 
     if (texSettings.isRenderTarget) {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -74,7 +74,7 @@ std::vector<img::Image *> TextureCubeMap::downloadData()
         if (!imgCache[i]) {
             img::Image *img = new img::Image(format, width, height);
 
-            img::PixelFormatInfo &formatInfo = img::pixelFormatInfo.at(format);
+            auto &formatInfo = img::pixelFormatInfo.at(format);
 
             if (!cubemapBinded) {
                 glBindTexture(GL_TEXTURE_CUBE_MAP, texID);

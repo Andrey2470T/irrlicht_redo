@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ExtBasicIncludes.h"
+#include "Utils/Matrix4.h"
 
 namespace utils
 {
@@ -117,6 +118,12 @@ public:
         setFloat(elem.Z, n + 2);
 	}
 
+    void setM4x4(const matrix4 &elem, u32 n)
+    {
+        for (u8 i = 0; i < 16; i++)
+            setFloat(elem[i], n+i);
+    }
+
 	//! Getters
 	// 'n' is a number of the byte array element
 	u8 getUInt8(u32 n) const
@@ -188,6 +195,16 @@ public:
 	{
 		return v3f(getFloat(n), getFloat(n + 1), getFloat(n + 2));
 	}
+
+    matrix4 getM4x4(u32 n) const
+    {
+        matrix4 m;
+
+        for (u8 i = 0; i < 16; i++)
+            m[i] = getFloat(n+i);
+
+        return m;
+    }
 
 	s8 getChar(u32 n) const
 	{
