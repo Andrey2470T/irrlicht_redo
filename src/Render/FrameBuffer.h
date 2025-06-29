@@ -24,6 +24,11 @@ public:
 
 	~FrameBuffer();
 
+    u32 getID() const
+    {
+        return fboID;
+    }
+
 	void bind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, fboID);
@@ -34,9 +39,9 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	utils::v2u getSize() const
+    v2u getSize() const
 	{
-		return utils::v2u(width, height);
+        return v2u(width, height);
 	}
 
 	std::vector<Texture*> getColorTextures() const
@@ -53,6 +58,8 @@ public:
 
 	void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings);
     void setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMapFace);
+
+    void blitTo(const FrameBuffer *target);
 	
 	bool operator==(const FrameBuffer *other)
 	{

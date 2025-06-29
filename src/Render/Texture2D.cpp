@@ -3,8 +3,8 @@
 namespace render
 {
 
-Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format)
-	: Texture(name, width, height, format)
+Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n)
+    : Texture(name, width, height, format), msaa(msaa_n)
 {
     initTexture(nullptr, v2u(width, height));
 }
@@ -20,17 +20,21 @@ void Texture2D::initTexture(u8 *data, v2u size)
 {
 	glGenTextures(1, &texID);
 
-	glBindTexture(GL_TEXTURE_2D, texID);
+    glBindTexture(tex2D(), texID);
 
     auto &formatInfo = img::pixelFormatInfo.at(format);
 
     if (texSettings.isRenderTarget) {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if (msaa == 0) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+            glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+        }
+        else
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa, formatInfo.internalFormat, size.X, size.Y, GL_TRUE);
 	}
 	else {
         if (data == nullptr) {
@@ -51,7 +55,7 @@ void Texture2D::initTexture(u8 *data, v2u size)
 		}
 	}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(tex2D(), 0);
 
 	TEST_GL_ERROR();
 }
@@ -99,10 +103,10 @@ std::vector<img::Image *> Texture2D::downloadData()
 		img::Image *img = new img::Image(format, width, height);
 
         auto &formatInfo = img::pixelFormatInfo.at(format);
-		glBindTexture(GL_TEXTURE_2D, texID);
-		glGetTexImage(GL_TEXTURE_2D, 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
+        glBindTexture(tex2D(), texID);
+        glGetTexImage(tex2D(), 0, formatInfo.pixelFormat, formatInfo.pixelType, img->getData());
 
-		glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(tex2D(), 0);
 
         imgCache.reset(img);
 
@@ -119,10 +123,10 @@ void Texture2D::regenerateMipMaps()
         return;
     }
 
-	glBindTexture(GL_TEXTURE_2D, texID);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(tex2D(), texID);
+    glGenerateMipmap(tex2D());
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(tex2D(), 0);
 
 	TEST_GL_ERROR();
 }

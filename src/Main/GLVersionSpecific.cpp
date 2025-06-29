@@ -52,6 +52,8 @@ GLParameters::GLParameters(OpenGLType glType, OpenGLVersion &glVersion)
 
     if (khrDebugSupported)
         glGetIntegerv(GL_MAX_LABEL_LENGTH, &maxLabelLength);
+
+    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 }
 
 }

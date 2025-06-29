@@ -1,4 +1,5 @@
 #include "FrameBuffer.h"
+#include "Texture2D.h"
 
 namespace render
 {
@@ -81,7 +82,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 		}
 
 		GLenum attachment = GL_COLOR_ATTACHMENT0 + i;
-		GLenum textarget = tex->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<u32>(cubeMapFaceMappings[i]);
+        GLenum textarget = tex->getType() == TT_2D ? dynamic_cast<Texture2D *>(tex)->tex2D() : static_cast<u32>(cubeMapFaceMappings[i]);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, tex->getID(), 0);
 
@@ -113,7 +114,7 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 	}
 
 	if (!already_attached) {
-		GLenum target = texture->getType() == TT_2D ? GL_TEXTURE_2D : static_cast<GLenum>(dsCubeMapFace);
+        GLenum target = texture->getType() == TT_2D ? dynamic_cast<Texture2D *>(texture)->tex2D() : static_cast<GLenum>(dsCubeMapFace);
 #ifdef EMSCRIPTEN
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, target, texture->getID(), 0);
 #else
@@ -131,6 +132,23 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	TEST_GL_ERROR();
+}
+
+void FrameBuffer::blitTo(const FrameBuffer *target)
+{
+    v2u srcSize = getSize();
+    v2u destSize = target->getSize();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fboID);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->getID());
+
+    glBlitFramebuffer(
+        0, 0, srcSize.X, srcSize.Y,
+        0, 0, destSize.X, destSize.Y,
+        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 bool FrameBuffer::checkStatus() const

@@ -65,6 +65,8 @@ struct GLParameters
     s32 maxAnisotropy;
     s32 maxLabelLength;
 
+    s32 maxSamples;
+
     std::array<f32, 2> dimAliasedLine;
     std::array<f32, 2> dimAliasedPoint;
 
