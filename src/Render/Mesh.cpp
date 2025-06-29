@@ -135,6 +135,34 @@ void Mesh::draw(PrimitiveType mode, u32 count, u32 offset) const
 	TEST_GL_ERROR();
 }
 
+void Mesh::drawInstanced(PrimitiveType mode, u32 count, u32 offset, u32 instanceCount) const
+{
+    if (!bound) {
+        WarnStream << "Mesh::drawInstanced() VAO is not bound\n";
+        return;
+    }
+    GLenum glPType = toGLPrimitiveType[mode];
+
+    switch (mode) {
+    case PT_POINTS:
+    case PT_POINT_SPRITES:
+        glDrawArraysInstanced(glPType, offset, count, instanceCount);
+        break;
+    case PT_LINE_STRIP:
+    case PT_LINE_LOOP:
+    case PT_LINES:
+    case PT_TRIANGLE_STRIP:
+    case PT_TRIANGLE_FAN:
+    case PT_TRIANGLES:
+        glDrawElementsInstanced(glPType, count, GL_UNSIGNED_INT, (void*)(offset * sizeof(u32)), instanceCount);
+        break;
+    default:
+        break;
+    };
+
+    TEST_GL_ERROR();
+}
+
 void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u32 drawCount)
 {
     if (!bound) {

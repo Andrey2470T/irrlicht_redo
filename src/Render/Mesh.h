@@ -72,6 +72,7 @@ public:
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
 
     void draw(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0) const;
+    void drawInstanced(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0, u32 instanceCount=1) const;
     void multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u32 drawCount);
 	
 	bool operator==(const Mesh *other)
