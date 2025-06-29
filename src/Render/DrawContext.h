@@ -68,6 +68,14 @@ struct PolygonOffsetState
     f32 depth_bias;
 };
 
+enum ClearBufferFlags : u8
+{
+    CBF_NONE,
+    CBF_COLOR,
+    CBF_DEPTH,
+    CBF_STENCIL,
+};
+
 class DrawContext
 {
 	FrameBuffer *curFBO;
@@ -164,6 +172,8 @@ public:
     void enableSampleCoverage(bool samplecoverage);
 
 	void setViewportSize(utils::recti viewportSize);
+
+    void clearBuffers(u16 flags, img::color8 color, f32 depth=0.0f, u8 stencil=0);
 private:
 	void initContext(utils::recti viewportSize);
 };

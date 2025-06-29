@@ -9,13 +9,13 @@ TextureCubeMap::TextureCubeMap(const std::string &name, u32 width, u32 height, i
 	initTexture();
 }
 
-TextureCubeMap::TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, CMF_COUNT> images,
+TextureCubeMap::TextureCubeMap(const std::string &name, std::array<img::Image *, CMF_COUNT> images,
 		const TextureSettings &settings)
     : Texture(name, images.at(0)->getWidth(), images.at(0)->getHeight(), images.at(0)->getFormat(), settings)
 {
 	std::array<img::Image *, CMF_COUNT> imgs;
 	for (u8 i = 0; i < CMF_COUNT; i++) {
-        imgCache[i] = std::unique_ptr<img::Image>(images.at(i).release());
+        imgCache[i] = std::unique_ptr<img::Image>(images.at(i));
 		imgs[i] = imgCache[i].get();
 	}
 

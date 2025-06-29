@@ -20,7 +20,7 @@ class FrameBuffer
 	Texture* depthStencilTexture;
 	CubeMapFace depthStencilCubeMapFace;
 public:
-	FrameBuffer(u32 _width, u32 _height, u32 _maxColorAttachments);
+    FrameBuffer(u32 _maxColorAttachments);
 
 	~FrameBuffer();
 
@@ -53,11 +53,9 @@ public:
 	{
 		return depthStencilTexture;
 	}
-	
-	void clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil);
 
-	void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings);
-    void setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMapFace);
+    void setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings={});
+    void setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMapFace=CMF_COUNT);
 
     void blitTo(const FrameBuffer *target);
 	

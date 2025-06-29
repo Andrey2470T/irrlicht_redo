@@ -416,6 +416,30 @@ void DrawContext::setViewportSize(utils::recti viewportSize)
 	}
 }
 
+void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil)
+{
+    GLbitfield mask = 0;
+
+    if (flags & CBF_COLOR) {
+        f32 inv = 1.0f / 255.0f;
+
+        glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
+        mask |= GL_COLOR_BUFFER_BIT;
+    }
+
+    if (flags & CBF_DEPTH) {
+        glClearDepthf(depth);
+        mask |= GL_DEPTH_BUFFER_BIT;
+    }
+
+    if (flags & CBF_STENCIL) {
+        glClearStencil(stencil);
+        mask |= GL_STENCIL_BUFFER_BIT;
+    }
+
+    glClear(mask);
+}
+
 void DrawContext::initContext(utils::recti viewportSize)
 {
 	glEnable(GL_PROGRAM_POINT_SIZE);

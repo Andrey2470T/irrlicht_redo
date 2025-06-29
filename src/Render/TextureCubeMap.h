@@ -11,9 +11,14 @@ protected:
 	std::array<std::unique_ptr<img::Image>, CMF_COUNT> imgCache;
 public:
 	TextureCubeMap(const std::string &name, u32 width, u32 height, img::PixelFormat format);
-	TextureCubeMap(const std::string &name, std::array<std::unique_ptr<img::Image>, CMF_COUNT> images,
-        const TextureSettings &settings=TextureSettings());
-	
+    TextureCubeMap(const std::string &name, std::array<img::Image *, CMF_COUNT> images,
+                   const TextureSettings &settings=TextureSettings());
+
+    TextureType getType() const override
+    {
+        return TT_CUBEMAP;
+    }
+
 	void bind() const override
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
