@@ -416,7 +416,7 @@ void DrawContext::setViewportSize(utils::recti viewportSize)
 	}
 }
 
-void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil)
+void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stencil)
 {
     GLbitfield mask = 0;
 
@@ -438,6 +438,19 @@ void FrameBuffer::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
     }
 
     glClear(mask);
+}
+
+void DrawContext::setColorMask(u8 mask)
+{
+    if (mask != colorMask) {
+        glColorMask(
+            (mask & CP_RED) ? GL_TRUE : GL_FALSE,
+            (mask & CP_GREEN) ? GL_TRUE : GL_FALSE,
+            (mask & CP_BLUE) ? GL_TRUE : GL_FALSE,
+            (mask & CP_ALPHA) ? GL_TRUE : GL_FALSE);
+
+        colorMask = mask;
+    }
 }
 
 void DrawContext::initContext(utils::recti viewportSize)

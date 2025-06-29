@@ -76,6 +76,24 @@ enum ClearBufferFlags : u8
     CBF_STENCIL,
 };
 
+enum ColorPlane : u8
+{
+    //! No color enabled
+    CP_NONE = 0,
+    //! Alpha enabled
+    CP_ALPHA = 1,
+    //! Red enabled
+    CP_RED = 2,
+    //! Green enabled
+    CP_GREEN = 4,
+    //! Blue enabled
+    CP_BLUE = 8,
+    //! All colors, no alpha
+    CP_RGB = 14,
+    //! All planes enabled
+    CP_ALL = 15
+};
+
 class DrawContext
 {
 	FrameBuffer *curFBO;
@@ -103,6 +121,8 @@ class DrawContext
     bool sampleCoverage;
 
 	utils::recti viewport;
+
+    u8 colorMask;
 public:
 	//! Constructor
     DrawContext(const utils::recti &viewportSize, u32 _maxTextureUnits)
@@ -173,7 +193,9 @@ public:
 
 	void setViewportSize(utils::recti viewportSize);
 
-    void clearBuffers(u16 flags, img::color8 color, f32 depth=0.0f, u8 stencil=0);
+    void clearBuffers(u16 flags, img::color8 color=img::color8(), f32 depth=0.0f, u8 stencil=0);
+
+    void setColorMask(u8 mask);
 private:
 	void initContext(utils::recti viewportSize);
 };
