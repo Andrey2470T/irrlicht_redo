@@ -29,7 +29,7 @@ public:
         case OGL_TYPE_DESKTOP:
             Profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
             Major = major ? major.value() : 3;
-            Minor = minor ? minor.value() : 2;
+            Minor = minor ? minor.value() : 3;
         case OGL_TYPE_ES:
         case OGL_TYPE_WEB:
             Profile = SDL_GL_CONTEXT_PROFILE_ES;
