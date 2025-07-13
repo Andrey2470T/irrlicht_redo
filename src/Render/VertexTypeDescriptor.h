@@ -18,7 +18,7 @@ struct VertexAttribute
 	std::string Name;
 	u8 ComponentCount;
 	BasicType ComponentType;
-	DataFormat Format;
+    DataFormat Format = DataFormat::Regular;
 	u8 Offset = 0; // in summary components count from the beginning
 
 	bool operator==(const VertexAttribute other) const
