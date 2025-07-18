@@ -78,6 +78,8 @@ public:
 
     img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
 
+    img::Image *drawText(const std::wstring &text, const img::color8 &color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
+
     static u64 hash(const TTFont *font);
     static u64 hash(u32 size, bool transparent, FontStyle style, FontMode mode);
     bool operator==(const TTFont *other) const;

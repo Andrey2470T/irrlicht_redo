@@ -197,6 +197,24 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     return img_copy;
 }
 
+img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
+{
+    SDL_Color fg_color = {
+        color.R(), color.G(), color.B(), color.A()
+    };
+    std::u16string text_16 = wide_to_utf16(text.c_str());
+
+    SDL_Surface *surf = TTF_RenderUNICODE_Solid(
+        font, reinterpret_cast<const Uint16 *>(text_16.c_str()), fg_color);
+
+    img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
+    img::Image *img_copy = surf_img->copy();
+
+    delete surf_img;
+
+    return img_copy;
+}
+
 u64 TTFont::hash(const TTFont *font)
 {
     return (font->getCurrentSize() << 6) | (font->isTransparent() << 5) | ((u8)font->getStyle() << 2) | (u8)font->getMode();
