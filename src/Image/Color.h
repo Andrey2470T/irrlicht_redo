@@ -362,6 +362,21 @@ private:
 typedef ColorRGBA<u8> color8;
 typedef ColorRGBA<f32> colorf;
 
+
+// Named (often used) colors
+extern color8 white;
+extern color8 black;
+extern color8 gray;
+extern color8 red;
+extern color8 green;
+extern color8 blue;
+extern color8 yellow;
+extern color8 violet;
+extern color8 cyan;
+extern color8 orange;
+extern color8 pink;
+extern color8 brown;
+
 //! Class representing a color in HSL format
 /** The color values for hue, saturation, luminance
 are stored in 32bit floating point variables. Hue is in range [0,360],

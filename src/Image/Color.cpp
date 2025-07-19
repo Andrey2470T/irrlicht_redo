@@ -3,6 +3,20 @@
 namespace img
 {
 
+// Named (often used) colors
+color8 white = color8(PF_RGBA8, 255, 255, 255, 255);
+color8 black = color8(PF_RGBA8, 0, 0, 0, 255);
+color8 gray = color8(PF_RGBA8, 128, 128, 128, 255);
+color8 red = color8(PF_RGBA8, 255, 0, 0, 255);
+color8 green = color8(PF_RGBA8, 0, 255, 0, 255);
+color8 blue = color8(PF_RGBA8, 0, 0, 255, 255);
+color8 yellow = color8(PF_RGBA8, 255, 255, 0, 255);
+color8 violet = color8(PF_RGBA8, 238, 130, 238, 255);
+color8 cyan = color8(PF_RGBA8, 0, 255, 255, 255);
+color8 orange = color8(PF_RGBA8, 255, 165, 0, 255);
+color8 pink = color8(PF_RGBA8, 255, 192, 203, 255);
+color8 brown = color8(PF_RGBA8, 165, 42, 42, 255);
+
 inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 {
     const f32 maxVal = utils::max3<f32>(color.R(), color.G(), color.B());
