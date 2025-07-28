@@ -23,10 +23,16 @@ public:
     void bind() const override;
     void unbind() const override;
 
+    void resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod);
+
+    void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
     void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;
 
     void flush();
 private:
+    void createNewPBO(u32 width, u32 height);
+    void deletePBO();
+
     void mergeRegions(std::list<rectu> &mregions) const;
 };
 

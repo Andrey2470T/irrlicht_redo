@@ -7,27 +7,12 @@ StreamTexture2D::StreamTexture2D(const std::string &name, u32 width, u32 height,
     img::PixelFormat format, const TextureSettings &settings)
     : Texture2D(name, std::make_unique<img::Image>(format, width, height), settings)
 {
-    glGenBuffers(1, &pboID);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
-
-    auto pixelSize = img::pixelFormatInfo.at(format).size;
-    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, width * height * pixelSize, nullptr,
-        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-
-    pboData = (u8*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, width * height * pixelSize,
-        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-    TEST_GL_ERROR();
+    createNewPBO(width, height);
 }
 
 StreamTexture2D::~StreamTexture2D()
 {
-    glDeleteBuffers(1, &pboID);
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-    TEST_GL_ERROR();
+    deletePBO();
 }
 
 void StreamTexture2D::bind() const
@@ -42,6 +27,33 @@ void StreamTexture2D::unbind() const
     Texture2D::unbind();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod)
+{
+    u32 oldWidth = imgCache->getWidth();
+    u32 oldHeight = imgCache->getHeight();
+
+    if (newWidth <= oldWidth || newHeight <= oldHeight) // only increasing is allowed
+        return;
+
+    img::Image *newImgCache = new img::Image(format, newWidth, newHeight);
+    rectu dstRect(0, 0, imgCache->getWidth(), imgCache->getHeight());
+    imgMod->copyTo(imgCache.get(), newImgCache, nullptr, &dstRect);
+    imgCache.reset(newImgCache);
+
+    Texture2D::bind();
+
+    auto &formatInfo = img::pixelFormatInfo.at(format);
+    glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, newWidth, newHeight, 0, formatInfo.pixelFormat, formatInfo.pixelType, imgCache->getData());
+
+    if (texSettings.hasMipMaps)
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+    createNewPBO(newWidth, newHeight);
+
+    width = newWidth;
+    height = newHeight;
 }
 
 void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
@@ -121,6 +133,37 @@ void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
                 mregions.emplace_back(region);
         }
     }
+}
+
+void StreamTexture2D::createNewPBO(u32 newWidth, u32 newHeight)
+{
+    deletePBO();
+
+    glGenBuffers(1, &pboID);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
+
+    auto pixelSize = img::pixelFormatInfo.at(format).size;
+    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, newWidth * newHeight * pixelSize, nullptr,
+        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
+    pboData = (u8*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, newWidth * newHeight * pixelSize,
+        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    TEST_GL_ERROR();
+}
+
+void StreamTexture2D::deletePBO()
+{
+    if (pboID == 0)
+        return;
+
+    glDeleteBuffers(1, &pboID);
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    pboData = nullptr;
+
+    TEST_GL_ERROR();
 }
 
 }
