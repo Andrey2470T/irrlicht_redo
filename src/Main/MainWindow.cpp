@@ -595,12 +595,12 @@ bool MainWindow::pollEventsFromQueue()
 
             // query all axes, already in correct range
             const int numAxes = core::min_(SDL_JoystickNumAxes(joystick), (int)Event::JoystickEvent::NUMBER_OF_AXES);
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_X] = 0;
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_Y] = 0;
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_Z] = 0;
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_R] = 0;
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_U] = 0;
-            joyevent.Joystick.Axis[SEvent::JoystickEvent::AXIS_V] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_X] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_Y] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_Z] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_R] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_U] = 0;
+            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_V] = 0;
             for (j = 0; j < numAxes; ++j)
                 joyevent.Joystick.Axis[j] = SDL_JoystickGetAxis(joystick, j);
 
@@ -666,7 +666,7 @@ EM_BOOL MainWindow::MouseEnterCallback(int eventType, const EmscriptenMouseEvent
 
     Event event;
 
-    event.EventType = EET_MOUSE_INPUT_EVENT;
+    event.Type = EET_MOUSE_INPUT_EVENT;
     event.MouseInput.Event = EMIE_MOUSE_ENTER_CANVAS;
     This->MouseX = event.MouseInput.X = mouseEvent->canvasX;
     This->MouseY = event.MouseInput.Y = mouseEvent->canvasY;
@@ -687,7 +687,7 @@ EM_BOOL MainWindow::MouseLeaveCallback(int eventType, const EmscriptenMouseEvent
 
     Event event;
 
-    event.EventType = EET_MOUSE_INPUT_EVENT;
+    event.Type = EET_MOUSE_INPUT_EVENT;
     event.MouseInput.Event = EMIE_MOUSE_LEAVE_CANVAS;
     This->MouseX = event.MouseInput.X = mouseEvent->canvasX;
     This->MouseY = event.MouseInput.Y = mouseEvent->canvasY;
