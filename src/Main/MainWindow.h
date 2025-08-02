@@ -138,6 +138,7 @@ public:
 	bool isFullScreen() const;
     bool isClosed() const;
 
+    void close();
 	void setResizable(bool resize = false);
 	void minimize();
 	void maximize();

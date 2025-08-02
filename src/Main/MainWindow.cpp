@@ -198,6 +198,11 @@ bool MainWindow::isClosed() const
     return Close;
 }
 
+void MainWindow::close()
+{
+    Close = true;
+}
+
 void MainWindow::setResizable(bool resize)
 {
 #ifdef EMSCRIPTEN
