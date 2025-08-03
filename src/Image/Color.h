@@ -403,8 +403,8 @@ private:
 	inline f32 toRGBA1(f32 rm1, f32 rm2, f32 rh) const;
 };
 
-color8 getColor8(const ByteArray *arr, u32 n);
-void setColor8(ByteArray *arr, const color8 &c, u32 n);
+color8 getColor8(const ByteArray *arr, u32 n, img::PixelFormat format=img::PF_RGBA8);
+void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format=img::PF_RGBA8);
 
 }
 

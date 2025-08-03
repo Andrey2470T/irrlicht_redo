@@ -94,24 +94,33 @@ inline f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 	return rm1;
 }
 
-color8 getColor8(const ByteArray *arr, u32 n)
+color8 getColor8(const ByteArray *arr, u32 n, img::PixelFormat format)
 {
-	color8 c(PF_RGBA8);
+    if (format != img::PF_RGB8 && format != img::PF_RGBA8) {
+        ErrorStream << "getColor8() unsupported format\n";
+        return color8();
+    }
+    color8 c(format);
 
 	c.R(arr->getUInt8(n));
 	c.G(arr->getUInt8(n+1));
 	c.B(arr->getUInt8(n+2));
-	c.A(arr->getUInt8(n+3));
+
+    if (format == img::PF_RGBA8) c.A(arr->getUInt8(n+3));
 
 	return c;
 }
 
-void setColor8(ByteArray *arr, const color8 &c, u32 n)
+void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format)
 {
+    if (format != img::PF_RGB8 && format != img::PF_RGBA8) {
+        ErrorStream << "setColor8() unsupported format\n";
+        return;
+    }
 	arr->setUInt8(c.R(), n);
     arr->setUInt8(c.G(), n ? n+1 : n);
     arr->setUInt8(c.B(), n ? n+2 : n);
-    arr->setUInt8(c.A(), n ? n+3 : n);
+    if (format == img::PF_RGBA8) arr->setUInt8(c.A(), n ? n+3 : n);
 }
 
 }
