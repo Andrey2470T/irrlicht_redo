@@ -77,6 +77,8 @@ struct GLParameters
     bool khrDebugSupported;
 
     GLParameters(OpenGLType glType, OpenGLVersion &glVersion);
+    
+    bool checkExtensions();
 };
 
 }

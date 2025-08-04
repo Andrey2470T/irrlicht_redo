@@ -1,4 +1,5 @@
 #include "GLVersionSpecific.h"
+#include "LogStream.h"
 
 namespace main
 {
@@ -54,6 +55,36 @@ GLParameters::GLParameters(OpenGLType glType, OpenGLVersion &glVersion)
         glGetIntegerv(GL_MAX_LABEL_LENGTH, &maxLabelLength);
 
     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+}
+
+bool GLParameters::checkExtensions()
+{
+	std::vector<std::string> requiredExts = {
+		"GL_OES_element_index_uint"
+	};
+
+	s32 count = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &count);
+	
+	for (auto &extStr : requiredExts) {
+	    bool supported = false;
+
+	    for (s32 i = 0; i < count; i++) {
+		    const char *ext = (const char *)glGetStringi(GL_EXTENSIONS, i);
+		
+		    if (strcmp(extStr.c_str(), ext)  == 0) {
+			    supported = true;
+			    break;
+			}
+		}
+		
+		if (!supported) {
+			ErrorStream << "GLParameters::checkExtensions() unsupported extension: " << extStr << "\n";
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 }

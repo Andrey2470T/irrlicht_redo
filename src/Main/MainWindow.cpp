@@ -61,6 +61,10 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
 
+    if (!GLParams.checkExtensions()) {
+    	Close = true;
+    }
+
 	u32 flags = SDL_INIT_TIMER | SDL_INIT_EVENTS;
 	if (Params.InitVideo)
 		flags |= SDL_INIT_VIDEO;
