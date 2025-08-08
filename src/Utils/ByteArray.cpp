@@ -3,6 +3,26 @@
 namespace utils
 {
 
+void ByteArray::reallocate(u32 elemCount, u32 bytesCount)
+{
+    if (elemCount == count())
+        return;
+    elements.resize(elemCount);
+    bytes.resize(bytesCount);
+}
+
+void ByteArray::extendBytes(const ByteArray *add_bytes, u32 offset, u32 count)
+{
+    u32 curElemCount = this->count();
+
+    elements.reserve(elements.size()+count);
+
+    for (u32 k = 0; k < count; k++)
+        elements.push_back({BasicType::UINT8, 1, curElemCount+k});
+
+    memcpy(bytes.data(), (u8 *)add_bytes->data()+offset, count);
+}
+
 u32 ByteArray::countBytesBefore(u32 n) const
 {
 	if (n > count()) {

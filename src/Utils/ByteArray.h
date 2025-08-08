@@ -38,13 +38,9 @@ public:
         return bytes.size();
     }
 
-    void reallocate(u32 elemCount, u32 bytesCount)
-    {
-        if (elemCount == count())
-            return;
-        elements.resize(elemCount);
-        bytes.resize(bytesCount);
-    }
+    void reallocate(u32 elemCount, u32 bytesCount);
+
+    void extendBytes(const ByteArray *add_bytes, u32 offset, u32 count);
 
     void clear()
     {
