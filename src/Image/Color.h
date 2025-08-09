@@ -303,6 +303,17 @@ public:
             utils::qerp<T>(B(), c1.B(), c2.B(), d),
 			A());
 	}
+
+    // res = c1 * d + c2 * (1- d)
+    static ColorRGBA<T> linInterp(const ColorRGBA<T> &c1, const ColorRGBA<T> &c2, f32 d)
+    {
+        return ColorRGBA<T>(
+            c1.getFormat(),
+            utils::lerp<T>(c2.R(), c1.R(), d),
+            utils::lerp<T>(c2.G(), c1.G(), d),
+            utils::lerp<T>(c2.B(), c1.B(), d),
+            c1.A());
+    }
 private:
 	void set(T R, T G, T B, T A)
 	{
