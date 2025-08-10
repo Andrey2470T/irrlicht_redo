@@ -90,4 +90,11 @@ std::array<GLenum, SO_COUNT> toGLStencilOp = {
     GL_INVERT
 };
 
+std::array<GLenum, PM_COUNT> toGLPolygonMode
+{
+    GL_FILL,
+    GL_POINT,
+    GL_LINE
+};
+
 }

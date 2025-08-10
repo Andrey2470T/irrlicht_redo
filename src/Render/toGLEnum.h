@@ -98,6 +98,14 @@ enum StencilOp
 	SO_COUNT
 };
 
+enum PolygonMode
+{
+    PM_FILL = 0,
+    PM_POINT,
+    PM_LINE,
+    PM_COUNT
+};
+
 extern std::array<GLenum, TMF_COUNT> toGLMinFilter;
 extern std::array<GLenum, TMAGF_COUNT> toGLMagFilter;
 extern std::array<GLenum, TW_COUNT> toGLWrap;
@@ -108,5 +116,6 @@ extern std::array<GLenum, static_cast<std::size_t>(BasicType::COUNT)> toGLType;
 extern std::array<GLenum, CF_COUNT> toGLCompareFunc;
 extern std::array<GLenum, CM_COUNT> toGLCullMode;
 extern std::array<GLenum, SO_COUNT> toGLStencilOp;
+extern std::array<GLenum, PM_COUNT> toGLPolygonMode;
 
 }

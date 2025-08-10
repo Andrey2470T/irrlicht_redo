@@ -68,6 +68,12 @@ struct PolygonOffsetState
     f32 depth_bias;
 };
 
+struct PolygonModeState
+{
+    CullMode face;
+    PolygonMode mode;
+};
+
 enum ClearBufferFlags : u8
 {
     CBF_NONE,
@@ -115,6 +121,8 @@ class DrawContext
 
     PolygonOffsetState curPolygonOffset;
 
+    PolygonModeState curPolygonMode;
+
 	f32 pointSize = 1.0f;
 	f32 lineWidth = 1.0f;
 
@@ -152,6 +160,7 @@ public:
 	StencilTestState getStencilTest() const;
 	ScissorTestState getScissorTest() const;
     PolygonOffsetState getPolygonOffset() const;
+    PolygonMode getPolygonMode() const;
 
 	//! Setters
 	void setFrameBuffer(FrameBuffer *fbo);
@@ -185,6 +194,8 @@ public:
 
     void enablePolygonOffset(bool polygonoffset);
     void setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias);
+
+    void setPolygonMode(CullMode face, PolygonMode mode);
 
 	void setPointSize(f32 pointsize);
 	void setLineWidth(f32 linewidth);

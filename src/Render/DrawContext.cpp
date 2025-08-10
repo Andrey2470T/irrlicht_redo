@@ -380,6 +380,16 @@ void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
     }
 }
 
+void DrawContext::setPolygonMode(CullMode face, PolygonMode mode)
+{
+    if (curPolygonMode.face != face || curPolygonMode.mode != mode) {
+        glPolygonMode(toGLCullMode[face], toGLPolygonMode[mode]);
+
+        curPolygonMode.face = face;
+        curPolygonMode.mode = mode;
+    }
+}
+
 void DrawContext::setPointSize(f32 pointsize)
 {
 	if (pointSize != pointsize) {
