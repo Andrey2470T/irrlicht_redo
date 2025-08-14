@@ -175,6 +175,9 @@ public:
 	//! Output this Quaternion to an Euler angle (radians)
 	void toEuler(v3f &euler) const;
 
+    //! Set this Quaternion to represent the euler rotation
+    void fromEuler(const v3f &euler);
+
 	//! Set Quaternion to identity
 	Quaternion &makeIdentity();
 

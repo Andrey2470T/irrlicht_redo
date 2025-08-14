@@ -342,6 +342,7 @@ inline void Quaternion::toAngleAxis(f32 &angle, v3f &axis) const
 	}
 }
 
+
 inline void Quaternion::toEuler(v3f &euler) const
 {
 	const f64 sqw = W * W;
@@ -350,6 +351,11 @@ inline void Quaternion::toEuler(v3f &euler) const
 	const f64 sqz = Z * Z;
 	const f64 test = 2.0 * (Y * W - X * Z);
 
+    /*
+     * inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERROR_f64)
+    {
+        return std::abs(a - b) <= tolerance;
+    }*/
 	if (utils::equals(test, 1.0, 0.000001)) {
 		// heading = rotation about z-axis
 		euler.Z = (f32)(-2.0 * atan2(X, W));
@@ -372,6 +378,25 @@ inline void Quaternion::toEuler(v3f &euler) const
 		// attitude = rotation about y-axis
         euler.Y = (f32)asin(std::clamp(test, -1.0, 1.0));
 	}
+}
+
+inline void Quaternion::fromEuler(const v3f &euler)
+{
+    const f64 halfZ = euler.Z * 0.5;
+    const f64 halfX = euler.X * 0.5;
+    const f64 halfY = euler.Y * 0.5;
+
+    const f64 cz = cos(halfZ);
+    const f64 sz = sin(halfZ);
+    const f64 cx = cos(halfX);
+    const f64 sx = sin(halfX);
+    const f64 cy = cos(halfY);
+    const f64 sy = sin(halfY);
+
+    W = cz * cx * cy + sz * sx * sy;
+    X = cz * sx * cy - sz * cx * sy;
+    Y = cz * cx * sy + sz * sx * cy;
+    Z = sz * cx * cy - cz * sx * sy;
 }
 
 inline v3f Quaternion::operator*(const v3f &v) const
