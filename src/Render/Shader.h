@@ -18,6 +18,8 @@ class Shader
 	u32 geometryShaderID;
 
 	std::unordered_map<std::string, u32> uniforms;
+    // Vector indices coincide with the texture blocks ones in the shader
+    std::vector<std::string> samplers;
 public:
     Shader(const fs::path &vsPath, const fs::path &fsPath, const fs::path &gsPath="");
 	Shader(const std::string &vsCode, const std::string &fsCode, const std::string &gsCode="");
@@ -33,6 +35,8 @@ public:
 	{
 		glUseProgram(programID);
 	}
+
+    void mapSamplers(const std::vector<std::string> &names);
 	
 	void setUniformFloat(const std::string &name, f32 value);
 	void setUniformInt(const std::string &name, s32 value);
@@ -53,6 +57,8 @@ public:
     void setUniform4x4Matrix(const std::string &name, utils::matrix4 value);
 
 	void setUniformBlock(const std::string &name, UniformBuffer *ubo);
+
+    void setSampler(u32 block_index);
 	
 	bool operator==(const Shader *other)
 	{

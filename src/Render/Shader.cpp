@@ -62,6 +62,12 @@ Shader::~Shader()
 	glDeleteProgram(programID);
 }
 
+void Shader::mapSamplers(const std::vector<std::string> &names)
+{
+    samplers.clear();
+    samplers = std::move(names);
+}
+
 void Shader::setUniformFloat(const std::string &name, f32 value)
 {
 	glUniform1f(getUniformLocation(name), value);
@@ -123,6 +129,11 @@ void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
+}
+
+void Shader::setSampler(u32 block_index)
+{
+    setUniformInt(samplers.at(block_index), block_index);
 }
 
 

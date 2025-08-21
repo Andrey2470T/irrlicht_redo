@@ -141,10 +141,17 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
 		return;
 	}
 
+    if (!curShader) {
+        ErrorStream << "DrawContext::setActiveUnit() shader must be bound\n";
+        return;
+    }
+
     if (texture && activeUnits[index] != texture) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		texture->bind();
         activeUnits[index] = texture;
+
+        curShader->setSampler(index);
 	}
 }
 
