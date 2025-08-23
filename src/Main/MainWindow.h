@@ -161,6 +161,7 @@ public:
     u32 getFullscreenFlag(bool fullscreen);
     f32 getDisplayDensity() const;
     GLParameters getGLParams() const;
+    CursorControl &getCursorControl();
 private:
 #ifdef EMSCRIPTEN
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);

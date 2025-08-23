@@ -762,6 +762,11 @@ GLParameters MainWindow::getGLParams() const
     return GLParams;
 }
 
+CursorControl &MainWindow::getCursorControl()
+{
+    return Cursor;
+}
+
 void MainWindow::updateViewportAndScale()
 {
 	int window_w, window_h;
