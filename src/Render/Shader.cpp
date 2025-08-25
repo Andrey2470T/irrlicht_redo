@@ -62,12 +62,6 @@ Shader::~Shader()
 	glDeleteProgram(programID);
 }
 
-void Shader::mapSamplers(const std::vector<std::string> &names)
-{
-    samplers.clear();
-    samplers = std::move(names);
-}
-
 void Shader::setUniformFloat(const std::string &name, f32 value)
 {
 	glUniform1f(getUniformLocation(name), value);
