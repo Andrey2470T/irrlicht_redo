@@ -307,7 +307,7 @@ struct Event
 	struct StringInputEvent
 	{
 		//! The string that is entered
-        std::wstring *Str;
+        std::wstring Str;
 	};
 
 	//! Any kind of touch event.

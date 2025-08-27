@@ -12,6 +12,36 @@
 namespace main
 {
 
+void Clipboard::copyToClipboard(const c8 *text) const
+{
+    SDL_SetClipboardText(text);
+}
+
+void Clipboard::copyToPrimarySelection(const c8 *text) const
+{
+#if SDL_VERSION_ATLEAST(2, 25, 0)
+    SDL_SetPrimarySelectionText(text);
+#endif
+}
+
+const c8 *Clipboard::getTextFromClipboard() const
+{
+    SDL_free(ClipboardSelectionText);
+    ClipboardSelectionText = SDL_GetClipboardText();
+    return ClipboardSelectionText;
+}
+
+const c8 *Clipboard::getTextFromPrimarySelection() const
+{
+#if SDL_VERSION_ATLEAST(2, 25, 0)
+    SDL_free(PrimarySelectionText);
+    PrimarySelectionText = SDL_GetPrimarySelectionText();
+    return PrimarySelectionText;
+#endif
+    return 0;
+}
+
+
 MainWindow::MainWindow(const MainWindowParameters &params)
     : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor), GLParams(params.GLType, GLVersion),
       Cursor(this), Params(params), IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
@@ -447,8 +477,7 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->Type = ET_STRING_INPUT_EVENT;
             std::string str = sdlevent.text.text;
             std::wstring wstr = utf8_to_wide(str);
-            irrevent->StringInput.Str = new wchar_t[wstr.size()];
-            memcpy(irrevent->StringInput.Str, wstr.c_str(), wstr.size());
+            irrevent->StringInput.Str = wstr;
             Events.emplace(irrevent);
         } break;
 
@@ -724,6 +753,11 @@ std::string MainWindow::getGLVersion() const
     std::string versionStr = (const char*)GLParams.version;
 
     return versionStr;
+}
+
+const Clipboard *MainWindow::getClipboard() const
+{
+    return &SDLClipboard;
 }
 
 v2u MainWindow::getWindowSize() const

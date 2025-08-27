@@ -23,6 +23,20 @@ namespace main
 
 struct JoystickInfo;
 
+// COSOperator interface
+class Clipboard
+{
+    mutable char *ClipboardSelectionText = nullptr;
+    mutable char *PrimarySelectionText = nullptr;
+public:
+    Clipboard() = default;
+
+    void copyToClipboard(const c8 *text) const;
+    void copyToPrimarySelection(const c8 *text) const;
+    const c8 *getTextFromClipboard() const;
+    const c8 *getTextFromPrimarySelection() const;
+};
+
 struct MainWindowParameters
 {
 	u32 Width = 800;
@@ -69,6 +83,7 @@ class MainWindow
 	SDL_version SDLVersion;
     OpenGLVersion GLVersion;
     GLParameters GLParams;
+    Clipboard SDLClipboard;
 
     struct KeysMap
     {
@@ -155,6 +170,7 @@ public:
 
     std::string getVendorName() const;
     std::string getGLVersion() const;
+    const Clipboard *getClipboard() const;
 
     v2u getWindowSize() const;
     v2u getViewportSize() const;
