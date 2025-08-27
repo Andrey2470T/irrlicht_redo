@@ -10,4 +10,7 @@ namespace utils
     std::u32string wide_to_utf32(const std::wstring &str);
     std::u16string wide_to_utf16(const std::wstring &str);
 
+    template <class T>
+    bool equal_ignore_case(const std::basic_string<T> &str1, const std::basic_string<T> &str2);
+
 }
