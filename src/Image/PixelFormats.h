@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Render/Common.h"
+#include "BasicIncludes.h"
+#include "OpenGLIncludes.h"
+#include "Render/toGLEnum.h"
 
 namespace img
 {

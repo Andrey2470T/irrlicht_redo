@@ -5,7 +5,7 @@
 
 #include <SDL_mouse.h>
 
-namespace main
+namespace core
 {
 
 class MainWindow;

@@ -4,7 +4,7 @@
 #include <SDL_log.h>
 #include <sstream>
 
-namespace main
+namespace core
 {
 
 class IEventReceiver;

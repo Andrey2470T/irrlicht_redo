@@ -4,12 +4,13 @@
 #include "Utils/String.h"
 #include "Image/ImageModifier.h"
 #include "Utils/String.h"
+#include <iostream>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
-namespace main
+namespace core
 {
 
 void Clipboard::copyToClipboard(const c8 *text) const
@@ -91,10 +92,6 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
 
-    if (!GLParams.checkExtensions()) {
-    	Close = true;
-    }
-
 	u32 flags = SDL_INIT_TIMER | SDL_INIT_EVENTS;
 	if (Params.InitVideo)
 		flags |= SDL_INIT_VIDEO;
@@ -114,6 +111,10 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 			Close = true;
 			ErrorStream << "Unable to initialize SDL window and context (InitVideo = true)\n";
 		}
+
+    if (!GLParams.checkExtensions()) {
+    	Close = true;
+    }
 
     createKeysMaps();
 
@@ -686,6 +687,7 @@ bool MainWindow::pollEventsFromQueue()
         }
     }
 #endif
+
     return !Close;
 }
 
@@ -752,7 +754,7 @@ std::string MainWindow::getGLVersion() const
 {
     std::string versionStr = (const char*)GLParams.version;
 
-    return versionStr;
+    return "OpenGL " + versionStr;
 }
 
 const Clipboard *MainWindow::getClipboard() const
@@ -905,8 +907,9 @@ bool MainWindow::initWindow()
 	}
 #endif
 
-    if (!glewInit()) {
-        ErrorStream << "Could not initialize GLEW\n";
+    GLenum glewStatus = glewInit();
+    if (glewStatus != GLEW_OK) {
+        std::cerr << "Could not initialize GLEW: " << glewGetErrorString(glewStatus) << std::endl;
         Close = true;
         return false;
     }

@@ -2,7 +2,7 @@
 #include "IEventReceiver.h"
 #include "Events.h"
 
-namespace main
+namespace core
 {
 
 void IrrLogStream::setEventReceiver(IEventReceiver *receiver)
@@ -14,12 +14,16 @@ IrrLogStream &IrrLogStream::operator<<(const std::string &str)
 {
 	std::string str_c = str;
 
-	if (str_c.back() == '\n') {
-        str_c.erase(std::prev(str_c.end()));
+    auto it = std::find(str_c.begin(), str_c.end(), '\n');
 
-		Stream << str_c;
+    if (it != str_c.end()) {
+        u32 pos = std::distance(str_c.begin(), it);
+		Stream << str_c.substr(0, pos);
 
 		log(Stream.str());
+        
+        Stream.str("");
+        Stream.clear();
 	}
 	else
 		Stream << str_c;

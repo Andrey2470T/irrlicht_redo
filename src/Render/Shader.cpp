@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include "UniformBuffer.h"
+#include "Common.h"
 
 namespace render
 {

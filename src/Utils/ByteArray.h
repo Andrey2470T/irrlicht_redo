@@ -25,6 +25,7 @@ public:
     //! Constructor. 'count' is an initial bytes count
     ByteArray(u32 elemCount, u32 bytesCount)
 	{
+		//InfoStream << "ByteArray: elemCount: " << elemCount << ", bytesCount: " << bytesCount << "\n";
         reallocate(elemCount, bytesCount);
 	}
 

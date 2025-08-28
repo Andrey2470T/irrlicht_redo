@@ -1,7 +1,8 @@
 #include "GLVersionSpecific.h"
 #include "LogStream.h"
+#include "OpenGLIncludes.h"
 
-namespace main
+namespace core
 {
 
 GLParameters::GLParameters(OpenGLType glType, OpenGLVersion &glVersion)

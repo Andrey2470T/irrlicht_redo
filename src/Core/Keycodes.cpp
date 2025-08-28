@@ -1,6 +1,6 @@
 #include "Keycodes.h"
 
-namespace main
+namespace core
 {
 
 bool keyIsKnownSpecial(KEY_CODE irrlichtKey)

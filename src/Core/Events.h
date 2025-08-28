@@ -6,7 +6,7 @@
 #include "LogStream.h"
 #include <optional>
 
-namespace main
+namespace core
 {
 
 //! Enumeration for all event types there are.

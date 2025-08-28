@@ -1,5 +1,6 @@
 #include "FrameBuffer.h"
 #include "Texture2D.h"
+#include "Common.h"
 
 namespace render
 {

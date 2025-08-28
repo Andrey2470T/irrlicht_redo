@@ -1,4 +1,5 @@
 #include "TextureCubeMap.h"
+#include "Common.h"
 
 namespace render
 {

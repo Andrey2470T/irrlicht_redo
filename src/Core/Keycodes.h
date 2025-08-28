@@ -2,7 +2,7 @@
 
 #include "Types.h"
 
-namespace main
+namespace core
 {
 
 enum KEY_CODE

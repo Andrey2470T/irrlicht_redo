@@ -5,7 +5,7 @@
 #include <emscripten.h>
 #endif
 
-namespace main
+namespace core
 {
 
 CursorControl::CursorControl(MainWindow *window)

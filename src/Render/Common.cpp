@@ -1,5 +1,6 @@
 #include "Common.h"
 #include <sstream>
+#include "OpenGLIncludes.h"
 
 namespace render
 {

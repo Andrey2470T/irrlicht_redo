@@ -3,7 +3,7 @@
 #include "BasicIncludes.h"
 #include <chrono>
 
-namespace main
+namespace core
 {
 
 // Platform-independent controllable time counter.

@@ -8,7 +8,8 @@
 
 #include "BasicIncludes.h"
 
-#include "Main/LogStream.h"
+#include "Core/LogStream.h"
+
 #include <SDL_error.h>
 
-using namespace main;
+using namespace core;

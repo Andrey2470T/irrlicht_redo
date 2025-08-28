@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Common.h"
+#include "ExtBasicIncludes.h"
+#include "OpenGLIncludes.h"
 
 namespace render
 {

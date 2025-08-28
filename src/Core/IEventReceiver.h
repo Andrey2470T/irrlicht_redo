@@ -1,6 +1,6 @@
 #pragma once
 
-namespace main
+namespace core
 {
 
 class Event;

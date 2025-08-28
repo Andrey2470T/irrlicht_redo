@@ -1,4 +1,5 @@
 #include "StreamTexture2D.h"
+#include "Common.h"
 
 namespace render
 {

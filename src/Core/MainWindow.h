@@ -1,12 +1,14 @@
 #pragma once
 
 #include "GLVersionSpecific.h"
+#include "OpenGLIncludes.h"
+#include <SDL.h>
+#include <SDL_video.h>
+#include <SDL_opengl.h>
 #include "CursorControl.h"
 #include "Image/Image.h"
 #include "Events.h"
 #include <queue>
-
-#include <SDL.h>
 
 #ifdef EMSCRIPTEN
 #include <emscripten/html5.h>
@@ -18,7 +20,7 @@
 #undef SDL_VIDEO_DRIVER_DIRECTFB
 #include <SDL_syswm.h>
 
-namespace main
+namespace core
 {
 
 struct JoystickInfo;

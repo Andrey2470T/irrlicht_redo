@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VertexTypeDescriptor.h"
+#include "toGLEnum.h"
 
 namespace render
 {

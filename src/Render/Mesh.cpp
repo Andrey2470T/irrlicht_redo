@@ -1,5 +1,7 @@
 #include "Mesh.h"
 #include "Utils/TypeSize.h"
+#include "Common.h"
+#include "OpenGLIncludes.h"
 
 namespace render
 {
