@@ -1,12 +1,12 @@
 #include "GLVersionSpecific.h"
 #include "LogStream.h"
-#include "OpenGLIncludes.h"
 
-namespace core
+namespace main
 {
 
 GLParameters::GLParameters(OpenGLType glType, OpenGLVersion &glVersion)
 {
+    glversion = glVersion;
     version = glGetString(GL_VERSION);
     vendor = glGetString(GL_VENDOR);
 
@@ -60,9 +60,15 @@ GLParameters::GLParameters(OpenGLType glType, OpenGLVersion &glVersion)
 
 bool GLParameters::checkExtensions()
 {
-	std::vector<std::string> requiredExts = {
-		"GL_OES_element_index_uint"
-	};
+    std::vector<std::string> requiredExts;
+
+    if (glversion.Profile == SDL_GL_CONTEXT_PROFILE_ES) {
+        requiredExts.emplace_back("GL_OES_element_index_uint");
+    }
+
+    if (requiredExts.empty()) {
+        return true;
+    }
 
 	s32 count = 0;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &count);

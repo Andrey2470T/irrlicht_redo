@@ -17,7 +17,16 @@ Image *ImageLoader::load(const std::string &path)
 
 	SDL_Surface *surf = IMG_Load(path.c_str());
 
-	return convertSDLSurfaceToImage(surf);
+	if (!surf) {
+		ErrorStream << "ImageLoader:load() could not load the image: " << path << "\n";
+		return nullptr;
+	}
+
+    auto img = convertSDLSurfaceToImage(surf);
+
+    SDL_FreeSurface(surf);
+
+    return img;
 }
 
 Image *ImageLoader::loadFromMem(void *mem, s32 size)
@@ -25,7 +34,11 @@ Image *ImageLoader::loadFromMem(void *mem, s32 size)
     SDL_RWops *rw = SDL_RWFromMem(mem, size);
     SDL_Surface *surf = IMG_Load_RW(rw, 0);
 
-    return convertSDLSurfaceToImage(surf);
+    auto img = convertSDLSurfaceToImage(surf);
+
+    SDL_FreeSurface(surf);
+
+    return img;
 }
 
 void ImageLoader::save(Image *img, const std::string &path)
@@ -42,6 +55,8 @@ void ImageLoader::save(Image *img, const std::string &path)
         IMG_SavePNG(surf, path.c_str());
 	else if (ext == SIE[IF_JPG] || ext == SIE[IF_JPEG])
 		IMG_SaveJPG(surf, path.c_str(), 35);
+
+    SDL_FreeSurface(surf);
 }
 
 bool ImageLoader::isFormatSupported(const std::string &path, bool for_write)

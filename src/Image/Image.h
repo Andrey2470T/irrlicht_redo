@@ -55,7 +55,7 @@ class Image
     } clipregion;
 public:
     Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor=color8(PF_RGB8, 0, 0, 0),
-          const Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
+          Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 		  bool _copyData = true, Palette *palette = nullptr);

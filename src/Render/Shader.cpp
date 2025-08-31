@@ -2,14 +2,17 @@
 #include <fstream>
 #include <sstream>
 #include "UniformBuffer.h"
-#include "Common.h"
 
 namespace render
 {
 
 std::string readFile(const std::string &path)
 {
+    InfoStream << "readFile() path: " << path << "\n";
 	std::ifstream file;
+
+    if (path.empty()) return "";
+
 	file.open(fs::path(path));
 
 	if (!file.is_open()) {
@@ -124,11 +127,6 @@ void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
-}
-
-void Shader::setSampler(u32 block_index)
-{
-    setUniformInt(samplers.at(block_index), block_index);
 }
 
 

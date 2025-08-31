@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Texture.h"
-#include "OpenGLIncludes.h"
+
+namespace image
+{
+struct Palette;
+}
 
 namespace render
 {
@@ -46,7 +50,8 @@ public:
         return msaa > 0 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
     }
 private:
-    void initTexture(u8 *data, v2u size);
+    void initTexture(img::Image *image);
+    void convertIndicesToColors(img::Palette *palette, u8 *data, v2u size);
 };
 
 }

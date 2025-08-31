@@ -2,6 +2,141 @@
 
 namespace img
 {
+    std::string sdlFormatToString(u32 format)
+	{
+        std::string format_s;
+
+        switch(format) {
+        case((u32)SDL_PIXELFORMAT_INDEX1LSB):
+            format_s = "SDL_PIXELFORMAT_INDEX1LSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX1MSB):
+            format_s = "SDL_PIXELFORMAT_INDEX1MSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX2LSB):
+            format_s = "SDL_PIXELFORMAT_INDEX2LSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX2MSB):
+            format_s = "SDL_PIXELFORMAT_INDEX2MSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX4LSB):
+            format_s = "SDL_PIXELFORMAT_INDEX4LSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX4MSB):
+            format_s = "SDL_PIXELFORMAT_INDEX4MSB";
+            break;
+        case((u32)SDL_PIXELFORMAT_INDEX8):
+            format_s = "SDL_PIXELFORMAT_INDEX8";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB332):
+            format_s = "SDL_PIXELFORMAT_RGB332";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB444):
+            format_s = "SDL_PIXELFORMAT_RGB444";
+            break;
+        case((u32)SDL_PIXELFORMAT_XBGR4444):
+            format_s = "SDL_PIXELFORMAT_XBGR4444";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB555):
+            format_s = "SDL_PIXELFORMAT_RGB555";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGR555):
+            format_s = "SDL_PIXELFORMAT_BGR555";
+            break;
+        case((u32)SDL_PIXELFORMAT_ARGB4444):
+            format_s = "SDL_PIXELFORMAT_ARGB4444";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGBA4444):
+            format_s = "SDL_PIXELFORMAT_RGBA4444";
+            break;
+        case((u32)SDL_PIXELFORMAT_ABGR4444):
+            format_s = "SDL_PIXELFORMAT_ABGR4444";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGRA4444):
+            format_s = "SDL_PIXELFORMAT_BGRA4444";
+            break;
+        case((u32)SDL_PIXELFORMAT_ARGB1555):
+            format_s = "SDL_PIXELFORMAT_ARGB1555";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGBA5551):
+            format_s = "SDL_PIXELFORMAT_RGBA5551";
+            break;
+        case((u32)SDL_PIXELFORMAT_ABGR1555):
+            format_s = "SDL_PIXELFORMAT_ABGR1555";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGRA5551):
+            format_s = "SDL_PIXELFORMAT_BGRA5551";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB565):
+            format_s = "SDL_PIXELFORMAT_RGB565";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGR565):
+            format_s = "SDL_PIXELFORMAT_BGR565";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB24):
+            format_s = "SDL_PIXELFORMAT_RGB24";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGR24):
+            format_s = "SDL_PIXELFORMAT_BGR24";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGB888):
+            format_s = "SDL_PIXELFORMAT_RGB888";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGBX8888):
+            format_s = "SDL_PIXELFORMAT_RGBX8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGR888):
+            format_s = "SDL_PIXELFORMAT_BGR888";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGRX8888):
+            format_s = "SDL_PIXELFORMAT_BGRX8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_ARGB8888):
+            format_s = "SDL_PIXELFORMAT_ARGB8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_RGBA8888):
+            format_s = "SDL_PIXELFORMAT_RGBA8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_ABGR8888):
+            format_s = "SDL_PIXELFORMAT_ABGR8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_BGRA8888):
+            format_s = "SDL_PIXELFORMAT_BGRA8888";
+            break;
+        case((u32)SDL_PIXELFORMAT_ARGB2101010):
+            format_s = "SDL_PIXELFORMAT_ARGB2101010";
+            break;
+        case((u32)SDL_PIXELFORMAT_YV12):
+            format_s = "SDL_PIXELFORMAT_YV12";
+            break;
+        case((u32)SDL_PIXELFORMAT_IYUV):
+            format_s = "SDL_PIXELFORMAT_IYUV";
+            break;
+        case((u32)SDL_PIXELFORMAT_YUY2):
+            format_s = "SDL_PIXELFORMAT_YUY2";
+            break;
+        case((u32)SDL_PIXELFORMAT_UYVY):
+            format_s = "SDL_PIXELFORMAT_UYVY";
+            break;
+        case((u32)SDL_PIXELFORMAT_YVYU):
+            format_s = "SDL_PIXELFORMAT_YVYU";
+            break;
+        case((u32)SDL_PIXELFORMAT_NV12):
+            format_s = "SDL_PIXELFORMAT_NV12";
+            break;
+        case((u32)SDL_PIXELFORMAT_NV21):
+            format_s = "SDL_PIXELFORMAT_NV21";
+            break;
+        case((u32)SDL_PIXELFORMAT_EXTERNAL_OES):
+            format_s = "SDL_PIXELFORMAT_EXTERNAL_OES";
+            break;
+        default:
+            format_s = "SDL_PIXELFORMAT_UNKNOWN";
+            break;
+        }
+
+        return format_s;
+    }
     // Note: converting doesn't copy the input data, but just transform it to another form
 	Image *convertSDLSurfaceToImage(SDL_Surface *surf)
 	{
@@ -10,15 +145,34 @@ namespace img
         auto it = formatsEnumsMap.find(sdl_format->format);
 		
 		if (it == formatsEnumsMap.end()) {
-			ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << sdl_format->format << "\n";
+            ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << sdlFormatToString(sdl_format->format) << "\n";
 			return nullptr;
 		}
+
 		PixelFormat format = static_cast<PixelFormat>(it->second);
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
 		u8 *data = static_cast<u8*>(surf->pixels);
 
-        return new Image(format, w, h, data, false);
+        // load the SDL palette
+        Palette *palette = nullptr;
+        if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
+            SDL_Palette *sdl_palette = sdl_format->palette;
+
+            std::vector<img::color8> colors;
+
+            InfoStream << "convertSDLSurfaceToImage 1 palette size: " << sdl_palette->ncolors << "\n";
+            for (s32 i = 0; i < sdl_palette->ncolors; i++) {
+                SDL_Color sdl_color = sdl_palette->colors[i];
+                colors.emplace_back(img::PF_RGBA8, sdl_color.r, sdl_color.g, sdl_color.b, sdl_color.a);
+            }
+            InfoStream << "convertSDLSurfaceToImage 2\n";
+
+            palette = new Palette(true, colors.size(), colors);
+            InfoStream << "convertSDLSurfaceToImage 3\n";
+        }
+
+        return new Image(format, w, h, data, true, palette);
 	}
 
 	SDL_Surface *convertImageToSDLSurface(Image *img)
@@ -37,12 +191,12 @@ namespace img
         s32 w = static_cast<s32>(img->getWidth());
         s32 h = static_cast<s32>(img->getHeight());
 		s32 pitch = static_cast<s32>(getDataSizeFromFormat(img->getFormat(), img->getWidth(), img->getHeight()));
-		void *data = img->getData();
+        u8 *data = new u8[w * h * pixelBits / 8];
+        memcpy(data, img->getData(), w * h * pixelBits / 8);
 		u32 redMask = getRedMask(img->getFormat());
 		u32 greenMask = getGreenMask(img->getFormat());
 		u32 blueMask = getBlueMask(img->getFormat());
 		u32 alphaMask = getAlphaMask(img->getFormat());
-
 
 		return SDL_CreateRGBSurfaceFrom(data, w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
 	}

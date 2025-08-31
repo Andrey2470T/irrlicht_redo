@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VertexTypeDescriptor.h"
-#include "toGLEnum.h"
 
 namespace render
 {
@@ -22,6 +21,7 @@ class Mesh
 		u32 elemSize;
         MeshUsage usage;
 
+        BufferObject() = default;
         BufferObject(bool _isVBO, u32 size, MeshUsage _usage)
             : isVBO(_isVBO), elemSize(size), usage(_usage)
 	    {}
@@ -39,7 +39,9 @@ class Mesh
 
     bool bound = false;
 public:
-    Mesh(const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
+    Mesh()
+    {}
+    Mesh(const VertexTypeDescriptor &descr, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 
     Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr, u32 indicesCount=0,
          const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
@@ -72,10 +74,11 @@ public:
     void uploadVertexData(const void *vertices, u32 count, u32 offset=0);
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
 
-    void draw(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0) const;
-    void drawInstanced(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0, u32 instanceCount=1) const;
+    void draw(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0);
+    void drawInstanced(PrimitiveType mode = PT_TRIANGLES, u32 count = 0, u32 offset = 0, u32 instanceCount=1);
     void multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u32 drawCount);
-	
+
+    void createQuad();
 	bool operator==(const Mesh *other)
 	{
 		return vaoID == other->vaoID;

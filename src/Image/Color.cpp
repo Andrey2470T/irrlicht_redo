@@ -118,9 +118,9 @@ void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format)
         return;
     }
 	arr->setUInt8(c.R(), n);
-    arr->setUInt8(c.G(), n ? n+1 : n);
-    arr->setUInt8(c.B(), n ? n+2 : n);
-    if (format == img::PF_RGBA8) arr->setUInt8(c.A(), n ? n+3 : n);
+    arr->setUInt8(c.G(), n+1);
+    arr->setUInt8(c.B(), n+2);
+    if (format == img::PF_RGBA8) arr->setUInt8(c.A(), n+3);
 }
 
 }

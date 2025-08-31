@@ -25,8 +25,8 @@ class ImageLoader
 public:
     static bool init()
 	{
-        if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) != 0) {
-            ErrorStream << "ImageLoader::init() failed to init SDL2_image: " << IMG_GetError() << "\n";
+        if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) < 0) {
+            ErrorStream << "ImageLoader::init() failed to init SDL2_image: " << SDL_GetError() << "\n";
             return false;
         }
 

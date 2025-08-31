@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ExtBasicIncludes.h"
+#include <SDL_video.h>
+#include <GL/glew.h>
+
+#include "BasicIncludes.h"
 #include <optional>
 
-#include <SDL_video.h>
-
-namespace core
+namespace main
 {
 
 enum OpenGLType : u8
@@ -22,18 +23,20 @@ struct OpenGLVersion
     u8 Major;
     u8 Minor;
 public:
-    OpenGLVersion(OpenGLType type, std::optional<u8> major=std::nullopt, std::optional<u8> minor=std::nullopt)
+    OpenGLVersion(OpenGLType type=OGL_TYPE_DESKTOP, std::optional<u8> major=std::nullopt, std::optional<u8> minor=std::nullopt)
     {
         switch (type) {
         case OGL_TYPE_DESKTOP:
             Profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-            Major = major ? major.value() : 3;
-            Minor = minor ? minor.value() : 3;
+            Major = major.has_value() ? major.value() : 3;
+            Minor = minor.has_value() ? minor.value() : 3;
+            break;
         case OGL_TYPE_ES:
         case OGL_TYPE_WEB:
             Profile = SDL_GL_CONTEXT_PROFILE_ES;
-            Major = major ? major.value() : 2;
-            Minor = minor ? minor.value() : 0;
+            Major = major.has_value() ? major.value() : 2;
+            Minor = minor.has_value() ? minor.value() : 0;
+            break;
         }
     }
 
@@ -74,6 +77,8 @@ struct GLParameters
     bool blendMinMaxSupported;
     bool textureMultisampleSupported;
     bool khrDebugSupported;
+
+    OpenGLVersion glversion;
 
     GLParameters(OpenGLType glType, OpenGLVersion &glVersion);
     

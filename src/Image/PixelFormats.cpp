@@ -6,7 +6,7 @@ namespace img
 // Removed A1R5G5B5 and R5G6B5 formats
 const std::array<PixelFormatInfo, PF_COUNT> pixelFormatInfo = {{
     {GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, BasicType::UINT8, 24, 3},                   // WARNING: may not be renderable
-    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, BasicType::UINT8, 32, 4, true},
+    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, BasicType::UINT8, 32, 4, true},
     {GL_R16F, GL_RED, GL_HALF_FLOAT, BasicType::FLOAT, 16, 1, false, false, true},
     {GL_RG16F, GL_RG, GL_HALF_FLOAT, BasicType::FLOAT, 32, 2, false, false, true},
     {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, BasicType::FLOAT, 64, 4, true, false, true},
@@ -20,7 +20,7 @@ const std::array<PixelFormatInfo, PF_COUNT> pixelFormatInfo = {{
     {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, BasicType::UINT16, 16, 1, false, true},
     {GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, BasicType::UINT32, 32, 1, false, true}, // WARNING: may not be renderable (?!)
     {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, BasicType::UINT32, 32, 1, false, true},
-    {0, 0, 0, BasicType::UINT8, 8, 1, false, false, false, true}
+    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, BasicType::UINT8, 32, 4, false, false, false, true}
 }};
 
 //! calculate image data size in bytes for selected format, width and height.

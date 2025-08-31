@@ -2,6 +2,7 @@
 
 #include "ExtBasicIncludes.h"
 #include "Utils/Matrix4.h"
+#include <SDL_endian.h>
 
 namespace utils
 {
@@ -12,7 +13,7 @@ class ByteArray
 	{
 		BasicType type;
 		u32 bytes_count;
-		u32 offset = 0;
+        u32 offset = 0; // in bytes from the begin
 	};
 
 	//! Bytes storage
@@ -25,7 +26,6 @@ public:
     //! Constructor. 'count' is an initial bytes count
     ByteArray(u32 elemCount, u32 bytesCount)
 	{
-		//InfoStream << "ByteArray: elemCount: " << elemCount << ", bytesCount: " << bytesCount << "\n";
         reallocate(elemCount, bytesCount);
 	}
 
@@ -131,8 +131,13 @@ public:
 	{
 		auto elem = getElement(n);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        u16 elem_u16 = elem[0];
+        elem_u16 |= ((u16)elem[1] << 8);
+#else
 		u16 elem_u16 = elem[1];
-		elem_u16 |= ((u16)elem[0]) << 8;
+        elem_u16 |= ((u16)elem[0] << 8);
+#endif
 
 		return elem_u16;
 	}
@@ -140,10 +145,17 @@ public:
 	{
 		auto elem = getElement(n);
 
-		u32 elem_u32 = elem[3];
-		elem_u32 |= ((u32)elem[2]) << 8;
-		elem_u32 |= ((u32)elem[1]) << 16;
-		elem_u32 |= ((u32)elem[0]) << 24;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        u32 elem_u32 = elem[0];
+        elem_u32 |= ((u32)elem[1] << 8);
+        elem_u32 |= ((u32)elem[2] << 16);
+        elem_u32 |= ((u32)elem[3] << 24);
+#else
+        u32 elem_u32 = elem[3];
+        elem_u32 |= ((u32)elem[2] << 8);
+        elem_u32 |= ((u32)elem[1] << 16);
+        elem_u32 |= ((u32)elem[0] << 24);
+#endif
 
 		return elem_u32;
 	}
@@ -151,14 +163,26 @@ public:
 	{
 		auto elem = getElement(n);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        u64 elem_u64 = elem[0];
+        elem_u64 |= ((u64)elem[1] << 8);
+        elem_u64 |= ((u64)elem[2] << 16);
+        elem_u64 |= ((u64)elem[3] << 24);
+        elem_u64 |= ((u64)elem[4] << 32);
+        elem_u64 |= ((u64)elem[5] << 40);
+        elem_u64 |= ((u64)elem[6] << 48);
+        elem_u64 |= ((u64)elem[7] << 56);
+#else
 		u64 elem_u64 = elem[7];
-		elem_u64 |= ((u64)elem[6]) << 8;
-		elem_u64 |= ((u64)elem[5]) << 16;
-		elem_u64 |= ((u64)elem[4]) << 24;
-		elem_u64 |= ((u64)elem[3]) << 32;
-		elem_u64 |= ((u64)elem[4]) << 40;
-		elem_u64 |= ((u64)elem[4]) << 48;
-		elem_u64 |= ((u64)elem[4]) << 56;
+        elem_u64 |= ((u64)elem[6] << 8);
+        elem_u64 |= ((u64)elem[5] << 16);
+        elem_u64 |= ((u64)elem[4] << 24);
+        elem_u64 |= ((u64)elem[3] << 32);
+        elem_u64 |= ((u64)elem[2] << 40);
+        elem_u64 |= ((u64)elem[1] << 48);
+        elem_u64 |= ((u64)elem[0] << 56);
+#endif
+
 
 		return elem_u64;
 	}
@@ -221,11 +245,13 @@ public:
 	}
 	f32 getFloat(u32 n) const
 	{
-		return (f32)getUInt32(n);
+        u32 v = getUInt32(n);
+        return *(f32*)(&v);
 	}
 	f64 getDouble(u32 n) const
 	{
-		return (f64)getUInt64(n);
+        u64 v = getUInt64(n);
+        return *(f64*)(&v);
 	}
 private:
 	u32 countBytesBefore(u32 n) const;

@@ -73,7 +73,18 @@ void ImageModifier::setPixel(
 
     if (format != PF_INDEX_RGBA8)
         newColor = doBlend<u8>(color, newColor, Mode);
-    else newColor.R(color.R());
+    else {
+        auto palette = img->getPalette();
+
+        if (!palette) {
+            newColor.R(color.R());
+        }
+        else {
+            auto srcColor = palette->colors.at(color.R());
+            auto destColor = palette->colors.at(newColor.R());
+            newColor.R(palette->findColorIndex(doBlend<u8>(srcColor, destColor, Mode)));
+        }
+    }
 
 	u8 *data = img->getData();
     u8 *pixel = nullptr;

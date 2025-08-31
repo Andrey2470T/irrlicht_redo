@@ -41,7 +41,7 @@ u8 Palette::findColorIndex(const color8 &c)
 }
 
 Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor,
-        const Palette *_palette, ImageModifier *mdf)
+        Palette *_palette, ImageModifier *mdf)
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForImage(format)) {
@@ -54,7 +54,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 
     if (format == PF_INDEX_RGBA8) {
 	    if (_palette)
-		    palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
+            palette = std::unique_ptr<Palette>(_palette);
 	    else
 		    palette = std::make_unique<Palette>(false, 0);
 	}
@@ -81,7 +81,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 
     if (format == PF_INDEX_RGBA8) {
 	    if (_palette)
-		    palette = std::make_unique<Palette>(_palette->hasAlpha, _palette->size, _palette->colors);
+            palette = std::unique_ptr<Palette>(_palette);
 	    else
 		    palette = std::make_unique<Palette>(false, 0);
 	}

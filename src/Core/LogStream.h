@@ -4,7 +4,7 @@
 #include <SDL_log.h>
 #include <sstream>
 
-namespace core
+namespace main
 {
 
 class IEventReceiver;
@@ -65,6 +65,18 @@ public:
 	{
 		return *this << std::to_string(num);
 	}
+
+    template<class T>
+    IrrLogStream &operator<<(Vector2D<T> v)
+    {
+        return *this << "x = " << v.X << ", y = " << v.Y;
+    }
+
+    template<class T>
+    IrrLogStream &operator<<(Vector3D<T> v)
+    {
+        return *this << "x = " << v.X << ", y = " << v.Y << ", z = " << v.Z;
+    }
 
 private:
 	void log(const std::string &str);

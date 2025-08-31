@@ -4,47 +4,16 @@
 #include "Utils/String.h"
 #include "Image/ImageModifier.h"
 #include "Utils/String.h"
-#include <iostream>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
-namespace core
+namespace main
 {
-
-void Clipboard::copyToClipboard(const c8 *text) const
-{
-    SDL_SetClipboardText(text);
-}
-
-void Clipboard::copyToPrimarySelection(const c8 *text) const
-{
-#if SDL_VERSION_ATLEAST(2, 25, 0)
-    SDL_SetPrimarySelectionText(text);
-#endif
-}
-
-const c8 *Clipboard::getTextFromClipboard() const
-{
-    SDL_free(ClipboardSelectionText);
-    ClipboardSelectionText = SDL_GetClipboardText();
-    return ClipboardSelectionText;
-}
-
-const c8 *Clipboard::getTextFromPrimarySelection() const
-{
-#if SDL_VERSION_ATLEAST(2, 25, 0)
-    SDL_free(PrimarySelectionText);
-    PrimarySelectionText = SDL_GetPrimarySelectionText();
-    return PrimarySelectionText;
-#endif
-    return 0;
-}
-
 
 MainWindow::MainWindow(const MainWindowParameters &params)
-    : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor), GLParams(params.GLType, GLVersion),
+    : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor),
       Cursor(this), Params(params), IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
 {
 #ifdef ANDROID
@@ -112,7 +81,9 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 			ErrorStream << "Unable to initialize SDL window and context (InitVideo = true)\n";
 		}
 
-    if (!GLParams.checkExtensions()) {
+    GLParams = std::make_unique<GLParameters>(params.GLType, GLVersion);
+
+    if (!GLParams->checkExtensions()) {
     	Close = true;
     }
 
@@ -235,6 +206,7 @@ bool MainWindow::isClosed() const
 
 void MainWindow::close()
 {
+    InfoStream << "MainWindow::close() Closing the window...\n";
     Close = true;
 }
 
@@ -361,6 +333,7 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->MouseInput.Control = (keymod & KMOD_CTRL) != 0;
 
             Events.emplace(irrevent);
+
             break;
         }
         case SDL_MOUSEWHEEL: {
@@ -380,6 +353,7 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->MouseInput.Y = MousePos.Y;
 
             Events.emplace(irrevent);
+
             break;
         }
         case SDL_MOUSEBUTTONDOWN:
@@ -471,6 +445,7 @@ bool MainWindow::pollEventsFromQueue()
 
                 Events.emplace(irrevent);
             }
+
             break;
         }
 
@@ -478,8 +453,10 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->Type = ET_STRING_INPUT_EVENT;
             std::string str = sdlevent.text.text;
             std::wstring wstr = utf8_to_wide(str);
-            irrevent->StringInput.Str = wstr;
+            irrevent->StringInput.Str = new wchar_t[wstr.size()];
+            memcpy(irrevent->StringInput.Str, wstr.c_str(), wstr.size());
             Events.emplace(irrevent);
+
         } break;
 
         case SDL_KEYDOWN:
@@ -509,11 +486,14 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->KeyInput.Char = findCharToPassToIrrlicht(mp.SDLKey, key,
                                                               (sdlevent.key.keysym.mod & KMOD_NUM) != 0);
             Events.emplace(irrevent);
+
         } break;
 
-        case SDL_QUIT:
+        case SDL_QUIT: {
+            InfoStream << "MainWindow::pollEventsFromQueue(): SDL_QUIT\n";
             Close = true;
             break;
+        }
 
         case SDL_WINDOWEVENT:
             switch (sdlevent.window.event) {
@@ -687,7 +667,6 @@ bool MainWindow::pollEventsFromQueue()
         }
     }
 #endif
-
     return !Close;
 }
 
@@ -745,21 +724,16 @@ EM_BOOL MainWindow::MouseLeaveCallback(int eventType, const EmscriptenMouseEvent
 
 std::string MainWindow::getVendorName() const
 {
-    std::string vendorStr = (const char*)GLParams.vendor;
+    std::string vendorStr = (const char*)GLParams->vendor;
 
     return vendorStr;
 }
 
 std::string MainWindow::getGLVersion() const
 {
-    std::string versionStr = (const char*)GLParams.version;
+    std::string versionStr = (const char*)GLParams->version;
 
-    return "OpenGL " + versionStr;
-}
-
-const Clipboard *MainWindow::getClipboard() const
-{
-    return &SDLClipboard;
+    return versionStr;
 }
 
 v2u MainWindow::getWindowSize() const
@@ -793,14 +767,9 @@ f32 MainWindow::getDisplayDensity() const
     return DisplayDensity;
 }
 
-GLParameters MainWindow::getGLParams() const
+const GLParameters *MainWindow::getGLParams() const
 {
-    return GLParams;
-}
-
-CursorControl &MainWindow::getCursorControl()
-{
-    return Cursor;
+    return GLParams.get();
 }
 
 void MainWindow::updateViewportAndScale()
@@ -840,7 +809,7 @@ bool MainWindow::initWindow()
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, Params.ColorChannelBits);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
 
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, Params.DepthBits);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, Params.StencilBits);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, Params.SwapBuffers ? 1 : 0);
 
@@ -872,9 +841,9 @@ bool MainWindow::initWindow()
 	emscripten_set_mouseenter_callback("#canvas", (void *)this, false, MouseEnterCallback);
 	emscripten_set_mouseleave_callback("#canvas", (void *)this, false, MouseLeaveCallback);
 #else
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
 
 	if (Params.DriverDebug)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
@@ -907,9 +876,8 @@ bool MainWindow::initWindow()
 	}
 #endif
 
-    GLenum glewStatus = glewInit();
-    if (glewStatus != GLEW_OK) {
-        std::cerr << "Could not initialize GLEW: " << glewGetErrorString(glewStatus) << std::endl;
+    if (!glewInit()) {
+        ErrorStream << "Could not initialize GLEW\n";
         Close = true;
         return false;
     }
