@@ -8,6 +8,16 @@
 #include <Render/Shader.h>
 #include <Render/Mesh.h>
 
+const render::VertexTypeDescriptor VType2D{
+    "Standard2D",
+    {},
+    2,
+    4,
+    false,
+    true,
+    2
+};
+
 void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
 {
     ba.setFloat(pos.X, n);
@@ -37,7 +47,7 @@ int main(int argc, char *argv[])
 	core::InfoStream << "Create clear color\n";
 	img::color8 clear(img::PF_RGBA8, 128, 60, 175, 255);
 
-	//core::InfoStream << "Output clear color: r=" << clear.R() << ", g=" << clear.G() << ", b=" << clear.B() << ", a=" << clear.A() << "\n";
+    core::InfoStream << "Output clear color: r=" << clear.R() << ", g=" << clear.G() << ", b=" << clear.B() << ", a=" << clear.A() << "\n";
 
 	//clear.G(35);
 	//clear.A(0);
@@ -48,7 +58,7 @@ int main(int argc, char *argv[])
 
 	core::InfoStream << "Load the icon.png...\n";
 
-    fs::path abs_icon_p = fs::absolute("default_apple.png");
+    fs::path abs_icon_p = fs::absolute("advtrains_dtrack_bumper_placer.png");
 	core::InfoStream << "icon.png path:" << abs_icon_p << "\n";
 	auto img = img::ImageLoader::load(abs_icon_p.string());
 
@@ -60,7 +70,7 @@ int main(int argc, char *argv[])
     auto shader = std::make_unique<render::Shader>(fs::absolute("shader2d_vertex.glsl"), fs::absolute("shader2d_fragment.glsl"));
 
     InfoStream << "main 0\n";
-    ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(render::VType2D) * 4);
+    ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(VType2D) * 4);
 
     setVertex(mesh_vertexdata, v2f(-1.0f, 1.0f), img::white, v2f(0.0f, 1.0f), 0);
     setVertex(mesh_vertexdata, v2f(1.0f, 1.0f), img::white, v2f(1.0f, 1.0f), 8);
@@ -116,7 +126,7 @@ int main(int argc, char *argv[])
 
    // auto mesh = std::make_unique<render::Mesh>(render::VType2D);
     auto mesh = std::make_unique<render::Mesh>(
-        mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), render::VType2D);
+        mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), VType2D);
 
     //auto mesh = std::make_unique<render::Mesh>();
     //mesh->createQuad();
@@ -125,11 +135,10 @@ int main(int argc, char *argv[])
 	core::InfoStream << "Run loop\n";
 	while (window->pollEventsFromQueue()) {
         //core::InfoStream << "Loop...\n";
-		context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::color8(img::PF_RGBA8, 255, 0, 0, 255));
+        context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::color8(img::PF_RGBA8, 0, 0, 0, 255));
         //core::InfoStream << "Set shader\n";
 
         context->setShader(shader.get());
-        shader->setSampler(0);
 
        // core::InfoStream << "Set texture\n";
         context->setActiveUnit(0, texture.get());

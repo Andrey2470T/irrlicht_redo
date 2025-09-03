@@ -36,7 +36,9 @@ public:
 
 	ColorRGBA<T> &operator=(const ColorRGBA<T> &other)
 	{
-		set(other.R(), other.G(), other.B(), other.A());
+        format = other.getFormat();
+        InfoStream << "format: " << format << "\n";
+        set(other.R(), other.G(), other.B(), other.A());
 
 		return *this;
 	}
@@ -318,6 +320,7 @@ private:
 	void set(T R, T G, T B, T A)
 	{
 		u8 channelsCount = pixelFormatInfo[format].channels;
+        InfoStream << "set() channelsCount: " << channelsCount << "\n";
 
         setChannel(R, 0);
 
@@ -331,9 +334,12 @@ private:
 
 	T getChannel(u32 n) const
 	{
-		BasicType type = pixelFormatInfo[format].type;
+        auto formatInfo = pixelFormatInfo[format];
 
-		switch (type) {
+        if (n + 1 > formatInfo.channels)
+            return 0;
+
+        switch (formatInfo.type) {
             case BasicType::UINT8:
 				return color.getUInt8(n);
             case BasicType::UINT16:
@@ -349,9 +355,12 @@ private:
 
     void setChannel(T v, u32 n)
 	{
-		BasicType type = pixelFormatInfo[format].type;
+        auto formatInfo = pixelFormatInfo[format];
 
-		switch (type) {
+        if (n + 1 > formatInfo.channels)
+            return;
+
+        switch (formatInfo.type) {
             case BasicType::UINT8:
 				color.setUInt8(v, n);
 				break;

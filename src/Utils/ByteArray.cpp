@@ -46,8 +46,10 @@ std::vector<u8> ByteArray::getElement(u32 n) const
 
 	std::vector<u8> elem_bytes;
 
+    InfoStream << "getElement() n: " << n << ", elements size: " << (u8)elements.size() << "\n";
 	auto &elem = elements[n];
 
+     InfoStream << "getElement() elem.bytes_count: " << elem.bytes_count << "\n";
 	elem_bytes.resize(elem.bytes_count);
 	for (u32 i = 0; i < elem.bytes_count; i++)
 		elem_bytes[i] = bytes[elem.offset+i];
@@ -137,7 +139,7 @@ void ByteArray::setElement(ByteArrayElement &&elem, void *data, u32 n)
     n_elem.offset = countBytesBefore(n);
 
 	for (u32 i = 0; i < elem_bytes.size(); i++)
-        bytes[n_elem.offset + 1 + i] = elem_bytes[i];
+        bytes[n_elem.offset + i] = elem_bytes[i];
 }
 
 }

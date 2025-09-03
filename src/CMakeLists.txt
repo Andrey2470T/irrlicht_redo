@@ -142,8 +142,8 @@ endif()
 # Adding library
 
 file(GLOB_RECURSE SOURCES
+	${CMAKE_CURRENT_SOURCE_DIR}/Core/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Image/*.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Main/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Render/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Utils/*.cpp
 )
@@ -174,7 +174,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-	PRIVATE
+	PUBLIC
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
@@ -185,4 +185,5 @@ target_link_libraries(${PROJECT_NAME}
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 
 		"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
+		stdc++fs
 )

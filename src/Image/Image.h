@@ -54,7 +54,7 @@ class Image
         v2u size;
     } clipregion;
 public:
-    Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor=color8(PF_RGB8, 0, 0, 0),
+    Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor=color8(PF_RGBA8, 0, 0, 0, 255),
           Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,

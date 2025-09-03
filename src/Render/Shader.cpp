@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include "UniformBuffer.h"
+#include "Common.h"
 
 namespace render
 {
@@ -127,6 +128,11 @@ void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
+}
+
+void Shader::setSampler(u32 block_index)
+{
+    setUniformInt(samplers.at(block_index), block_index);
 }
 
 

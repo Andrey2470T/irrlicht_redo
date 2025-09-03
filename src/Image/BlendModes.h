@@ -197,6 +197,7 @@ template <class T>
 ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BlendMode mode)
 {
     CHECK_SAME_FORMAT(src, dst);
+    InfoStream << "doBlend() src: " << src.getFormat() << ", dst: " << dst.getFormat() << "\n";
 
 	switch (mode) {
 		case BM_NORMAL:

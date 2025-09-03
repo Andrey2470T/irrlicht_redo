@@ -70,6 +70,7 @@ void ImageModifier::setPixel(
     color8 newColor = getPixel(img, x, y);
 
     PixelFormat format = img->getFormat();
+    InfoStream << "setPixel() format: " << format << "\n";
 
     if (format != PF_INDEX_RGBA8)
         newColor = doBlend<u8>(color, newColor, Mode);
@@ -488,20 +489,24 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
 {
     u32 width = img->getWidth();
     u32 height = img->getHeight();
+    InfoStream << "flip() 1\n";
 	Image *newImg = new Image(img->getFormat(), width, height);
 
+    InfoStream <<"flip() image format: " << img->getFormat() << "\n";
+    InfoStream <<"flip() image size: " << img->getSize() << "\n";
 	for (u32 x = 0; x < width; x++)
 		for (u32 y = 0; y < height; y++) {
 			color8 curColor = getPixel(img, x, y);
 
 			utils::v2u curPoint(x, y);
 			utils::v2u middlePoint = dir == FD_X ?
-				utils::v2u(width / 2, y) : utils::v2u(x, height / 2);
+                utils::v2u(width / 2 - 1, y) : utils::v2u(x, height / 2 - 1);
 
 			utils::v2u reflectPoint = curPoint - middlePoint;
 			reflectPoint = -reflectPoint;
 			curPoint = middlePoint + reflectPoint;
 
+            InfoStream << "flip() " << curPoint << "\n";
 			setPixel(newImg, curPoint.X, curPoint.Y, curColor);
 		}
 

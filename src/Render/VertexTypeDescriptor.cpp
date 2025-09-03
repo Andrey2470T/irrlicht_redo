@@ -99,14 +99,4 @@ const VertexTypeDescriptor DefaultVType{
 	2
 };
 
-const VertexTypeDescriptor VType2D{
-    "Standard2D",
-    {},
-    2,
-    4,
-    false,
-    true,
-    2
-};
-
 }
