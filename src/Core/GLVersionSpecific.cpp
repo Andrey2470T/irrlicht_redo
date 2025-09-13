@@ -63,7 +63,7 @@ bool GLParameters::checkExtensions()
 {
     std::vector<std::string> requiredExts;
 
-    if (glversion.Profile == SDL_GL_CONTEXT_PROFILE_ES) {
+    if (glversion.Type == OGL_TYPE_ES) {
         requiredExts.emplace_back("GL_OES_element_index_uint");
     }
 

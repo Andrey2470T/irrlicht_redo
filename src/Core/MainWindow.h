@@ -173,13 +173,14 @@ public:
     void resetReceiveTextInputEvents(const recti &textarea, bool acceptIME);
 
     std::string getVendorName() const;
-    std::string getGLVersion() const;
+    std::string getGLVersionString() const;
     const Clipboard *getClipboard() const;
 
     v2u getWindowSize() const;
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
     f32 getDisplayDensity() const;
+    const OpenGLVersion &getOpenGLVersion() const;
     const GLParameters *getGLParams() const;
     CursorControl &getCursorControl();
 private:
@@ -188,6 +189,8 @@ private:
 	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 #endif
+    SDL_GLprofile convertIrrGLTypeToProfile() const;
+
 	void updateViewportAndScale();
 
     bool initWindow();

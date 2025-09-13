@@ -758,7 +758,7 @@ std::string MainWindow::getVendorName() const
     return vendorStr;
 }
 
-std::string MainWindow::getGLVersion() const
+std::string MainWindow::getGLVersionString() const
 {
     std::string versionStr = (const char*)GLParams->version;
 
@@ -801,9 +801,27 @@ f32 MainWindow::getDisplayDensity() const
     return DisplayDensity;
 }
 
+const OpenGLVersion &MainWindow::getOpenGLVersion() const
+{
+    return GLVersion;
+}
+
 const GLParameters *MainWindow::getGLParams() const
 {
     return GLParams.get();
+}
+
+SDL_GLprofile MainWindow::convertIrrGLTypeToProfile() const
+{
+    switch (GLVersion.Type) {
+    case OGL_TYPE_DESKTOP:
+        return SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+    case OGL_TYPE_ES:
+    case OGL_TYPE_WEB:
+        return SDL_GL_CONTEXT_PROFILE_ES;
+    }
+
+    return SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
 }
 
 void MainWindow::updateViewportAndScale()
@@ -877,7 +895,7 @@ bool MainWindow::initWindow()
 #else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, convertIrrGLTypeToProfile());
 
 	if (Params.DriverDebug)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);

@@ -185,5 +185,8 @@ target_link_libraries(${PROJECT_NAME}
 		"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 
 		"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-		stdc++fs
 )
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
+endif()
