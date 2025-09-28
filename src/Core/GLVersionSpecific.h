@@ -17,22 +17,21 @@ enum OpenGLType : u8
 
 struct OpenGLVersion
 {
-    SDL_GLprofile Profile;
+    OpenGLType Type;
 
     u8 Major;
     u8 Minor;
 public:
     OpenGLVersion(OpenGLType type=OGL_TYPE_DESKTOP, std::optional<u8> major=std::nullopt, std::optional<u8> minor=std::nullopt)
+        : Type(type)
     {
         switch (type) {
         case OGL_TYPE_DESKTOP:
-            Profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
             Major = major.has_value() ? major.value() : 3;
             Minor = minor.has_value() ? minor.value() : 3;
             break;
         case OGL_TYPE_ES:
         case OGL_TYPE_WEB:
-            Profile = SDL_GL_CONTEXT_PROFILE_ES;
             Major = major.has_value() ? major.value() : 2;
             Minor = minor.has_value() ? minor.value() : 0;
             break;

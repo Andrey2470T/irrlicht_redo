@@ -369,7 +369,7 @@ public:
 		if (angle.Y >= 360)
 			angle.Y -= 360;
 
-		const f64 z1 = getLengthSQ(*this);
+        const f64 z1 = getLengthSQ();
 
 		tmp = radToDeg(std::atan2((f64)z1, (f64)Y)) - 90.0;
 		angle.X = (T)tmp;

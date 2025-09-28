@@ -24,7 +24,7 @@ enum FLIP_DIR : u8
 //! Does blitting without/with scaling and filling with some color in the set blend mode.
 class ImageModifier
 {
-    BlendMode Mode;
+    BlendMode Mode = BM_NORMAL;
 public:
 	ImageModifier() {}
 

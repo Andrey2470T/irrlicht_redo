@@ -19,9 +19,6 @@ Texture2D::Texture2D(const std::string &name, std::unique_ptr<img::Image> image,
 
 void Texture2D::initTexture(img::Image *image)
 {
-    u8 *data = image->getData();
-    v2u size = image->getClipSize();
-
     core::InfoStream << "Texture2D 1.3\n";
 	glGenTextures(1, &texID);
     TEST_GL_ERROR();
@@ -39,14 +36,14 @@ void Texture2D::initTexture(img::Image *image)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+            glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
         }
         else
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa, formatInfo.internalFormat, size.X, size.Y, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa, formatInfo.internalFormat, width, height, GL_TRUE);
 	}
 	else {
-        if (data == nullptr) {
-            ErrorStream << "Texture2D::initTexture() the data is invalid\n";
+        if (image == nullptr) {
+            ErrorStream << "Texture2D::initTexture() the image cache is invalid\n";
             glBindTexture(GL_TEXTURE_2D, 0);
             return;
         }
@@ -65,10 +62,17 @@ void Texture2D::initTexture(img::Image *image)
 
         core::InfoStream << "Texture2D 4: pixelFormat: " << formatInfo.pixelFormat << ", pixelType: " << formatInfo.pixelType << "\n";
 
+        u8 *data = image->getData();
+        v2u size = image->getClipSize();
+
         if (format == img::PF_INDEX_RGBA8) {
             convertIndicesToColors(image->getPalette(), &data, size);
         }
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
+
+        if (format == img::PF_INDEX_RGBA8)
+            delete[] data;
+
         TEST_GL_ERROR();
         core::InfoStream << "Texture2D 5\n";
 
@@ -120,6 +124,9 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 	glBindTexture(GL_TEXTURE_2D, texID);
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
         formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(data));
+
+    if (img->getFormat() == img::PF_INDEX_RGBA8)
+         delete[] data;
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -212,12 +219,10 @@ void Texture2D::convertIndicesToColors(img::Palette *palette, u8 **data, v2u siz
 {
     u8 *convdata = new u8[size.X * size.Y * 4];
 
-    //u32 *data_u32 = reinterpret_cast<u32 *>(data);
-
     InfoStream << "Palette size: " << (u32)palette->colors.size() << "\n";
     for (u32 i = 0; i < size.X * size.Y; i++) {
-        InfoStream << "Palette index: " << *(data)[i] << "\n";
-        auto found_color = palette->colors.at(*(data)[i]);
+        InfoStream << "Palette index: " << (*data)[i] << "\n";
+        auto found_color = palette->colors.at((*data)[i]);
         convdata[i*4] = found_color.R();
         convdata[i*4+1] = found_color.G();
         convdata[i*4+2] = found_color.B();

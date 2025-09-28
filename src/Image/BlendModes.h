@@ -39,6 +39,7 @@ enum BlendMode : u8
 template <class T>
 inline ColorRGBA<T> NormalBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst)
 {
+    InfoStream << "NormalBlend() src: r: " << src.R() << ", g:" << src.G()<< ", b:" << src.B() << ", a:"<< src.A() << "\n";
 	return src;
 }
 
@@ -197,6 +198,7 @@ template <class T>
 ColorRGBA<T> doBlend(const ColorRGBA<T> &src, const ColorRGBA<T> &dst, BlendMode mode)
 {
     CHECK_SAME_FORMAT(src, dst);
+    InfoStream << "doBlend() mode: " << (u8)mode << "\n";
 
 	switch (mode) {
 		case BM_NORMAL:

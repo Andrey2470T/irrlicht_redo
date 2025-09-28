@@ -23,7 +23,9 @@ public:
     ColorRGBA() = default;
 	ColorRGBA(PixelFormat _format)
         : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
-	{}
+    {
+        set(0, 0, 0, 0);
+    }
 
 	ColorRGBA(PixelFormat _format, T _R, T _G = 0, T _B = 0, T _A = 0)
         : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
@@ -36,6 +38,7 @@ public:
 
 	ColorRGBA<T> &operator=(const ColorRGBA<T> &other)
 	{
+		format = other.getFormat();
 		set(other.R(), other.G(), other.B(), other.A());
 
 		return *this;

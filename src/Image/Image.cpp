@@ -20,16 +20,22 @@ bool isFormatSupportedForImage(PixelFormat format)
 
 u8 Palette::findColorIndex(const color8 &c)
 {
-	color8 minColorDiff(c.getFormat());
+    color8 minColorDiff(c.getFormat());
 	u32 index = 0;
 
+    InfoStream << "findColorIndex() minColorDiff: r: " << minColorDiff.R() << ", g:" << minColorDiff.G()<<
+        ", b:" << minColorDiff.B() << ", a:"<< minColorDiff.A() << "\n";
 	for (u32 i = 0; i < size; i++) {
 		color8 &cur_c = colors.at(i);
+        //InfoStream << "findColorIndex() cur_c sizeof: " << (u32)sizeof(cur_c) << "\n";
 		color8 colorDiff(c.getFormat(),
 			(u8)std::abs((s16)c.R()-(s16)cur_c.R()),
 			(u8)std::abs((s16)c.G()-(s16)cur_c.G()),
 			(u8)std::abs((s16)c.B()-(s16)cur_c.B()),
 			(u8)std::abs((s16)c.A()-(s16)cur_c.A()));
+
+        InfoStream << "findColorIndex() colorDiff: r: " << colorDiff.R() << ", g:" << colorDiff.G()<<
+            ", b:" << colorDiff.B() << ", a:"<< colorDiff.A() << "\n";
 
 		if (colorDiff < minColorDiff) {
 			minColorDiff = colorDiff;
@@ -54,9 +60,9 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 
     if (format == PF_INDEX_RGBA8) {
 	    if (_palette)
-            palette = std::unique_ptr<Palette>(_palette);
+            palette = std::make_unique<Palette>(true, _palette->size, _palette->colors);
 	    else
-		    palette = std::make_unique<Palette>(false, 0);
+            palette = std::make_unique<Palette>(true, 0);
 	}
 
     if (mdf) {
@@ -81,9 +87,9 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 
     if (format == PF_INDEX_RGBA8) {
 	    if (_palette)
-            palette = std::unique_ptr<Palette>(_palette);
+            palette = std::make_unique<Palette>(true, _palette->size, _palette->colors);
 	    else
-		    palette = std::make_unique<Palette>(false, 0);
+            palette = std::make_unique<Palette>(true, 0);
 	}
 
 	if (!ownPixelData)

@@ -2,6 +2,7 @@
 
 #include "MathFuncs.h"
 #include <functional>
+#include <ostream>
 
 namespace utils
 {
@@ -228,7 +229,7 @@ public:
 	\return Reference to this vector, after normalization. */
 	Vector2D<T> &normalize()
 	{
-		f32 length = (f32)getLengthSQ(*this);
+        f32 length = (f32)getLengthSQ();
 		if (length == 0)
 			return *this;
 		length = 1.0f / std::sqrt(length);

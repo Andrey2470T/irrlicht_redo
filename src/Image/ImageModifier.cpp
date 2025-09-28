@@ -80,8 +80,12 @@ void ImageModifier::setPixel(
             newColor.R(color.R());
         }
         else {
-            auto srcColor = palette->colors.at(color.R());
-            auto destColor = palette->colors.at(newColor.R());
+            InfoStream << "setPixel() color.R(): " << color.R() << "\n";
+            InfoStream << "setPixel() newColor.R(): " << newColor.R() << "\n";
+            auto srcColor = palette->getColorByIndex(color.R());
+            auto destColor = palette->getColorByIndex(newColor.R());
+            InfoStream << "setPixel() srcColor: r: " << srcColor.R() << ", g:" << srcColor.G()<< ", b:" << srcColor.B() << ", a:"<< srcColor.A() << "\n";
+            InfoStream << "setPixel() destColor: r: " << destColor.R() << ", g:" << destColor.G()<< ", b:" << destColor.B() << ", a:"<< destColor.A() << "\n";
             newColor.R(palette->findColorIndex(doBlend<u8>(srcColor, destColor, Mode)));
         }
     }
@@ -195,7 +199,8 @@ bool ImageModifier::copyTo(
         targetRect.LRC = srcImg->getSize();
     }
 
-    Image *srcPart = new Image(srcImg->getFormat(), targetRect.getWidth(), targetRect.getHeight());
+    Image *srcPart = new Image(srcImg->getFormat(), targetRect.getWidth(), targetRect.getHeight(),
+        img::black, srcImg->getPalette());
 
     for (u32 x = targetRect.ULC.X; x < targetRect.LRC.X; x++) {
         for (u32 y = targetRect.ULC.Y; y < targetRect.LRC.Y; y++)
@@ -252,7 +257,7 @@ Image *ImageModifier::copyWith2NPot2Scaling(Image *img, const rectu *rect)
     u32 newWidth = npot2(size.X);
     u32 newHeight = npot2(size.Y);
     rectu scaledRect(0, 0, newWidth, newHeight);
-    Image *scaledImg = new Image(img->getFormat(), newWidth, newHeight);
+    Image *scaledImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
     copyTo(img, scaledImg, rect, &scaledRect, true);
 
     return scaledImg;
@@ -423,19 +428,19 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
 
 	if (scaleX != 1.0f) {
         newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight(),
-            color8(PF_RGB8, 0, 0, 0), img->getPalette());
+            img::black, img->getPalette());
 		axisScale(img, newImg, 0);
 	}
 	if (scaleY != 1.0f) {
 		Image *newImgCopy = nullptr;
 		if (!newImg) {
             newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight(),
-                color8(PF_RGB8, 0, 0, 0), img->getPalette());
+                img::black, img->getPalette());
 			axisScale(img, newImgCopy, 1);
 		}
 		else {
 			newImgCopy = new Image(img->getFormat(), newImg->getWidth(), rect.getHeight(),
-                color8(PF_RGB8, 0, 0, 0), img->getPalette());
+                img::black, img->getPalette());
 			axisScale(newImg, newImgCopy, 1);
 			delete newImg;
 		}
@@ -458,7 +463,7 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 	if (angle == RA_90 || angle == RA_270)
 		std::swap(newWidth, newHeight);
 
-	Image *newImg = new Image(img->getFormat(), newWidth, newHeight);
+    Image *newImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
 
 	utils::v2u center = img->getSize() / 2;
 
@@ -488,21 +493,23 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
 {
     u32 width = img->getWidth();
     u32 height = img->getHeight();
-	Image *newImg = new Image(img->getFormat(), width, height);
+    Image *newImg = new Image(img->getFormat(), width, height, img::black, img->getPalette());
+
+    InfoStream << "flip() size: " << img->getSize() << "\n";
 
 	for (u32 x = 0; x < width; x++)
 		for (u32 y = 0; y < height; y++) {
 			color8 curColor = getPixel(img, x, y);
 
-			utils::v2u curPoint(x, y);
-			utils::v2u middlePoint = dir == FD_X ?
-				utils::v2u(width / 2, y) : utils::v2u(x, height / 2);
+            /*if (img->getFormat() == img::PF_INDEX_RGBA8)
+                InfoStream << "flip() r: " << curColor.R() << "\n";
+            else
+                InfoStream << "flip() r: " << curColor.R() << ", g: " << curColor.G() << ", b: " << curColor.B() << ", a: " << curColor.A() << "\n";*/
+            utils::v2u reflectPoint = dir == FD_X ? utils::v2u(width - 1 - x, y) : utils::v2u(x, height - 1 - y);
 
-			utils::v2u reflectPoint = curPoint - middlePoint;
-			reflectPoint = -reflectPoint;
-			curPoint = middlePoint + reflectPoint;
+            InfoStream << "flip() curPoint: " << reflectPoint << "\n";
 
-			setPixel(newImg, curPoint.X, curPoint.Y, curColor);
+            setPixel(newImg, reflectPoint.X, reflectPoint.Y, curColor);
 		}
 
     return newImg;
@@ -513,7 +520,7 @@ Image *ImageModifier::crop(Image *img, const utils::rectu &rect)
 	if (rect.getSize() == img->getSize())
 		return img;
 
-	Image *newImg = new Image(img->getFormat(), rect.getWidth(), rect.getHeight());
+    Image *newImg = new Image(img->getFormat(), rect.getWidth(), rect.getHeight(), img::black, img->getPalette());
     copyTo(img, newImg, &rect);
 
 	return newImg;
@@ -525,7 +532,7 @@ Image *ImageModifier::combine(Image *img1, Image *img2)
 		ErrorStream << "ImageModifier::combine() pixel formats of both images must be same\n";
         return nullptr;
 	}
-	Image *newImg = new Image(img2->getFormat(), img2->getWidth(), img2->getHeight());
+    Image *newImg = new Image(img2->getFormat(), img2->getWidth(), img2->getHeight(), img::black, img2->getPalette());
 	copyTo(img2, newImg);
 	copyTo(img1, img2, nullptr, nullptr, true);
 

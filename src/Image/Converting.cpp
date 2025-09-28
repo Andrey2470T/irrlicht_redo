@@ -1,4 +1,5 @@
 #include "Converting.h"
+#include "Image/ImageModifier.h"
 
 namespace img
 {
@@ -13,11 +14,11 @@ namespace img
         case((u32)SDL_PIXELFORMAT_INDEX1MSB):
             format_s = "SDL_PIXELFORMAT_INDEX1MSB";
             break;
-        case((u32)SDL_PIXELFORMAT_INDEX2LSB):
+        /*case((u32)SDL_PIXELFORMAT_INDEX2LSB):
             format_s = "SDL_PIXELFORMAT_INDEX2LSB";
             break;
         case((u32)SDL_PIXELFORMAT_INDEX2MSB):
-            format_s = "SDL_PIXELFORMAT_INDEX2MSB";
+            format_s = "SDL_PIXELFORMAT_INDEX2MSB";*/
             break;
         case((u32)SDL_PIXELFORMAT_INDEX4LSB):
             format_s = "SDL_PIXELFORMAT_INDEX4LSB";
@@ -172,7 +173,16 @@ namespace img
             InfoStream << "convertSDLSurfaceToImage 3\n";
         }
 
-        return new Image(format, w, h, data, true, palette);
+        auto img = new Image(format, w, h, data, true, palette);
+
+        auto localImgMod = new img::ImageModifier();
+        auto flipped_x = localImgMod->flip(img, FD_X);
+        delete img;
+        auto flipped_y = localImgMod->flip(flipped_x, FD_Y);
+        delete flipped_x;
+        delete localImgMod;
+
+        return flipped_y;
 	}
 
 	SDL_Surface *convertImageToSDLSurface(Image *img)

@@ -194,14 +194,14 @@ public:
 			0---------4/
 		*/
 
-		edges[0].set(middle.X + diag.X, middle.Y + diag.Y, middle.Z + diag.Z);
-		edges[1].set(middle.X + diag.X, middle.Y - diag.Y, middle.Z + diag.Z);
-		edges[2].set(middle.X + diag.X, middle.Y + diag.Y, middle.Z - diag.Z);
-		edges[3].set(middle.X + diag.X, middle.Y - diag.Y, middle.Z - diag.Z);
-		edges[4].set(middle.X - diag.X, middle.Y + diag.Y, middle.Z + diag.Z);
-		edges[5].set(middle.X - diag.X, middle.Y - diag.Y, middle.Z + diag.Z);
-		edges[6].set(middle.X - diag.X, middle.Y + diag.Y, middle.Z - diag.Z);
-		edges[7].set(middle.X - diag.X, middle.Y - diag.Y, middle.Z - diag.Z);
+        edges[0] = Vector3D<T>(middle.X + diag.X, middle.Y + diag.Y, middle.Z + diag.Z);
+        edges[1] = Vector3D<T>(middle.X + diag.X, middle.Y - diag.Y, middle.Z + diag.Z);
+        edges[2] = Vector3D<T>(middle.X + diag.X, middle.Y + diag.Y, middle.Z - diag.Z);
+        edges[3] = Vector3D<T>(middle.X + diag.X, middle.Y - diag.Y, middle.Z - diag.Z);
+        edges[4] = Vector3D<T>(middle.X - diag.X, middle.Y + diag.Y, middle.Z + diag.Z);
+        edges[5] = Vector3D<T>(middle.X - diag.X, middle.Y - diag.Y, middle.Z + diag.Z);
+        edges[6] = Vector3D<T>(middle.X - diag.X, middle.Y + diag.Y, middle.Z - diag.Z);
+        edges[7] = Vector3D<T>(middle.X - diag.X, middle.Y - diag.Y, middle.Z - diag.Z);
 	}
 
 	//! Repairs the box.

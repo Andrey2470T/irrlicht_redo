@@ -72,26 +72,26 @@ public:
 	Quaternion &operator*=(const Quaternion &other);
 
 	//! Calculates the dot product
-	inline f32 dotProduct(const Quaternion &other) const;
+    f32 dotProduct(const Quaternion &other) const;
 
 	//! Sets new Quaternion
-	inline Quaternion &set(f32 x, f32 y, f32 z, f32 w);
+    Quaternion &set(f32 x, f32 y, f32 z, f32 w);
 
 	//! Sets new Quaternion based on Euler angles (radians)
-	inline Quaternion &set(f32 x, f32 y, f32 z);
+    Quaternion &set(f32 x, f32 y, f32 z);
 
 	//! Sets new Quaternion based on Euler angles (radians)
-	inline Quaternion &set(const v3f &vec);
+    Quaternion &set(const v3f &vec);
 
 	//! Sets new Quaternion from other Quaternion
-	inline Quaternion &set(const utils::Quaternion &quat);
+    Quaternion &set(const utils::Quaternion &quat);
 
 	//! returns if this Quaternion equals the other one, taking floating point rounding errors into account
-	inline bool equals(const Quaternion &other,
+    bool equals(const Quaternion &other,
 			const f32 tolerance = ROUNDING_ERROR_f32) const;
 
 	//! Normalizes the Quaternion
-	inline Quaternion &normalize();
+    Quaternion &normalize();
 
 	//! Faster method to create a rotation matrix, you should normalize the Quaternion before!
 	void getMatrixFast(matrix4 &dest) const;
@@ -119,7 +119,7 @@ public:
 	void getMatrixCenter(matrix4 &dest, const v3f &center, const v3f &translation) const;
 
 	//! Creates a matrix from this Quaternion
-	inline void getMatrix_transposed(matrix4 &dest) const;
+    void getMatrix_transposed(matrix4 &dest) const;
 
 	//! Inverts this Quaternion
 	Quaternion &makeInverse();

@@ -481,11 +481,9 @@ bool MainWindow::pollEventsFromQueue()
 
         case SDL_TEXTINPUT: {
             irrevent->Type = ET_STRING_INPUT_EVENT;
-            std::string str = sdlevent.text.text;
-            std::wstring wstr = utf8_to_wide(str);
-            irrevent->StringInput.Str = wstr;
+            irrevent->StringInput.Str = new std::wstring();
+            *(irrevent->StringInput.Str) = utf8_to_wide(sdlevent.text.text);
             Events.emplace(irrevent);
-
         } break;
 
         case SDL_KEYDOWN:
@@ -758,11 +756,11 @@ std::string MainWindow::getVendorName() const
     return vendorStr;
 }
 
-std::string MainWindow::getGLVersion() const
+std::string MainWindow::getGLVersionString() const
 {
     std::string versionStr = (const char*)GLParams->version;
 
-    return versionStr;
+    return "OpenGL" + versionStr;;
 }
 
 v2u MainWindow::getWindowSize() const
@@ -796,9 +794,27 @@ f32 MainWindow::getDisplayDensity() const
     return DisplayDensity;
 }
 
+const OpenGLVersion &MainWindow::getOpenGLVersion() const
+{
+    return GLVersion;
+}
+
 const GLParameters *MainWindow::getGLParams() const
 {
     return GLParams.get();
+}
+
+SDL_GLprofile MainWindow::convertIrrGLTypeToProfile() const
+{
+    switch (GLVersion.Type) {
+    case OGL_TYPE_DESKTOP:
+        return SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+    case OGL_TYPE_ES:
+    case OGL_TYPE_WEB:
+        return SDL_GL_CONTEXT_PROFILE_ES;
+    }
+
+    return SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
 }
 
 const Clipboard *MainWindow::getClipboard() const
@@ -877,7 +893,7 @@ bool MainWindow::initWindow()
 #else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, GLVersion.Profile);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, convertIrrGLTypeToProfile());
 
 	if (Params.DriverDebug)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
