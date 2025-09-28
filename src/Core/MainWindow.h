@@ -18,7 +18,7 @@
 #undef SDL_VIDEO_DRIVER_DIRECTFB
 #include <SDL_syswm.h>
 
-namespace main
+namespace core
 {
 
 struct JoystickInfo;

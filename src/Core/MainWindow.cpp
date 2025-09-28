@@ -9,7 +9,7 @@
 #include <emscripten.h>
 #endif
 
-namespace main
+namespace core
 {
 
 MainWindow::MainWindow(const MainWindowParameters &params)

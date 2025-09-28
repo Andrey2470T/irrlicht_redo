@@ -6,7 +6,7 @@
 #include "BasicIncludes.h"
 #include <optional>
 
-namespace main
+namespace core
 {
 
 enum OpenGLType : u8
