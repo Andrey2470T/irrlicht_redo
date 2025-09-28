@@ -66,7 +66,7 @@ void Texture2D::initTexture(img::Image *image)
         core::InfoStream << "Texture2D 4: pixelFormat: " << formatInfo.pixelFormat << ", pixelType: " << formatInfo.pixelType << "\n";
 
         if (format == img::PF_INDEX_RGBA8) {
-            convertIndicesToColors(image->getPalette(), data, size);
+            convertIndicesToColors(image->getPalette(), &data, size);
         }
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
         TEST_GL_ERROR();
@@ -115,7 +115,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
     auto data = img->getData();
 
     if (img->getFormat() == img::PF_INDEX_RGBA8) {
-        convertIndicesToColors(img->getPalette(), data, size);
+        convertIndicesToColors(img->getPalette(), &data, size);
     }
 	glBindTexture(GL_TEXTURE_2D, texID);
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
@@ -208,7 +208,7 @@ Texture2D *Texture2D::copy(const std::string &name)
     return new Texture2D(texName, std::unique_ptr<img::Image>(cache->copy()), texSettings);
 }
 
-void Texture2D::convertIndicesToColors(img::Palette *palette, u8 *data, v2u size)
+void Texture2D::convertIndicesToColors(img::Palette *palette, u8 **data, v2u size)
 {
     u8 *convdata = new u8[size.X * size.Y * 4];
 
@@ -216,15 +216,15 @@ void Texture2D::convertIndicesToColors(img::Palette *palette, u8 *data, v2u size
 
     InfoStream << "Palette size: " << (u32)palette->colors.size() << "\n";
     for (u32 i = 0; i < size.X * size.Y; i++) {
-        InfoStream << "Palette index: " << data[i] << "\n";
-        auto found_color = palette->colors.at(data[i]);
+        InfoStream << "Palette index: " << *(data)[i] << "\n";
+        auto found_color = palette->colors.at(*(data)[i]);
         convdata[i*4] = found_color.R();
         convdata[i*4+1] = found_color.G();
         convdata[i*4+2] = found_color.B();
         convdata[i*4+3] = found_color.A();
-
-        data = convdata;
     }
+
+    *data = convdata;
 }
 
 }

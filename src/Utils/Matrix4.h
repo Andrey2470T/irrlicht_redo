@@ -130,7 +130,7 @@ public:
 	Matrix4<T> &operator=(const Matrix4<T> &other) = default;
 
 	//! Sets all elements of this matrix to the value.
-	inline Matrix4<T> &operator=(const T &scalar);
+	Matrix4<T> &operator=(const T &scalar);
 
 	//! Returns pointer to internal array
 	const T *pointer() const { return M; }
@@ -169,7 +169,7 @@ public:
 
 	//! set this matrix to the product of two matrices
 	/** Calculate b*a */
-	inline Matrix4<T> &setbyproduct(const Matrix4<T> &other_a, const Matrix4<T> &other_b);
+	Matrix4<T> &setbyproduct(const Matrix4<T> &other_a, const Matrix4<T> &other_b);
 
 	//! Set this matrix to the product of two matrices
 	/** Calculate b*a, no optimization used,
@@ -192,13 +192,13 @@ public:
 	Matrix4<T> &operator*=(const T &scalar);
 
 	//! Set matrix to identity.
-	inline Matrix4<T> &makeIdentity();
+	Matrix4<T> &makeIdentity();
 
 	//! Returns true if the matrix is the identity matrix
-	inline bool isIdentity() const;
+	bool isIdentity() const;
 
 	//! Returns true if the matrix is orthogonal
-	inline bool isOrthogonal() const;
+	bool isOrthogonal() const;
 
 	//! Returns true if the matrix is the identity matrix
 	bool isIdentity_integer_base() const;
@@ -213,7 +213,7 @@ public:
 	Matrix4<T> &setInverseTranslation(const Vector3D<T> &translation);
 
 	//! Make a rotation matrix from Euler angles. The 4th row and column are unmodified.
-	inline Matrix4<T> &setRotationRadians(const Vector3D<T> &rotation);
+	Matrix4<T> &setRotationRadians(const Vector3D<T> &rotation);
 
 	//! Make a rotation matrix from Euler angles. The 4th row and column are unmodified.
 	Matrix4<T> &setRotationDegrees(const Vector3D<T> &rotation);
@@ -242,15 +242,15 @@ public:
 
 	//! Make an inverted rotation matrix from Euler angles.
 	/** The 4th row and column are unmodified. */
-	inline Matrix4<T> &setInverseRotationRadians(const Vector3D<T> &rotation);
+	Matrix4<T> &setInverseRotationRadians(const Vector3D<T> &rotation);
 
 	//! Make an inverted rotation matrix from Euler angles.
 	/** The 4th row and column are unmodified. */
-	inline Matrix4<T> &setInverseRotationDegrees(const Vector3D<T> &rotation);
+	Matrix4<T> &setInverseRotationDegrees(const Vector3D<T> &rotation);
 
 	//! Make a rotation matrix from angle and axis, assuming left handed rotation.
 	/** The 4th row and column are unmodified. */
-	inline Matrix4<T> &setRotationAxisRadians(const T &angle, const Vector3D<T> &axis);
+	Matrix4<T> &setRotationAxisRadians(const T &angle, const Vector3D<T> &axis);
 
 	//! Set Scale
 	Matrix4<T> &setScale(const Vector3D<T> &scale);
@@ -375,7 +375,7 @@ public:
 	Matrix4<T> getTransposed() const;
 
 	//! Gets transposed matrix
-	inline void getTransposed(Matrix4<T> &dest) const;
+	void getTransposed(Matrix4<T> &dest) const;
 
 	//! Builds a matrix that rotates from one vector to another
 	/** \param from: vector to rotate from
