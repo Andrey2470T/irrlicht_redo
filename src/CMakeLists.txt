@@ -174,7 +174,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-	PRIVATE
+        PUBLIC
 		${JPEG_LIBRARY}
 		${PNG_LIBRARY}
 		GLEW::GLEW
