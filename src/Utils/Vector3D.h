@@ -432,3 +432,20 @@ typedef Vector3D<u32> v3u;
 typedef Vector3D<f64> v3f64;
 
 }
+
+namespace std
+{
+
+template <class T>
+struct hash<utils::Vector3D<T>>
+{
+    size_t operator()(const utils::Vector3D<T> &vec) const
+    {
+        size_t h1 = hash<T>()(vec.X);
+        size_t h2 = hash<T>()(vec.Y);
+        size_t h3 = hash<T>()(vec.Z);
+        return (h1 << (5 * sizeof(h1)) | h1 >> (3 * sizeof(h1))) ^ (h2 << (2 * sizeof(h2)) | h2 >> (6 * sizeof(h2))) ^ h3;
+    }
+};
+
+}

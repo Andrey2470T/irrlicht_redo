@@ -285,3 +285,19 @@ typedef Vector2D<u32> v2u;
 typedef Vector2D<f64> v2f64;
 
 }
+
+namespace std
+{
+
+template <class T>
+struct hash<utils::Vector2D<T>>
+{
+    size_t operator()(const utils::Vector2D<T> &vec) const
+    {
+        size_t h1 = hash<T>()(vec.X);
+        size_t h2 = hash<T>()(vec.Y);
+        return (h1 << (4 * sizeof(h1)) | h1 >> (4 * sizeof(h1))) ^ h2;
+    }
+};
+
+}
