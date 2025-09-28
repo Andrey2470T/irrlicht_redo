@@ -1,10 +1,9 @@
 #pragma once
 
-#include <SDL_video.h>
-#include <GL/glew.h>
-
-#include "BasicIncludes.h"
+#include "ExtBasicIncludes.h"
 #include <optional>
+
+#include <SDL_video.h>
 
 namespace core
 {

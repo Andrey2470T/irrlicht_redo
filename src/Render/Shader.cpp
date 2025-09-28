@@ -129,6 +129,11 @@ void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
 }
 
+void Shader::setSampler(u32 block_index)
+{
+    setUniformInt(samplers.at(block_index), block_index);
+}
+
 
 u32 Shader::createShader(GLenum shaderType, const std::string &code)
 {

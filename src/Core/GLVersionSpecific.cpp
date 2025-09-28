@@ -1,5 +1,6 @@
 #include "GLVersionSpecific.h"
 #include "LogStream.h"
+#include "OpenGLIncludes.h"
 
 namespace core
 {

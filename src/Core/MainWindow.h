@@ -1,12 +1,14 @@
 #pragma once
 
 #include "GLVersionSpecific.h"
+#include "OpenGLIncludes.h"
+#include <SDL.h>
+#include <SDL_video.h>
+#include <SDL_opengl.h>
 #include "CursorControl.h"
 #include "Image/Image.h"
 #include "Events.h"
 #include <queue>
-
-#include <SDL.h>
 
 #ifdef EMSCRIPTEN
 #include <emscripten/html5.h>
@@ -22,6 +24,20 @@ namespace core
 {
 
 struct JoystickInfo;
+
+// COSOperator interface
+class Clipboard
+{
+    mutable char *ClipboardSelectionText = nullptr;
+    mutable char *PrimarySelectionText = nullptr;
+public:
+    Clipboard() = default;
+
+    void copyToClipboard(const c8 *text) const;
+    void copyToPrimarySelection(const c8 *text) const;
+    const c8 *getTextFromClipboard() const;
+    const c8 *getTextFromPrimarySelection() const;
+};
 
 struct MainWindowParameters
 {
@@ -162,12 +178,9 @@ public:
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
     f32 getDisplayDensity() const;
-<<<<<<< Updated upstream:src/Main/MainWindow.h
-    GLParameters getGLParams() const;
-=======
     const GLParameters *getGLParams() const;
+    const Clipboard *getClipboard() const;
     CursorControl &getCursorControl();
->>>>>>> Stashed changes:src/Core/MainWindow.h
 private:
 #ifdef EMSCRIPTEN
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);

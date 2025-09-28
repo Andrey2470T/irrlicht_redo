@@ -120,7 +120,7 @@ void Mesh::uploadIndexData(const u32 *indices, u32 count, u32 offset)
     TEST_GL_ERROR();
 }
 
-void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
+/*void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
 {
     ba.setV2F(pos, n);
     //ba.setFloat(pos.X, n);
@@ -135,7 +135,7 @@ void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
     ba.setV2F(uv, n+6);
     //ba.setFloat(uv.X, n+6);
     //ba.setFloat(uv.Y, n+7);
-}
+}*/
 
 /*void setVertex(ByteArray &ba, v2f pos, f32 c_r, f32 c_g, f32 c_b, f32 c_a, v2f uv, u32 n)
 {
@@ -151,8 +151,8 @@ void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
 
 }*/
 
-void Mesh::createQuad()
-{
+//void Mesh::createQuad()
+//{
     /*f32 *vertices = new f32[] {
         -1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
         1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
@@ -162,7 +162,7 @@ void Mesh::createQuad()
 
     u32 *indices = new u32[] {0, 2, 3, 0, 1, 2};*/
 
-    u32 bytes_count = render::sizeOfVertexType(render::VType2D) * 4;
+    /*u32 bytes_count = render::sizeOfVertexType(render::VType2D) * 4;
 
     InfoStream << "bytes_count: " << bytes_count << "\n";
     ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(render::VType2D) * 4);
@@ -170,7 +170,7 @@ void Mesh::createQuad()
     setVertex(mesh_vertexdata, v2f(-1.0f, 1.0f), img::white, v2f(0.0f, 1.0f), 0);
     setVertex(mesh_vertexdata, v2f(1.0f, 1.0f), img::white, v2f(1.0f, 1.0f), 8);
     setVertex(mesh_vertexdata, v2f(1.0f, -1.0f), img::white, v2f(1.0f, 0.0f), 16);
-    setVertex(mesh_vertexdata, v2f(-1.0f, -1.0f), img::white, v2f(0.0f, 0.0f), 24);
+    setVertex(mesh_vertexdata, v2f(-1.0f, -1.0f), img::white, v2f(0.0f, 0.0f), 24);*/
 
     /*ByteArray mesh_vertexdata(8 * 4, 8 * 4 * sizeof(f32));
 
@@ -179,7 +179,7 @@ void Mesh::createQuad()
     setVertex(mesh_vertexdata, v2f(1.0f, -1.0f), 1.0f, 1.0f, 1.0f, 1.0f, v2f(1.0f, 0.0f), 16);
     setVertex(mesh_vertexdata, v2f(-1.0f, -1.0f), 1.0f, 1.0f, 1.0f, 1.0f, v2f(0.0f, 0.0f), 24);*/
 
-    auto color = img::getColor8(&mesh_vertexdata, 2);
+    /*auto color = img::getColor8(&mesh_vertexdata, 2);
     InfoStream << "mesh_vertexdata uv0: " << mesh_vertexdata.getV2F(6) << "\n";
     InfoStream << "mesh_vertexdata color0: " << color.R() << ", " << color.G() << ", " << color.B() << ", " << color.A() << "\n";
     InfoStream << "mesh_vertexdata pos1: " << mesh_vertexdata.getV2F(8) << "\n";
@@ -196,7 +196,7 @@ void Mesh::createQuad()
     glGenBuffers(1, &vbo.ID);
     glGenBuffers(1, &ibo.ID);
 
-    glBindVertexArray(vaoID);
+    glBindVertexArray(vaoID);*/
 
     /*glBindBuffer(GL_ARRAY_BUFFER, vbo.ID);
     //InfoStream << "createQuad() sizeof vertices: " << (u32)sizeof(vertices) << ", sizeof indices: " << (u32)sizeof(indices) << "\n";
@@ -211,7 +211,7 @@ void Mesh::createQuad()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(f32), (void*)(6*sizeof(f32)));
     glEnableVertexAttribArray(2);*/
 
-    InfoStream << "createQuad() vertex bytes count: " << mesh_vertexdata.bytesCount() << ", vertex bytes count sizeof: " << (u32)sizeof(mesh_vertexdata.data()) << "\n";
+    /*InfoStream << "createQuad() vertex bytes count: " << mesh_vertexdata.bytesCount() << ", vertex bytes count sizeof: " << (u32)sizeof(mesh_vertexdata.data()) << "\n";
     InfoStream << "createQuad() index bytes count: " << mesh_indexdata.bytesCount() << ", index bytes count sizeof: " << (u32)sizeof(mesh_indexdata.data()) << "\n";
     glBindBuffer(GL_ARRAY_BUFFER, vbo.ID);
     glBufferData(GL_ARRAY_BUFFER, mesh_vertexdata.bytesCount(), mesh_vertexdata.data(), GL_STATIC_DRAW);
@@ -223,7 +223,7 @@ void Mesh::createQuad()
     glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, render::sizeOfVertexType(render::VType2D), (void*)(2*sizeof(f32)));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, render::sizeOfVertexType(render::VType2D), (void*)(2*sizeof(f32) + 4*sizeof(u8)));
-    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(2);(*/
 
     /*glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(f32), (void*)0);
     glEnableVertexAttribArray(0);
@@ -231,7 +231,7 @@ void Mesh::createQuad()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(f32), (void*)(6*sizeof(f32)));
     glEnableVertexAttribArray(2);*/
-}
+//}
 
 void Mesh::draw(PrimitiveType mode, u32 count, u32 offset)
 {

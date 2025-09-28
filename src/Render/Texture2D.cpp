@@ -1,4 +1,5 @@
 #include "Texture2D.h"
+#include "Render/Common.h"
 
 namespace render
 {

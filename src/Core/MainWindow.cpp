@@ -4,6 +4,7 @@
 #include "Utils/String.h"
 #include "Image/ImageModifier.h"
 #include "Utils/String.h"
+#include <iostream>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -11,6 +12,35 @@
 
 namespace core
 {
+
+void Clipboard::copyToClipboard(const c8 *text) const
+{
+    SDL_SetClipboardText(text);
+}
+
+void Clipboard::copyToPrimarySelection(const c8 *text) const
+{
+#if SDL_VERSION_ATLEAST(2, 25, 0)
+    SDL_SetPrimarySelectionText(text);
+#endif
+}
+
+const c8 *Clipboard::getTextFromClipboard() const
+{
+    SDL_free(ClipboardSelectionText);
+    ClipboardSelectionText = SDL_GetClipboardText();
+    return ClipboardSelectionText;
+}
+
+const c8 *Clipboard::getTextFromPrimarySelection() const
+{
+#if SDL_VERSION_ATLEAST(2, 25, 0)
+    SDL_free(PrimarySelectionText);
+    PrimarySelectionText = SDL_GetPrimarySelectionText();
+    return PrimarySelectionText;
+#endif
+    return 0;
+}
 
 MainWindow::MainWindow(const MainWindowParameters &params)
     : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor),
@@ -453,8 +483,7 @@ bool MainWindow::pollEventsFromQueue()
             irrevent->Type = ET_STRING_INPUT_EVENT;
             std::string str = sdlevent.text.text;
             std::wstring wstr = utf8_to_wide(str);
-            irrevent->StringInput.Str = new wchar_t[wstr.size()];
-            memcpy(irrevent->StringInput.Str, wstr.c_str(), wstr.size());
+            irrevent->StringInput.Str = wstr;
             Events.emplace(irrevent);
 
         } break;
@@ -772,6 +801,11 @@ const GLParameters *MainWindow::getGLParams() const
     return GLParams.get();
 }
 
+const Clipboard *MainWindow::getClipboard() const
+{
+    return &SDLClipboard;
+}
+
 void MainWindow::updateViewportAndScale()
 {
 	int window_w, window_h;
@@ -809,7 +843,7 @@ bool MainWindow::initWindow()
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, Params.ColorChannelBits);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
 
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, Params.DepthBits);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, Params.StencilBits);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, Params.SwapBuffers ? 1 : 0);
 
@@ -876,8 +910,9 @@ bool MainWindow::initWindow()
 	}
 #endif
 
-    if (!glewInit()) {
-        ErrorStream << "Could not initialize GLEW\n";
+    GLenum glewStatus = glewInit();
+    if (glewStatus != GLEW_OK) {
+        std::cerr << "Could not initialize GLEW: " << glewGetErrorString(glewStatus) << std::endl;
         Close = true;
         return false;
     }

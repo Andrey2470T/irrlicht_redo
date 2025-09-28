@@ -23,6 +23,15 @@ void setVertex(ByteArray &ba, v2f pos, img::color8 c, v2f uv, u32 n)
 }
 int main(int argc, char *argv[])
 {
+    render::VertexTypeDescriptor VType2D{
+        "Standard2D",
+        {},
+        2,
+        4,
+        false,
+        true,
+        2
+    };
 	core::MainWindowParameters params;
 	params.Caption = L"Test IrrlichtRedo App";
 
@@ -60,7 +69,7 @@ int main(int argc, char *argv[])
     auto shader = std::make_unique<render::Shader>(fs::absolute("shader2d_vertex.glsl"), fs::absolute("shader2d_fragment.glsl"));
 
     InfoStream << "main 0\n";
-    ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(render::VType2D) * 4);
+    ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(VType2D) * 4);
 
     setVertex(mesh_vertexdata, v2f(-1.0f, 1.0f), img::white, v2f(0.0f, 1.0f), 0);
     setVertex(mesh_vertexdata, v2f(1.0f, 1.0f), img::white, v2f(1.0f, 1.0f), 8);
@@ -116,7 +125,7 @@ int main(int argc, char *argv[])
 
    // auto mesh = std::make_unique<render::Mesh>(render::VType2D);
     auto mesh = std::make_unique<render::Mesh>(
-        mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), render::VType2D);
+        mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), VType2D);
 
     //auto mesh = std::make_unique<render::Mesh>();
     //mesh->createQuad();
@@ -129,7 +138,6 @@ int main(int argc, char *argv[])
         //core::InfoStream << "Set shader\n";
 
         context->setShader(shader.get());
-        shader->setSampler(0);
 
        // core::InfoStream << "Set texture\n";
         context->setActiveUnit(0, texture.get());

@@ -21,3 +21,9 @@ set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug or Release")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 add_subdirectory(src)
+
+option(BUILD_TESTS "Build test cpp files in /tests" FALSE)
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

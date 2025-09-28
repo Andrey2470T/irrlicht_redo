@@ -1,4 +1,6 @@
 #include "DrawContext.h"
+#include "Common.h"
+#include "OpenGLIncludes.h"
 
 namespace render
 {
@@ -107,6 +109,8 @@ void DrawContext::setFrameBuffer(FrameBuffer *fbo)
 	if (fbo && curFBO != fbo) {
 		fbo->bind();
 		curFBO = fbo;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -115,6 +119,8 @@ void DrawContext::setShader(Shader *shader)
 	if (shader && curShader != shader) {
 		shader->use();
 		curShader = shader;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -123,6 +129,8 @@ void DrawContext::setMesh(Mesh *mesh)
 	if (mesh && curMesh != mesh) {
 		mesh->bind();
 		curMesh = mesh;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -131,20 +139,31 @@ void DrawContext::setUniformBuffer(UniformBuffer *ubo)
 	if (ubo && curUBO != ubo) {
 		ubo->bind();
 		curUBO = ubo;
+
+        TEST_GL_ERROR();
 	}
 }
 
 void DrawContext::setActiveUnit(u32 index, Texture *texture)
 {
-    if ((index+1) > activeUnits.size()) {
+    if (index >= activeUnits.size()) {
 		ErrorStream << "DrawContext::setActiveUnit() setting the new active unit index out of the range\n";
 		return;
 	}
+
+    if (!curShader) {
+        ErrorStream << "DrawContext::setActiveUnit() shader must be bound\n";
+        return;
+    }
 
     if (texture && activeUnits[index] != texture) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		texture->bind();
         activeUnits[index] = texture;
+
+        curShader->setSampler(index);
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -157,6 +176,8 @@ void DrawContext::enableBlend(bool blend)
             glDisable(GL_BLEND);
 
         curBlend.enabled = blend;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -190,6 +211,8 @@ void DrawContext::setBlendColor(const img::colorf &color)
         glBlendColor(color.R(), color.G(), color.B(), color.A());
 
         curBlend.color = color;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -202,6 +225,8 @@ void DrawContext::setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc)
 
         curBlend.func_srcrgb = srcfunc;
         curBlend.func_destrgb = destfunc;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -219,6 +244,8 @@ void DrawContext::setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_
         curBlend.func_destrgb = destrgb_func;
         curBlend.func_srca = srca_func;
         curBlend.func_desta = desta_func;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -230,6 +257,8 @@ void DrawContext::setBlendOp(BlendOp op)
         glBlendEquation(toGLBlendOp[op]);
 
         curBlend.op = op;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -242,6 +271,8 @@ void DrawContext::enableDepthTest(bool depthtest)
 			glDisable(GL_DEPTH_TEST);
 
 		curDepthTest.enabled = depthtest;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -252,6 +283,8 @@ void DrawContext::setDepthMask(bool depthmask)
 	if (curDepthTest.mask != depthmask) {
 		glDepthMask(depthmask);
 		curDepthTest.mask = depthmask;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -262,6 +295,8 @@ void DrawContext::setDepthFunc(CompareFunc depthfunc)
 	if (curDepthTest.func != depthfunc) {
 		glDepthFunc(toGLCompareFunc[depthfunc]);
 		curDepthTest.func = depthfunc;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -274,6 +309,8 @@ void DrawContext::enableCullFace(bool cullface)
 			glDisable(GL_CULL_FACE);
 
 		curCullFace.enabled = cullface;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -284,6 +321,8 @@ void DrawContext::setCullMode(CullMode cullmode)
 	if (curCullFace.mode != cullmode) {
 		glCullFace(toGLCullMode[cullmode]);
 		curCullFace.mode = cullmode;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -296,6 +335,8 @@ void DrawContext::enableStencilTest(bool stenciltest)
 			glDisable(GL_STENCIL_TEST);
 
 		curStencilTest.enabled = stenciltest;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -308,6 +349,8 @@ void DrawContext::setStencilFunc(CompareFunc stencilfunc, s32 ref, u32 mask)
 		curStencilTest.func = stencilfunc;
 		curStencilTest.ref = ref;
 		curStencilTest.mask = mask;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -318,6 +361,8 @@ void DrawContext::setStencilMask(u32 stencilmask)
 	if (curStencilTest.mask != stencilmask) {
         glStencilMask(stencilmask);
 		curStencilTest.mask = stencilmask;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -332,6 +377,8 @@ void DrawContext::setStencilOp(StencilOp _sfail_op, StencilOp _dpfail_op, Stenci
 		curStencilTest.sfail_op = _sfail_op;
 		curStencilTest.dpfail_op = _dpfail_op;
 		curStencilTest.dppass_op = _dppass_op;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -344,6 +391,8 @@ void DrawContext::enableScissorTest(bool scissortest)
 			glDisable(GL_SCISSOR_TEST);
 
 		curScissorTest.enabled = scissortest;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -354,6 +403,8 @@ void DrawContext::setScissorBox(const utils::recti &box)
 	if (curScissorTest.box != box) {
         glScissor(box.ULC.X, box.ULC.Y, box.getWidth(), box.getHeight());
 		curScissorTest.box = box;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -366,6 +417,8 @@ void DrawContext::enablePolygonOffset(bool polygonoffset)
             glDisable(GL_POLYGON_OFFSET_FILL);
 
         curPolygonOffset.enabled = polygonoffset;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -377,6 +430,8 @@ void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
         glPolygonOffset(slope_scaled, depth_bias);
         curPolygonOffset.slope_scale = slope_scaled;
         curPolygonOffset.depth_bias = depth_bias;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -387,6 +442,8 @@ void DrawContext::setPolygonMode(CullMode face, PolygonMode mode)
 
         curPolygonMode.face = face;
         curPolygonMode.mode = mode;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -395,6 +452,8 @@ void DrawContext::setPointSize(f32 pointsize)
 	if (pointSize != pointsize) {
 		glPointSize(pointsize);
 		pointSize = pointsize;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -403,6 +462,8 @@ void DrawContext::setLineWidth(f32 linewidth)
 	if (lineWidth != linewidth) {
 		glLineWidth(linewidth);
 		lineWidth = linewidth;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -415,6 +476,8 @@ void DrawContext::enableSampleCoverage(bool samplecoverage)
             glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 
         sampleCoverage = samplecoverage;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -423,6 +486,8 @@ void DrawContext::setViewportSize(utils::recti viewportSize)
 	if (viewport != viewportSize) {
         glViewport(viewportSize.ULC.X, viewportSize.ULC.Y, viewportSize.getWidth(), viewportSize.getHeight());
 		viewport = viewportSize;
+
+        TEST_GL_ERROR();
 	}
 }
 
@@ -433,44 +498,23 @@ void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
     if (flags & CBF_COLOR) {
         f32 inv = 1.0f / 255.0f;
 
-<<<<<<< Updated upstream
-=======
-		//InfoStream << "DrawContext::clearBuffers r=" << color.R() * inv << ", g=" << color.G() * inv << ", b=" << color.B() * inv << ", a=" << color.A() * inv << "\n";
->>>>>>> Stashed changes
         glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
         mask |= GL_COLOR_BUFFER_BIT;
     }
 
     if (flags & CBF_DEPTH) {
-<<<<<<< Updated upstream
-        glClearDepthf(depth);
-=======
-
-		//InfoStream << "DrawContext::clearBuffers 2" << "\n";
         glClearDepth(depth);
->>>>>>> Stashed changes
         mask |= GL_DEPTH_BUFFER_BIT;
     }
 
     if (flags & CBF_STENCIL) {
-<<<<<<< Updated upstream
-=======
-
-		//InfoStream << "DrawContext::clearBuffers 3" << "\n";
->>>>>>> Stashed changes
         glClearStencil(stencil);
         mask |= GL_STENCIL_BUFFER_BIT;
     }
 
-<<<<<<< Updated upstream
     glClear(mask);
-=======
-	//InfoStream << "DrawContext::clearBuffers 4" << "\n";
-    glClear(mask);
-	//InfoStream << "DrawContext::clearBuffers 5" << "\n";
 
 	TEST_GL_ERROR();
->>>>>>> Stashed changes
 }
 
 void DrawContext::setColorMask(u8 mask)
@@ -483,6 +527,8 @@ void DrawContext::setColorMask(u8 mask)
             (mask & CP_ALPHA) ? GL_TRUE : GL_FALSE);
 
         colorMask = mask;
+
+        TEST_GL_ERROR();
     }
 }
 
@@ -500,6 +546,8 @@ void DrawContext::initContext(utils::recti viewportSize)
 	setDepthMask(curDepthTest.mask);
 
 	setViewportSize(viewportSize);
+
+    TEST_GL_ERROR();
 }
 
 }
