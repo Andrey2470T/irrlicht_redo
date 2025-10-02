@@ -22,8 +22,7 @@ enum EventType
 	ET_JOYSTICK_INPUT_EVENT,
     ET_LOG_TEXT_EVENT,
 	ET_USER_EVENT,
-    ET_APPLICATION_EVENT,
-	GUIET_FORCE_32_BIT = 0x7fffffff
+    ET_APPLICATION_EVENT
 };
 
 #define EET_GUI_EVENT ET_GUI_EVENT
@@ -37,7 +36,6 @@ enum EventType
 #define EET_LOG_TEXT_EVENT ET_LOG_TEXT_EVENT
 #define EET_USER_EVENT ET_USER_EVENT
 #define EET_APPLICATION_EVENT ET_APPLICATION_EVENT
-#define EGUIET_FORCE_32_BIT GUIET_FORCE_32_BIT
 
 //! Enumeration for all mouse input events
 enum MouseInputEventType
@@ -304,11 +302,11 @@ struct Event
 	};
 
 	//! String input event.
-	struct StringInputEvent
+    struct StringInputEvent
 	{
 		//! The string that is entered
         std::wstring *Str;
-	};
+    };
 
 	//! Any kind of touch event.
 	struct TouchInputEvent
@@ -450,7 +448,7 @@ struct Event
 		struct GUIEvent GUI;
 		struct MouseInputEvent MouseInput;
 		struct KeyInputEvent KeyInput;
-		struct StringInputEvent StringInput;
+        struct StringInputEvent StringInput;
 		struct TouchInputEvent TouchInput;
 		struct AccelerometerEvent Accelerometer;
 		struct GyroscopeEvent Gyroscope;
@@ -464,9 +462,14 @@ struct Event
     Event() {
         Type = static_cast<EventType>(0);
 		// zero the biggest union member we have, which clears all others too
-		memset(&Joystick, 0, sizeof(Joystick));
+        memset(&Joystick, 0, sizeof(Joystick));
 	}
-    ~Event() {};
+    ~Event()
+    {
+        if (Type == ET_STRING_INPUT_EVENT && StringInput.Str) {
+            delete StringInput.Str;
+        }
+    }
 };
 
 //! Information on a joystick, returned from @ref irr::IrrlichtDevice::activateJoysticks()

@@ -5,10 +5,11 @@
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_opengl.h>
+#include <list>
+#include <queue>
 #include "CursorControl.h"
 #include "Image/Image.h"
 #include "Events.h"
-#include <queue>
 
 #ifdef EMSCRIPTEN
 #include <emscripten/html5.h>
@@ -80,7 +81,8 @@ class MainWindow
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
 	std::vector<SDL_Joystick*> Joysticks;
 #endif
-    std::queue<std::unique_ptr<Event>> Events;
+
+    std::queue<Event> Events;
 
 	SDL_version SDLVersion;
     OpenGLVersion GLVersion;
@@ -168,6 +170,8 @@ public:
     bool isUsingWayland() const;
 
     bool activateJoysticks(std::vector<JoystickInfo> &joysticksInfo);
+    std::optional<Event> popEvent();
+    void clearEventQueue();
     bool pollEventsFromQueue();
     void resetReceiveTextInputEvents(const recti &textarea, bool acceptIME);
 

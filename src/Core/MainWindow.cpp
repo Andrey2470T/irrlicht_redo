@@ -127,22 +127,27 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 
 MainWindow::~MainWindow()
 {
-	if (Window)
-		SDL_DestroyWindow(Window);
+    clearEventQueue();
+
+#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+    for (auto &joystick : Joysticks)
+        if (joystick)
+            SDL_JoystickClose(joystick);
+#endif
 
 #ifdef EMSCRIPTEN
 	if (Renderer)
 		SDL_DestroyRenderer(Renderer);
 #else
-	if (Context)
+    if (Context) {
+        SDL_GL_MakeCurrent(Window, nullptr);
 		SDL_GL_DeleteContext(Context);
+    }
 #endif
+    if (Window) {
+        SDL_DestroyWindow(Window);
+    }
 
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
-	for (auto &joystick : Joysticks)
-		if (joystick)
-			SDL_JoystickClose(joystick);
-#endif
 	InfoStream << "Quit SDL\n";
 
     SDL_Quit();
@@ -332,19 +337,36 @@ bool MainWindow::activateJoysticks(std::vector<JoystickInfo> &joysticksInfo)
     return false;
 }
 
+std::optional<Event> MainWindow::popEvent()
+{
+    if (Events.empty())
+        return std::nullopt;
+    auto event = Events.front();
+    Events.pop();
+
+    return event;
+}
+
+void MainWindow::clearEventQueue()
+{
+    std::optional<Event> curEvent;
+    while (!Events.empty()) {
+        curEvent = popEvent();
+    }
+}
+
 bool MainWindow::pollEventsFromQueue()
 {
     SDL_Event sdlevent;
 
+    Event irrevent;
     while (!Close && SDL_PollEvent(&sdlevent)) {
-        Event *irrevent = new Event();
-
         switch (sdlevent.type) {
         case SDL_MOUSEMOTION: {
             SDL_Keymod keymod = SDL_GetModState();
 
-            irrevent->Type = ET_MOUSE_INPUT_EVENT;
-            irrevent->MouseInput.Type = MIE_MOUSE_MOVED;
+            irrevent.Type = ET_MOUSE_INPUT_EVENT;
+            irrevent.MouseInput.Type = MIE_MOUSE_MOVED;
 
             MouseRelPos.X = static_cast<s32>(sdlevent.motion.xrel * Scale.X);
             MouseRelPos.Y = static_cast<s32>(sdlevent.motion.yrel * Scale.Y);
@@ -355,34 +377,34 @@ bool MainWindow::pollEventsFromQueue()
                 MousePos.X += MouseRelPos.X;
                 MousePos.Y += MouseRelPos.Y;
             }
-            irrevent->MouseInput.X = MousePos.X;
-            irrevent->MouseInput.Y = MousePos.Y;
+            irrevent.MouseInput.X = MousePos.X;
+            irrevent.MouseInput.Y = MousePos.Y;
 
-            irrevent->MouseInput.ButtonStates = MouseButtonStates;
-            irrevent->MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
-            irrevent->MouseInput.Control = (keymod & KMOD_CTRL) != 0;
+            irrevent.MouseInput.ButtonStates = MouseButtonStates;
+            irrevent.MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
+            irrevent.MouseInput.Control = (keymod & KMOD_CTRL) != 0;
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
 
             break;
         }
         case SDL_MOUSEWHEEL: {
             SDL_Keymod keymod = SDL_GetModState();
 
-            irrevent->Type = ET_MOUSE_INPUT_EVENT;
-            irrevent->MouseInput.Type = MIE_MOUSE_WHEEL;
+            irrevent.Type = ET_MOUSE_INPUT_EVENT;
+            irrevent.MouseInput.Type = MIE_MOUSE_WHEEL;
 #if SDL_VERSION_ATLEAST(2, 0, 18)
-            irrevent->MouseInput.WheelDelta = sdlevent.wheel.preciseY;
+            irrevent.MouseInput.WheelDelta = sdlevent.wheel.preciseY;
 #else
             irrevent->MouseInput.Wheel = sdlevent.wheel.y;
 #endif
-            irrevent->MouseInput.ButtonStates = MouseButtonStates;
-            irrevent->MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
-            irrevent->MouseInput.Control = (keymod & KMOD_CTRL) != 0;
-            irrevent->MouseInput.X = MousePos.X;
-            irrevent->MouseInput.Y = MousePos.Y;
+            irrevent.MouseInput.ButtonStates = MouseButtonStates;
+            irrevent.MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
+            irrevent.MouseInput.Control = (keymod & KMOD_CTRL) != 0;
+            irrevent.MouseInput.X = MousePos.X;
+            irrevent.MouseInput.Y = MousePos.Y;
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
 
             break;
         }
@@ -390,13 +412,13 @@ bool MainWindow::pollEventsFromQueue()
         case SDL_MOUSEBUTTONUP: {
             SDL_Keymod keymod = SDL_GetModState();
 
-            irrevent->Type = ET_MOUSE_INPUT_EVENT;
-            irrevent->MouseInput.X = static_cast<s32>(sdlevent.button.x * Scale.X);
-            irrevent->MouseInput.Y = static_cast<s32>(sdlevent.button.y * Scale.Y);
-            irrevent->MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
-            irrevent->MouseInput.Control = (keymod & KMOD_CTRL) != 0;
+            irrevent.Type = ET_MOUSE_INPUT_EVENT;
+            irrevent.MouseInput.X = static_cast<s32>(sdlevent.button.x * Scale.X);
+            irrevent.MouseInput.Y = static_cast<s32>(sdlevent.button.y * Scale.Y);
+            irrevent.MouseInput.Shift = (keymod & KMOD_SHIFT) != 0;
+            irrevent.MouseInput.Control = (keymod & KMOD_CTRL) != 0;
 
-            irrevent->MouseInput.Type = MIE_MOUSE_MOVED;
+            irrevent.MouseInput.Type = MIE_MOUSE_MOVED;
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
             // Handle mouselocking in emscripten in Windowed mode.
@@ -432,58 +454,58 @@ bool MainWindow::pollEventsFromQueue()
             switch (button) {
             case SDL_BUTTON_LEFT:
                 if (sdlevent.type == SDL_MOUSEBUTTONDOWN) {
-                    irrevent->MouseInput.Type = MIE_LMOUSE_PRESSED_DOWN;
+                    irrevent.MouseInput.Type = MIE_LMOUSE_PRESSED_DOWN;
                     MouseButtonStates |= MBSM_LEFT;
                 } else {
-                    irrevent->MouseInput.Type = MIE_LMOUSE_LEFT_UP;
+                    irrevent.MouseInput.Type = MIE_LMOUSE_LEFT_UP;
                     MouseButtonStates &= ~MBSM_LEFT;
                 }
                 break;
 
             case SDL_BUTTON_RIGHT:
                 if (sdlevent.type == SDL_MOUSEBUTTONDOWN) {
-                    irrevent->MouseInput.Type = MIE_RMOUSE_PRESSED_DOWN;
+                    irrevent.MouseInput.Type = MIE_RMOUSE_PRESSED_DOWN;
                     MouseButtonStates |= MBSM_RIGHT;
                 } else {
-                    irrevent->MouseInput.Type = MIE_RMOUSE_LEFT_UP;
+                    irrevent.MouseInput.Type = MIE_RMOUSE_LEFT_UP;
                     MouseButtonStates &= ~MBSM_RIGHT;
                 }
                 break;
 
             case SDL_BUTTON_MIDDLE:
                 if (sdlevent.type == SDL_MOUSEBUTTONDOWN) {
-                    irrevent->MouseInput.Type = MIE_MMOUSE_PRESSED_DOWN;
+                    irrevent.MouseInput.Type = MIE_MMOUSE_PRESSED_DOWN;
                     MouseButtonStates |= MBSM_MIDDLE;
                 } else {
-                    irrevent->MouseInput.Type = MIE_MMOUSE_LEFT_UP;
+                    irrevent.MouseInput.Type = MIE_MMOUSE_LEFT_UP;
                     MouseButtonStates &= ~MBSM_MIDDLE;
                 }
                 break;
             }
 
-            irrevent->MouseInput.ButtonStates = MouseButtonStates;
+            irrevent.MouseInput.ButtonStates = MouseButtonStates;
 
-            if (irrevent->MouseInput.Type != MIE_MOUSE_MOVED) {
-                if (irrevent->MouseInput.Type >= MIE_LMOUSE_PRESSED_DOWN && irrevent->MouseInput.Type <= MIE_MMOUSE_PRESSED_DOWN) {
-                    u32 clicks = checkSuccessiveClicks(irrevent->MouseInput.X, irrevent->MouseInput.Y, irrevent->MouseInput.Type);
+            if (irrevent.MouseInput.Type != MIE_MOUSE_MOVED) {
+                if (irrevent.MouseInput.Type >= MIE_LMOUSE_PRESSED_DOWN && irrevent.MouseInput.Type <= MIE_MMOUSE_PRESSED_DOWN) {
+                    u32 clicks = checkSuccessiveClicks(irrevent.MouseInput.X, irrevent.MouseInput.Y, irrevent.MouseInput.Type);
                     if (clicks == 2) {
-                        irrevent->MouseInput.Type = (MouseInputEventType)(MIE_LMOUSE_DOUBLE_CLICK + irrevent->MouseInput.Type - MIE_LMOUSE_PRESSED_DOWN);
+                        irrevent.MouseInput.Type = (MouseInputEventType)(MIE_LMOUSE_DOUBLE_CLICK + irrevent.MouseInput.Type - MIE_LMOUSE_PRESSED_DOWN);
                     } else if (clicks == 3) {
-                        irrevent->MouseInput.Type = (MouseInputEventType)(MIE_LMOUSE_TRIPLE_CLICK + irrevent->MouseInput.Type - MIE_LMOUSE_PRESSED_DOWN);
+                        irrevent.MouseInput.Type = (MouseInputEventType)(MIE_LMOUSE_TRIPLE_CLICK + irrevent.MouseInput.Type - MIE_LMOUSE_PRESSED_DOWN);
                     }
                 }
 
-                Events.emplace(irrevent);
+                Events.push(irrevent);
             }
 
             break;
         }
 
         case SDL_TEXTINPUT: {
-            irrevent->Type = ET_STRING_INPUT_EVENT;
-            irrevent->StringInput.Str = new std::wstring();
-            *(irrevent->StringInput.Str) = utf8_to_wide(sdlevent.text.text);
-            Events.emplace(irrevent);
+            irrevent.Type = ET_STRING_INPUT_EVENT;
+            irrevent.StringInput.Str = new std::wstring();
+            *(irrevent.StringInput.Str) = utf8_to_wide(sdlevent.text.text);
+            Events.push(irrevent);
         } break;
 
         case SDL_KEYDOWN:
@@ -505,14 +527,14 @@ bool MainWindow::pollEventsFromQueue()
             if (SDL_IsTextInputActive() && !keyIsKnownSpecial(key) && (sdlevent.key.keysym.mod & KMOD_CTRL) == 0)
                 break;
 
-            irrevent->Type = ET_KEY_INPUT_EVENT;
-            irrevent->KeyInput.Key = key;
-            irrevent->KeyInput.PressedDown = (sdlevent.type == SDL_KEYDOWN);
-            irrevent->KeyInput.Shift = (sdlevent.key.keysym.mod & KMOD_SHIFT) != 0;
-            irrevent->KeyInput.Control = (sdlevent.key.keysym.mod & KMOD_CTRL) != 0;
-            irrevent->KeyInput.Char = findCharToPassToIrrlicht(mp.SDLKey, key,
+            irrevent.Type = ET_KEY_INPUT_EVENT;
+            irrevent.KeyInput.Key = key;
+            irrevent.KeyInput.PressedDown = (sdlevent.type == SDL_KEYDOWN);
+            irrevent.KeyInput.Shift = (sdlevent.key.keysym.mod & KMOD_SHIFT) != 0;
+            irrevent.KeyInput.Control = (sdlevent.key.keysym.mod & KMOD_CTRL) != 0;
+            irrevent.KeyInput.Char = findCharToPassToIrrlicht(mp.SDLKey, key,
                                                               (sdlevent.key.keysym.mod & KMOD_NUM) != 0);
-            Events.emplace(irrevent);
+            Events.push(irrevent);
 
         } break;
 
@@ -537,59 +559,59 @@ bool MainWindow::pollEventsFromQueue()
                     //    VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
                 }
                 if (old_scale_x != Scale.X || old_scale_y != Scale.Y) {
-                    irrevent->Type = ET_APPLICATION_EVENT;
-                    irrevent->Application.Type = AET_DPI_CHANGED;
-                    Events.emplace(irrevent);
+                    irrevent.Type = ET_APPLICATION_EVENT;
+                    irrevent.Application.Type = AET_DPI_CHANGED;
+                    Events.push(irrevent);
                 }
                 break;
             }
             break;
 
         case SDL_USEREVENT:
-            irrevent->Type = ET_USER_EVENT;
-            irrevent->User.UserData1 = reinterpret_cast<uintptr_t>(sdlevent.user.data1);
-            irrevent->User.UserData2 = reinterpret_cast<uintptr_t>(sdlevent.user.data2);
+            irrevent.Type = ET_USER_EVENT;
+            irrevent.User.UserData1 = reinterpret_cast<uintptr_t>(sdlevent.user.data1);
+            irrevent.User.UserData2 = reinterpret_cast<uintptr_t>(sdlevent.user.data2);
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
             break;
 
         case SDL_FINGERDOWN:
-            irrevent->Type = ET_TOUCH_INPUT_EVENT;
-            irrevent->TouchInput.Type = TIE_PRESSED_DOWN;
-            irrevent->TouchInput.ID = sdlevent.tfinger.fingerId;
-            irrevent->TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
-            irrevent->TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
+            irrevent.Type = ET_TOUCH_INPUT_EVENT;
+            irrevent.TouchInput.Type = TIE_PRESSED_DOWN;
+            irrevent.TouchInput.ID = sdlevent.tfinger.fingerId;
+            irrevent.TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
+            irrevent.TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
             CurrentTouchCount++;
-            irrevent->TouchInput.touchedCount = CurrentTouchCount;
+            irrevent.TouchInput.touchedCount = CurrentTouchCount;
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
             break;
 
         case SDL_FINGERMOTION:
-            irrevent->Type = ET_TOUCH_INPUT_EVENT;
-            irrevent->TouchInput.Type = TIE_MOVED;
-            irrevent->TouchInput.ID = sdlevent.tfinger.fingerId;
-            irrevent->TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
-            irrevent->TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
-            irrevent->TouchInput.touchedCount = CurrentTouchCount;
+            irrevent.Type = ET_TOUCH_INPUT_EVENT;
+            irrevent.TouchInput.Type = TIE_MOVED;
+            irrevent.TouchInput.ID = sdlevent.tfinger.fingerId;
+            irrevent.TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
+            irrevent.TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
+            irrevent.TouchInput.touchedCount = CurrentTouchCount;
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
             break;
 
         case SDL_FINGERUP:
-            irrevent->Type = ET_TOUCH_INPUT_EVENT;
-            irrevent->TouchInput.Type = TIE_LEFT_UP;
-            irrevent->TouchInput.ID = sdlevent.tfinger.fingerId;
-            irrevent->TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
-            irrevent->TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
+            irrevent.Type = ET_TOUCH_INPUT_EVENT;
+            irrevent.TouchInput.Type = TIE_LEFT_UP;
+            irrevent.TouchInput.ID = sdlevent.tfinger.fingerId;
+            irrevent.TouchInput.X = static_cast<s32>(sdlevent.tfinger.x * Params.Width);
+            irrevent.TouchInput.Y = static_cast<s32>(sdlevent.tfinger.y * Params.Height);
             // To match Android behavior, still count the pointer that was
             // just released.
-            irrevent->TouchInput.touchedCount = CurrentTouchCount;
+            irrevent.TouchInput.touchedCount = CurrentTouchCount;
             if (CurrentTouchCount > 0) {
                 CurrentTouchCount--;
             }
 
-            Events.emplace(irrevent);
+            Events.push(irrevent);
             break;
 
             // Contrary to what the SDL documentation says, SDL_APP_WILLENTERBACKGROUND
@@ -689,7 +711,7 @@ bool MainWindow::pollEventsFromQueue()
             // we map the number directly
             joyevent.Joystick.Joystick = static_cast<u8>(i);
             // now post the event
-            Events.emplace(joyevent);
+            Events.push(joyevent);
             // and close the joystick
         }
     }

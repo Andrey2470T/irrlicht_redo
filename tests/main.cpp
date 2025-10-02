@@ -36,13 +36,13 @@ int main(int argc, char *argv[])
 	params.Caption = L"Test IrrlichtRedo App";
 
 	core::InfoStream << "Init Window\n";
-	std::unique_ptr<core::MainWindow> window = std::make_unique<core::MainWindow>(params);
+    auto window = std::make_unique<core::MainWindow>(params);
 	core::InfoStream << "Inited Window\n";
 
 	v2u wndsize = window->getWindowSize();
 	auto glparams = window->getGLParams();
     core::InfoStream << "Init DrawContext: maxTextureUnits=" << glparams->maxTextureUnits << "\n";
-    auto context = std::make_unique<render::DrawContext>(recti(0,0,wndsize.X,wndsize.Y), glparams->maxTextureUnits);
+    //auto context = std::make_unique<render::DrawContext>(recti(0,0,wndsize.X,wndsize.Y), glparams->maxTextureUnits);
 	core::InfoStream << "Create clear color\n";
 	img::color8 clear(img::PF_RGBA8, 128, 60, 175, 255);
 
@@ -53,20 +53,20 @@ int main(int argc, char *argv[])
 	//core::InfoStream << "Output clear color: r=" << clear.R() << ", g=" << clear.G() << ", b=" << clear.B() << ", a=" << clear.A() << "\n";
 
 	core::InfoStream << "Init ImageLoader...\n";
-	img::ImageLoader::init();
+    //img::ImageLoader::init();
 
 	core::InfoStream << "Load the icon.png...\n";
 
     fs::path abs_icon_p = fs::absolute("default_apple.png");
 	core::InfoStream << "icon.png path:" << abs_icon_p << "\n";
-	auto img = img::ImageLoader::load(abs_icon_p.string());
+    //auto img = img::ImageLoader::load(abs_icon_p.string());
 
 	core::InfoStream << "Setup and create the texture...\n";
 	render::TextureSettings settings;
 	settings.isRenderTarget = false;
-	auto texture = std::make_unique<render::Texture2D>("MT Image", std::unique_ptr<img::Image>(img), settings);
+    //auto texture = std::make_unique<render::Texture2D>("MT Image", std::unique_ptr<img::Image>(img), settings);
 
-    auto shader = std::make_unique<render::Shader>(fs::absolute("shader2d_vertex.glsl"), fs::absolute("shader2d_fragment.glsl"));
+    //auto shader = std::make_unique<render::Shader>(fs::absolute("shader2d_vertex.glsl"), fs::absolute("shader2d_fragment.glsl"));
 
     InfoStream << "main 0\n";
     ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(VType2D) * 4);
@@ -124,8 +124,8 @@ int main(int argc, char *argv[])
 
 
    // auto mesh = std::make_unique<render::Mesh>(render::VType2D);
-    auto mesh = std::make_unique<render::Mesh>(
-        mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), VType2D);
+    //auto mesh = std::make_unique<render::Mesh>(
+    //    mesh_vertexdata.data(), mesh_vertexdata.bytesCount(), (u32 *)mesh_indexdata.data(), mesh_indexdata.bytesCount(), VType2D);
 
     //auto mesh = std::make_unique<render::Mesh>();
     //mesh->createQuad();
@@ -133,26 +133,29 @@ int main(int argc, char *argv[])
 
 	core::InfoStream << "Run loop\n";
 	while (window->pollEventsFromQueue()) {
-        //core::InfoStream << "Loop...\n";
-		context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::color8(img::PF_RGBA8, 255, 0, 0, 255));
+        core::InfoStream << "Loop...\n";
+        //context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::color8(img::PF_RGBA8, 255, 0, 0, 255));
         //core::InfoStream << "Set shader\n";
 
-        context->setShader(shader.get());
+        //context->setShader(shader.get());
 
        // core::InfoStream << "Set texture\n";
-        context->setActiveUnit(0, texture.get());
+        //context->setActiveUnit(0, texture.get());
 
         //core::InfoStream << "Set mesh\n";
-        context->setMesh(mesh.get());
+        //context->setMesh(mesh.get());
         //glBindVertexArray(vao);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
         //core::InfoStream << "Draw\n";
-        mesh->draw(render::PT_TRIANGLES, 6);
+       // mesh->draw(render::PT_TRIANGLES, 6);
 
+        window->clearEventQueue();
         window->SwapWindow();
     }
 
-	img::ImageLoader::free();
+    //window->clearEventQueue();
+
+    //img::ImageLoader::free();
 
 	return 0;
 }
