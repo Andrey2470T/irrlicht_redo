@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     //auto img2 = imgmod.rotate(img, img::RA_270);
     //delete img;
     v2u curSize = img->getSize();
-    v2u newSize = img->getSize() / 2;
+    v2u newSize = img->getSize() * 2;
 
     /*fs::path abs_icon_p2 = fs::absolute("default_cobble.png");
     auto img2 = img::ImageLoader::load(abs_icon_p2.string());
@@ -77,20 +77,14 @@ int main(int argc, char *argv[])
     auto img3 = imgmod.combine(img, img2);
     delete img;
     delete img2;*/
-    imgmod.resize(&img, rectu(v2u(0), newSize.X, newSize.Y));
+    imgmod.setBlendMode(img::BM_NORMAL);
+    imgmod.resize(&img, rectu(v2u(0), newSize.X, newSize.Y), img::RF_BICUBIC);
     //imgmod.setBlendMode(img::BM_ADD);
     //imgmod.fill(img, img::red);
     //imgmod.setBlendMode(img::BM_NORMAL);
     //auto fimg = imgmod.rotate(img, img::RA_180);
     //auto fimg = imgmod.flip(img, img::FD_X);
     //delete img;
-
-
-    /*for (u32 x = 0; x < img->getWidth(); x++)
-        for (u32 y = 0; y < img->getHeight(); y++) {
-            auto curColor = imgmod.getPixelColor(img, x, y);
-            imgmod.setPixel(img, x, y, img::color8(img::PF_RGBA8, curColor.R()+255, curColor.G(), curColor.B(), curColor.A()));
-        }*/
 
 	core::InfoStream << "Setup and create the texture...\n";
 	render::TextureSettings settings;

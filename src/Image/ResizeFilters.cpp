@@ -13,8 +13,7 @@ f32 NearestFilter(f32 x)
 
 f32 BilinearFilter(f32 x)
 {
-	if (x < 0.0f)
-		x = -x;
+    x = std::fabs(x);
 
 	if (x < 1.0f)
 		return 1.0f - x;
@@ -24,13 +23,11 @@ f32 BilinearFilter(f32 x)
 
 f32 BicubicFilter(f32 x, f32 a)
 {
-	if (x < 0.0f)
-		x = -x;
+    x = std::fabs(x);
 
-	if (x < 1.0f)
-		return (((a + 2.0f) * x - (a + 3.0f)) * x * x + 1.0f);
-	else if (x < 2.0f)
-		return (((a * x - 5.0f * a) * x + 8.0f) * x - 4.0f * a);
+    if (x < 1.0f) {
+        return (((a + 2.0f) * x - (a + 3.0f)) * x * x + 1.0f);
+    }
 	
 	return 0.0f;
 }

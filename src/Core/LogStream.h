@@ -4,6 +4,12 @@
 #include <SDL_log.h>
 #include <sstream>
 
+namespace img
+{
+    class color8;
+    class colorf;
+}
+
 namespace core
 {
 
@@ -77,6 +83,10 @@ public:
     {
         return *this << "x = " << v.X << ", y = " << v.Y << ", z = " << v.Z;
     }
+
+    IrrLogStream &operator<<(img::color8 c);
+
+    IrrLogStream &operator<<(img::colorf c);
 
 private:
 	void log(const std::string &str);

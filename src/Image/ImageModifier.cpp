@@ -336,29 +336,8 @@ color8 ImageModifier::imageAverageColor(Image *img)
 // The convolution algorithm is used with one of filter types.
 void ImageModifier::resize(Image **img, const utils::rectu &rect, RESAMPLE_FILTER filter)
 {
-    /*f32 scaleX = 1.0f;
-    f32 scaleY = 1.0f;
-    f32 fscaleX = scaleX;
-    f32 fscaleY = scaleY;
-
-	utils::v2u imgSize = img->getSize();
-
-	if (imgSize.X != rect.getWidth()) {
-        scaleX = imgSize.X / (f32)rect.getWidth();
-		fscaleX = std::max(1.0f, scaleX);
-	}
-	if (imgSize.Y != rect.getHeight()) {
-        scaleY = imgSize.Y / (f32)rect.getHeight();
-		fscaleY = std::max(1.0f, scaleY);
-	}
-
-	if (scaleX == 1.0f || scaleY == 1.0f) {
-		WarnStream << "ImageModifier::resize() no need in scaling (scale factor = 1.0)\n";
-        return;
-    }*/
-
-    f32 scaleX = (f32)rect.getWidth() / (*img)->getWidth();
-    f32 scaleY = (f32)rect.getHeight() / (*img)->getHeight();
+    f32 scaleX = (*img)->getWidth() / (f32)rect.getWidth();
+    f32 scaleY = (*img)->getHeight() / (f32)rect.getHeight();
 
     if (scaleX == 1.0f && scaleY == 1.0f) {
         WarnStream << "ImageModifier::resize() no need in scaling (scale factor = 1.0)\n";
@@ -379,20 +358,31 @@ void ImageModifier::resize(Image **img, const utils::rectu &rect, RESAMPLE_FILTE
         f32 ss = 1.0f / fscale;
 
         for (u32 outIdx1 = 0; outIdx1 < outSize1; outIdx1++) {
-            f32 inCenter = (outIdx1 + 0.5f) * scale;
+            f32 inCenter = (outIdx1 + 0.5f) * scale - 0.5f;
 
             u32 min = std::max<s32>(0, (s32)std::floor(inCenter - radius));
-            u32 max = std::min<s32>((s32)std::ceil(inCenter + radius), inSize);
+            u32 max = std::min<s32>((s32)std::ceil(inCenter + radius), inSize - 1);
 
-            if (min >= max) continue;
+            if (min > max) {
+                u32 nearestX = std::min((u32)std::round(inCenter), inSize - 1);
+                for (u32 outIdx2 = 0; outIdx2 < outSize2; outIdx2++) {
+                    u32 x = (axis == 0) ? nearestX : outIdx2;
+                    u32 y = (axis == 0) ? outIdx2 : nearestX;
+                    color8 pixel = getPixelColor(inImg, x, y);
 
-            std::vector<f32> weights(max - min);
+                    u32 resultX = (axis == 0) ? outIdx1 : outIdx2;
+                    u32 resultY = (axis == 0) ? outIdx2 : outIdx1;
+                    setPixelColor(outImg, resultX, resultY, pixel);
+                }
+                continue;
+            }
+
+            std::vector<f32> weights(max - min + 1);
             f32 w_sum = 0.0f;
 
-            // Вычисляем веса
             for (u32 i = 0; i < weights.size(); i++) {
                 u32 x = min + i;
-                f32 dist = (x - inCenter + 0.5f) * ss;
+                f32 dist = (x - inCenter) * ss;
 
                 switch (filter) {
                 case RF_NEAREST: weights[i] = NearestFilter(dist); break;
@@ -403,111 +393,68 @@ void ImageModifier::resize(Image **img, const utils::rectu &rect, RESAMPLE_FILTE
                 w_sum += weights[i];
             }
 
-            // Нормализация
-            if (w_sum != 0.0f) {
+            if (w_sum == 0.0f) {
+                // Uniform distribution
+                f32 uniformWeight = 1.0f / weights.size();
+                for (auto& w : weights) w = uniformWeight;
+                w_sum = 1.0f;
+            } else {
                 for (auto& w : weights) w /= w_sum;
             }
-            // Применяем фильтр ко всем пикселям вдоль второй оси
+
             for (u32 outIdx2 = 0; outIdx2 < outSize2; outIdx2++) {
-                color8 resColor((*img)->getFormat()); // Используем float для накопления
+                color8 resColor((*img)->getFormat());
 
                 for (u32 i = 0; i < weights.size(); i++) {
                     u32 r = min + i;
-                    u32 x = (axis == 0) ? r : outIdx2;
-                    u32 y = (axis == 0) ? outIdx2 : r;
+                    u32 x, y;
+                    if (axis == 0) {
+                        x = std::min<u32>(std::max<u32>(r, 0), (s32)inImg->getWidth() - 1);
+                        y = std::min(outIdx2, inImg->getHeight() - 1);
+                    } else {
+                        x = std::min(outIdx2, inImg->getWidth() - 1);
+                        y = std::min<u32>(std::max<u32>(r, 0), (s32)inImg->getHeight() - 1);
+                    }
 
-                    InfoStream << "resize 1\n";
                     color8 curPixel = getPixelColor(inImg, x, y);
-                    resColor += curPixel * weights[i];
+                    curPixel.R(curPixel.R() * weights[i]);
+                    curPixel.G(curPixel.G() * weights[i]);
+                    curPixel.B(curPixel.B() * weights[i]);
+                    resColor += curPixel;
                 }
 
                 u32 resultX = (axis == 0) ? outIdx1 : outIdx2;
                 u32 resultY = (axis == 0) ? outIdx2 : outIdx1;
 
-                 InfoStream << "resize 2\n";
                 setPixelColor(outImg, resultX, resultY, resColor);
             }
         }
-        /*f32 scale, fscale;
-		utils::v2u outImgSize = outImg->getSize();
-		u32 inImgWidth = inImg->getWidth();
-
-		if (axis == 0) {
-			scale = scaleX;
-			fscale = fscaleX;
-		}
-		else {
-			scale = scaleY;
-			fscale = fscaleY;
-		}
-
-		f32 ss = 1.0f / fscale;
-
-		u32 axis1 = axis == 0 ? outImgSize.X : outImgSize.Y;
-		u32 axis2 = axis == 0 ? outImgSize.Y : outImgSize.X;
-
-		for (u32 imgOut_axis = 0; imgOut_axis < axis1; imgOut_axis++) {
-			f32 imgIn_center = (imgOut_axis + 0.5f) * scale;
-
-            u32 min = std::max<f32>(0.0f, (s32)std::floor(imgIn_center - radius));
-            u32 max = std::min<f32>((s32)std::ceil(imgIn_center + radius), inImgWidth);
-
-            std::vector<f32> weights = Kernel(imgIn_center, inImgWidth, ss, filter);
-
-			f32 w_s = 0.0f;
-
-			for (f32 w : weights)
-				w_s += w;
-
-			if (w_s == 0.0f)
-				w_s = 1.0f;
-			else
-				w_s = 1.0f / w_s;
-
-			for (u32 imgOut_axis2 = 0; imgOut_axis2 < axis2; imgOut_axis2++) {
-				color8 resColor(img->getFormat());
-
-				for (u32 r = min; r < max; r++) {
-					u32 x = axis == 0 ? r : imgOut_axis2;
-					u32 y = axis == 0 ? imgOut_axis2 : r;
-
-					color8 curPixel = getPixelColor(inImg, x, y);
-					resColor += curPixel * weights[r - min];
-				}
-
-				resColor.R((u32)std::floor(resColor.R() * w_s + 0.5f));
-				resColor.G((u32)std::floor(resColor.G() * w_s + 0.5f));
-				resColor.B((u32)std::floor(resColor.B() * w_s + 0.5f));
-
-                u32 x = axis == 0 ? imgOut_axis : imgOut_axis2;
-                u32 y = axis == 0 ? imgOut_axis2 : imgOut_axis;
-
-				setPixelColor(outImg, x, y, resColor);
-			}
-        }*/
 	};
 
     Image *newImgScaledX = *img;
-    bool wasScaledX = false;
+    bool wasScaled = false;
 
-	if (scaleX != 1.0f) {
+    if (scaleX != 1.0f) {
         newImgScaledX = new Image((*img)->getFormat(), rect.getWidth(), (*img)->getHeight(),
             img::black, (*img)->getPalette());
         axisScale(*img, newImgScaledX, 0);
-        wasScaledX = true;
-	}
+        wasScaled = true;
+    }
 
     Image *newImgScaledY = newImgScaledX;
-	if (scaleY != 1.0f) {
-        newImgScaledY = new Image((*img)->getFormat(), (*img)->getWidth(), rect.getHeight(),
-            img::black, (*img)->getPalette());
+    if (scaleY != 1.0f) {
+        newImgScaledY = new Image(newImgScaledX->getFormat(), newImgScaledX->getWidth(), rect.getHeight(),
+            img::black, newImgScaledX->getPalette());
         axisScale(newImgScaledX, newImgScaledY, 1);
 
-        if (wasScaledX)
+        if (wasScaled)
             delete newImgScaledX;
-	}
+        wasScaled = true;
+    }
 
-    delete *img;
+    if (wasScaled)
+        delete *img;
+
     *img = newImgScaledY;
 }
 

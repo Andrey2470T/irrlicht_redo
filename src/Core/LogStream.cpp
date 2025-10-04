@@ -1,6 +1,7 @@
 #include "LogStream.h"
 #include "IEventReceiver.h"
 #include "Events.h"
+#include "Image/Color.h"
 
 namespace core
 {
@@ -29,6 +30,16 @@ IrrLogStream &IrrLogStream::operator<<(const std::string &str)
 		Stream << str_c;
 
 	return *this;
+}
+
+IrrLogStream &IrrLogStream::operator<<(img::color8 c)
+{
+    return *this << "R: " << c.R()  << ", G: " << c.G() << ", B: " << c.B() << ", A: " << c.A();
+}
+
+IrrLogStream &IrrLogStream::operator<<(img::colorf c)
+{
+    return *this << "R: " << c.R()  << ", G: " << c.G() << ", B: " << c.B() << ", A: " << c.A();
 }
 
 void IrrLogStream::log(const std::string &str)
