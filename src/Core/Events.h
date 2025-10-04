@@ -443,7 +443,7 @@ struct Event
 	};
 
 	EventType Type;
-	union
+    union
 	{
 		struct GUIEvent GUI;
 		struct MouseInputEvent MouseInput;
@@ -457,7 +457,7 @@ struct Event
         struct LogEvent Log;
 		struct UserEvent User;
 		struct ApplicationEvent Application;
-	};
+    };
 
     Event() {
         Type = static_cast<EventType>(0);

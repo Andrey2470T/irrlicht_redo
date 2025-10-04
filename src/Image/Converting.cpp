@@ -176,10 +176,10 @@ namespace img
         auto img = new Image(format, w, h, data, true, palette);
 
         auto localImgMod = new img::ImageModifier();
-        auto flipped_x = localImgMod->flip(img, FD_X);
+        //auto flipped_x = localImgMod->flip(img, FD_X);
+        //delete img;
+        auto flipped_y = localImgMod->flip(img, FD_Y);
         delete img;
-        auto flipped_y = localImgMod->flip(flipped_x, FD_Y);
-        delete flipped_x;
         delete localImgMod;
 
         return flipped_y;

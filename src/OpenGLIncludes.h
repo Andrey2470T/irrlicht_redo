@@ -2,10 +2,10 @@
 
 #include <GL/glew.h>
 
-#ifdef OSX
+/*#ifdef OSX
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
-#endif
+#endif*/
 
 #include <SDL_opengl.h>

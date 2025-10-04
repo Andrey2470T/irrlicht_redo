@@ -26,9 +26,9 @@ void CursorControl::setPosition(utils::v2i newPos)
 #ifndef __ANDROID__
 	// On Android, this somehow results in a camera jump when enabling
 	// relative mouse mode and it isn't supported anyway.
-	SDL_WarpMouseInWindow(Wnd->Window,
-			static_cast<int>(newPos.X / Wnd->Scale.X),
-			static_cast<int>(newPos.Y / Wnd->Scale.Y));
+    SDL_WarpMouseInWindow(Wnd->Window,
+            static_cast<int>(newPos.X / Wnd->Scale.X),
+            static_cast<int>(newPos.Y / Wnd->Scale.Y));
 #endif
 
 	if (SDL_GetRelativeMouseMode()) {

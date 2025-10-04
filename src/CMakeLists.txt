@@ -69,7 +69,11 @@ endif()
 
 # Joystick
 
-if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
+# Note: Joysticks cause the stack smashing in core::MainWindow if SDL2 is initialized with them and none of them is open
+
+option(ENABLE_JOYSTICKS "Init SDL2 with joystick events" TRUE)
+
+if(ENABLE_JOYSTICKS AND NOT (BSD OR SOLARIS OR EMSCRIPTEN))
 	add_definitions(-DCOMPILE_WITH_JOYSTICK_EVENTS)
 endif()
 

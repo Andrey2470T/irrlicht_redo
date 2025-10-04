@@ -44,7 +44,7 @@ const c8 *Clipboard::getTextFromPrimarySelection() const
 
 MainWindow::MainWindow(const MainWindowParameters &params)
     : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor),
-      Cursor(this), Params(params), IsInBackground(false), Resizable(params.Resizable == 1 ? true : false), Close(false)
+      Cursor(this), Params(params), Resizable(params.Resizable == 1 ? true : false)//, Close(false)
 {
 #ifdef ANDROID
 	// Blocking on pause causes problems with multiplayer.
@@ -67,8 +67,8 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
 	// These are not interesting for our use
-	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-	SDL_SetHint(SDL_HINT_TV_REMOTE_AS_JOYSTICK, "0");
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+    SDL_SetHint(SDL_HINT_TV_REMOTE_AS_JOYSTICK, "0");
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 24, 0)
@@ -95,17 +95,17 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	if (Params.InitVideo)
 		flags |= SDL_INIT_VIDEO;
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
-	flags |= SDL_INIT_JOYSTICK;
+    flags |= SDL_INIT_JOYSTICK;
 #endif
 
-	if (SDL_Init(flags) < 0) {
+    if (SDL_Init(flags) < 0) {
         ErrorStream << "Unable to initialize SDL: " << SDL_GetError() << "\n";
 		Close = true;
 	} else {
 		InfoStream << "SDL initialized\n";
-	}
+    }
 
-	if (Params.InitVideo)
+    if (Params.InitVideo)
 		if (!initWindow()) {
 			Close = true;
 			ErrorStream << "Unable to initialize SDL window and context (InitVideo = true)\n";
@@ -114,7 +114,7 @@ MainWindow::MainWindow(const MainWindowParameters &params)
     GLParams = std::make_unique<GLParameters>(params.GLType, GLVersion);
 
     if (!GLParams->checkExtensions()) {
-    	Close = true;
+        Close = true;
     }
 
     createKeysMaps();
@@ -122,7 +122,7 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	SDL_VERSION(&SDLVersion);
 
     InfoStream << "SDL Version: " << SDLVersion.major << "." <<
-		SDLVersion.minor << "." << SDLVersion.patch;
+        SDLVersion.minor << "." << SDLVersion.patch;
 }
 
 MainWindow::~MainWindow()
@@ -135,15 +135,11 @@ MainWindow::~MainWindow()
             SDL_JoystickClose(joystick);
 #endif
 
-#ifdef EMSCRIPTEN
-	if (Renderer)
-		SDL_DestroyRenderer(Renderer);
-#else
-    if (Context) {
+    if (Window && Context) {
         SDL_GL_MakeCurrent(Window, nullptr);
-		SDL_GL_DeleteContext(Context);
+        SDL_GL_DeleteContext(Context);
     }
-#endif
+
     if (Window) {
         SDL_DestroyWindow(Window);
     }
@@ -157,8 +153,7 @@ MainWindow::~MainWindow()
 // Window params adjusting methods
 void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier *mdf)
 {
-	if (!Window)
-        return;
+    if (!Window) return;
 
 	u32 height = newImg->getHeight();
 	u32 width = newImg->getWidth();
@@ -190,7 +185,7 @@ void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier 
 void MainWindow::setCaption(const std::wstring &newCaption)
 {
     std::string utf8_str = utils::wide_to_utf8(newCaption);
-	SDL_SetWindowTitle(Window, utf8_str.c_str());
+    SDL_SetWindowTitle(Window, utf8_str.c_str());
 }
 
 bool MainWindow::isActive() const
@@ -204,13 +199,13 @@ bool MainWindow::isActive() const
 			return false;
 	}
 #endif
-	const u32 windowFlags = SDL_GetWindowFlags(Window);
-	return windowFlags & SDL_WINDOW_SHOWN && windowFlags & SDL_WINDOW_INPUT_FOCUS;
+    const u32 windowFlags = SDL_GetWindowFlags(Window);
+    return windowFlags & SDL_WINDOW_SHOWN && windowFlags & SDL_WINDOW_INPUT_FOCUS;
 }
 
 bool MainWindow::isFocused() const
 {
-	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+    return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
 bool MainWindow::isVisible() const
@@ -220,18 +215,18 @@ bool MainWindow::isVisible() const
 
 bool MainWindow::isMinimized() const
 {
-	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MINIMIZED) != 0;
+    return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MINIMIZED) != 0;
 }
 
 bool MainWindow::isMaximized() const
 {
-	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MAXIMIZED) != 0;
+    return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MAXIMIZED) != 0;
 }
 
 bool MainWindow::isFullScreen() const
 {
-	return Window && ((SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN) != 0 ||
-		(SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
+    return Window && ((SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN) != 0 ||
+        (SDL_GetWindowFlags(Window) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
 }
 
 bool MainWindow::isClosed() const
@@ -251,35 +246,35 @@ void MainWindow::setResizable(bool resize)
 	WarnStream << "Resizable not available on the web.\n";
 	return;
 #else
-	if (resize != Resizable) {
+    if (resize != Resizable) {
 		if (Window)
 			SDL_SetWindowResizable(Window, (SDL_bool)resize);
 		Resizable = resize;
-	}
+    }
 #endif
 }
 
 void MainWindow::minimize()
 {
-	if (Window)
-		SDL_MinimizeWindow(Window);
+    if (Window)
+        SDL_MinimizeWindow(Window);
 }
 
 void MainWindow::maximize()
 {
-	if (Window)
-		SDL_MaximizeWindow(Window);
+    if (Window)
+        SDL_MaximizeWindow(Window);
 }
 
 void MainWindow::restore()
 {
-	if (Window)
-		SDL_RestoreWindow(Window);
+    if (Window)
+        SDL_RestoreWindow(Window);
 }
 
 bool MainWindow::setFullscreen(bool fullscreen)
 {
-	if (!Window)
+    if (!Window)
 		return false;
 	// The SDL wiki says that this may trigger SDL_RENDER_TARGETS_RESET, but
 	// looking at the SDL source, this only happens with D3D, so it's not
@@ -288,13 +283,13 @@ bool MainWindow::setFullscreen(bool fullscreen)
     if (!success) {
         ErrorStream << "SDL_SetWindowFullscreen failed: " << SDL_GetError() << "\n";
     }
-	return success;
+    return success;
 }
 
 void MainWindow::SwapWindow()
 {
-	if (Window)
-		SDL_GL_SwapWindow(Window);
+    if (Window)
+        SDL_GL_SwapWindow(Window);
 }
 
 bool MainWindow::isUsingWayland() const
@@ -349,10 +344,8 @@ std::optional<Event> MainWindow::popEvent()
 
 void MainWindow::clearEventQueue()
 {
-    std::optional<Event> curEvent;
-    while (!Events.empty()) {
-        curEvent = popEvent();
-    }
+    while (!Events.empty())
+        Events.pop();
 }
 
 bool MainWindow::pollEventsFromQueue()
@@ -639,10 +632,9 @@ bool MainWindow::pollEventsFromQueue()
         default:
             break;
         } // end switch
-        //resetReceiveTextInputEvents();
     } // end while
 
-#if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+#ifdef COMPILE_WITH_JOYSTICK_EVENTS
     // TODO: Check if the multiple open/close calls are too expensive, then
     // open/close in the constructor/destructor instead
 
@@ -774,30 +766,28 @@ EM_BOOL MainWindow::MouseLeaveCallback(int eventType, const EmscriptenMouseEvent
 std::string MainWindow::getVendorName() const
 {
     std::string vendorStr = (const char*)GLParams->vendor;
-
     return vendorStr;
 }
 
 std::string MainWindow::getGLVersionString() const
 {
     std::string versionStr = (const char*)GLParams->version;
-
     return "OpenGL" + versionStr;;
 }
 
 v2u MainWindow::getWindowSize() const
 {
-	int width, height;
-	SDL_GetWindowSize(Window, &width, &height);
+    int width, height;
+    SDL_GetWindowSize(Window, &width, &height);
 	
-	return v2u((u32)width, (u32)height);
+    return v2u((u32)width, (u32)height);
 }
 
 v2u MainWindow::getViewportSize() const
 {
-	int width, height;
-	SDL_GL_GetDrawableSize(Window, &width, &height);
-	return v2u((u32)width, (u32)height);
+    int width, height;
+    SDL_GL_GetDrawableSize(Window, &width, &height);
+    return v2u((u32)width, (u32)height);
 }
 
 u32 MainWindow::getFullscreenFlag(bool fullscreen)
@@ -846,7 +836,7 @@ const Clipboard *MainWindow::getClipboard() const
 
 void MainWindow::updateViewportAndScale()
 {
-	int window_w, window_h;
+    int window_w, window_h;
 	SDL_GetWindowSize(Window, &window_w, &window_h);
 
     int drawable_w, drawable_h;
@@ -864,7 +854,7 @@ void MainWindow::updateViewportAndScale()
 
 bool MainWindow::initWindow()
 {
-	u32 Wnd_Flags = 0;
+    u32 Wnd_Flags = 0;
 	Wnd_Flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
 	Wnd_Flags |= getFullscreenFlag(Params.FullScreen);
@@ -913,29 +903,29 @@ bool MainWindow::initWindow()
 	emscripten_set_mouseenter_callback("#canvas", (void *)this, false, MouseEnterCallback);
 	emscripten_set_mouseleave_callback("#canvas", (void *)this, false, MouseLeaveCallback);
 #else
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLVersion.Major);
+   // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLVersion.Minor);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, convertIrrGLTypeToProfile());
 
 	if (Params.DriverDebug)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
 
-	Window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Params.Width, Params.Height, Wnd_Flags);
+    Window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Params.Width, Params.Height, Wnd_Flags);
 
 	if (!Window) {
         ErrorStream << "Could not create window: " << SDL_GetError() << "\n";
 		Close = true;
 		return false;
-	}
+    }
 
-	Context = SDL_GL_CreateContext(Window);
+    Context = SDL_GL_CreateContext(Window);
     if (!Context) {
         ErrorStream << "Could not create context: " << SDL_GetError() << "\n";
 		Close = true;
 		return false;
-	}
+    }
 
-	updateViewportAndScale();
+    updateViewportAndScale();
 	if (Scale.X != 1.0f || Scale.Y != 1.0f) {
 		// The given window size is in pixels, not in screen coordinates.
 		// We can only do the conversion now since we didn't know the scale before.
@@ -945,7 +935,7 @@ bool MainWindow::initWindow()
 		// Re-center, otherwise large, non-maximized windows go offscreen.
 		SDL_SetWindowPosition(Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		updateViewportAndScale();
-	}
+    }
 #endif
 
     GLenum glewStatus = glewInit();

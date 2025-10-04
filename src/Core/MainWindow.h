@@ -3,9 +3,9 @@
 #include "GLVersionSpecific.h"
 #include "OpenGLIncludes.h"
 #include <SDL.h>
-#include <SDL_video.h>
 #include <SDL_opengl.h>
-#include <list>
+#include <SDL_video.h>
+#include <SDL_joystick.h>
 #include <queue>
 #include "CursorControl.h"
 #include "Image/Image.h"
@@ -72,19 +72,15 @@ struct MainWindowParameters
 
 class MainWindow
 {
-	SDL_Window* Window;
-#ifdef EMSCRIPTEN
-	SDL_Renderer* Renderer;
-#else
     SDL_GLContext Context;
-#endif
+    SDL_Window* Window = nullptr;
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
-	std::vector<SDL_Joystick*> Joysticks;
+    std::vector<SDL_Joystick *> Joysticks;
 #endif
 
     std::queue<Event> Events;
 
-	SDL_version SDLVersion;
+    SDL_version SDLVersion;
     OpenGLVersion GLVersion;
 
     std::unique_ptr<GLParameters> GLParams;
@@ -92,14 +88,15 @@ class MainWindow
 
     struct KeysMap
     {
-        KeysMap() {}
+        KeysMap() :
+            SDLKey(0), Win32Key(0)
+        {}
         KeysMap(s32 x11, s32 win32) :
             SDLKey(x11), Win32Key(win32)
-        {
-        }
+        {}
 
-        s32 SDLKey;
-        s32 Win32Key;
+        s32 SDLKey{0};
+        s32 Win32Key{0};
 
         bool operator<(const KeysMap &o) const
         {
@@ -123,26 +120,26 @@ class MainWindow
     };
     MouseMultiClicks MultiClicks;
 
-	CursorControl Cursor;
+    CursorControl Cursor;
 
 	MainWindowParameters Params;
 
-	utils::v2i MousePos;
-	utils::v2i MouseRelPos;
-	u32 MouseButtonStates;
+    utils::v2i MousePos{0, 0};
+    utils::v2i MouseRelPos{0, 0};
+    u32 MouseButtonStates{0};
 
 	utils::v2f Scale{1.0f, 1.0f};
-	f32 DisplayDensity;
+    f32 DisplayDensity{0.0f};
 
-	s32 CurrentTouchCount;
-	bool IsInBackground;
+    s32 CurrentTouchCount{0};
+    bool IsInBackground{false};
 
-    recti LastTextArea;
+    recti LastTextArea{0, 0, 0, 0};
 
 	bool Resizable;
-	bool Close;
+    bool Close{false};
 public:
-	MainWindow(const MainWindowParameters &params);
+    MainWindow(const MainWindowParameters &params);
 
 	~MainWindow();
 

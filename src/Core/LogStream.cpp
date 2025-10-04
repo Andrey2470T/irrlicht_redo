@@ -35,7 +35,7 @@ void IrrLogStream::log(const std::string &str)
 {
 	const char *cstr = str.c_str();
 
-    if (Receiver) {
+    /*if (Receiver) {
         Event event;
         event.Type = ET_LOG_TEXT_EVENT;
         event.Log.Text = cstr;
@@ -43,7 +43,7 @@ void IrrLogStream::log(const std::string &str)
 
         if (Receiver->OnEvent(event))
             return;
-    }
+    }*/
 
     switch (Level) {
         case LL_ERROR:
