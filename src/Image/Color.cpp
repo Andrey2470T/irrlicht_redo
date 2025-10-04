@@ -3,6 +3,52 @@
 namespace img
 {
 
+bool isFormatSupportedForImage(PixelFormat format)
+{
+    switch (format) {
+    case PF_R8:
+    case PF_RG8:
+    case PF_RGB8:
+    case PF_RGBA8:
+    case PF_INDEX_RGBA8:
+        return true;
+    default:
+        return false;
+    }
+}
+
+u8 addCh(u8 ch1, u8 ch2)
+{
+    u32 ch1_32 = ch1;
+    u32 ch2_32 = ch2;
+
+    return std::clamp<u32>(ch1_32 + ch2_32, 0, 255);
+}
+
+u8 subCh(u8 ch1, u8 ch2)
+{
+    u32 ch1_32 = ch1;
+    u32 ch2_32 = ch2;
+
+    return std::clamp<u32>(ch1_32 - ch2_32, 0, 255);
+}
+
+u8 mulCh(u8 ch1, u8 ch2)
+{
+    u32 ch1_32 = ch1;
+    u32 ch2_32 = ch2;
+
+    return std::clamp<u32>(ch1_32 * ch2_32 / 255.0f, 0, 255);
+}
+
+u8 divCh(u8 ch1, u8 ch2)
+{
+    u32 ch1_32 = ch1;
+    u32 ch2_32 = ch2 == 0 ? 1 : ch2;
+
+    return std::clamp<u32>(ch1_32 / ch2_32 * 255.0f, 0, 255);
+}
+
 // Named (often used) colors
 color8 white = color8(PF_RGBA8, 255, 255, 255, 255);
 color8 black = color8(PF_RGBA8, 0, 0, 0, 255);
@@ -17,7 +63,7 @@ color8 orange = color8(PF_RGBA8, 255, 165, 0, 255);
 color8 pink = color8(PF_RGBA8, 255, 192, 203, 255);
 color8 brown = color8(PF_RGBA8, 165, 42, 42, 255);
 
-inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
+inline void ColorHSL::fromRGBA(const colorf &color)
 {
     const f32 maxVal = utils::max3<f32>(color.R(), color.G(), color.B());
     const f32 minVal = utils::min3<f32>(color.R(), color.G(), color.B());
@@ -50,7 +96,7 @@ inline void ColorHSL::fromRGBA(const ColorRGBA<f32> &color)
 		H += 360;
 }
 
-inline void ColorHSL::toRGBA(ColorRGBA<f32> &color) const
+inline void ColorHSL::toRGBA(colorf &color) const
 {
 	const f32 l = L / 100;
     if (utils::equals(S, 0.0f)) { // grey

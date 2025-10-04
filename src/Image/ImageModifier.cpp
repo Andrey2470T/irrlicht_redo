@@ -42,7 +42,7 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
     case PF_INDEX_RGBA8:
         return color8(PF_INDEX_RGBA8, data[y * width + x]);
     default:
-         WarnStream << "ImageModifier::getPixel() unsupported/unknown format";
+        WarnStream << "ImageModifier::getPixel() unsupported/unknown format";
         return color8(format);
 	}
 }
@@ -72,7 +72,7 @@ void ImageModifier::setPixel(
     PixelFormat format = img->getFormat();
 
     if (format != PF_INDEX_RGBA8)
-        newColor = doBlend<u8>(color, newColor, Mode);
+        newColor = doBlend(color, newColor, Mode);
     else {
         auto palette = img->getPalette();
 
@@ -80,13 +80,9 @@ void ImageModifier::setPixel(
             newColor.R(color.R());
         }
         else {
-            InfoStream << "setPixel() color.R(): " << color.R() << "\n";
-            InfoStream << "setPixel() newColor.R(): " << newColor.R() << "\n";
             auto srcColor = palette->getColorByIndex(color.R());
             auto destColor = palette->getColorByIndex(newColor.R());
-            InfoStream << "setPixel() srcColor: r: " << srcColor.R() << ", g:" << srcColor.G()<< ", b:" << srcColor.B() << ", a:"<< srcColor.A() << "\n";
-            InfoStream << "setPixel() destColor: r: " << destColor.R() << ", g:" << destColor.G()<< ", b:" << destColor.B() << ", a:"<< destColor.A() << "\n";
-            newColor.R(palette->findColorIndex(doBlend<u8>(srcColor, destColor, Mode)));
+            newColor.R(palette->findColorIndex(doBlend(srcColor, destColor, Mode)));
         }
     }
 
@@ -214,7 +210,7 @@ bool ImageModifier::copyTo(
 			return false;
 		}
 
-        resize(srcPart, *dstRect, RF_BICUBIC);
+        resize(&srcPart, *dstRect, RF_BICUBIC);
 	}
 
 	for (u32 x = 0; x < srcPart->getWidth(); x++)
@@ -338,9 +334,9 @@ color8 ImageModifier::imageAverageColor(Image *img)
 
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
-void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER filter)
+void ImageModifier::resize(Image **img, const utils::rectu &rect, RESAMPLE_FILTER filter)
 {
-    f32 scaleX = 1.0f;
+    /*f32 scaleX = 1.0f;
     f32 scaleY = 1.0f;
     f32 fscaleX = scaleX;
     f32 fscaleY = scaleY;
@@ -359,13 +355,80 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
 	if (scaleX == 1.0f || scaleY == 1.0f) {
 		WarnStream << "ImageModifier::resize() no need in scaling (scale factor = 1.0)\n";
         return;
-	}
+    }*/
+
+    f32 scaleX = (f32)rect.getWidth() / (*img)->getWidth();
+    f32 scaleY = (f32)rect.getHeight() / (*img)->getHeight();
+
+    if (scaleX == 1.0f && scaleY == 1.0f) {
+        WarnStream << "ImageModifier::resize() no need in scaling (scale factor = 1.0)\n";
+        return;
+    }
 
 	f32 radius = getFilterRadius(filter);
 
 	auto axisScale = [&] (Image *inImg, Image *outImg, u8 axis)
 	{
-		f32 scale, fscale;
+        f32 scale = (axis == 0) ? scaleX : scaleY;
+        f32 fscale = std::max(1.0f, 1.0f / scale); // filter scale
+
+        u32 outSize1 = (axis == 0) ? outImg->getWidth() : outImg->getHeight();
+        u32 outSize2 = (axis == 0) ? outImg->getHeight() : outImg->getWidth();
+        u32 inSize = (axis == 0) ? inImg->getWidth() : inImg->getHeight();
+
+        f32 ss = 1.0f / fscale;
+
+        for (u32 outIdx1 = 0; outIdx1 < outSize1; outIdx1++) {
+            f32 inCenter = (outIdx1 + 0.5f) * scale;
+
+            u32 min = std::max<s32>(0, (s32)std::floor(inCenter - radius));
+            u32 max = std::min<s32>((s32)std::ceil(inCenter + radius), inSize);
+
+            if (min >= max) continue;
+
+            std::vector<f32> weights(max - min);
+            f32 w_sum = 0.0f;
+
+            // Вычисляем веса
+            for (u32 i = 0; i < weights.size(); i++) {
+                u32 x = min + i;
+                f32 dist = (x - inCenter + 0.5f) * ss;
+
+                switch (filter) {
+                case RF_NEAREST: weights[i] = NearestFilter(dist); break;
+                case RF_BILINEAR: weights[i] = BilinearFilter(dist); break;
+                case RF_BICUBIC: weights[i] = BicubicFilter(dist); break;
+                default: weights[i] = 0.0f; break;
+                }
+                w_sum += weights[i];
+            }
+
+            // Нормализация
+            if (w_sum != 0.0f) {
+                for (auto& w : weights) w /= w_sum;
+            }
+            // Применяем фильтр ко всем пикселям вдоль второй оси
+            for (u32 outIdx2 = 0; outIdx2 < outSize2; outIdx2++) {
+                color8 resColor((*img)->getFormat()); // Используем float для накопления
+
+                for (u32 i = 0; i < weights.size(); i++) {
+                    u32 r = min + i;
+                    u32 x = (axis == 0) ? r : outIdx2;
+                    u32 y = (axis == 0) ? outIdx2 : r;
+
+                    InfoStream << "resize 1\n";
+                    color8 curPixel = getPixelColor(inImg, x, y);
+                    resColor += curPixel * weights[i];
+                }
+
+                u32 resultX = (axis == 0) ? outIdx1 : outIdx2;
+                u32 resultY = (axis == 0) ? outIdx2 : outIdx1;
+
+                 InfoStream << "resize 2\n";
+                setPixelColor(outImg, resultX, resultY, resColor);
+            }
+        }
+        /*f32 scale, fscale;
 		utils::v2u outImgSize = outImg->getSize();
 		u32 inImgWidth = inImg->getWidth();
 
@@ -421,35 +484,31 @@ void ImageModifier::resize(Image *img, const utils::rectu &rect, RESAMPLE_FILTER
 
 				setPixelColor(outImg, x, y, resColor);
 			}
-		}
+        }*/
 	};
 
-	Image *newImg = nullptr;
+    Image *newImgScaledX = *img;
+    bool wasScaledX = false;
 
 	if (scaleX != 1.0f) {
-        newImg = new Image(img->getFormat(), rect.getWidth(), img->getHeight(),
-            img::black, img->getPalette());
-		axisScale(img, newImg, 0);
+        newImgScaledX = new Image((*img)->getFormat(), rect.getWidth(), (*img)->getHeight(),
+            img::black, (*img)->getPalette());
+        axisScale(*img, newImgScaledX, 0);
+        wasScaledX = true;
 	}
+
+    Image *newImgScaledY = newImgScaledX;
 	if (scaleY != 1.0f) {
-		Image *newImgCopy = nullptr;
-		if (!newImg) {
-            newImgCopy = new Image(img->getFormat(), img->getWidth(), rect.getHeight(),
-                img::black, img->getPalette());
-			axisScale(img, newImgCopy, 1);
-		}
-		else {
-			newImgCopy = new Image(img->getFormat(), newImg->getWidth(), rect.getHeight(),
-                img::black, img->getPalette());
-			axisScale(newImg, newImgCopy, 1);
-			delete newImg;
-		}
+        newImgScaledY = new Image((*img)->getFormat(), (*img)->getWidth(), rect.getHeight(),
+            img::black, (*img)->getPalette());
+        axisScale(newImgScaledX, newImgScaledY, 1);
 
-		newImg = newImgCopy;
+        if (wasScaledX)
+            delete newImgScaledX;
 	}
 
-	delete img;
-	img = newImg;
+    delete *img;
+    *img = newImgScaledY;
 }
 
 // Rotates the given image by the angle multiple by 90 degrees
@@ -465,26 +524,30 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 
     Image *newImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
 
-	utils::v2u center = img->getSize() / 2;
+    utils::v2u oldCenter = img->getSize() / 2;
+    utils::v2u newCenter = utils::v2u(newWidth, newHeight) / 2;
 
     u16 degrees = 0;
 
 	if (angle == RA_90)
-		degrees = 90;
+        degrees = 270;
 	else if (angle == RA_180)
 		degrees = 180;
 	else if (angle == RA_270)
-		degrees = 270;
+        degrees = 90;
 
-	for (u32 x = 0; x < oldWidth; x++)
-		for (u32 y = 0; y < oldHeight; y++) {
-			color8 curColor = getPixel(img, x, y);
+    for (u32 x = 0; x < newWidth; x++) {
+        for (u32 y = 0; y < newHeight; y++) {
+            utils::v2u relPos = utils::v2u(x, y) - newCenter;
+            relPos.rotateBy(degrees);
+            utils::v2u oldPos = relPos + oldCenter;
 
-			utils::v2u relPos = utils::v2u(x, y) - center;
-			relPos.rotateBy(degrees);
-
-            setPixel(newImg, relPos.X + center.X, relPos.Y + center.Y, curColor);
-		}
+            if (oldPos.X < oldWidth && oldPos.Y < oldHeight) {
+                color8 curColor = getPixel(img, oldPos.X, oldPos.Y);
+                setPixel(newImg, x, y, curColor);
+            }
+        }
+    }
 
 	return newImg;
 }
@@ -495,19 +558,10 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
     u32 height = img->getHeight();
     Image *newImg = new Image(img->getFormat(), width, height, img::black, img->getPalette());
 
-    InfoStream << "flip() size: " << img->getSize() << "\n";
-
 	for (u32 x = 0; x < width; x++)
 		for (u32 y = 0; y < height; y++) {
 			color8 curColor = getPixel(img, x, y);
-
-            /*if (img->getFormat() == img::PF_INDEX_RGBA8)
-                InfoStream << "flip() r: " << curColor.R() << "\n";
-            else
-                InfoStream << "flip() r: " << curColor.R() << ", g: " << curColor.G() << ", b: " << curColor.B() << ", a: " << curColor.A() << "\n";*/
             utils::v2u reflectPoint = dir == FD_X ? utils::v2u(width - 1 - x, y) : utils::v2u(x, height - 1 - y);
-
-            InfoStream << "flip() curPoint: " << reflectPoint << "\n";
 
             setPixel(newImg, reflectPoint.X, reflectPoint.Y, curColor);
 		}

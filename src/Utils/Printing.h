@@ -5,6 +5,7 @@
 #include "Line2D.h"
 #include "Line3D.h"
 #include "Rect.h"
+#include "Image/Color.h"
 #include <ostream>
 
 namespace utils {
@@ -43,6 +44,18 @@ template<typename T>
 std::ostream &operator<<(std::ostream &os, Rect<T> r)
 {
     return os << "( UpperLeftCorner: " << r.ULC  << ", LowerRightCorner: " << r.LRC << " )";
+}
+
+template<typename T>
+std::ostream &operator<<(std::ostream &os, img::color8 c)
+{
+    return os << "( R: " << c.R()  << ", G: " << c.G() << ", B: " << c.B() << ", A: " << c.A() << " )";
+}
+
+template<typename T>
+std::ostream &operator<<(std::ostream &os, img::colorf c)
+{
+    return os << "( R: " << c.R()  << ", G: " << c.G() << ", B: " << c.B() << ", A: " << c.A() << " )";
 }
 
 };

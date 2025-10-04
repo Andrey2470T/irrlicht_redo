@@ -22,7 +22,7 @@ static void setAlphaMode(DrawContext *ctxt)
 static void setAddMode(DrawContext *ctxt)
 {
     ctxt->enableBlend(true);
-    ctxt->setBlendColor(img::colorf(img::PF_RGBA32F, 1.0f, 1.0f, 1.0f, 1.0f));
+    ctxt->setBlendColor(img::colorf(1.0f, 1.0f, 1.0f, 1.0f));
     ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
     ctxt->setBlendOp(BO_ADD);
 }
@@ -30,7 +30,7 @@ static void setAddMode(DrawContext *ctxt)
 static void setSubtractMode(DrawContext *ctxt)
 {
     ctxt->enableBlend(true);
-    ctxt->setBlendColor(img::colorf(img::PF_RGBA32F, 1.0f, 1.0f, 1.0f, 1.0f));
+    ctxt->setBlendColor(img::colorf(1.0f, 1.0f, 1.0f, 1.0f));
     ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
     ctxt->setBlendOp(BO_SUBTRACT);
 }

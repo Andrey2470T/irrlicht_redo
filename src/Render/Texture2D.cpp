@@ -19,11 +19,9 @@ Texture2D::Texture2D(const std::string &name, std::unique_ptr<img::Image> image,
 
 void Texture2D::initTexture(img::Image *image)
 {
-    core::InfoStream << "Texture2D 1.3\n";
 	glGenTextures(1, &texID);
     TEST_GL_ERROR();
 
-    core::InfoStream << "Texture2D 2 format: " << format << "\n";
     glBindTexture(tex2D(), texID);
     TEST_GL_ERROR();
 
@@ -47,20 +45,14 @@ void Texture2D::initTexture(img::Image *image)
             glBindTexture(GL_TEXTURE_2D, 0);
             return;
         }
-        core::InfoStream << "Texture2D 3\n";
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLMinFilter.at(texSettings.minF));
         TEST_GL_ERROR();
-        core::InfoStream << "Texture2D 3.1\n";
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLMagFilter.at(texSettings.magF));
         TEST_GL_ERROR();
-        core::InfoStream << "Texture2D 3.2\n";
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLWrap.at(texSettings.wrapU));
         TEST_GL_ERROR();
-        core::InfoStream << "Texture2D 3.3\n";
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
         TEST_GL_ERROR();
-
-        core::InfoStream << "Texture2D 4: pixelFormat: " << formatInfo.pixelFormat << ", pixelType: " << formatInfo.pixelType << "\n";
 
         u8 *data = image->getData();
         v2u size = image->getClipSize();
@@ -74,13 +66,11 @@ void Texture2D::initTexture(img::Image *image)
             delete[] data;
 
         TEST_GL_ERROR();
-        core::InfoStream << "Texture2D 5\n";
 
 		if (texSettings.hasMipMaps) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
             glGenerateMipmap(GL_TEXTURE_2D);
 		}
-        core::InfoStream << "Texture2D 6\n";
 	}
 
     glBindTexture(tex2D(), 0);
@@ -219,9 +209,7 @@ void Texture2D::convertIndicesToColors(img::Palette *palette, u8 **data, v2u siz
 {
     u8 *convdata = new u8[size.X * size.Y * 4];
 
-    InfoStream << "Palette size: " << (u32)palette->colors.size() << "\n";
     for (u32 i = 0; i < size.X * size.Y; i++) {
-        InfoStream << "Palette index: " << (*data)[i] << "\n";
         auto found_color = palette->colors.at((*data)[i]);
         convdata[i*4] = found_color.R();
         convdata[i*4+1] = found_color.G();

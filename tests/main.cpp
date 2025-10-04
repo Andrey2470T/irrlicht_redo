@@ -62,6 +62,36 @@ int main(int argc, char *argv[])
 	core::InfoStream << "icon.png path:" << abs_icon_p << "\n";
     auto img = img::ImageLoader::load(abs_icon_p.string());
 
+    img::ImageModifier imgmod;
+    imgmod.setBlendMode(img::BM_MULTIPLY);
+    imgmod.fill(img, img::red);
+    //imgmod.setBlendMode(img::BM_NORMAL);
+    //auto img2 = imgmod.rotate(img, img::RA_270);
+    //delete img;
+    v2u curSize = img->getSize();
+    v2u newSize = img->getSize() / 2;
+
+    /*fs::path abs_icon_p2 = fs::absolute("default_cobble.png");
+    auto img2 = img::ImageLoader::load(abs_icon_p2.string());
+    imgmod.setBlendMode(img::BM_ADD);
+    auto img3 = imgmod.combine(img, img2);
+    delete img;
+    delete img2;*/
+    imgmod.resize(&img, rectu(v2u(0), newSize.X, newSize.Y));
+    //imgmod.setBlendMode(img::BM_ADD);
+    //imgmod.fill(img, img::red);
+    //imgmod.setBlendMode(img::BM_NORMAL);
+    //auto fimg = imgmod.rotate(img, img::RA_180);
+    //auto fimg = imgmod.flip(img, img::FD_X);
+    //delete img;
+
+
+    /*for (u32 x = 0; x < img->getWidth(); x++)
+        for (u32 y = 0; y < img->getHeight(); y++) {
+            auto curColor = imgmod.getPixelColor(img, x, y);
+            imgmod.setPixel(img, x, y, img::color8(img::PF_RGBA8, curColor.R()+255, curColor.G(), curColor.B(), curColor.A()));
+        }*/
+
 	core::InfoStream << "Setup and create the texture...\n";
 	render::TextureSettings settings;
 	settings.isRenderTarget = false;
@@ -72,10 +102,10 @@ int main(int argc, char *argv[])
     InfoStream << "main 0\n";
     ByteArray mesh_vertexdata(8 * 4, render::sizeOfVertexType(VType2D) * 4);
 
-    setVertex(mesh_vertexdata, v2f(-0.75f, 0.75f), img::white, v2f(0.0f, 1.0f), 0);
-    setVertex(mesh_vertexdata, v2f(0.75f, 0.75f), img::white, v2f(1.0f, 1.0f), 8);
-    setVertex(mesh_vertexdata, v2f(0.75f, -0.75f), img::white, v2f(1.0f, 0.0f), 16);
-    setVertex(mesh_vertexdata, v2f(-0.75f, -0.75f), img::white, v2f(0.0f, 0.0f), 24);
+    setVertex(mesh_vertexdata, v2f(-1.0f, 1.0f), img::white, v2f(0.0f, 1.0f), 0);
+    setVertex(mesh_vertexdata, v2f(1.0f, 1.0f), img::white, v2f(1.0f, 1.0f), 8);
+    setVertex(mesh_vertexdata, v2f(1.0f, -1.0f), img::white, v2f(1.0f, 0.0f), 16);
+    setVertex(mesh_vertexdata, v2f(-1.0f, -1.0f), img::white, v2f(0.0f, 0.0f), 24);
 
     ByteArray mesh_indexdata(6, sizeof(u32) * 6);
     mesh_indexdata.setUInt32(0, 0);
@@ -102,7 +132,7 @@ int main(int argc, char *argv[])
 
     while (window.pollEventsFromQueue()) {
         //core::InfoStream << "Loop...\n";
-        context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::color8(img::PF_RGBA8, 255, 0, 0, 255));
+        context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::black);
         //core::InfoStream << "Set shader\n";
 
         context->setShader(shader.get());

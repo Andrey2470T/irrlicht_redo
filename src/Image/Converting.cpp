@@ -138,13 +138,18 @@ namespace img
 
         return format_s;
     }
+
+    SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface);
+
     // Note: converting doesn't copy the input data, but just transform it to another form
 	Image *convertSDLSurfaceToImage(SDL_Surface *surf)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
 		
         auto it = formatsEnumsMap.find(sdl_format->format);
-		
+
+        std::string formatStr = sdlFormatToString(sdl_format->format);
+        InfoStream << "Loaded the image format: " << formatStr << "\n";
 		if (it == formatsEnumsMap.end()) {
             ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << sdlFormatToString(sdl_format->format) << "\n";
 			return nullptr;
@@ -153,7 +158,7 @@ namespace img
 		PixelFormat format = static_cast<PixelFormat>(it->second);
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
-		u8 *data = static_cast<u8*>(surf->pixels);
+        u8 *data = static_cast<u8*>(surf->pixels);
 
         // load the SDL palette
         Palette *palette = nullptr;
@@ -176,8 +181,6 @@ namespace img
         auto img = new Image(format, w, h, data, true, palette);
 
         auto localImgMod = new img::ImageModifier();
-        //auto flipped_x = localImgMod->flip(img, FD_X);
-        //delete img;
         auto flipped_y = localImgMod->flip(img, FD_Y);
         delete img;
         delete localImgMod;
@@ -210,6 +213,128 @@ namespace img
 
 		return SDL_CreateRGBSurfaceFrom(data, w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
 	}
+
+    SDL_Surface* convertToRGBA8888(SDL_Surface* src_surface) {
+        u32 sdlformat = src_surface->format->format;
+        InfoStream << "convertToTargetFormat: 3.1\n";
+        if (!src_surface ||
+            (sdlformat != SDL_PIXELFORMAT_ABGR8888 &&
+            sdlformat != SDL_PIXELFORMAT_BGRA8888 &&
+            sdlformat != SDL_PIXELFORMAT_ARGB8888)) {
+            return nullptr;
+        }
+
+        InfoStream << "convertToTargetFormat: 3.2\n";
+        SDL_Surface* dst_surface = SDL_CreateRGBSurfaceWithFormat(
+            0, src_surface->w, src_surface->h, 32, SDL_PIXELFORMAT_RGBA8888);
+
+        if (!dst_surface) {
+            return nullptr;
+        }
+
+        InfoStream << "convertToTargetFormat: 3.3\n";
+        SDL_LockSurface(src_surface);
+        SDL_LockSurface(dst_surface);
+
+        u32* src_pixels = (u32*)src_surface->pixels;
+        u32* dst_pixels = (u32*)dst_surface->pixels;
+        int pixel_count = src_surface->w * src_surface->h;
+
+        u32 r, g, b, a;
+
+        for (int i = 0; i < pixel_count; i++) {
+            u32 pixel = src_pixels[i];
+
+            if (sdlformat == SDL_PIXELFORMAT_ABGR8888) {
+                // ABGR -> RGBA
+                a = (pixel >> 24) & 0xFF;
+                b = (pixel >> 16) & 0xFF;
+                g = (pixel >> 8) & 0xFF;
+                r = pixel & 0xFF;
+            }
+            else if (sdlformat == SDL_PIXELFORMAT_BGRA8888)
+            {
+                // BGRA -> RGBA
+                b = (pixel >> 24) & 0xFF;
+                g = (pixel >> 16) & 0xFF;
+                r = (pixel >> 8) & 0xFF;
+                a = pixel & 0xFF;
+            }
+            else
+            {
+                // ARGB -> RGBA
+                a = (pixel >> 24) & 0xFF;
+                r = (pixel >> 16) & 0xFF;
+                g = (pixel >> 8) & 0xFF;
+                b = pixel & 0xFF;
+            }
+            dst_pixels[i] = (r << 24) | (g << 16) | (b << 8) | a;
+        }
+
+        SDL_UnlockSurface(dst_surface);
+        SDL_UnlockSurface(src_surface);
+
+        return dst_surface;
+    }
+
+    SDL_Surface* convertBGR888ToRGB888(SDL_Surface* src_surface) {
+        if (!src_surface || src_surface->format->format != SDL_PIXELFORMAT_BGR888) {
+            return NULL;
+        }
+
+        SDL_Surface* dst_surface = SDL_CreateRGBSurfaceWithFormat(
+            0, src_surface->w, src_surface->h, 24, SDL_PIXELFORMAT_RGB888);
+
+        if (!dst_surface) {
+            return NULL;
+        }
+
+        SDL_LockSurface(src_surface);
+        SDL_LockSurface(dst_surface);
+
+        u8* src_pixels = (u8*)src_surface->pixels;
+        u8* dst_pixels = (u8*)dst_surface->pixels;
+        int pixel_count = src_surface->w * src_surface->h;
+
+        for (int i = 0; i < pixel_count; i++) {
+            // BGR -> RGB
+            u8 b = src_pixels[i * 3];
+            u8 g = src_pixels[i * 3 + 1];
+            u8 r = src_pixels[i * 3 + 2];
+
+            dst_pixels[i * 3] = r;
+            dst_pixels[i * 3 + 1] = g;
+            dst_pixels[i * 3 + 2] = b;
+        }
+
+        SDL_UnlockSurface(dst_surface);
+        SDL_UnlockSurface(src_surface);
+
+        return dst_surface;
+    }
+
+    SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface) {
+        InfoStream << "convertToTargetFormat: 1\n";
+        if (!src_surface) return nullptr;
+        InfoStream << "convertToTargetFormat: 2\n";
+
+        u32 format = src_surface->format->format;
+
+        /*switch (format) {
+        case SDL_PIXELFORMAT_ABGR8888:
+        case SDL_PIXELFORMAT_BGRA8888:
+        case SDL_PIXELFORMAT_ARGB8888:
+            InfoStream << "convertToTargetFormat: 3\n";
+            return convertToRGBA8888(src_surface);
+        case SDL_PIXELFORMAT_BGR888:
+            return convertBGR888ToRGB888(src_surface);
+            InfoStream << "convertToTargetFormat: 4\n";
+        default:
+            InfoStream << "convertToTargetFormat: 5\n";*/
+            // Если формат уже целевой или неизвестный, возвращаем копию
+            return SDL_ConvertSurfaceFormat(src_surface, format, 0);
+        //}
+    }
 
 	// Convert the numerical u32 color representation (ARGB) to the color8 object
 	color8 colorU32NumberToObject(u32 color)
@@ -251,6 +376,6 @@ namespace img
 		f32 blue = std::clamp<f32>(c.B() / 255.0f, 0.0f, 1.0f);
 		f32 alpha = std::clamp<f32>(c.A() / 255.0f, 0.0f, 1.0f);
 
-		return colorf(c.getFormat(), red, green, blue, alpha);
+        return colorf(red, green, blue, alpha);
 	}
 }

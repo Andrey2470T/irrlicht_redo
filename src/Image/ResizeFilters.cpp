@@ -5,7 +5,7 @@ namespace img
 
 f32 NearestFilter(f32 x)
 {
-	if (x >= 0.5f && x <= 0.5f)
+    if (x >= -0.5f && x <= 0.5f)
 		return 1.0f;
 
 	return 0.0f;
@@ -65,16 +65,16 @@ std::vector<f32> Kernel(f32 center, u32 border, f32 rk, RESAMPLE_FILTER type)
 	for (u32 x = min; x < max; x++) {
 		switch (type) {
 			case RF_NEAREST:
-				weights.push_back(NearestFilter((x - center + 0.5f) * rk) * rk);
+                weights[x-min] = NearestFilter((x - center + 0.5f) * rk) * rk;
 				break;
 			case RF_BILINEAR:
-				weights.push_back(BilinearFilter((x - center + 0.5f) * rk) * rk);
+                weights[x-min] = BilinearFilter((x - center + 0.5f) * rk) * rk;
 				break;
 			case RF_BICUBIC:
-				weights.push_back(BicubicFilter((x - center + 0.5f) * rk) * rk);
+                weights[x-min] = BicubicFilter((x - center + 0.5f) * rk) * rk;
 				break;
 			default:
-				weights.push_back(0.0f);
+                weights[x-min] = 0.0f;
 				break;
 		};
 	}

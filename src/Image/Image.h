@@ -7,8 +7,6 @@ namespace img {
 
 class ImageModifier;
 
-bool isFormatSupportedForImage(PixelFormat format);
-
 /* 
  * 8-bit palette (can be with alpha or without).
  * Indices are u8.

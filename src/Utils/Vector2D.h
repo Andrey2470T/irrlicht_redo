@@ -213,14 +213,19 @@ public:
 		const f64 cs = std::cos(radians);
 		const f64 sn = std::sin(radians);
 
-		X -= center.X;
+        T oldX = X - center.X;
+        T oldY = Y - center.Y;
+
+        X = (T)(oldX * cs - oldY * sn) + center.X;
+        Y = (T)(oldX * sn + oldY * cs) + center.Y;
+        /*X -= center.X;
 		Y -= center.Y;
 
 		X = (T)(X * cs - Y * sn);
 		Y = (T)(X * sn + Y * cs);
 
 		X += center.X;
-		Y += center.Y;
+        Y += center.Y;*/
 		return *this;
 	}
 

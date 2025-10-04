@@ -4,38 +4,18 @@
 namespace img
 {
 
-bool isFormatSupportedForImage(PixelFormat format)
-{
-	switch (format) {
-		case PF_R8:
-		case PF_RG8:
-		case PF_RGB8:
-		case PF_RGBA8:
-		case PF_INDEX_RGBA8:
-			return true;
-		default:
-			return false;
-	}
-}
-
 u8 Palette::findColorIndex(const color8 &c)
 {
     color8 minColorDiff(c.getFormat());
 	u32 index = 0;
 
-    InfoStream << "findColorIndex() minColorDiff: r: " << minColorDiff.R() << ", g:" << minColorDiff.G()<<
-        ", b:" << minColorDiff.B() << ", a:"<< minColorDiff.A() << "\n";
 	for (u32 i = 0; i < size; i++) {
 		color8 &cur_c = colors.at(i);
-        //InfoStream << "findColorIndex() cur_c sizeof: " << (u32)sizeof(cur_c) << "\n";
 		color8 colorDiff(c.getFormat(),
 			(u8)std::abs((s16)c.R()-(s16)cur_c.R()),
 			(u8)std::abs((s16)c.G()-(s16)cur_c.G()),
 			(u8)std::abs((s16)c.B()-(s16)cur_c.B()),
 			(u8)std::abs((s16)c.A()-(s16)cur_c.A()));
-
-        InfoStream << "findColorIndex() colorDiff: r: " << colorDiff.R() << ", g:" << colorDiff.G()<<
-            ", b:" << colorDiff.B() << ", a:"<< colorDiff.A() << "\n";
 
 		if (colorDiff < minColorDiff) {
 			minColorDiff = colorDiff;
