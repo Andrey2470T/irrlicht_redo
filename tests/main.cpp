@@ -36,12 +36,12 @@ int main(int argc, char *argv[])
 	params.Caption = L"Test IrrlichtRedo App";
 
     core::InfoStream << "Init Window\n";
-    core::MainWindow window(params);
+    auto window = std::make_unique<core::MainWindow>(params);
     core::InfoStream << "Inited Window\n";
 
 
-    v2u wndsize = window.getWindowSize();
-    auto glparams = window.getGLParams();
+    v2u wndsize = window->getWindowSize();
+    auto glparams = window->getGLParams();
     core::InfoStream << "Init DrawContext: maxTextureUnits=" << glparams->maxTextureUnits << "\n";
     auto context = std::make_unique<render::DrawContext>(recti(0,0,wndsize.X,wndsize.Y), glparams->maxTextureUnits);
 	core::InfoStream << "Create clear color\n";
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 
     core::InfoStream << "Run loop\n";
 
-    while (window.pollEventsFromQueue()) {
+    while (window->pollEventsFromQueue()) {
         //core::InfoStream << "Loop...\n";
         context->clearBuffers(render::CBF_COLOR | render::CBF_DEPTH, img::black);
         //core::InfoStream << "Set shader\n";
@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
         //core::InfoStream << "Draw\n";
         mesh->draw(render::PT_TRIANGLES, 6);
 
-        window.clearEventQueue();
-        window.SwapWindow();
+        window->clearEventQueue();
+        window->SwapWindow();
     }
 
     img::ImageLoader::free();
