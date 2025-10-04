@@ -654,13 +654,13 @@ bool MainWindow::pollEventsFromQueue()
                 joyevent.Joystick.ButtonStates |= (SDL_JoystickGetButton(joystick, j) << j);
 
             // query all axes, already in correct range
-            const int numAxes = core::min_(SDL_JoystickNumAxes(joystick), (int)Event::JoystickEvent::NUMBER_OF_AXES);
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_X] = 0;
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_Y] = 0;
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_Z] = 0;
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_R] = 0;
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_U] = 0;
-            joyevent.Joystick.Axis[main::Event::JoystickEvent::AXIS_V] = 0;
+            const int numAxes = std::min(SDL_JoystickNumAxes(joystick), (int)Event::JoystickEvent::NUMBER_OF_AXES);
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_X] = 0;
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_Y] = 0;
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_Z] = 0;
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_R] = 0;
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_U] = 0;
+            joyevent.Joystick.Axis[Event::JoystickEvent::AXIS_V] = 0;
             for (j = 0; j < numAxes; ++j)
                 joyevent.Joystick.Axis[j] = SDL_JoystickGetAxis(joystick, j);
 
