@@ -471,3 +471,5 @@ private:
 typedef Matrix4<f32> matrix4;
 
 }
+
+#include "Matrix4.tpp"

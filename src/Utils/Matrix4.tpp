@@ -1,10 +1,8 @@
-#include "Matrix4.h"
-
 namespace utils {
 
 //! Add another matrix.
 template <class T>
-inline Matrix4<T> Matrix4<T>::operator+(const Matrix4<T> &other) const
+Matrix4<T> Matrix4<T>::operator+(const Matrix4<T> &other) const
 {
 	Matrix4<T> temp(EM4CONST_NOTHING);
 
@@ -30,7 +28,7 @@ inline Matrix4<T> Matrix4<T>::operator+(const Matrix4<T> &other) const
 
 //! Add another matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::operator+=(const Matrix4<T> &other)
+Matrix4<T> &Matrix4<T>::operator+=(const Matrix4<T> &other)
 {
 	M[0] += other[0];
 	M[1] += other[1];
@@ -54,7 +52,7 @@ inline Matrix4<T> &Matrix4<T>::operator+=(const Matrix4<T> &other)
 
 //! Subtract another matrix.
 template <class T>
-inline Matrix4<T> Matrix4<T>::operator-(const Matrix4<T> &other) const
+Matrix4<T> Matrix4<T>::operator-(const Matrix4<T> &other) const
 {
 	Matrix4<T> temp(EM4CONST_NOTHING);
 
@@ -80,7 +78,7 @@ inline Matrix4<T> Matrix4<T>::operator-(const Matrix4<T> &other) const
 
 //! Subtract another matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::operator-=(const Matrix4<T> &other)
+Matrix4<T> &Matrix4<T>::operator-=(const Matrix4<T> &other)
 {
 	M[0] -= other[0];
 	M[1] -= other[1];
@@ -104,7 +102,7 @@ inline Matrix4<T> &Matrix4<T>::operator-=(const Matrix4<T> &other)
 
 //! Multiply by scalar.
 template <class T>
-inline Matrix4<T> Matrix4<T>::operator*(const T &scalar) const
+Matrix4<T> Matrix4<T>::operator*(const T &scalar) const
 {
 	Matrix4<T> temp(EM4CONST_NOTHING);
 
@@ -130,7 +128,7 @@ inline Matrix4<T> Matrix4<T>::operator*(const T &scalar) const
 
 //! Multiply by scalar.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::operator*=(const T &scalar)
+Matrix4<T> &Matrix4<T>::operator*=(const T &scalar)
 {
 	M[0] *= scalar;
 	M[1] *= scalar;
@@ -154,7 +152,7 @@ inline Matrix4<T> &Matrix4<T>::operator*=(const T &scalar)
 
 //! Multiply by another matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::operator*=(const Matrix4<T> &other)
+Matrix4<T> &Matrix4<T>::operator*=(const Matrix4<T> &other)
 {
 	Matrix4<T> temp(*this);
 	return setbyproduct_nocheck(temp, other);
@@ -164,7 +162,7 @@ inline Matrix4<T> &Matrix4<T>::operator*=(const Matrix4<T> &other)
 // set this matrix to the product of two other matrices
 // goal is to reduce stack use and copy
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setbyproduct_nocheck(const Matrix4<T> &other_a, const Matrix4<T> &other_b)
+Matrix4<T> &Matrix4<T>::setbyproduct_nocheck(const Matrix4<T> &other_a, const Matrix4<T> &other_b)
 {
 	const T *m1 = other_a.M;
 	const T *m2 = other_b.M;
@@ -196,14 +194,14 @@ inline Matrix4<T> &Matrix4<T>::setbyproduct_nocheck(const Matrix4<T> &other_a, c
 // set this matrix to the product of two other matrices
 // goal is to reduce stack use and copy
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setbyproduct(const Matrix4<T> &other_a, const Matrix4<T> &other_b)
+Matrix4<T> &Matrix4<T>::setbyproduct(const Matrix4<T> &other_a, const Matrix4<T> &other_b)
 {
 	return setbyproduct_nocheck(other_a, other_b);
 }
 
 //! multiply by another matrix
 template <class T>
-inline Matrix4<T> Matrix4<T>::operator*(const Matrix4<T> &m2) const
+Matrix4<T> Matrix4<T>::operator*(const Matrix4<T> &m2) const
 {
 	Matrix4<T> m3(EM4CONST_NOTHING);
 
@@ -232,13 +230,13 @@ inline Matrix4<T> Matrix4<T>::operator*(const Matrix4<T> &m2) const
 }
 
 template <class T>
-inline Vector3D<T> Matrix4<T>::getTranslation() const
+Vector3D<T> Matrix4<T>::getTranslation() const
 {
 	return Vector3D<T>(M[12], M[13], M[14]);
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTranslation(const Vector3D<T> &translation)
+Matrix4<T> &Matrix4<T>::setTranslation(const Vector3D<T> &translation)
 {
 	M[12] = translation.X;
 	M[13] = translation.Y;
@@ -248,7 +246,7 @@ inline Matrix4<T> &Matrix4<T>::setTranslation(const Vector3D<T> &translation)
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setInverseTranslation(const Vector3D<T> &translation)
+Matrix4<T> &Matrix4<T>::setInverseTranslation(const Vector3D<T> &translation)
 {
 	M[12] = -translation.X;
 	M[13] = -translation.Y;
@@ -258,7 +256,7 @@ inline Matrix4<T> &Matrix4<T>::setInverseTranslation(const Vector3D<T> &translat
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setScale(const Vector3D<T> &scale)
+Matrix4<T> &Matrix4<T>::setScale(const Vector3D<T> &scale)
 {
 	M[0] = scale.X;
 	M[5] = scale.Y;
@@ -274,15 +272,15 @@ Otherwise the result is a scale you can use to normalize the matrix axes,
 but it's usually no longer what you did set with setScale.
 */
 template <class T>
-inline Vector3D<T> Matrix4<T>::getScale() const
+Vector3D<T> Matrix4<T>::getScale() const
 {
 	// See http://www.robertblum.com/articles/2005/02/14/decomposing-matrices
 
 	// Deal with the 0 rotation case first
 	// Prior to Irrlicht 1.6, we always returned this value.
-    if (equals(M[1], 0) && equals(M[2], 0) &&
-            equals(M[4], 0) && equals(M[6], 0) &&
-            equals(M[8], 0) && equals(M[9], 0))
+    if (utils::equals(M[1], 0) && utils::equals(M[2], 0) &&
+            utils::equals(M[4], 0) && utils::equals(M[6], 0) &&
+            utils::equals(M[8], 0) && utils::equals(M[9], 0))
 		return Vector3D<T>(M[0], M[5], M[10]);
 
 	// We have to do the full calculation.
@@ -292,19 +290,19 @@ inline Vector3D<T> Matrix4<T>::getScale() const
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setRotationDegrees(const Vector3D<T> &rotation)
+Matrix4<T> &Matrix4<T>::setRotationDegrees(const Vector3D<T> &rotation)
 {
-    return setRotationRadians(rotation.apply(&degToRad));
+    return setRotationRadians(rotation * DEGTORAD);
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setInverseRotationDegrees(const Vector3D<T> &rotation)
+Matrix4<T> &Matrix4<T>::setInverseRotationDegrees(const Vector3D<T> &rotation)
 {
-    return setInverseRotationRadians(rotation.apply(&degToRad));
+    return setInverseRotationRadians(rotation * DEGTORAD);
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setRotationRadians(const Vector3D<T> &rotation)
+Matrix4<T> &Matrix4<T>::setRotationRadians(const Vector3D<T> &rotation)
 {
 	const f64 cr = cos(rotation.X);
 	const f64 sr = sin(rotation.X);
@@ -337,19 +335,19 @@ This code was originally written by by Chev (assuming no scaling back then,
 we can be blamed for all problems added by regarding scale)
 */
 template <class T>
-inline Vector3D<T> Matrix4<T>::getRotationDegrees(const Vector3D<T> &scale_) const
+Vector3D<T> Matrix4<T>::getRotationDegrees(const Vector3D<T> &scale_) const
 {
 	const Matrix4<T> &mat = *this;
-    const Vector3D<f64> scale(equals(scale_.X, 0) ? T_MAX(f32) : scale_.X, equals(scale_.Y, 0) ? T_MAX(f32) : scale_.Y, equals(scale_.Z, 0) ? T_MAX(f32) : scale_.Z);
+    const Vector3D<f64> scale(utils::equals(scale_.X, 0) ? T_MAX(f32) : scale_.X, utils::equals(scale_.Y, 0) ? T_MAX(f32) : scale_.Y, utils::equals(scale_.Z, 0) ? T_MAX(f32) : scale_.Z);
     const Vector3D<f64> invScale(1.0 / scale.X, 1.0 / scale.Y, 1.0 / scale.Z);
 
-    f64 Y = -asin(clamp(mat[2] * invScale.X, -1.0, 1.0));
+    f64 Y = -asin(std::clamp(mat[2] * invScale.X, -1.0, 1.0));
 	const f64 C = cos(Y);
     Y *= radToDeg(Y);
 
 	f64 rotx, roty, X, Z;
 
-    if (!equals((T)C, 0)) {
+    if (!utils::equals((T)C, 0)) {
         const f64 invC = 1.0 / C;
 		rotx = mat[10] * invC * invScale.Z;
 		roty = mat[6] * invC * invScale.Y;
@@ -377,7 +375,7 @@ inline Vector3D<T> Matrix4<T>::getRotationDegrees(const Vector3D<T> &scale_) con
 
 //! Returns a rotation that is equivalent to that set by setRotationDegrees().
 template <class T>
-inline Vector3D<T> Matrix4<T>::getRotationDegrees() const
+Vector3D<T> Matrix4<T>::getRotationDegrees() const
 {
 	// Note: Using getScale() here make it look like it could do matrix decomposition.
 	// It can't! It works (or should work) as long as rotation doesn't flip the handedness
@@ -406,7 +404,7 @@ inline Vector3D<T> Matrix4<T>::getRotationDegrees() const
 
 //! Sets matrix to rotation matrix of inverse angles given as parameters
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setInverseRotationRadians(const Vector3D<T> &rotation)
+Matrix4<T> &Matrix4<T>::setInverseRotationRadians(const Vector3D<T> &rotation)
 {
 	f64 cr = cos(rotation.X);
 	f64 sr = sin(rotation.X);
@@ -435,7 +433,7 @@ inline Matrix4<T> &Matrix4<T>::setInverseRotationRadians(const Vector3D<T> &rota
 
 //! Sets matrix to rotation matrix defined by axis and angle, assuming LH rotation
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setRotationAxisRadians(const T &angle, const Vector3D<T> &axis)
+Matrix4<T> &Matrix4<T>::setRotationAxisRadians(const T &angle, const Vector3D<T> &axis)
 {
 	const f64 c = cos(angle);
 	const f64 s = sin(angle);
@@ -467,7 +465,7 @@ inline Matrix4<T> &Matrix4<T>::setRotationAxisRadians(const T &angle, const Vect
 /*!
  */
 template <class T>
-inline Matrix4<T> &Matrix4<T>::makeIdentity()
+Matrix4<T> &Matrix4<T>::makeIdentity()
 {
 	memset(M, 0, 16 * sizeof(T));
 	M[0] = M[5] = M[10] = M[15] = (T)1;
@@ -480,7 +478,7 @@ inline Matrix4<T> &Matrix4<T>::makeIdentity()
 	solve floating range problems..
 */
 template <class T>
-inline bool Matrix4<T>::isIdentity() const
+bool Matrix4<T>::isIdentity() const
 {
 	if (!utils::equals(M[12], (T)0) || !utils::equals(M[13], (T)0) || !utils::equals(M[14], (T)0) || !utils::equals(M[15], (T)1))
 		return false;
@@ -511,7 +509,7 @@ inline bool Matrix4<T>::isIdentity() const
 
 /* Check orthogonality of matrix. */
 template <class T>
-inline bool Matrix4<T>::isOrthogonal() const
+bool Matrix4<T>::isOrthogonal() const
 {
 	T dp = M[0] * M[4] + M[1] * M[5] + M[2] * M[6] + M[3] * M[7];
 	if (!iszero(dp))
@@ -533,7 +531,7 @@ inline bool Matrix4<T>::isOrthogonal() const
 }
 
 template <class T>
-inline Vector3D<T> Matrix4<T>::rotateAndScaleVect(const Vector3D<T> &v) const
+Vector3D<T> Matrix4<T>::rotateAndScaleVect(const Vector3D<T> &v) const
 {
 	return {
 		v.X * M[0] + v.Y * M[4] + v.Z * M[8],
@@ -543,7 +541,7 @@ inline Vector3D<T> Matrix4<T>::rotateAndScaleVect(const Vector3D<T> &v) const
 }
 
 template <class T>
-inline Vector3D<T> Matrix4<T>::scaleThenInvRotVect(const Vector3D<T> &v) const
+Vector3D<T> Matrix4<T>::scaleThenInvRotVect(const Vector3D<T> &v) const
 {
 	return {
 		v.X * M[0] + v.Y * M[1] + v.Z * M[2],
@@ -553,7 +551,7 @@ inline Vector3D<T> Matrix4<T>::scaleThenInvRotVect(const Vector3D<T> &v) const
 }
 
 template <class T>
-inline v3f &Matrix4<T>::transformVect(v3f &vect) const
+v3f &Matrix4<T>::transformVect(v3f &vect) const
 {
 	T vector[3];
 
@@ -569,7 +567,7 @@ inline v3f &Matrix4<T>::transformVect(v3f &vect) const
 }
 
 template <class T>
-inline void Matrix4<T>::transformVect(v3f &out, const v3f &in) const
+void Matrix4<T>::transformVect(v3f &out, const v3f &in) const
 {
 	out.X = in.X * M[0] + in.Y * M[4] + in.Z * M[8] + M[12];
 	out.Y = in.X * M[1] + in.Y * M[5] + in.Z * M[9] + M[13];
@@ -577,7 +575,7 @@ inline void Matrix4<T>::transformVect(v3f &out, const v3f &in) const
 }
 
 template <class T>
-inline void Matrix4<T>::transformVect(T *out, const v3f &in) const
+void Matrix4<T>::transformVect(T *out, const v3f &in) const
 {
 	out[0] = in.X * M[0] + in.Y * M[4] + in.Z * M[8] + M[12];
 	out[1] = in.X * M[1] + in.Y * M[5] + in.Z * M[9] + M[13];
@@ -586,7 +584,7 @@ inline void Matrix4<T>::transformVect(T *out, const v3f &in) const
 }
 
 template <class T>
-inline void Matrix4<T>::transformVec3(T *out, const T *in) const
+void Matrix4<T>::transformVec3(T *out, const T *in) const
 {
 	out[0] = in[0] * M[0] + in[1] * M[4] + in[2] * M[8] + M[12];
 	out[1] = in[0] * M[1] + in[1] * M[5] + in[2] * M[9] + M[13];
@@ -594,7 +592,7 @@ inline void Matrix4<T>::transformVec3(T *out, const T *in) const
 }
 
 template <class T>
-inline void Matrix4<T>::transformVec4(T *out, const T *in) const
+void Matrix4<T>::transformVec4(T *out, const T *in) const
 {
 	out[0] = in[0] * M[0] + in[1] * M[4] + in[2] * M[8] + in[3] * M[12];
 	out[1] = in[0] * M[1] + in[1] * M[5] + in[2] * M[9] + in[3] * M[13];
@@ -604,7 +602,7 @@ inline void Matrix4<T>::transformVec4(T *out, const T *in) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(plane3f &plane) const
+void Matrix4<T>::transformPlane(plane3f &plane) const
 {
 	v3f member;
 	// Transform the plane member point, i.e. rotate, translate and scale it.
@@ -618,7 +616,7 @@ inline void Matrix4<T>::transformPlane(plane3f &plane) const
 
 //! Transforms a plane by this matrix
 template <class T>
-inline void Matrix4<T>::transformPlane(const plane3f &in, utils::plane3f &out) const
+void Matrix4<T>::transformPlane(const plane3f &in, utils::plane3f &out) const
 {
 	out = in;
 	transformPlane(out);
@@ -626,7 +624,7 @@ inline void Matrix4<T>::transformPlane(const plane3f &in, utils::plane3f &out) c
 
 //! Transforms a axis aligned bounding box more accurately than transformBox()
 template <class T>
-inline void Matrix4<T>::transformBoxEx(aabbf &box) const
+void Matrix4<T>::transformBoxEx(aabbf &box) const
 {
 	const f32 Amin[3] = {box.MinEdge.X, box.MinEdge.Y, box.MinEdge.Z};
 	const f32 Amax[3] = {box.MaxEdge.X, box.MaxEdge.Y, box.MaxEdge.Z};
@@ -666,7 +664,7 @@ inline void Matrix4<T>::transformBoxEx(aabbf &box) const
 
 //! Multiplies this matrix by a 1x4 matrix
 template <class T>
-inline void Matrix4<T>::multiplyWith1x4Matrix(T *matrix) const
+void Matrix4<T>::multiplyWith1x4Matrix(T *matrix) const
 {
 	/*
 	0  1  2  3
@@ -688,7 +686,7 @@ inline void Matrix4<T>::multiplyWith1x4Matrix(T *matrix) const
 }
 
 template <class T>
-inline void Matrix4<T>::inverseTranslateVect(v3f &vect) const
+void Matrix4<T>::inverseTranslateVect(v3f &vect) const
 {
 	vect.X = vect.X - M[12];
 	vect.Y = vect.Y - M[13];
@@ -696,7 +694,7 @@ inline void Matrix4<T>::inverseTranslateVect(v3f &vect) const
 }
 
 template <class T>
-inline void Matrix4<T>::translateVect(v3f &vect) const
+void Matrix4<T>::translateVect(v3f &vect) const
 {
 	vect.X = vect.X + M[12];
 	vect.Y = vect.Y + M[13];
@@ -704,7 +702,7 @@ inline void Matrix4<T>::translateVect(v3f &vect) const
 }
 
 template <class T>
-inline bool Matrix4<T>::getInverse(Matrix4<T> &out) const
+bool Matrix4<T>::getInverse(Matrix4<T> &out) const
 {
 	/// Calculates the inverse of this Matrix
 	/// The inverse is calculated using Cramers rule.
@@ -719,7 +717,7 @@ inline bool Matrix4<T>::getInverse(Matrix4<T> &out) const
 			(m[1] * m[7] - m[3] * m[5]) * (m[8] * m[14] - m[10] * m[12]) +
 			(m[2] * m[7] - m[3] * m[6]) * (m[8] * m[13] - m[9] * m[12]);
 
-    if (equals(d, 0, T_MIN(f32)))
+    if (utils::equals(d, 0, T_MIN(f32)))
 		return false;
 
     d = 1.0 / d;
@@ -779,7 +777,7 @@ inline bool Matrix4<T>::getInverse(Matrix4<T> &out) const
 //! Inverts a primitive matrix which only contains a translation and a rotation
 //! \param out: where result matrix is written to.
 template <class T>
-inline bool Matrix4<T>::getInversePrimitive(Matrix4<T> &out) const
+bool Matrix4<T>::getInversePrimitive(Matrix4<T> &out) const
 {
 	out.M[0] = M[0];
 	out.M[1] = M[4];
@@ -807,7 +805,7 @@ inline bool Matrix4<T>::getInversePrimitive(Matrix4<T> &out) const
 /*!
  */
 template <class T>
-inline bool Matrix4<T>::makeInverse()
+bool Matrix4<T>::makeInverse()
 {
 	Matrix4<T> temp(EM4CONST_NOTHING);
 
@@ -820,7 +818,7 @@ inline bool Matrix4<T>::makeInverse()
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::operator=(const T &scalar)
+Matrix4<T> &Matrix4<T>::operator=(const T &scalar)
 {
 	for (s32 i = 0; i < 16; ++i)
 		M[i] = scalar;
@@ -830,7 +828,7 @@ inline Matrix4<T> &Matrix4<T>::operator=(const T &scalar)
 
 // Builds a right-handed perspective projection matrix based on a field of view
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovRH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovRH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
@@ -872,7 +870,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovRH(
 
 // Builds a left-handed perspective projection matrix based on a field of view
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovLH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovLH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
@@ -914,7 +912,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovLH(
 
 // Builds a left-handed perspective projection matrix based on a field of view, with far plane culling at infinity
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovInfinityLH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovInfinityLH(
 		f32 fieldOfViewRadians, f32 aspectRatio, f32 zNear, f32 epsilon)
 {
     const f64 h = 1.0 / (tan(fieldOfViewRadians * 0.5));
@@ -946,7 +944,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveFovInfinityLH(
 
 // Builds a left-handed orthogonal projection matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoLH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoLH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     assert(widthOfViewVolume != 0.f);  // divide by zero
@@ -985,7 +983,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoLH(
 
 // Builds a right-handed orthogonal projection matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoRH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoRH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     assert(widthOfViewVolume != 0.f);  // divide by zero
@@ -1024,7 +1022,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixOrthoRH(
 
 // Builds a right-handed perspective projection matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveRH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveRH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     assert(widthOfViewVolume != 0.f);  // divide by zero
@@ -1064,7 +1062,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveRH(
 
 // Builds a left-handed perspective projection matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveLH(
+Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveLH(
 		f32 widthOfViewVolume, f32 heightOfViewVolume, f32 zNear, f32 zFar, bool zClipFromZero)
 {
     assert(widthOfViewVolume != 0.f);  // divide by zero
@@ -1104,7 +1102,7 @@ inline Matrix4<T> &Matrix4<T>::buildProjectionMatrixPerspectiveLH(
 
 // Builds a matrix that flattens geometry into a plane.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildShadowMatrix(const v3f &light, utils::plane3f plane, f32 point)
+Matrix4<T> &Matrix4<T>::buildShadowMatrix(const v3f &light, utils::plane3f plane, f32 point)
 {
 	plane.Normal.normalize();
 	const f32 d = plane.Normal.dotProduct(light);
@@ -1134,7 +1132,7 @@ inline Matrix4<T> &Matrix4<T>::buildShadowMatrix(const v3f &light, utils::plane3
 
 // Builds a left-handed look-at matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixLH(
+Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixLH(
 		const v3f &position,
 		const v3f &target,
 		const v3f &upVector)
@@ -1172,7 +1170,7 @@ inline Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixLH(
 
 // Builds a right-handed look-at matrix.
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixRH(
+Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixRH(
 		const v3f &position,
 		const v3f &target,
 		const v3f &upVector)
@@ -1210,7 +1208,7 @@ inline Matrix4<T> &Matrix4<T>::buildCameraLookAtMatrixRH(
 
 // creates a new matrix as interpolated matrix from this and the passed one.
 template <class T>
-inline Matrix4<T> Matrix4<T>::interpolate(const utils::Matrix4<T> &b, f32 time) const
+Matrix4<T> Matrix4<T>::interpolate(const utils::Matrix4<T> &b, f32 time) const
 {
 	Matrix4<T> mat(EM4CONST_NOTHING);
 
@@ -1225,7 +1223,7 @@ inline Matrix4<T> Matrix4<T>::interpolate(const utils::Matrix4<T> &b, f32 time) 
 
 // returns transposed matrix
 template <class T>
-inline Matrix4<T> Matrix4<T>::getTransposed() const
+Matrix4<T> Matrix4<T>::getTransposed() const
 {
 	Matrix4<T> t(EM4CONST_NOTHING);
 	getTransposed(t);
@@ -1234,7 +1232,7 @@ inline Matrix4<T> Matrix4<T>::getTransposed() const
 
 // returns transposed matrix
 template <class T>
-inline void Matrix4<T>::getTransposed(Matrix4<T> &o) const
+void Matrix4<T>::getTransposed(Matrix4<T> &o) const
 {
 	o[0] = M[0];
 	o[1] = M[4];
@@ -1259,7 +1257,7 @@ inline void Matrix4<T>::getTransposed(Matrix4<T> &o) const
 
 // used to scale <-1,-1><1,1> to viewport
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildNDCToDCMatrix(recti &viewport, f32 zScale)
+Matrix4<T> &Matrix4<T>::buildNDCToDCMatrix(recti &viewport, f32 zScale)
 {
 	const f32 scaleX = (viewport.getWidth() - 0.75f) * 0.5f;
 	const f32 scaleY = -(viewport.getHeight() - 0.75f) * 0.5f;
@@ -1280,7 +1278,7 @@ inline Matrix4<T> &Matrix4<T>::buildNDCToDCMatrix(recti &viewport, f32 zScale)
 	http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToMatrix/index.htm
  */
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildRotateFromTo(const v3f &from, const v3f &to)
+Matrix4<T> &Matrix4<T>::buildRotateFromTo(const v3f &from, const v3f &to)
 {
 	// unit vectors
 	v3f f(from);
@@ -1336,7 +1334,7 @@ inline Matrix4<T> &Matrix4<T>::buildRotateFromTo(const v3f &from, const v3f &to)
 \param from: source vector to rotate from
  */
 template <class T>
-inline void Matrix4<T>::buildAxisAlignedBillboard(
+void Matrix4<T>::buildAxisAlignedBillboard(
 		const v3f &camPos,
 		const v3f &center,
 		const v3f &translation,
@@ -1386,7 +1384,7 @@ inline void Matrix4<T>::buildAxisAlignedBillboard(
 
 //! Builds a combined matrix which translate to a center before rotation and translate afterward
 template <class T>
-inline void Matrix4<T>::setRotationCenter(const v3f &center, const v3f &translation)
+void Matrix4<T>::setRotationCenter(const v3f &center, const v3f &translation)
 {
 	M[12] = -M[0] * center.X - M[4] * center.Y - M[8] * center.Z + (center.X - translation.X);
 	M[13] = -M[1] * center.X - M[5] * center.Y - M[9] * center.Z + (center.Y - translation.Y);
@@ -1406,7 +1404,7 @@ inline void Matrix4<T>::setRotationCenter(const v3f &center, const v3f &translat
 */
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::buildTextureTransform(f32 rotateRad,
+Matrix4<T> &Matrix4<T>::buildTextureTransform(f32 rotateRad,
 		const v2f &rotatecenter,
 		const v2f &translate,
 		const v2f &scale)
@@ -1439,7 +1437,7 @@ inline Matrix4<T> &Matrix4<T>::buildTextureTransform(f32 rotateRad,
 
 // rotate about z axis, center ( 0.5, 0.5 )
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTextureRotationCenter(f32 rotateRad)
+Matrix4<T> &Matrix4<T>::setTextureRotationCenter(f32 rotateRad)
 {
 	const f32 c = cosf(rotateRad);
 	const f32 s = sinf(rotateRad);
@@ -1456,7 +1454,7 @@ inline Matrix4<T> &Matrix4<T>::setTextureRotationCenter(f32 rotateRad)
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTextureTranslate(f32 x, f32 y)
+Matrix4<T> &Matrix4<T>::setTextureTranslate(f32 x, f32 y)
 {
 	M[8] = (T)x;
 	M[9] = (T)y;
@@ -1465,14 +1463,14 @@ inline Matrix4<T> &Matrix4<T>::setTextureTranslate(f32 x, f32 y)
 }
 
 template <class T>
-inline void Matrix4<T>::getTextureTranslate(f32 &x, f32 &y) const
+void Matrix4<T>::getTextureTranslate(f32 &x, f32 &y) const
 {
 	x = (f32)M[8];
 	y = (f32)M[9];
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTextureTranslateTransposed(f32 x, f32 y)
+Matrix4<T> &Matrix4<T>::setTextureTranslateTransposed(f32 x, f32 y)
 {
 	M[2] = (T)x;
 	M[6] = (T)y;
@@ -1481,7 +1479,7 @@ inline Matrix4<T> &Matrix4<T>::setTextureTranslateTransposed(f32 x, f32 y)
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTextureScale(f32 sx, f32 sy)
+Matrix4<T> &Matrix4<T>::setTextureScale(f32 sx, f32 sy)
 {
 	M[0] = (T)sx;
 	M[5] = (T)sy;
@@ -1490,14 +1488,14 @@ inline Matrix4<T> &Matrix4<T>::setTextureScale(f32 sx, f32 sy)
 }
 
 template <class T>
-inline void Matrix4<T>::getTextureScale(f32 &sx, f32 &sy) const
+void Matrix4<T>::getTextureScale(f32 &sx, f32 &sy) const
 {
 	sx = (f32)M[0];
 	sy = (f32)M[5];
 }
 
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setTextureScaleCenter(f32 sx, f32 sy)
+Matrix4<T> &Matrix4<T>::setTextureScaleCenter(f32 sx, f32 sy)
 {
 	M[0] = (T)sx;
 	M[5] = (T)sy;
@@ -1509,7 +1507,7 @@ inline Matrix4<T> &Matrix4<T>::setTextureScaleCenter(f32 sx, f32 sy)
 
 // sets all matrix data members at once
 template <class T>
-inline Matrix4<T> &Matrix4<T>::setM(const T *data)
+Matrix4<T> &Matrix4<T>::setM(const T *data)
 {
 	memcpy(M, data, 16 * sizeof(T));
 
@@ -1518,7 +1516,7 @@ inline Matrix4<T> &Matrix4<T>::setM(const T *data)
 
 //! Compare two matrices using the equal method
 template <class T>
-inline bool Matrix4<T>::equals(const utils::Matrix4<T> &other, const T tolerance) const
+bool Matrix4<T>::equals(const utils::Matrix4<T> &other, const T tolerance) const
 {
 	for (s32 i = 0; i < 16; ++i)
 		if (!utils::equals(M[i], other.M[i], tolerance))
@@ -1529,7 +1527,7 @@ inline bool Matrix4<T>::equals(const utils::Matrix4<T> &other, const T tolerance
 
 // Multiply by scalar.
 template <class T>
-inline Matrix4<T> operator*(const T scalar, const Matrix4<T> &mat)
+Matrix4<T> operator*(const T scalar, const Matrix4<T> &mat)
 {
 	return mat * scalar;
 }

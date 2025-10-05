@@ -63,7 +63,7 @@ color8 orange = color8(PF_RGBA8, 255, 165, 0, 255);
 color8 pink = color8(PF_RGBA8, 255, 192, 203, 255);
 color8 brown = color8(PF_RGBA8, 165, 42, 42, 255);
 
-inline void ColorHSL::fromRGBA(const colorf &color)
+void ColorHSL::fromRGBA(const colorf &color)
 {
     const f32 maxVal = utils::max3<f32>(color.R(), color.G(), color.B());
     const f32 minVal = utils::min3<f32>(color.R(), color.G(), color.B());
@@ -96,7 +96,7 @@ inline void ColorHSL::fromRGBA(const colorf &color)
 		H += 360;
 }
 
-inline void ColorHSL::toRGBA(colorf &color) const
+void ColorHSL::toRGBA(colorf &color) const
 {
 	const f32 l = L / 100;
     if (utils::equals(S, 0.0f)) { // grey
@@ -123,7 +123,7 @@ inline void ColorHSL::toRGBA(colorf &color) const
 }
 
 // algorithm from Foley/Van-Dam
-inline f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
+f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 {
 	if (rh < 0)
 		rh += 1;

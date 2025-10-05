@@ -140,6 +140,7 @@ u32 Shader::createShader(GLenum shaderType, const std::string &code)
 	if (code.empty())
 		return 0;
 
+    InfoStream << "code:\n" << code << "\n";
 	GLuint shader = glCreateShader(shaderType);
     const char *cstr_code = code.c_str();
     glShaderSource(shader, 1, &cstr_code, nullptr);

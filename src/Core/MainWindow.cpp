@@ -834,6 +834,11 @@ const Clipboard *MainWindow::getClipboard() const
     return &SDLClipboard;
 }
 
+CursorControl &MainWindow::getCursorControl()
+{
+    return Cursor;
+}
+
 void MainWindow::updateViewportAndScale()
 {
     int window_w, window_h;

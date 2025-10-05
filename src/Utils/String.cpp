@@ -1,6 +1,5 @@
 #include "String.h"
 #include <codecvt>
-#include <locale>
 
 namespace utils
 {
@@ -35,17 +34,6 @@ namespace utils
         std::wstring_convert<std::codecvt_utf16<wchar_t>> converter;
         std::string bytes = converter.to_bytes(str.data());
         return std::u16string(reinterpret_cast<const char16_t *>(bytes.data()), bytes.size() / 2);
-    }
-
-    template <class T>
-    bool equal_ignore_case(const std::basic_string<T> &str1, const std::basic_string<T> &str2)
-    {
-        std::locale loc;
-
-        auto lstr1 = std::tolower(str1, loc);
-        auto lstr2 = std::tolower(str2, loc);
-
-        return lstr1 == lstr2;
     }
 
 }

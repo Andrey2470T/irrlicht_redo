@@ -50,7 +50,10 @@ public:
 	~CursorControl();
 
 	//! Changes the visible state of the mouse cursor.
-	void setVisible(bool visible);
+    void setVisible(bool visible)
+    {
+        IsVisible = visible;
+    }
 
 	//! Returns if the cursor is currently visible.
 	bool isVisible() const

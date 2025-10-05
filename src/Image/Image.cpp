@@ -109,6 +109,14 @@ void Image::setPaletteColors(const std::vector<color8> &colors)
 		palette->colors.at(i) = colors[i];
 }
 
+void Image::setClipRegion(u32 x, u32 y, u32 size_x, u32 size_y)
+{
+    clipregion.pos.X = x;
+    clipregion.pos.Y = y;
+    clipregion.size.X = size_x;
+    clipregion.size.Y = size_y;
+}
+
 Image *Image::copy() const
 {
     v2u clipSize = getClipSize();

@@ -3,21 +3,21 @@
 namespace utils {
 
 // Constructor which converts Euler angles to a Quaternion
-inline Quaternion::Quaternion(f32 x, f32 y, f32 z)
+Quaternion::Quaternion(f32 x, f32 y, f32 z)
 	: X(0.0f), Y(0.0f), Z(0.0f), W(1.0f)
 {
     set(x, y, z);
 }
 
 // Constructor which converts Euler angles to a Quaternion
-inline Quaternion::Quaternion(const v3f &vec)
+Quaternion::Quaternion(const v3f &vec)
 	: X(0.0f), Y(0.0f), Z(0.0f), W(1.0f)
 {
 	set(vec.X, vec.Y, vec.Z);
 }
 
 // multiplication operator
-inline Quaternion Quaternion::operator*(const Quaternion &other) const
+Quaternion Quaternion::operator*(const Quaternion &other) const
 {
 	Quaternion tmp;
 
@@ -30,13 +30,13 @@ inline Quaternion Quaternion::operator*(const Quaternion &other) const
 }
 
 // multiplication operator
-inline Quaternion Quaternion::operator*(f32 s) const
+Quaternion Quaternion::operator*(f32 s) const
 {
 	return Quaternion(s * X, s * Y, s * Z, s * W);
 }
 
 // multiplication operator
-inline Quaternion &Quaternion::operator*=(f32 s)
+Quaternion &Quaternion::operator*=(f32 s)
 {
 	X *= s;
 	Y *= s;
@@ -46,19 +46,19 @@ inline Quaternion &Quaternion::operator*=(f32 s)
 }
 
 // multiplication operator
-inline Quaternion &Quaternion::operator*=(const Quaternion &other)
+Quaternion &Quaternion::operator*=(const Quaternion &other)
 {
 	return (*this = other * (*this));
 }
 
 // add operator
-inline Quaternion Quaternion::operator+(const Quaternion &b) const
+Quaternion Quaternion::operator+(const Quaternion &b) const
 {
 	return Quaternion(X + b.X, Y + b.Y, Z + b.Z, W + b.W);
 }
 
 //! Faster method to create a rotation matrix, you should normalize the Quaternion before!
-inline void Quaternion::getMatrixFast(matrix4 &dest) const
+void Quaternion::getMatrixFast(matrix4 &dest) const
 {
 	// TODO:
 	// gpu Quaternion skinning => fast Bones transform chain O_O YEAH!
@@ -87,7 +87,7 @@ inline void Quaternion::getMatrixFast(matrix4 &dest) const
 /*!
 	Creates a matrix from this Quaternion
 */
-inline void Quaternion::getMatrix(matrix4 &dest,
+void Quaternion::getMatrix(matrix4 &dest,
 		const v3f &center) const
 {
 	// ok creating a copy may be slower, but at least avoid internal
@@ -133,7 +133,7 @@ inline void Quaternion::getMatrix(matrix4 &dest,
 	m2.setInverseTranslation(center);
 	lookat *= m2;
 */
-inline void Quaternion::getMatrixCenter(matrix4 &dest,
+void Quaternion::getMatrixCenter(matrix4 &dest,
 		const v3f &center,
 		const v3f &translation) const
 {
@@ -163,7 +163,7 @@ inline void Quaternion::getMatrixCenter(matrix4 &dest,
 }
 
 // Creates a matrix from this Quaternion
-inline void Quaternion::getMatrix_transposed(matrix4 &dest) const
+void Quaternion::getMatrix_transposed(matrix4 &dest) const
 {
 	Quaternion q(*this);
 	q.normalize();
@@ -194,7 +194,7 @@ inline void Quaternion::getMatrix_transposed(matrix4 &dest) const
 }
 
 // Inverts this Quaternion
-inline Quaternion &Quaternion::makeInverse()
+Quaternion &Quaternion::makeInverse()
 {
 	X = -X;
 	Y = -Y;
@@ -203,7 +203,7 @@ inline Quaternion &Quaternion::makeInverse()
 }
 
 // sets new Quaternion
-inline Quaternion &Quaternion::set(f32 x, f32 y, f32 z, f32 w)
+Quaternion &Quaternion::set(f32 x, f32 y, f32 z, f32 w)
 {
 	X = x;
 	Y = y;
@@ -213,7 +213,7 @@ inline Quaternion &Quaternion::set(f32 x, f32 y, f32 z, f32 w)
 }
 
 // sets new Quaternion based on Euler angles
-inline Quaternion &Quaternion::set(f32 x, f32 y, f32 z)
+Quaternion &Quaternion::set(f32 x, f32 y, f32 z)
 {
 	f64 angle;
 
@@ -243,19 +243,19 @@ inline Quaternion &Quaternion::set(f32 x, f32 y, f32 z)
 }
 
 // sets new Quaternion based on Euler angles
-inline Quaternion &Quaternion::set(const v3f &vec)
+Quaternion &Quaternion::set(const v3f &vec)
 {
 	return set(vec.X, vec.Y, vec.Z);
 }
 
 // sets new Quaternion based on other Quaternion
-inline Quaternion &Quaternion::set(const utils::Quaternion &quat)
+Quaternion &Quaternion::set(const utils::Quaternion &quat)
 {
 	return (*this = quat);
 }
 
 //! returns if this Quaternion equals the other one, taking floating point rounding errors into account
-inline bool Quaternion::equals(const Quaternion &other, const f32 tolerance) const
+bool Quaternion::equals(const Quaternion &other, const f32 tolerance) const
 {
 	return utils::equals(X, other.X, tolerance) &&
 		   utils::equals(Y, other.Y, tolerance) &&
@@ -264,7 +264,7 @@ inline bool Quaternion::equals(const Quaternion &other, const f32 tolerance) con
 }
 
 // normalizes the Quaternion
-inline Quaternion &Quaternion::normalize()
+Quaternion &Quaternion::normalize()
 {
 	// removed conditional branch since it may slow down and anyway the condition was
 	// false even after normalization in some cases.
@@ -272,21 +272,21 @@ inline Quaternion &Quaternion::normalize()
 }
 
 // Set this Quaternion to the result of the linear interpolation between two Quaternions
-inline Quaternion &Quaternion::lerp(Quaternion q1, Quaternion q2, f32 time)
+Quaternion &Quaternion::lerp(Quaternion q1, Quaternion q2, f32 time)
 {
 	const f32 scale = 1.0f - time;
 	return (*this = (q1 * scale) + (q2 * time));
 }
 
 // Set this Quaternion to the result of the linear interpolation between two Quaternions and normalize the result
-inline Quaternion &Quaternion::lerpN(Quaternion q1, Quaternion q2, f32 time)
+Quaternion &Quaternion::lerpN(Quaternion q1, Quaternion q2, f32 time)
 {
 	const f32 scale = 1.0f - time;
 	return (*this = ((q1 * scale) + (q2 * time)).normalize());
 }
 
 // set this Quaternion to the result of the interpolation between two Quaternions
-inline Quaternion &Quaternion::slerp(Quaternion q1, Quaternion q2, f32 time, f32 threshold)
+Quaternion &Quaternion::slerp(Quaternion q1, Quaternion q2, f32 time, f32 threshold)
 {
 	f32 angle = q1.dotProduct(q2);
 
@@ -307,13 +307,13 @@ inline Quaternion &Quaternion::slerp(Quaternion q1, Quaternion q2, f32 time, f32
 }
 
 // calculates the dot product
-inline f32 Quaternion::dotProduct(const Quaternion &q2) const
+f32 Quaternion::dotProduct(const Quaternion &q2) const
 {
 	return (X * q2.X) + (Y * q2.Y) + (Z * q2.Z) + (W * q2.W);
 }
 
 //! axis must be unit length, angle in radians
-inline Quaternion &Quaternion::fromAngleAxis(f32 angle, const v3f &axis)
+Quaternion &Quaternion::fromAngleAxis(f32 angle, const v3f &axis)
 {
 	const f32 fHalfAngle = 0.5f * angle;
 	const f32 fSin = sinf(fHalfAngle);
@@ -324,7 +324,7 @@ inline Quaternion &Quaternion::fromAngleAxis(f32 angle, const v3f &axis)
 	return *this;
 }
 
-inline void Quaternion::toAngleAxis(f32 &angle, v3f &axis) const
+void Quaternion::toAngleAxis(f32 &angle, v3f &axis) const
 {
 	const f32 scale = sqrtf(X * X + Y * Y + Z * Z);
 
@@ -343,7 +343,7 @@ inline void Quaternion::toAngleAxis(f32 &angle, v3f &axis) const
 }
 
 
-inline void Quaternion::toEuler(v3f &euler) const
+void Quaternion::toEuler(v3f &euler) const
 {
 	const f64 sqw = W * W;
 	const f64 sqx = X * X;
@@ -352,7 +352,7 @@ inline void Quaternion::toEuler(v3f &euler) const
 	const f64 test = 2.0 * (Y * W - X * Z);
 
     /*
-     * inline bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERROR_f64)
+     * bool equals(const f64 a, const f64 b, const f32 tolerance = ROUNDING_ERROR_f64)
     {
         return std::abs(a - b) <= tolerance;
     }*/
@@ -380,7 +380,7 @@ inline void Quaternion::toEuler(v3f &euler) const
 	}
 }
 
-inline void Quaternion::fromEuler(const v3f &euler)
+void Quaternion::fromEuler(const v3f &euler)
 {
     const f64 halfZ = euler.Z * 0.5;
     const f64 halfX = euler.X * 0.5;
@@ -399,7 +399,7 @@ inline void Quaternion::fromEuler(const v3f &euler)
     Z = sz * cx * cy - cz * sx * sy;
 }
 
-inline v3f Quaternion::operator*(const v3f &v) const
+v3f Quaternion::operator*(const v3f &v) const
 {
 	// nVidia SDK implementation
 
@@ -414,7 +414,7 @@ inline v3f Quaternion::operator*(const v3f &v) const
 }
 
 // set Quaternion to identity
-inline utils::Quaternion &Quaternion::makeIdentity()
+utils::Quaternion &Quaternion::makeIdentity()
 {
 	W = 1.f;
 	X = 0.f;
@@ -423,7 +423,7 @@ inline utils::Quaternion &Quaternion::makeIdentity()
 	return *this;
 }
 
-inline utils::Quaternion &Quaternion::rotationFromTo(const v3f &from, const v3f &to)
+utils::Quaternion &Quaternion::rotationFromTo(const v3f &from, const v3f &to)
 {
 	// Based on Stan Melax's article in Game Programming Gems
 	// Optimized by Robert Eisele: https://raw.org/proof/Quaternion-from-two-vectors
