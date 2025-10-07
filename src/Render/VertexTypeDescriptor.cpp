@@ -7,7 +7,6 @@ namespace render
 VertexTypeDescriptor::VertexTypeDescriptor(u8 pos_coords_count, u8 color_cmp_count, bool init_normal, bool init_uv, u8 uv_count)
     : Name(""), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 {
-    InfoStream << "VertexTypeDescriptor: uv count: "<<uv_count<<" 1\n";
     if (!checkForAttrsCmpsCount())
         return;
     initAttributes();
@@ -17,7 +16,6 @@ VertexTypeDescriptor::VertexTypeDescriptor(const std::string &name, const std::v
     u8 pos_coords_count, u8 color_cmp_count, bool init_normal, bool init_uv, u8 uv_count)
     : Name(name), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 {
-    InfoStream << "VertexTypeDescriptor: uv count: "<<uv_count<<" 2\n";
     if (!checkForAttrsCmpsCount())
         return;
     initAttributes();

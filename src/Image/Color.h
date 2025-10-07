@@ -42,17 +42,19 @@ public:
 	}
 
     color8(const color8 &other)
-        : format(other.format), color(other.color)
+        : format(other.format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
     {
         assert(isFormatSupportedForImage(format));
+        set(other.R(), other.G(), other.B(), other.A());
     }
 
     color8 &operator=(const color8 &other)
 	{
 		format = other.getFormat();
         assert(isFormatSupportedForImage(format));
-
-		set(other.R(), other.G(), other.B(), other.A());
+        
+        color.reallocate(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8);
+        set(other.R(), other.G(), other.B(), other.A());
 
 		return *this;
 	}
