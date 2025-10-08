@@ -201,20 +201,6 @@ private:
 	friend class CursorControl;
 };
 
-struct MouseMultiClicks
-{
-    MouseMultiClicks() :
-        DoubleClickTime(500), CountSuccessiveClicks(0), LastClickTime(0), LastMouseInputEvent(MIE_COUNT)
-    {
-    }
-
-    u32 DoubleClickTime;
-    u32 CountSuccessiveClicks;
-    u32 LastClickTime;
-    v2i LastClick;
-    MouseInputEventType LastMouseInputEvent;
-};
-
 }
 
 

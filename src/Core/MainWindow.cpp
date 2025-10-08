@@ -127,8 +127,6 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 
 MainWindow::~MainWindow()
 {
-    clearEventQueue();
-
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
     for (auto &joystick : Joysticks)
         if (joystick)
@@ -147,6 +145,8 @@ MainWindow::~MainWindow()
 	InfoStream << "Quit SDL\n";
 
     SDL_Quit();
+
+    clearEventQueue();
 }
 
 

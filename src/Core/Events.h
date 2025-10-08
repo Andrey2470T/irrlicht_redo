@@ -464,6 +464,55 @@ struct Event
 		// zero the biggest union member we have, which clears all others too
         memset(&Joystick, 0, sizeof(Joystick));
 	}
+
+    Event(const Event& other) {
+        Type = other.Type;
+        if (Type == ET_STRING_INPUT_EVENT && other.StringInput.Str) {
+            StringInput.Str = new std::wstring(*other.StringInput.Str);
+        } else {
+            memcpy(&Joystick, &other.Joystick, sizeof(Joystick));
+        }
+    }
+
+    Event& operator=(const Event& other) {
+        if (this != &other) {
+            if (Type == ET_STRING_INPUT_EVENT && StringInput.Str) {
+                delete StringInput.Str;
+            }
+            Type = other.Type;
+            if (Type == ET_STRING_INPUT_EVENT && other.StringInput.Str) {
+                StringInput.Str = new std::wstring(*other.StringInput.Str);
+            } else {
+                memcpy(&Joystick, &other.Joystick, sizeof(Joystick));
+            }
+        }
+        return *this;
+    }
+
+    Event(Event&& other) noexcept {
+        Type = other.Type;
+        memcpy(&Joystick, &other.Joystick, sizeof(Joystick));
+        other.Type = static_cast<EventType>(0);
+        if (Type == ET_STRING_INPUT_EVENT) {
+            other.StringInput.Str = nullptr;
+        }
+    }
+
+    Event& operator=(Event&& other) noexcept {
+        if (this != &other) {
+            if (Type == ET_STRING_INPUT_EVENT && StringInput.Str) {
+                delete StringInput.Str;
+            }
+            Type = other.Type;
+            memcpy(&Joystick, &other.Joystick, sizeof(Joystick));
+            other.Type = static_cast<EventType>(0);
+            if (Type == ET_STRING_INPUT_EVENT) {
+                other.StringInput.Str = nullptr;
+            }
+        }
+        return *this;
+    }
+
     ~Event()
     {
         if (Type == ET_STRING_INPUT_EVENT && StringInput.Str) {
