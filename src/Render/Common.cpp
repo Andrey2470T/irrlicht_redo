@@ -36,9 +36,9 @@ bool testGLError(const char *file, int line)
 {
 	std::string file_p(file);
 
-	GLenum g = glGetError();
+    GLenum g = glGetError();
 	std::string err = "";
-	switch (g) {
+    switch (g) {
 	case GL_NO_ERROR:
 		return false;
 	case GL_INVALID_ENUM:

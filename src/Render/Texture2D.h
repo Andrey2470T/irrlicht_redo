@@ -17,6 +17,8 @@ protected:
 	std::unique_ptr<img::Image> imgCache;
 
     u8 msaa = 0;
+
+    bool bound = false;
 public:
     Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n);
     Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings=TextureSettings());
@@ -26,15 +28,9 @@ public:
 		return TT_2D;
 	}
 
-	void bind() const override
-	{
-        glBindTexture(tex2D(), texID);
-	}
+    void bind() override;
 
-	void unbind() const override
-	{
-        glBindTexture(tex2D(), 0);
-	}
+    void unbind() override;
 
 	void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override;
 	void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;

@@ -13,6 +13,14 @@
 namespace core
 {
 
+Clipboard::~Clipboard()
+{
+    if (ClipboardSelectionText)
+        SDL_free(ClipboardSelectionText);
+    if (PrimarySelectionText)
+        SDL_free(PrimarySelectionText);
+}
+
 void Clipboard::copyToClipboard(const c8 *text) const
 {
     SDL_SetClipboardText(text);
@@ -27,7 +35,8 @@ void Clipboard::copyToPrimarySelection(const c8 *text) const
 
 const c8 *Clipboard::getTextFromClipboard() const
 {
-    SDL_free(ClipboardSelectionText);
+    if (ClipboardSelectionText)
+        SDL_free(ClipboardSelectionText);
     ClipboardSelectionText = SDL_GetClipboardText();
     return ClipboardSelectionText;
 }
@@ -35,7 +44,8 @@ const c8 *Clipboard::getTextFromClipboard() const
 const c8 *Clipboard::getTextFromPrimarySelection() const
 {
 #if SDL_VERSION_ATLEAST(2, 25, 0)
-    SDL_free(PrimarySelectionText);
+    if (PrimarySelectionText)
+        SDL_free(PrimarySelectionText);
     PrimarySelectionText = SDL_GetPrimarySelectionText();
     return PrimarySelectionText;
 #endif
@@ -44,7 +54,7 @@ const c8 *Clipboard::getTextFromPrimarySelection() const
 
 MainWindow::MainWindow(const MainWindowParameters &params)
     : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor),
-      Cursor(this), Params(params), Resizable(params.Resizable == 1 ? true : false)//, Close(false)
+      Cursor(this), Params(params), Resizable(params.Resizable == 1 ? true : false)
 {
 #ifdef ANDROID
 	// Blocking on pause causes problems with multiplayer.
@@ -127,6 +137,8 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 
 MainWindow::~MainWindow()
 {
+    clearEventQueue();
+
 #ifdef COMPILE_WITH_JOYSTICK_EVENTS
     for (auto &joystick : Joysticks)
         if (joystick)
@@ -145,8 +157,6 @@ MainWindow::~MainWindow()
 	InfoStream << "Quit SDL\n";
 
     SDL_Quit();
-
-    clearEventQueue();
 }
 
 
@@ -344,8 +354,13 @@ std::optional<Event> MainWindow::popEvent()
 
 void MainWindow::clearEventQueue()
 {
-    while (!Events.empty())
+    while (!Events.empty()) {
+        auto event = Events.front();
+        if (event.Type == ET_STRING_INPUT_EVENT && event.StringInput.Str) {
+            delete event.StringInput.Str;
+        }
         Events.pop();
+    }
 }
 
 bool MainWindow::pollEventsFromQueue()

@@ -16,18 +16,26 @@ StreamTexture2D::~StreamTexture2D()
     deletePBO();
 }
 
-void StreamTexture2D::bind() const
+void StreamTexture2D::bind()
 {
     Texture2D::bind();
 
+    if (bound)
+        return;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
+    TEST_GL_ERROR();
+    bound = true;
 }
 
-void StreamTexture2D::unbind() const
+void StreamTexture2D::unbind()
 {
     Texture2D::unbind();
 
+    if (!bound)
+        return;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    TEST_GL_ERROR();
+    bound = false;
 }
 
 void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod)
@@ -47,9 +55,14 @@ void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *im
 
     auto &formatInfo = img::pixelFormatInfo.at(format);
     glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, newWidth, newHeight, 0, formatInfo.pixelFormat, formatInfo.pixelType, imgCache->getData());
+    TEST_GL_ERROR();
 
-    if (texSettings.hasMipMaps)
+    if (texSettings.hasMipMaps) {
         glGenerateMipmap(GL_TEXTURE_2D);
+        TEST_GL_ERROR();
+    }
+
+    Texture2D::unbind();
 
     createNewPBO(newWidth, newHeight);
 
@@ -86,11 +99,15 @@ void StreamTexture2D::flush()
 
     if (fence) {
         glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+        TEST_GL_ERROR();
         glDeleteSync(fence);
+        TEST_GL_ERROR();
     }
 
     std::list<rectu> mergedRegions;
     mergeRegions(mergedRegions);
+
+    bind();
 
     auto formatInfo = img::pixelFormatInfo.at(format);
     for (auto &region : mergedRegions) {
@@ -101,14 +118,18 @@ void StreamTexture2D::flush()
         u32 offset = (y * width + x) * formatInfo.size;
         u32 length = width * height * formatInfo.size;
         glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, offset, length);
+        TEST_GL_ERROR();
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, formatInfo.pixelFormat, formatInfo.pixelType, nullptr);
+        TEST_GL_ERROR();
     }
 
     fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     dirtyRegions.clear();
     
     TEST_GL_ERROR();
+
+    unbind();
 }
 
 void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
@@ -141,14 +162,18 @@ void StreamTexture2D::createNewPBO(u32 newWidth, u32 newHeight)
     deletePBO();
 
     glGenBuffers(1, &pboID);
+    TEST_GL_ERROR();
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
+    TEST_GL_ERROR();
 
     auto pixelSize = img::pixelFormatInfo.at(format).size;
     glBufferStorage(GL_PIXEL_UNPACK_BUFFER, newWidth * newHeight * pixelSize, nullptr,
         GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    TEST_GL_ERROR();
 
     pboData = (u8*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, newWidth * newHeight * pixelSize,
         GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    TEST_GL_ERROR();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -160,10 +185,17 @@ void StreamTexture2D::deletePBO()
     if (pboID == 0)
         return;
 
-    glDeleteBuffers(1, &pboID);
+    if (!bound) {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
+        TEST_GL_ERROR();
+    }
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     pboData = nullptr;
+    TEST_GL_ERROR();
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    TEST_GL_ERROR();
 
+    glDeleteBuffers(1, &pboID);
     TEST_GL_ERROR();
 }
 

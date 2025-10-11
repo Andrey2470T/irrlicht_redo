@@ -33,6 +33,7 @@ class Clipboard
     mutable char *PrimarySelectionText = nullptr;
 public:
     Clipboard() = default;
+    ~Clipboard();
 
     void copyToClipboard(const c8 *text) const;
     void copyToPrimarySelection(const c8 *text) const;
@@ -199,6 +200,20 @@ private:
     u32 checkSuccessiveClicks(s32 mouseX, s32 mouseY, MouseInputEventType inputEvent);
 	
 	friend class CursorControl;
+};
+
+struct MouseMultiClicks
+{
+    MouseMultiClicks() :
+        DoubleClickTime(500), CountSuccessiveClicks(0), LastClickTime(0), LastMouseInputEvent(MIE_COUNT)
+    {
+    }
+
+    u32 DoubleClickTime;
+    u32 CountSuccessiveClicks;
+    u32 LastClickTime;
+    v2i LastClick;
+    MouseInputEventType LastMouseInputEvent;
 };
 
 }

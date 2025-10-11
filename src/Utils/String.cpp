@@ -1,4 +1,5 @@
 #include "String.h"
+#include "Core/LogStream.h"
 #include <codecvt>
 
 namespace utils

@@ -21,6 +21,8 @@ FrameBuffer::FrameBuffer(u32 _maxColorAttachments)
 FrameBuffer::~FrameBuffer()
 {
 	glDeleteFramebuffers(1, &fboID);
+
+    TEST_GL_ERROR();
 }
 
 void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const std::vector<CubeMapFace> &cubeMapFaceMappings)
@@ -34,6 +36,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
+    TEST_GL_ERROR();
 	u8 maxTextureCount = std::min((u8)textures.size(), maxColorAttachments);
 
 	colorTextures.resize(maxTextureCount, nullptr);
@@ -54,6 +57,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
         GLenum textarget = tex->getType() == TT_2D ? dynamic_cast<Texture2D *>(tex)->tex2D() : static_cast<u32>(cubeMapFaceMappings[i]);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, tex->getID(), 0);
+        TEST_GL_ERROR();
 
 		colorTextures[i] = tex;
 
@@ -76,6 +80,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
 void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMapFace)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
+    TEST_GL_ERROR();
 
 	bool already_attached = false;
 
@@ -95,6 +100,7 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target, texture->getID(), 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, target, texture->getID(), 0);
 #endif
+        TEST_GL_ERROR();
 		depthStencilTexture = texture;
 
         if (texture->getType() == TT_CUBEMAP)
@@ -116,20 +122,26 @@ void FrameBuffer::blitTo(const FrameBuffer *target)
     v2u destSize = target->getSize();
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fboID);
+    TEST_GL_ERROR();
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->getID());
+    TEST_GL_ERROR();
 
     glBlitFramebuffer(
         0, 0, srcSize.X, srcSize.Y,
         0, 0, destSize.X, destSize.Y,
         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    TEST_GL_ERROR();
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    TEST_GL_ERROR();
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    TEST_GL_ERROR();
 }
 
 bool FrameBuffer::checkStatus() const
 {
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    TEST_GL_ERROR();
 
 	switch (status) {
 		case GL_FRAMEBUFFER_COMPLETE:

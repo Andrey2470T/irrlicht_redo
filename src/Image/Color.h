@@ -26,7 +26,7 @@ class color8
 	//! depending on the format
     ByteArray color;
 public:
-    color8() = default;
+    color8() : format(PF_RGBA8), color(pixelFormatInfo[PF_RGBA8].channels, pixelFormatInfo[PF_RGBA8].size / 8) { set(0, 0, 0, 255); }
     color8(PixelFormat _format)
         : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
     {

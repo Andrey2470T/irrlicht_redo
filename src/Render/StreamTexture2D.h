@@ -14,14 +14,16 @@ class StreamTexture2D : public Texture2D {
     GLsync fence = nullptr;
 
     std::list<rectu> dirtyRegions;
+
+    bool bound = false;
 public:
     StreamTexture2D(const std::string &name, u32 width, u32 height,
         img::PixelFormat format, const TextureSettings &settings=TextureSettings());
 
     ~StreamTexture2D();
 
-    void bind() const override;
-    void unbind() const override;
+    void bind() override;
+    void unbind() override;
 
     void resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod);
 

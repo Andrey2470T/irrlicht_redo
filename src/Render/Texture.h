@@ -108,8 +108,8 @@ public:
 		return texSettings.isRenderTarget;
 	}
 
-	virtual void bind() const = 0;
-	virtual void unbind() const = 0;
+    virtual void bind() = 0;
+    virtual void unbind() = 0;
 
 	virtual void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;
 	virtual void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) = 0;

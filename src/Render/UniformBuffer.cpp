@@ -1,4 +1,6 @@
 #include "UniformBuffer.h"
+#include "Render/Common.h"
+#include "OpenGLIncludes.h"
 
 namespace render
 {
@@ -6,12 +8,15 @@ namespace render
 UniformBuffer::UniformBuffer(u32 bindingPoint, const ByteArray &uniforms)
 {
 	glGenBuffers(1, &uboID);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboID);
+    TEST_GL_ERROR();
+    bind();
 	glBufferData(GL_UNIFORM_BUFFER, uniforms.bytesCount(), uniforms.data(), GL_STATIC_DRAW);
+    TEST_GL_ERROR();
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, uboID);
+    TEST_GL_ERROR();
 
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    unbind();
 
 	uboBP = bindingPoint;
     uniformsData = uniforms;
@@ -20,13 +25,33 @@ UniformBuffer::UniformBuffer(u32 bindingPoint, const ByteArray &uniforms)
 UniformBuffer::~UniformBuffer()
 {
 	glDeleteBuffers(1, &uboID);
+    TEST_GL_ERROR();
+}
+
+void UniformBuffer::bind()
+{
+    if (bound)
+        return;
+    glBindBuffer(GL_UNIFORM_BUFFER, uboID);
+    TEST_GL_ERROR();
+    bound = true;
+}
+
+void UniformBuffer::unbind()
+{
+    if (!bound)
+        return;
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    TEST_GL_ERROR();
+    bound = false;
 }
 
 void UniformBuffer::uploadSubData(u32 offset, u32 size)
 {
-	glBindBuffer(GL_UNIFORM_BUFFER, uboID);
+    bind();
     glBufferSubData(GL_UNIFORM_BUFFER, offset, size, uniformsData.data());
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    TEST_GL_ERROR();
+    unbind();
 }
 
 }

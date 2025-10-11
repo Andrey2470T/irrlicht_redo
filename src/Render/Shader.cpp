@@ -1,6 +1,7 @@
 #include "Shader.h"
 #include <fstream>
 #include <sstream>
+#include "Render/Common.h"
 #include "UniformBuffer.h"
 
 namespace render
@@ -58,75 +59,95 @@ Shader::Shader(const std::string &vsCode, const std::string &fsCode, const std::
 Shader::~Shader()
 {
 	glDeleteShader(vertexShaderID);
+    TEST_GL_ERROR();
 	glDeleteShader(fragmentShaderID);
+    TEST_GL_ERROR();
 
-	if (geometryShaderID != 0)
+    if (geometryShaderID != 0) {
 		glDeleteShader(geometryShaderID);
+        TEST_GL_ERROR();
+    }
 
 	glDeleteProgram(programID);
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniformFloat(const std::string &name, f32 value)
 {
 	glUniform1f(getUniformLocation(name), value);
+    TEST_GL_ERROR();
 }
 void Shader::setUniformInt(const std::string &name, s32 value)
 {
 	glUniform1i(getUniformLocation(name), value);
+    TEST_GL_ERROR();
 }
 void Shader::setUniformUInt(const std::string &name, u32 value)
 {
 	glUniform1ui(getUniformLocation(name), value);
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniformFloatArray(const std::string &name, std::vector<f32> values)
 {
 	glUniform1fv(getUniformLocation(name), values.size(), values.data());
+    TEST_GL_ERROR();
 }
 void Shader::setUniformIntArray(const std::string &name, std::vector<s32> values)
 {
 	glUniform1iv(getUniformLocation(name), values.size(), values.data());
+    TEST_GL_ERROR();
 }
 void Shader::setUniformUIntArray(const std::string &name, std::vector<u32> values)
 {
 	glUniform1uiv(getUniformLocation(name), values.size(), values.data());
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniform2Float(const std::string &name, utils::v2f value)
 {
 	glUniform2f(getUniformLocation(name), value.X, value.Y);
+    TEST_GL_ERROR();
 }
 void Shader::setUniform2Int(const std::string &name, utils::v2i value)
 {
 	glUniform2i(getUniformLocation(name), value.X, value.Y);
+    TEST_GL_ERROR();
 }
 void Shader::setUniform2UInt(const std::string &name, utils::v2u value)
 {
 	glUniform2ui(getUniformLocation(name), value.X, value.Y);
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniform3Float(const std::string &name, utils::v3f value)
 {
 	glUniform3f(getUniformLocation(name), value.X, value.Y, value.Z);
+    TEST_GL_ERROR();
 }
 void Shader::setUniform3Int(const std::string &name, utils::v3i value)
 {
 	glUniform3i(getUniformLocation(name), value.X, value.Y, value.Z);
+    TEST_GL_ERROR();
 }
 void Shader::setUniform3UInt(const std::string &name, utils::v3u value)
 {
 	glUniform3ui(getUniformLocation(name), value.X, value.Y, value.Z);
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniform4x4Matrix(const std::string &name, utils::matrix4 value)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.pointer());
+    TEST_GL_ERROR();
 }
 
 void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
+    TEST_GL_ERROR();
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
+    TEST_GL_ERROR();
 }
 
 void Shader::setSampler(u32 block_index)
@@ -200,6 +221,7 @@ u32 Shader::getUniformLocation(const std::string &name)
         return found->second;
 	else {
 		u32 location = glGetUniformLocation(programID, name.c_str());
+        TEST_GL_ERROR();
 		uniforms[name] = location;
 		return location;
 	}

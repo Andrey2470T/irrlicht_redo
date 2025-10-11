@@ -158,12 +158,12 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
 
     if (texture && activeUnits[index] != texture) {
 		glActiveTexture(GL_TEXTURE0 + index);
+        TEST_GL_ERROR();
+
 		texture->bind();
         activeUnits[index] = texture;
 
         curShader->setSampler(index);
-
-        TEST_GL_ERROR();
 	}
 }
 
@@ -499,16 +499,19 @@ void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
         f32 inv = 1.0f / 255.0f;
 
         glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
+        TEST_GL_ERROR();
         mask |= GL_COLOR_BUFFER_BIT;
     }
 
     if (flags & CBF_DEPTH) {
         glClearDepth(depth);
+        TEST_GL_ERROR();
         mask |= GL_DEPTH_BUFFER_BIT;
     }
 
     if (flags & CBF_STENCIL) {
         glClearStencil(stencil);
+        TEST_GL_ERROR();
         mask |= GL_STENCIL_BUFFER_BIT;
     }
 
@@ -546,8 +549,6 @@ void DrawContext::initContext(utils::recti viewportSize)
 	setDepthMask(curDepthTest.mask);
 
 	setViewportSize(viewportSize);
-
-    TEST_GL_ERROR();
 }
 
 }

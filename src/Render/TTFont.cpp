@@ -26,9 +26,10 @@ TTFont::~TTFont()
 bool TTFont::init()
 {
     if (TTF_Init() != 0) {
-        ErrorStream << "TTFont::Init() failed to init SDL2_ttf: " << TTF_GetError() << "\n";
+        ErrorStream << "TTFont::Init() failed to init SDL2_ttf: " << SDL_GetError() << "\n";
         return false;
     }
+    isInit = true;
 
     return true;
 }
@@ -112,8 +113,8 @@ u32 TTFont::getFontHeight() const
 
 u32 TTFont::getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const
 {
-    std::u16string ch1_16 = wide_to_utf16(&ch1);
-    std::u16string ch2_16 = wide_to_utf16(&ch2);
+    std::u16string ch1_16 = wide_to_utf16(std::to_wstring(ch1));
+    std::u16string ch2_16 = wide_to_utf16(std::to_wstring(ch2));
 
     return TTF_GetFontKerningSizeGlyphs32(font,
         *reinterpret_cast<const Uint16 *>(ch1_16.data()),
@@ -132,7 +133,7 @@ s32 TTFont::getFontDescent() const
 
 void TTFont::getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const
 {
-    std::u16string ch16 = wide_to_utf16(&ch);
+    std::u16string ch16 = wide_to_utf16(std::to_wstring(ch));
     TTF_GlyphMetrics(font, ch16[0], offsetx, nullptr, nullptr, offsety, advance);
 }
 
@@ -167,7 +168,7 @@ std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) 
 
 bool TTFont::hasGlyph(wchar_t ch) const
 {
-	std::u16string ch_16 = wide_to_utf16(&ch);
+    std::u16string ch_16 = wide_to_utf16(std::to_wstring(ch));
 	return TTF_GlyphIsProvided(font, ch_16[0]);
 }
 
@@ -185,7 +186,7 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     SDL_Color fg_color = {
         char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
-    std::u16string ch_16 = wide_to_utf16(&ch);
+    std::u16string ch_16 = wide_to_utf16(std::to_wstring(ch));
     SDL_Surface *surf = TTF_RenderGlyph_Solid(
         font, *reinterpret_cast<Uint16 *>(&ch_16), fg_color);
 
@@ -202,7 +203,7 @@ img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
     SDL_Color fg_color = {
         color.R(), color.G(), color.B(), color.A()
     };
-    std::u16string text_16 = wide_to_utf16(text.c_str());
+    std::u16string text_16 = wide_to_utf16(text);
 
     SDL_Surface *surf = TTF_RenderUNICODE_Solid(
         font, reinterpret_cast<const Uint16 *>(text_16.c_str()), fg_color);
