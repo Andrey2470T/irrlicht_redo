@@ -14,7 +14,7 @@ class ImageModifier;
 struct Palette
 {
 	bool hasAlpha = false;
-	u32 size;
+    u32 size = 0;
 	
 	std::vector<color8> colors;
 	

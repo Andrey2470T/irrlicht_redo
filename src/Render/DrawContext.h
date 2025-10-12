@@ -160,7 +160,9 @@ public:
 	StencilTestState getStencilTest() const;
 	ScissorTestState getScissorTest() const;
     PolygonOffsetState getPolygonOffset() const;
-    PolygonMode getPolygonMode() const;
+    PolygonModeState getPolygonMode() const;
+
+    u8 getColorMask() const;
 
 	//! Setters
 	void setFrameBuffer(FrameBuffer *fbo);
@@ -204,7 +206,7 @@ public:
 
 	void setViewportSize(utils::recti viewportSize);
 
-    void clearBuffers(u16 flags, img::color8 color=img::color8(), f32 depth=0.0f, u8 stencil=0);
+    void clearBuffers(u16 flags, img::color8 color=img::black, f32 depth=1.0f, u8 stencil=0);
 
     void setColorMask(u8 mask);
 private:

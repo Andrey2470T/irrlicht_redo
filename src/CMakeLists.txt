@@ -1,7 +1,7 @@
 # Compiler flags
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-DDEBUG)
+	add_compile_definitions(_DEBUG_)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
@@ -44,26 +44,26 @@ endif()
 
 if(WIN32)
 	set(Platform "WINDOWS")
-	add_definitions(-DWINDOWS)
+	add_compile_definitions(_WINDOWS_)
 elseif(APPLE)
 	set(Platform "OSX")
-	add_definitions(-DOSX)
+	add_compile_definitions(_OSX_)
 elseif(ANDROID)
 	set(Platform "ANDROID")
-	add_definitions(-DANDROID)
+	add_compile_definitions(_ANDROID_)
 elseif(EMSCRIPTEN)
 	set(Platform "EMSCRIPTEN")
-	add_definitions(-DEMSCRIPTEN)
+	add_compile_definitions(_EMSCRIPTEN_)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 	set(Platform "SOLARIS")
-	add_definitions(-DSOLARIS)
+	add_compile_definitions(_SOLARIS_)
 else()
 	set(Platform "LINUX")
-	add_definitions(-DLINUX)
+	add_compile_definitions(_LINUX_)
 endif()
 
 if(MSVC)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS_)
 endif()
 
 
@@ -73,8 +73,8 @@ endif()
 
 option(ENABLE_JOYSTICKS "Init SDL2 with joystick events" TRUE)
 
-if(ENABLE_JOYSTICKS AND NOT (BSD OR SOLARIS OR EMSCRIPTEN))
-	add_definitions(-DCOMPILE_WITH_JOYSTICK_EVENTS)
+if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
+	add_compile_definitions(_COMPILE_WITH_JOYSTICK_EVENTS_)
 endif()
 
 
@@ -89,11 +89,11 @@ else()
 endif()
 
 if(RENDERER STREQUAL "OpenGL3+")
-	add_definitions(-DOPENGL_3_PLUS)
+	add_compile_definitions(_OPENGL_3_PLUS_)
 elseif(RENDERER STREQUAL "OpenGLES2")
-	add_definitions(-DOPENGL_ES_2)
+	add_compile_definitions(_OPENGL_ES_2_)
 else()
-	add_definitions(-DWEBGL_1)
+	add_compile_definitions(_WEBGL_1_)
 endif()
 
 # Misc
@@ -101,7 +101,7 @@ endif()
 include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
 if(BIG_ENDIAN)
-	add_definitions(-D__BIG_ENDIAN__)
+	add_compile_definitions(__BIG_ENDIAN__)
 endif()
 
 
@@ -167,6 +167,36 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if(APPLE)
 	install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _DEBUG_)
+endif()
+
+if(WIN32)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _WINDOWS_)
+elseif(APPLE)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _OSX_)
+elseif(ANDROID)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _ANDROID_)
+elseif(EMSCRIPTEN)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _EMSCRIPTEN_)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _SOLARIS_)
+else()
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _LINUX_)
+endif()
+
+if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _COMPILE_WITH_JOYSTICK_EVENTS_)
+endif()
+
+if(RENDERER STREQUAL "OpenGL3+")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _OPENGL_3_PLUS_)
+elseif(RENDERER STREQUAL "OpenGLES2")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _OPENGL_ES_2_)
+else()
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _WEBGL_1_)
 endif()
 
 target_include_directories(${PROJECT_NAME}

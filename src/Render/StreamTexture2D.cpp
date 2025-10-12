@@ -185,15 +185,15 @@ void StreamTexture2D::deletePBO()
     if (pboID == 0)
         return;
 
-    if (!bound) {
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
+    bind();
+
+    if (pboData) {
+        pboData = nullptr;
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         TEST_GL_ERROR();
     }
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-    pboData = nullptr;
-    TEST_GL_ERROR();
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    TEST_GL_ERROR();
+
+    unbind();
 
     glDeleteBuffers(1, &pboID);
     TEST_GL_ERROR();

@@ -11,7 +11,7 @@
 #include "Image/Image.h"
 #include "Events.h"
 
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 #include <emscripten/html5.h>
 #endif
 
@@ -75,7 +75,7 @@ class MainWindow
 {
     SDL_GLContext Context;
     SDL_Window* Window = nullptr;
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
     std::vector<SDL_Joystick *> Joysticks;
 #endif
 
@@ -185,7 +185,7 @@ public:
     const Clipboard *getClipboard() const;
     CursorControl &getCursorControl();
 private:
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
 	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
 	static EM_BOOL MouseLeaveCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);

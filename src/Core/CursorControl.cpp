@@ -1,7 +1,7 @@
 #include "CursorControl.h"
 #include "MainWindow.h"
 
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 #include <emscripten.h>
 #endif
 
@@ -76,7 +76,7 @@ void CursorControl::setActiveIcon(CURSOR_ICON icon)
 
 void CursorControl::updateCursorPos()
 {
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
 	if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
 		if (pointerlockStatus.isActive) {

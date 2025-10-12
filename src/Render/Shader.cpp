@@ -146,6 +146,7 @@ void Shader::setUniformBlock(const std::string &name, UniformBuffer *ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(programID, name.c_str());
     TEST_GL_ERROR();
+    InfoStream << "setUniformBlock: binding point: " << ubo->getBindingPoint() << "\n";
 	glUniformBlockBinding(programID, block_index, ubo->getBindingPoint());
     TEST_GL_ERROR();
 }

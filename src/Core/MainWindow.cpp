@@ -6,7 +6,7 @@
 #include "Utils/String.h"
 #include <iostream>
 
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 #include <emscripten.h>
 #endif
 
@@ -56,7 +56,7 @@ MainWindow::MainWindow(const MainWindowParameters &params)
     : GLVersion(params.GLType, params.GLVersionMajor, params.GLVersionMinor),
       Cursor(this), Params(params), Resizable(params.Resizable == 1 ? true : false)
 {
-#ifdef ANDROID
+#ifdef _ANDROID_
 	// Blocking on pause causes problems with multiplayer.
 	// See https://github.com/minetest/minetest/issues/10842.
 	SDL_SetHint(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, "0");
@@ -75,7 +75,7 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	// See https://github.com/minetest/minetest/issues/14596
 	SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
 	// These are not interesting for our use
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
     SDL_SetHint(SDL_HINT_TV_REMOTE_AS_JOYSTICK, "0");
@@ -104,7 +104,7 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 	u32 flags = SDL_INIT_TIMER | SDL_INIT_EVENTS;
 	if (Params.InitVideo)
 		flags |= SDL_INIT_VIDEO;
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
     flags |= SDL_INIT_JOYSTICK;
 #endif
 
@@ -139,7 +139,7 @@ MainWindow::~MainWindow()
 {
     clearEventQueue();
 
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
     for (auto &joystick : Joysticks)
         if (joystick)
             SDL_JoystickClose(joystick);
@@ -200,7 +200,7 @@ void MainWindow::setCaption(const std::wstring &newCaption)
 
 bool MainWindow::isActive() const
 {
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	// Hidden test only does something in some browsers (when tab in background or window is minimized)
 	// In other browsers code automatically doesn't seem to be called anymore.
 	EmscriptenVisibilityChangeEvent emVisibility;
@@ -252,7 +252,7 @@ void MainWindow::close()
 
 void MainWindow::setResizable(bool resize)
 {
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	WarnStream << "Resizable not available on the web.\n";
 	return;
 #else
@@ -298,6 +298,8 @@ bool MainWindow::setFullscreen(bool fullscreen)
 
 void MainWindow::SwapWindow()
 {
+    glFlush();
+
     if (Window)
         SDL_GL_SwapWindow(Window);
 }
@@ -312,7 +314,7 @@ bool MainWindow::isUsingWayland() const
 
 bool MainWindow::activateJoysticks(std::vector<JoystickInfo> &joysticksInfo)
 {
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
     joysticksInfo.clear();
 
     // we can name up to 256 different joysticks
@@ -428,7 +430,7 @@ bool MainWindow::pollEventsFromQueue()
 
             irrevent.MouseInput.Type = MIE_MOUSE_MOVED;
 
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
+#ifdef _EMSCRIPTEN_
             // Handle mouselocking in emscripten in Windowed mode.
             // In fullscreen SDL will handle it.
             // The behavior we want windowed is - when the canvas was clicked then
@@ -450,7 +452,7 @@ bool MainWindow::pollEventsFromQueue()
 #endif
 
             auto button = sdlevent.button.button;
-#ifdef __ANDROID__
+#ifdef _ANDROID_
             // Android likes to send the right mouse button as the back button.
             // According to some web searches I did, this is probably
             // vendor/device-specific.
@@ -649,7 +651,7 @@ bool MainWindow::pollEventsFromQueue()
         } // end switch
     } // end while
 
-#ifdef COMPILE_WITH_JOYSTICK_EVENTS
+#ifdef _COMPILE_WITH_JOYSTICK_EVENTS_
     // TODO: Check if the multiple open/close calls are too expensive, then
     // open/close in the constructor/destructor instead
 
@@ -726,7 +728,7 @@ bool MainWindow::pollEventsFromQueue()
     return !Close;
 }
 
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 EM_BOOL MainWindow::MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData)
 {
     // We need this callback so far only because otherwise "emscripten_request_pointerlock" calls will
@@ -809,7 +811,7 @@ u32 MainWindow::getFullscreenFlag(bool fullscreen)
 {
 	if (!fullscreen)
 		return 0;
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	return SDL_WINDOW_FULLSCREEN;
 #else
 	return SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -903,7 +905,7 @@ bool MainWindow::initWindow()
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 	}
 
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 	if (Params.Width != 0 || Params.Height != 0)
 		emscripten_set_canvas_size(Params.Width, Params.Height);
 	else

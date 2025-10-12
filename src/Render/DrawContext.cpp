@@ -102,6 +102,16 @@ PolygonOffsetState DrawContext::getPolygonOffset() const
     return curPolygonOffset;
 }
 
+PolygonModeState DrawContext::getPolygonMode() const
+{
+    return curPolygonMode;
+}
+
+u8 DrawContext::getColorMask() const
+{
+    return colorMask;
+}
+
 
 //! Setters
 void DrawContext::setFrameBuffer(FrameBuffer *fbo)
@@ -401,7 +411,7 @@ void DrawContext::setScissorBox(const utils::recti &box)
 	if (!curScissorTest.enabled)
 		return;
 	if (curScissorTest.box != box) {
-        glScissor(box.ULC.X, box.ULC.Y, box.getWidth(), box.getHeight());
+        glScissor(box.ULC.X, box.ULC.Y, abs(box.getWidth()), abs(box.getHeight()));
 		curScissorTest.box = box;
 
         TEST_GL_ERROR();
@@ -495,7 +505,13 @@ void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
 {
     GLbitfield mask = 0;
 
+    //u8 prevColorMask = colorMask;
+    //bool prevDepthMask = curDepthTest.mask;
+
     if (flags & CBF_COLOR) {
+        //setColorMask(CP_ALL);
+        //TEST_GL_ERROR();
+
         f32 inv = 1.0f / 255.0f;
 
         glClearColor(color.R() * inv, color.G() * inv, color.B() * inv, color.A() * inv);
@@ -504,6 +520,9 @@ void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
     }
 
     if (flags & CBF_DEPTH) {
+        //setDepthMask(true);
+        //TEST_GL_ERROR();
+
         glClearDepth(depth);
         TEST_GL_ERROR();
         mask |= GL_DEPTH_BUFFER_BIT;
@@ -515,9 +534,15 @@ void DrawContext::clearBuffers(u16 flags, img::color8 color, f32 depth, u8 stenc
         mask |= GL_STENCIL_BUFFER_BIT;
     }
 
-    glClear(mask);
+    if (mask) {
+        glClear(mask);
+        TEST_GL_ERROR();
+    }
 
-	TEST_GL_ERROR();
+    //setColorMask(prevColorMask);
+    //TEST_GL_ERROR();
+    //setDepthMask(prevDepthMask);
+    //TEST_GL_ERROR();
 }
 
 void DrawContext::setColorMask(u8 mask)

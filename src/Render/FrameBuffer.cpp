@@ -68,7 +68,7 @@ void FrameBuffer::setColorTextures(const std::vector<Texture*> &textures, const 
     width = colorTextures[0]->getWidth();
     height = colorTextures[0]->getHeight();
 
-#ifdef DEBUG
+#ifdef _DEBUG_
 	checkStatus();
 #endif
 
@@ -94,7 +94,7 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 
 	if (!already_attached) {
         GLenum target = texture->getType() == TT_2D ? dynamic_cast<Texture2D *>(texture)->tex2D() : static_cast<GLenum>(dsCubeMapFace);
-#ifdef EMSCRIPTEN
+#ifdef _EMSCRIPTEN_
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, target, texture->getID(), 0);
 #else
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target, texture->getID(), 0);
@@ -107,7 +107,7 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
             depthStencilCubeMapFace = dsCubeMapFace;
 	}
 
-#ifdef DEBUG
+#ifdef _DEBUG_
 	checkStatus();
 #endif
 
