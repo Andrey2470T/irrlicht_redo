@@ -24,8 +24,6 @@ enum class FontStyle : u8
 
 class TTFont
 {
-    static bool isInit;
-
     TTF_Font *font;
 
     FontMode mode = FontMode::MONO;

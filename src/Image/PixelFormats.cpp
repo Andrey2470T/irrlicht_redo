@@ -20,7 +20,7 @@ const std::array<PixelFormatInfo, PF_COUNT> pixelFormatInfo = {{
     {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, BasicType::UINT16, 16, 1, false, true},
     {GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, BasicType::UINT32, 32, 1, false, true}, // WARNING: may not be renderable (?!)
     {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, BasicType::UINT32, 32, 1, false, true},
-    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, BasicType::UINT8, 32, 4, true, false, false, true}
+    {0, 0, 0, BasicType::UINT8, 8, 1, true, false, false, true}
 }};
 
 //! calculate image data size in bytes for selected format, width and height.

@@ -231,10 +231,10 @@ struct Event
 	struct GUIEvent
 	{
 		//! IGUIElement who called the event
-		std::optional<u32> Caller;
+		void *Caller;
 
 		//! If the event has something to do with another element, it will be held here.
-		std::optional<u32> Element;
+		void *Element;
 
 		//! Type of GUI Event
 		GUIEventType Type;

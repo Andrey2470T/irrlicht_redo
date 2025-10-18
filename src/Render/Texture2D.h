@@ -49,6 +49,7 @@ public:
 private:
     void initTexture(img::Image *image);
     void convertIndicesToColors(img::Palette *palette, u8 **data, v2u size);
+    u8 *convertColorsToIndices(img::Palette *palette, u8 *data, v2u size);
 };
 
 }

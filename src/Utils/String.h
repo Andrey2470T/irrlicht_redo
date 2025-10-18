@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BasicIncludes.h"
+#include "SDL_stdinc.h"
 #include <locale>
 #include <cctype>
 
@@ -11,6 +12,8 @@ namespace utils
     std::string wide_to_utf8(const std::wstring &str);
     std::u32string wide_to_utf32(const std::wstring &str);
     std::u16string wide_to_utf16(const std::wstring &str);
+    std::vector<Uint16> wstring_to_uint16(const std::wstring& wstr);
+    std::wstring uint16_to_wstring(const std::vector<Uint16>& vec);
 
     template <class T>
     bool equal_ignore_case(const std::basic_string<T> &str1, const std::basic_string<T> &str2)

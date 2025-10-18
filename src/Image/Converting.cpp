@@ -142,23 +142,28 @@ namespace img
     SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface);
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-	Image *convertSDLSurfaceToImage(SDL_Surface *surf)
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool copyData)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
 		
         auto it = formatsEnumsMap.find(sdl_format->format);
 
         std::string formatStr = sdlFormatToString(sdl_format->format);
-        InfoStream << "Loaded the image format: " << formatStr << "\n";
+        //InfoStream << "Loaded the image format: " << formatStr << "\n";
 		if (it == formatsEnumsMap.end()) {
             ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << sdlFormatToString(sdl_format->format) << "\n";
 			return nullptr;
 		}
 
-		PixelFormat format = static_cast<PixelFormat>(it->second);
+        PixelFormat format = static_cast<PixelFormat>(it->second);
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
         u8 *data = static_cast<u8*>(surf->pixels);
+        u32 pitch = static_cast<u32>(surf->pitch);
+        u32 pixelSize = pixelFormatInfo.at(format).size / 8;
+        //u32 rowSize = w * pixelSize;
+        
+        //InfoStream << "Surface info: SDL format=" << sdl_format->format << ", our format=" << format << ", w=" << w << ", h=" << h << ", pitch=" << pitch << ", pixelSize=" << pixelSize << ", BitsPerPixel=" << (int)sdl_format->BitsPerPixel << "\n";
 
         // load the SDL palette
         Palette *palette = nullptr;
@@ -167,23 +172,44 @@ namespace img
 
             std::vector<img::color8> colors;
 
-            InfoStream << "convertSDLSurfaceToImage 1 palette size: " << sdl_palette->ncolors << "\n";
+            //InfoStream << "convertSDLSurfaceToImage 1 palette size: " << sdl_palette->ncolors << "\n";
             for (s32 i = 0; i < sdl_palette->ncolors; i++) {
                 SDL_Color sdl_color = sdl_palette->colors[i];
                 colors.emplace_back(img::PF_RGBA8, sdl_color.r, sdl_color.g, sdl_color.b, sdl_color.a);
             }
-            InfoStream << "convertSDLSurfaceToImage 2\n";
+            //InfoStream << "convertSDLSurfaceToImage 2\n";
 
             palette = new Palette(true, colors.size(), colors);
-            InfoStream << "convertSDLSurfaceToImage 3\n";
+            //InfoStream << "convertSDLSurfaceToImage 3\n";
         }
 
-        auto img = new Image(format, w, h, data, true, palette);
+        /*u8 *tightData = data;
+        bool needsCopy = copyData || (pitch != rowSize);
+        if (needsCopy) {
+            InfoStream << "convertSDLSurfaceToImage: w=" << w << " h=" << h << " pitch=" << pitch << " rowSize=" << rowSize << " pixelSize=" << pixelSize << "\n";
+            tightData = new u8[w * h * pixelSize];
+            for (u32 row = 0; row < h; ++row) {
+                u32 srcOffset = row * pitch;
+                u32 dstOffset = row * rowSize;
+                if (srcOffset + rowSize > h * pitch) {
+                    ErrorStream << "convertSDLSurfaceToImage: Buffer overflow prevented at row " << row << "\n";
+                    break;
+                }
+                memcpy(tightData + dstOffset, data + srcOffset, rowSize);
+            }
+        }*/
+
+        //InfoStream << "convertSDLSurfaceToImage:1\n";
+        auto img = new Image(format, w, h, data, copyData, palette);
 
         auto localImgMod = new img::ImageModifier();
+        //InfoStream << "convertSDLSurfaceToImage:2\n";
         auto flipped_y = localImgMod->flip(img, FD_Y);
+        //InfoStream << "convertSDLSurfaceToImage:3\n";
         delete img;
+        //InfoStream << "convertSDLSurfaceToImage:4\n";
         delete localImgMod;
+        //InfoStream << "convertSDLSurfaceToImage:5\n";
 
         return flipped_y;
 	}

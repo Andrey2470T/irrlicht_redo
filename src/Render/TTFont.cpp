@@ -1,22 +1,15 @@
 #include "TTFont.h"
 #include "Utils/String.h"
 #include "Image/Converting.h"
+#include <iostream>
 
 namespace render
 {
 
-bool TTFont::isInit = false;
-
 TTFont::TTFont(TTF_Font *_font, FontMode _mode, u32 _size, bool _transparent, u32 _shadow_offset, u32 _shadow_alpha)
     : font(_font), mode(_mode), style((FontStyle)TTF_GetFontStyle(_font)), curSize(_size),
       hasTransparency(_transparent), shadowOffset(_shadow_offset), shadowAlpha(_shadow_alpha)
-{
-    if (!isInit) {
-        ErrorStream << "TTFont: could not create the TrueType font as SDL2_ttf is not initialized\n";
-        delete this;
-        return;
-    }
-}
+{}
 
 TTFont::~TTFont()
 {
@@ -29,7 +22,6 @@ bool TTFont::init()
         ErrorStream << "TTFont::Init() failed to init SDL2_ttf: " << SDL_GetError() << "\n";
         return false;
     }
-    isInit = true;
 
     return true;
 }
@@ -78,20 +70,40 @@ FontStyle TTFont::getStyle() const
 
 u32 TTFont::getTextWidth(const std::wstring &text) const
 {
-    s32 w, h;
-    std::u16string str16 = wide_to_utf16(text);
+    s32 w = 0;
+    s32 h = 0;
+    std::wcout << "getTextWidth: 1 " << text << std::endl;
+    //std::u16string str16 = wide_to_utf16(text);
 
-    TTF_SizeUNICODE(font, reinterpret_cast<const Uint16 *>(str16.data()), &w, &h);
+    /*std::wstring text2 = text;
+    if (text == L"Начать игру")
+        text2 = L"Start game";*/
+    auto str16 = wstring_to_uint16(text);
+    core::InfoStream << "result size: " << (u32)str16.size() << "\n";
+    //std::cout << "getTextWidth: 2 " << str16 << std::endl;
+
+    /*for (wchar_t c = 0; c < 256; c++) {
+        if (!TTF_GlyphIsProvided(font, static_cast<Uint16>(c))) {
+            core::InfoStream << "WARNING: Glyph "
+                             << c << " not provided by font!\n";
+        }
+        else
+            core::InfoStream << "Glyph " << c << " provided\n";
+    }*/
+
+    TTF_SizeUNICODE(font, str16.data(), &w, &h);
 
     return (u32)w;
 }
 
 u32 TTFont::getTextHeight(const std::wstring &text) const
 {
-    s32 w, h;
-    std::u16string str16 = wide_to_utf16(text);
+    s32 w = 0;
+    s32 h = 0;
+    //std::u16string str16 = wide_to_utf16(text);
+    auto str16 = wstring_to_uint16(text);
 
-    TTF_SizeUNICODE(font, reinterpret_cast<const Uint16 *>(str16.data()), &w, &h);
+    TTF_SizeUNICODE(font, str16.data(), &w, &h);
 
     return (u32)h;
 }
@@ -113,12 +125,10 @@ u32 TTFont::getFontHeight() const
 
 u32 TTFont::getKerningSizeForTwoChars(wchar_t ch1, wchar_t ch2) const
 {
-    std::u16string ch1_16 = wide_to_utf16(std::to_wstring(ch1));
-    std::u16string ch2_16 = wide_to_utf16(std::to_wstring(ch2));
+    Uint16 glyph1 = static_cast<Uint16>(ch1);
+    Uint16 glyph2 = static_cast<Uint16>(ch2);
 
-    return TTF_GetFontKerningSizeGlyphs32(font,
-        *reinterpret_cast<const Uint16 *>(ch1_16.data()),
-        *reinterpret_cast<const Uint16 *>(ch2_16.data()));
+    return TTF_GetFontKerningSizeGlyphs32(font, glyph1, glyph2);
 }
 
 s32 TTFont::getFontAscent() const
@@ -133,8 +143,16 @@ s32 TTFont::getFontDescent() const
 
 void TTFont::getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const
 {
-    std::u16string ch16 = wide_to_utf16(std::to_wstring(ch));
-    TTF_GlyphMetrics(font, ch16[0], offsetx, nullptr, nullptr, offsety, advance);
+    if (!offsetx || !offsety || !advance) {
+        ErrorStream << "TTFont::getGlyphMetrics() no offset or/and advance provided\n";
+        return;
+    }
+
+    Uint16 glyph = static_cast<Uint16>(ch);
+    s32 minx, maxx, miny, maxy;
+    TTF_GlyphMetrics(font, glyph, &minx, &maxx, &miny, &maxy, advance);
+    *offsetx = minx;
+    *offsety = miny;
 }
 
 u32 TTFont::getCurrentSize() const
@@ -153,7 +171,7 @@ std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) 
     u32 num = 0;
     wchar_t prevChar = 0;
     for (const wchar_t &c : str) {
-        x += getTextWidth(&c);
+        x += getTextWidth(std::to_wstring(c));
         x += getKerningSizeForTwoChars(c, prevChar);
 
         if (x >= pixel_x)
@@ -168,8 +186,8 @@ std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) 
 
 bool TTFont::hasGlyph(wchar_t ch) const
 {
-    std::u16string ch_16 = wide_to_utf16(std::to_wstring(ch));
-	return TTF_GlyphIsProvided(font, ch_16[0]);
+    Uint16 glyph = static_cast<Uint16>(ch);
+    return TTF_GlyphIsProvided(font, glyph);
 }
 
 void TTFont::setSize(u32 size)
@@ -186,16 +204,22 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     SDL_Color fg_color = {
         char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
-    std::u16string ch_16 = wide_to_utf16(std::to_wstring(ch));
-    SDL_Surface *surf = TTF_RenderGlyph_Solid(
-        font, *reinterpret_cast<Uint16 *>(&ch_16), fg_color);
+    Uint16 glyph = static_cast<Uint16>(ch);
+    SDL_Surface *surf = TTF_RenderGlyph_Solid(font, glyph, fg_color);
 
+    if (!surf) {
+        ErrorStream << "TTFont::getGlyphImage() failed to render glyph: " << TTF_GetError() << "\n";
+        return nullptr;
+    }
+
+    //InfoStream << "getGlyphImage:1\n";
     img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
-    img::Image *img_copy = surf_img->copy();
+    //InfoStream << "getGlyphImage:2\n";
 
-    delete surf_img;
+    SDL_FreeSurface(surf);
+   //InfoStream << "getGlyphImage:3\n";
 
-    return img_copy;
+    return surf_img;
 }
 
 img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
@@ -203,27 +227,33 @@ img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
     SDL_Color fg_color = {
         color.R(), color.G(), color.B(), color.A()
     };
-    std::u16string text_16 = wide_to_utf16(text);
+    auto str16 = wstring_to_uint16(text);
 
     SDL_Surface *surf = TTF_RenderUNICODE_Solid(
-        font, reinterpret_cast<const Uint16 *>(text_16.c_str()), fg_color);
+        font, str16.data(), fg_color);
 
     img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
-    img::Image *img_copy = surf_img->copy();
 
-    delete surf_img;
+    SDL_FreeSurface(surf);
 
-    return img_copy;
+    return surf_img;
 }
 
 u64 TTFont::hash(const TTFont *font)
 {
-    return (font->getCurrentSize() << 6) | (font->isTransparent() << 5) | ((u8)font->getStyle() << 2) | (u8)font->getMode();
+    return (((u64)font->getCurrentSize() << 6) |//size: 32 bits
+            ((u64)font->isTransparent() << 5) | // transparent: 1 bit
+           ((u64)font->getStyle() << 2) |       // style: 3 bits
+            (u64)font->getMode());              // mode: 2 bits
 }
 
 u64 TTFont::hash(u32 size, bool transparent, FontStyle style, FontMode mode)
 {
-    return (size << 6) | (transparent << 5) | ((u8)style << 2) | (u8)mode;
+    return (
+        ((u64)size << 6) |
+        ((u64)transparent << 5) |
+        ((u64)style << 2) |
+        (u64)mode);
 }
 
 bool TTFont::operator==(const TTFont *other) const

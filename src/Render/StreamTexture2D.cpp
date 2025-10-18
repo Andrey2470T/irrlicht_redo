@@ -79,7 +79,7 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
 
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
-    auto pixelSize = img::pixelFormatInfo.at(format).size;
+    auto pixelSize = img::pixelFormatInfo.at(format).size / 8;
 
     if (imgMod) {
         rectu srcRect(pos.X, pos.Y, size.X, size.Y);
@@ -87,7 +87,12 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
         imgMod->copyTo(img, imgCache.get(), &srcRect, &destRect);
     }
     v2u imgSize = img->getSize();
-    memcpy(pboData + (y * imgSize.X + x) * pixelSize, img->getData(), size.X * size.Y * pixelSize);
+    u8* srcData = img->getData();
+    for (u32 row = 0; row < size.Y; ++row) {
+        memcpy(pboData + ((y + row) * width + x) * pixelSize,
+               srcData + row * imgSize.X * pixelSize,
+               size.X * pixelSize);
+    }
 
     dirtyRegions.emplace_back(x, y, size.X, size.Y);
 }

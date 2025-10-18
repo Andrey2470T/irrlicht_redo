@@ -161,7 +161,7 @@ MainWindow::~MainWindow()
 
 
 // Window params adjusting methods
-void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier *mdf)
+void MainWindow::setIcon(img::Image *newImg, img::ImageModifier *mdf)
 {
     if (!Window) return;
 
@@ -176,9 +176,16 @@ void MainWindow::setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier 
         return;
 	}
 
-    img::Image *tempImg = img::convertSDLSurfaceToImage(surface);
-	bool succ = mdf->copyTo(newImg.get(), tempImg);
+    InfoStream << "setIcon:1\n";
+    SDL_LockSurface(surface);
+    img::Image *tempImg = img::convertSDLSurfaceToImage(surface, false);
+    SDL_UnlockSurface(surface);
+    InfoStream << "setIcon:2\n";
+
+    bool succ = mdf->copyTo(newImg, tempImg);
+    InfoStream << "setIcon:3\n";
 	delete tempImg;
+    InfoStream << "setIcon:4\n";
 
 	if (!succ) {
 		SDL_FreeSurface(surface);

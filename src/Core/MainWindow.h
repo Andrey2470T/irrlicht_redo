@@ -145,7 +145,7 @@ public:
 	~MainWindow();
 
 	// Window params adjusting methods
-    void setIcon(std::shared_ptr<img::Image> newImg, img::ImageModifier *mdf);
+    void setIcon(img::Image *newImg, img::ImageModifier *mdf);
     void setCaption(const std::wstring &newCaption);
 
 	bool isActive() const;
