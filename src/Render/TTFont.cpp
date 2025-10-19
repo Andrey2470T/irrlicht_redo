@@ -1,4 +1,5 @@
 #include "TTFont.h"
+#include "Core/TimeCounter.h"
 #include "Utils/String.h"
 #include "Image/Converting.h"
 #include <iostream>
@@ -9,7 +10,13 @@ namespace render
 TTFont::TTFont(TTF_Font *_font, FontMode _mode, u32 _size, bool _transparent, u32 _shadow_offset, u32 _shadow_alpha)
     : font(_font), mode(_mode), style((FontStyle)TTF_GetFontStyle(_font)), curSize(_size),
       hasTransparency(_transparent), shadowOffset(_shadow_offset), shadowAlpha(_shadow_alpha)
-{}
+{
+    // Cache all glyphs provided by the font file
+    for (wchar_t ch = 0; ch < MAX_GLYPHS_COUNT; ch++) {
+        if (hasGlyph(ch))
+            glyphsSet.push_back(ch);
+    }
+}
 
 TTFont::~TTFont()
 {
@@ -68,28 +75,22 @@ FontStyle TTFont::getStyle() const
 	return style;
 }
 
+u32 TTFont::getGlyphsNum() const
+{
+    return glyphsSet.size();
+}
+
+const std::vector<wchar_t> &TTFont::getGlyphsSet() const
+{
+    return glyphsSet;
+}
+
 u32 TTFont::getTextWidth(const std::wstring &text) const
 {
     s32 w = 0;
     s32 h = 0;
-    std::wcout << "getTextWidth: 1 " << text << std::endl;
-    //std::u16string str16 = wide_to_utf16(text);
 
-    /*std::wstring text2 = text;
-    if (text == L"Начать игру")
-        text2 = L"Start game";*/
     auto str16 = wstring_to_uint16(text);
-    core::InfoStream << "result size: " << (u32)str16.size() << "\n";
-    //std::cout << "getTextWidth: 2 " << str16 << std::endl;
-
-    /*for (wchar_t c = 0; c < 256; c++) {
-        if (!TTF_GlyphIsProvided(font, static_cast<Uint16>(c))) {
-            core::InfoStream << "WARNING: Glyph "
-                             << c << " not provided by font!\n";
-        }
-        else
-            core::InfoStream << "Glyph " << c << " provided\n";
-    }*/
 
     TTF_SizeUNICODE(font, str16.data(), &w, &h);
 
@@ -100,7 +101,7 @@ u32 TTFont::getTextHeight(const std::wstring &text) const
 {
     s32 w = 0;
     s32 h = 0;
-    //std::u16string str16 = wide_to_utf16(text);
+
     auto str16 = wstring_to_uint16(text);
 
     TTF_SizeUNICODE(font, str16.data(), &w, &h);
@@ -205,15 +206,18 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
         char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
     Uint16 glyph = static_cast<Uint16>(ch);
+    //core::InfoStream << "getGlyphImage: create glyph for " << ch << ", time: " << TimeCounter::getRealTime() << "\n";
     SDL_Surface *surf = TTF_RenderGlyph_Solid(font, glyph, fg_color);
+    //core::InfoStream << "getGlyphImage: created, converting to img::Image, time: " << TimeCounter::getRealTime() << "\n";
 
     if (!surf) {
-        ErrorStream << "TTFont::getGlyphImage() failed to render glyph: " << TTF_GetError() << "\n";
+        ErrorStream << "TTFont::getGlyphImage() failed to render glyph for " << ch << ": " << TTF_GetError() << "\n";
         return nullptr;
     }
 
     //InfoStream << "getGlyphImage:1\n";
-    img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
+    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, false);
+    //core::InfoStream << "getGlyphImage: created, converted, time: " << TimeCounter::getRealTime() << "\n";
     //InfoStream << "getGlyphImage:2\n";
 
     SDL_FreeSurface(surf);
@@ -232,7 +236,7 @@ img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
     SDL_Surface *surf = TTF_RenderUNICODE_Solid(
         font, str16.data(), fg_color);
 
-    img::Image *surf_img = img::convertSDLSurfaceToImage(surf);
+    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, false);
 
     SDL_FreeSurface(surf);
 

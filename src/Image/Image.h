@@ -24,7 +24,7 @@ struct Palette
 		colors.resize(size);
 	}
 	Palette(bool _hasAlpha, u32 _size, const std::vector<color8> &_colors)
-		: hasAlpha(_hasAlpha), size(_size), colors(_colors)
+        : hasAlpha(_hasAlpha), size(_size), colors(std::move(_colors))
 	{}
 
     img::color8 getColorByIndex(u32 index) const

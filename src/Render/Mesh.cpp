@@ -89,9 +89,9 @@ void Mesh::reallocate(const void *vertices, u32 vertexCount, const u32 *indices,
 
     vbo.reallocate(vertices, vertexCount);
     
-    InfoStream << "Mesh::reallocate() \n";
+    //InfoStream << "Mesh::reallocate() \n";
     if (ibo.ID != 0) {
-        InfoStream << "Mesh::reallocate() reallocate ibo\n";
+        //InfoStream << "Mesh::reallocate() reallocate ibo\n";
         ibo.reallocate(indices, indexCount);
     }
 

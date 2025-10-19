@@ -16,7 +16,7 @@ namespace img
 	};
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool copyData=true);
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage=true);
 
 	SDL_Surface *convertImageToSDLSurface(Image *img);
 

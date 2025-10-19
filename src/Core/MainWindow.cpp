@@ -165,36 +165,17 @@ void MainWindow::setIcon(img::Image *newImg, img::ImageModifier *mdf)
 {
     if (!Window) return;
 
-	u32 height = newImg->getHeight();
-	u32 width = newImg->getWidth();
-
-	SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 32,
-			0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    SDL_Surface *surface = img::convertImageToSDLSurface(newImg);
 
 	if (!surface) {
 		ErrorStream << "Failed to create SDL suface\n";
         return;
 	}
 
-    InfoStream << "setIcon:1\n";
-    SDL_LockSurface(surface);
-    img::Image *tempImg = img::convertSDLSurfaceToImage(surface, false);
-    SDL_UnlockSurface(surface);
-    InfoStream << "setIcon:2\n";
+    //SDL_SetWindowIcon(Window, surface);
 
-    bool succ = mdf->copyTo(newImg, tempImg);
-    InfoStream << "setIcon:3\n";
-	delete tempImg;
-    InfoStream << "setIcon:4\n";
-
-	if (!succ) {
-		SDL_FreeSurface(surface);
-        return;
-	}
-
-	SDL_SetWindowIcon(Window, surface);
-
-	SDL_FreeSurface(surface);
+    surface->pixels = nullptr;
+    SDL_FreeSurface(surface);
 
     return;
 }

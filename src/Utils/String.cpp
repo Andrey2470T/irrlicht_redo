@@ -109,7 +109,7 @@ namespace utils
     }
 
     std::vector<Uint16> wstring_to_uint16(const std::wstring& wstr) {
-        core::InfoStream << "wstr size: " << (u32)wstr.size() << "\n";
+        //core::InfoStream << "wstr size: " << (u32)wstr.size() << "\n";
         std::vector<Uint16> result;
 
         if (sizeof(wchar_t) == 2) {

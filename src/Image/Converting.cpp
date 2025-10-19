@@ -1,5 +1,6 @@
 #include "Converting.h"
 #include "Image/ImageModifier.h"
+#include "Core/TimeCounter.h"
 
 namespace img
 {
@@ -142,7 +143,7 @@ namespace img
     SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface);
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool copyData)
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
 		
@@ -159,26 +160,32 @@ namespace img
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
         u8 *data = static_cast<u8*>(surf->pixels);
-        u32 pitch = static_cast<u32>(surf->pitch);
-        u32 pixelSize = pixelFormatInfo.at(format).size / 8;
+        surf->pixels = nullptr;
         //u32 rowSize = w * pixelSize;
         
         //InfoStream << "Surface info: SDL format=" << sdl_format->format << ", our format=" << format << ", w=" << w << ", h=" << h << ", pitch=" << pitch << ", pixelSize=" << pixelSize << ", BitsPerPixel=" << (int)sdl_format->BitsPerPixel << "\n";
 
+        //core::InfoStream << "convertSDLSurfaceToImage: creating image, time: " << TimeCounter::getRealTime() << "\n";
         // load the SDL palette
         Palette *palette = nullptr;
         if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
             SDL_Palette *sdl_palette = sdl_format->palette;
 
             std::vector<img::color8> colors;
+            colors.resize(sdl_palette->ncolors);
+            //core::InfoStream << "convertSDLSurfaceToImage: creating image 2, time: " << TimeCounter::getRealTime() << "\n";
 
             //InfoStream << "convertSDLSurfaceToImage 1 palette size: " << sdl_palette->ncolors << "\n";
             for (s32 i = 0; i < sdl_palette->ncolors; i++) {
-                SDL_Color sdl_color = sdl_palette->colors[i];
-                colors.emplace_back(img::PF_RGBA8, sdl_color.r, sdl_color.g, sdl_color.b, sdl_color.a);
+                SDL_Color &sdl_color = sdl_palette->colors[i];
+                colors[i].R(sdl_color.r);
+                colors[i].G(sdl_color.g);
+                colors[i].B(sdl_color.b);
+                colors[i].A(sdl_color.a);
             }
             //InfoStream << "convertSDLSurfaceToImage 2\n";
 
+            //core::InfoStream << "convertSDLSurfaceToImage: creating image 3, time: " << TimeCounter::getRealTime() << "\n";
             palette = new Palette(true, colors.size(), colors);
             //InfoStream << "convertSDLSurfaceToImage 3\n";
         }
@@ -200,18 +207,26 @@ namespace img
         }*/
 
         //InfoStream << "convertSDLSurfaceToImage:1\n";
-        auto img = new Image(format, w, h, data, copyData, palette);
+        //core::InfoStream << "convertSDLSurfaceToImage: creating image 4, time: " << TimeCounter::getRealTime() << "\n";
+        auto img = new Image(format, w, h, data, false, palette);
+        //core::InfoStream << "convertSDLSurfaceToImage: created, flipping image, time: " << TimeCounter::getRealTime() << "\n";
 
-        auto localImgMod = new img::ImageModifier();
-        //InfoStream << "convertSDLSurfaceToImage:2\n";
-        auto flipped_y = localImgMod->flip(img, FD_Y);
-        //InfoStream << "convertSDLSurfaceToImage:3\n";
-        delete img;
-        //InfoStream << "convertSDLSurfaceToImage:4\n";
-        delete localImgMod;
-        //InfoStream << "convertSDLSurfaceToImage:5\n";
+        if (flipImage) {
+            auto localImgMod = new img::ImageModifier();
+            //InfoStream << "convertSDLSurfaceToImage:2\n";
+            auto flipped_y = localImgMod->flip(img, FD_Y);
+            //core::InfoStream << "convertSDLSurfaceToImage: created, flipped, deleting now, time: " << TimeCounter::getRealTime() << "\n";
+            //InfoStream << "convertSDLSurfaceToImage:3\n";
+            delete img;
+            //InfoStream << "convertSDLSurfaceToImage:4\n";
+            delete localImgMod;
+            //InfoStream << "convertSDLSurfaceToImage:5\n";
+            //core::InfoStream << "convertSDLSurfaceToImage: created, deleted, time: " << TimeCounter::getRealTime() << "\n";
 
-        return flipped_y;
+            img = flipped_y;
+        }
+
+        return img;
 	}
 
 	SDL_Surface *convertImageToSDLSurface(Image *img)
@@ -230,19 +245,19 @@ namespace img
         s32 w = static_cast<s32>(img->getWidth());
         s32 h = static_cast<s32>(img->getHeight());
 		s32 pitch = static_cast<s32>(getDataSizeFromFormat(img->getFormat(), img->getWidth(), img->getHeight()));
-        u8 *data = new u8[w * h * pixelBits / 8];
-        memcpy(data, img->getData(), w * h * pixelBits / 8);
+        //u8 *data = new u8[w * h * pixelBits / 8];
+        //memcpy(data, img->getData(), w * h * pixelBits / 8);
 		u32 redMask = getRedMask(img->getFormat());
 		u32 greenMask = getGreenMask(img->getFormat());
 		u32 blueMask = getBlueMask(img->getFormat());
 		u32 alphaMask = getAlphaMask(img->getFormat());
 
-		return SDL_CreateRGBSurfaceFrom(data, w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
+        return SDL_CreateRGBSurfaceFrom(img->getData(), w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
 	}
 
     SDL_Surface* convertToRGBA8888(SDL_Surface* src_surface) {
         u32 sdlformat = src_surface->format->format;
-        InfoStream << "convertToTargetFormat: 3.1\n";
+
         if (!src_surface ||
             (sdlformat != SDL_PIXELFORMAT_ABGR8888 &&
             sdlformat != SDL_PIXELFORMAT_BGRA8888 &&
@@ -250,7 +265,6 @@ namespace img
             return nullptr;
         }
 
-        InfoStream << "convertToTargetFormat: 3.2\n";
         SDL_Surface* dst_surface = SDL_CreateRGBSurfaceWithFormat(
             0, src_surface->w, src_surface->h, 32, SDL_PIXELFORMAT_RGBA8888);
 
@@ -258,7 +272,7 @@ namespace img
             return nullptr;
         }
 
-        InfoStream << "convertToTargetFormat: 3.3\n";
+        //InfoStream << "convertToTargetFormat: 3.3\n";
         SDL_LockSurface(src_surface);
         SDL_LockSurface(dst_surface);
 
@@ -340,9 +354,7 @@ namespace img
     }
 
     SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface) {
-        InfoStream << "convertToTargetFormat: 1\n";
         if (!src_surface) return nullptr;
-        InfoStream << "convertToTargetFormat: 2\n";
 
         u32 format = src_surface->format->format;
 

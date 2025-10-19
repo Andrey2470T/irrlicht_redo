@@ -9,18 +9,20 @@ namespace render
 enum class FontMode : u8
 {
     MONO        = 0x00,
-    GRAY          = 0x01,
-    FALLBACK = 0x02
+    GRAY        = 0x01,
+    FALLBACK    = 0x02
 };
 
 enum class FontStyle : u8
 {
-    NORMAL                   = 0x00,
-    BOLD                         = 0x01,
-    ITALIC                       = 0x02,
-    UNDERLINE              = 0x04,
+    NORMAL          = 0x00,
+    BOLD            = 0x01,
+    ITALIC          = 0x02,
+    UNDERLINE       = 0x04,
     STRIKETHROUGH   = 0x08
 };
+
+#define MAX_GLYPHS_COUNT 0xFFFF
 
 class TTFont
 {
@@ -32,6 +34,8 @@ class TTFont
     bool hasTransparency = true;
     u32 shadowOffset;
     u32 shadowAlpha;
+
+    std::vector<wchar_t> glyphsSet;
 public:
     TTFont(TTF_Font *_font, FontMode _mode, u32 _size, bool _transparent, u32 _shadow_offset, u32 _shadow_alpha);
 
@@ -46,6 +50,9 @@ public:
 
     FontMode getMode() const;
     FontStyle getStyle() const;
+
+    u32 getGlyphsNum() const;
+    const std::vector<wchar_t> &getGlyphsSet() const;
 
     u32 getTextWidth(const std::wstring &text) const;
     u32 getTextHeight(const std::wstring &text) const;

@@ -6,6 +6,8 @@
 namespace core
 {
 
+using namespace std::chrono;
+
 // Platform-independent controllable time counter.
 class TimeCounter
 {
@@ -20,11 +22,6 @@ public:
 			start();
 	}
 
-	u32 getVirtualTime() const
-	{
-		return std::chrono::steady_clock::now().time_since_epoch().count();
-	}
-
 	void start()
 	{
 		if (!IsStopped)
@@ -32,12 +29,12 @@ public:
 
 		IsStopped = false;
 
-		LastFixedVirtualTime = getVirtualTime();
+        LastFixedVirtualTime = getRealTime();
 	}
 
 	void tick()
 	{
-		u32 curVirtualTime = getVirtualTime();
+        u32 curVirtualTime = getRealTime();
 
 		OwnTime += (curVirtualTime - LastFixedVirtualTime);
 
@@ -74,14 +71,14 @@ public:
 		if (IsStopped)
 			return 0;
 
-		u32 curVirtualTime = getVirtualTime();
+        u32 curVirtualTime = getRealTime();
 
 		return curVirtualTime - LastFixedVirtualTime;
 	}
 
     static u32 getRealTime()
 	{
-		return std::chrono::system_clock::now().time_since_epoch().count();
+        return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 	}
 };
 
