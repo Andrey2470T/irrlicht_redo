@@ -25,6 +25,15 @@ enum FLIP_DIR : u8
 class ImageModifier
 {
     BlendMode Mode = BM_NORMAL;
+
+    template<typename Func>
+    void processPixelsBulk(Image* img, const rectu* rect, Func&& pixelFunc);
+
+    void blendWithPalette(const Image *img, const color8 &srcColor, color8 &dstColor);
+
+    void getPixelDirect(const Image *img, u32 x, u32 y, color8 &color) const;
+    void setPixelDirect(Image *img, u32 x, u32 y, color8 &color);
+    void setPixelDirectWithBlend(Image *img, u32 x, u32 y, const color8 &srcColor, color8 &dstColor);
 public:
 	ImageModifier() {}
 

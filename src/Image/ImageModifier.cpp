@@ -1,8 +1,132 @@
 #include <algorithm>
+#include "Core/TimeCounter.h"
+#include "Image/Converting.h"
 #include "ImageModifier.h"
 
 namespace img
 {
+
+template<typename Func>
+void ImageModifier::processPixelsBulk(Image* img, const rectu* rect, Func&& pixelFunc)
+{
+    rectu processRect;
+    if (rect) {
+        processRect = *rect;
+    } else {
+        processRect.ULC = v2u(0, 0);
+        processRect.LRC = img->getSize();
+    }
+
+    rectu clipRect(img->getClipPos(), img->getClipSize());
+    processRect.clipAgainst(clipRect);
+
+    color8 curColor(img->getFormat());
+    for (u32 y = processRect.ULC.Y; y < processRect.LRC.Y; ++y) {
+        for (u32 x = processRect.ULC.X; x < processRect.LRC.X; ++x) {
+            getPixelDirect(img, x, y, curColor);
+            pixelFunc(x, y, curColor);
+        }
+    }
+}
+
+void ImageModifier::blendWithPalette(const Image *img, const color8 &srcColor, color8 &dstColor)
+{
+    if (img->getFormat() != PF_INDEX_RGBA8)
+        dstColor = doBlend(srcColor, dstColor, Mode);
+    else {
+        auto palette = img->getPalette();
+
+        if (!palette) {
+            dstColor.R(srcColor.R());
+        }
+        else {
+            auto srcPaletteColor = palette->getColorByIndex(srcColor.R());
+            auto dstPaletteColor = palette->getColorByIndex(dstColor.R());
+
+            dstColor.R(palette->findColorIndex(doBlend(srcPaletteColor, dstPaletteColor, Mode)));
+        }
+    }
+}
+
+void ImageModifier::getPixelDirect(const Image *img, u32 x, u32 y, color8 &color) const
+{
+	auto data = img->getData();
+	u32 pitch = img->getPitch();
+	
+	switch(img->getFormat()) {
+    case PF_R8:
+    case PF_INDEX_RGBA8: {
+        color.R(data[y * pitch + x]);
+        break;
+    }
+    case PF_RG8: {
+        u8 *pixel = &data[y * pitch + 2 * x];
+        color.R(*pixel);
+        color.G(*(pixel+1));
+        break;
+    }
+    case PF_RGB8: {
+        u8 *pixel = &data[y * pitch + 3 * x];
+        color.R(*pixel);
+        color.G(*(pixel+1));
+        color.B(*(pixel+2));
+        break;
+    }
+    case PF_RGBA8: {
+        u8 *pixel = &data[y * pitch + 4 * x];
+        color.R(*pixel);
+        color.G(*(pixel+1));
+        color.B(*(pixel+2));
+        color.A(*(pixel+3));
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void ImageModifier::setPixelDirect(Image *img, u32 x, u32 y, color8 &dstColor)
+{
+	auto data = img->getData();
+	u32 pitch = img->getPitch();
+	
+	switch(img->getFormat()) {
+    case PF_R8:
+    case PF_INDEX_RGBA8: {
+        data[y * pitch + x] = dstColor.R();
+        break;
+    }
+    case PF_RG8: {
+        u8 *pixel = &data[y * pitch + 2 * x];
+        *pixel = dstColor.R();
+        *(pixel+1) = dstColor.G();
+        break;
+    }
+    case PF_RGB8: {
+        u8 *pixel = &data[y * pitch + 3 * x];
+        *pixel = dstColor.R();
+        *(pixel+1) = dstColor.G();
+        *(pixel+2) = dstColor.B();
+        break;
+    }
+    case PF_RGBA8: {
+        u8 *pixel = &data[y * pitch + 4 * x];
+        *pixel = dstColor.R();
+        *(pixel+1) = dstColor.G();
+        *(pixel+2) = dstColor.B();
+        *(pixel+3) = dstColor.A();
+        break;
+    }
+    default:
+    	break;
+    }
+}
+
+void ImageModifier::setPixelDirectWithBlend(Image *img, u32 x, u32 y, const color8 &srcColor, color8 &dstColor)
+{
+    blendWithPalette(img, srcColor, dstColor);
+    setPixelDirect(img, x, y, dstColor);
+}
 
 // Returns a pixel from the image
 color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
@@ -22,29 +146,10 @@ color8 ImageModifier::getPixel(const Image *img, u32 x, u32 y) const
         return color8(format);
     }
 
-	u8 *data = img->getData();
+    color8 color(format);
+    getPixelDirect(img, x, y, color);
 
-    switch(format) {
-    case PF_R8:
-        return color8(PF_R8, data[y * width + x]);
-    case PF_RG8: {
-        u8 *pixel = &data[y * 2 * width + 2 * x];
-        return color8(PF_RG8, *pixel, *(pixel+1));
-    }
-    case PF_RGB8: {
-         u8 *pixel = &data[y * 3 * width + 3 * x];
-        return color8(PF_RGB8, *pixel, *(pixel+1), *(pixel+2));
-    }
-    case PF_RGBA8: {
-         u8 *pixel = &data[y * 4 * width + 4 * x];
-        return color8(PF_RGBA8, *pixel, *(pixel+1), *(pixel+2), *(pixel+3));
-    }
-    case PF_INDEX_RGBA8:
-        return color8(PF_INDEX_RGBA8, data[y * width + x]);
-    default:
-        WarnStream << "ImageModifier::getPixel() unsupported/unknown format";
-        return color8(format);
-	}
+    return color;
 }
 
 //! Sets a pixel for the image
@@ -67,58 +172,10 @@ void ImageModifier::setPixel(
         return;
     }
 
-    color8 newColor = getPixel(img, x, y);
+    color8 newColor = convertColorToIndexImageFormat(img, color);
 
-    PixelFormat format = img->getFormat();
-
-    if (format != PF_INDEX_RGBA8)
-        newColor = doBlend(color, newColor, Mode);
-    else {
-        auto palette = img->getPalette();
-
-        if (!palette) {
-            newColor.R(color.R());
-        }
-        else {
-            auto srcColor = palette->getColorByIndex(color.R());
-            auto destColor = palette->getColorByIndex(newColor.R());
-            newColor.R(palette->findColorIndex(doBlend(srcColor, destColor, Mode)));
-        }
-    }
-
-	u8 *data = img->getData();
-    u8 *pixel = nullptr;
-
-    switch(format) {
-    case PF_R8:
-    case PF_INDEX_RGBA8: {
-        data[y * width + x] = newColor.R();
-        break;
-    }
-    case PF_RG8: {
-        pixel = &data[y * 2 * width + 2 * x];
-        *pixel = newColor.R();
-        *(pixel+1) = newColor.G();
-        break;
-    }
-    case PF_RGB8: {
-        pixel = &data[y * 3 * width + 3 * x];
-        *pixel = newColor.R();
-        *(pixel+1) = newColor.G();
-        *(pixel+2) = newColor.B();
-        break;
-    }
-    case PF_RGBA8: {
-        pixel = &data[y * 4 * width + 4 * x];
-        *pixel = newColor.R();
-        *(pixel+1) = newColor.G();
-        *(pixel+2) = newColor.B();
-        *(pixel+3) = newColor.A();
-        break;
-    default:
-        WarnStream << "ImageModifier::setPixel() unsupported/unknown format\n";
-        break;
-    }}
+    getPixelDirect(img, x, y, newColor);
+    setPixelDirectWithBlend(img, x, y, color, newColor);
 }
 
 // Return (only) a pixel color from the image
@@ -128,7 +185,7 @@ color8 ImageModifier::getPixelColor(const Image *img, u32 x, u32 y) const
 	color8 c = getPixel(img, x, y);
 
 	if (img->getFormat() == img::PF_INDEX_RGBA8)
-		return img->getPalette()->colors.at(c.R());
+        return img->getPalette()->getColorByIndex(c.R());
 
 	return c;
 }
@@ -148,27 +205,15 @@ void ImageModifier::setPixelColor(Image *img, u32 x, u32 y, const color8 &color)
 void ImageModifier::fill(
 	Image *img,
 	const color8 &color,
-	const utils::rectu *rect)
+    const rectu *rect)
 {
-	u32 width = img->getWidth();
-	u32 height = img->getHeight();
+    color8 convColor = convertColorToIndexImageFormat(img, color);
 
-	if (!rect) {
-		for (u32 x = 0; x < width; x++)
-			for (u32 y = 0; y < height; y++)
-				setPixel(img, x, y, color);
-	}
-	else {
-		utils::rectu img_rect(utils::v2u(width, height));
-		if (!img_rect.isRectInside(*rect)) {
-			WarnStream << "ImageModifier::fill() sub rect is outside of image canvas\n";
-			return;
-		}
-
-		for (u32 x = rect->ULC.X; x < rect->LRC.X; x++)
-			for (u32 y = rect->ULC.Y; y < rect->LRC.Y; y++)
-				setPixel(img, x, y, color);
-	}
+    processPixelsBulk(img, rect,
+        [img, &convColor, this] (u32 x, u32 y, color8 &curColor)
+        {
+            setPixelDirectWithBlend(img, x, y, convColor, curColor);
+        });
 }
 
 // Copies the whole (or part) of the source image to the whole (or part) of the dest image
@@ -180,18 +225,18 @@ void ImageModifier::fill(
 bool ImageModifier::copyTo(
     Image *srcImg,
 	Image *dstImg,
-	const utils::rectu *srcRect,
-	const utils::rectu *dstRect,
+    const rectu *srcRect,
+    const rectu *dstRect,
 	bool allowScale)
 {
-    utils::rectu targetRect;
+    rectu targetRect;
 
     if (srcRect) {
         targetRect.ULC = srcRect->ULC;
         targetRect.LRC = srcRect->LRC;
     }
     else {
-        targetRect.ULC = utils::v2u(0, 0);
+        targetRect.ULC = v2u(0, 0);
         targetRect.LRC = srcImg->getSize();
     }
 
@@ -300,7 +345,7 @@ color8 linear_to_srgb(const v3f col_linear)
     col.Z = std::clamp(linear_to_srgb_component(col_linear.Z) * 255.0f, 0.0f, 255.0f);
 
     return color8(PF_RGBA8, (u8)std::round(col.X), (u8)std::round(col.Y),
-                       (u8)std::round(col.Z), 0xFF);
+        (u8)std::round(col.Z), 0xFF);
 }
 
 // Returns the gamma-correct average color of the image, with transparent pixels ignored
@@ -313,6 +358,7 @@ color8 ImageModifier::imageAverageColor(Image *img)
     // limit runtime cost
     const u32 stepx = std::max(1U, size.X / 16),
         stepy = std::max(1U, size.Y / 16);
+    
     for (u32 x = 0; x < size.X; x += stepx) {
         for (u32 y = 0; y < size.Y; y += stepy) {
             color8 c = getPixelColor(img, x, y);
@@ -334,7 +380,7 @@ color8 ImageModifier::imageAverageColor(Image *img)
 
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
-void ImageModifier::resize(Image **img, const utils::rectu &rect, RESAMPLE_FILTER filter)
+void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filter)
 {
     f32 scaleX = (*img)->getWidth() / (f32)rect.getWidth();
     f32 scaleY = (*img)->getHeight() / (f32)rect.getHeight();
@@ -471,8 +517,8 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 
     Image *newImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
 
-    utils::v2u oldCenter = img->getSize() / 2;
-    utils::v2u newCenter = utils::v2u(newWidth, newHeight) / 2;
+    v2u oldCenter = img->getSize() / 2;
+    v2u newCenter = v2u(newWidth, newHeight) / 2;
 
     u16 degrees = 0;
 
@@ -483,18 +529,20 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 	else if (angle == RA_270)
         degrees = 90;
 
-    for (u32 x = 0; x < newWidth; x++) {
-        for (u32 y = 0; y < newHeight; y++) {
-            utils::v2u relPos = utils::v2u(x, y) - newCenter;
+    rectu area(0, 0, newWidth, newHeight);
+    color8 oldColor(img->getFormat());
+    processPixelsBulk(newImg, &area,
+        [&] (u32 x, u32 y, color8 &curColor)
+        {
+            v2u relPos = v2u(x, y) - newCenter;
             relPos.rotateBy(degrees);
-            utils::v2u oldPos = relPos + oldCenter;
+            v2u oldPos = relPos + oldCenter;
 
             if (oldPos.X < oldWidth && oldPos.Y < oldHeight) {
-                color8 curColor = getPixel(img, oldPos.X, oldPos.Y);
-                setPixel(newImg, x, y, curColor);
+                getPixelDirect(img, oldPos.X, oldPos.Y, oldColor);
+                setPixelDirect(newImg, x, y, oldColor);
             }
-        }
-    }
+        });
 
 	return newImg;
 }
@@ -504,19 +552,33 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
     u32 width = img->getWidth();
     u32 height = img->getHeight();
     Image *newImg = new Image(img->getFormat(), width, height, img::black, img->getPalette());
+    //core::InfoStream << "flip 1, time: " << TimeCounter::getRealTime() << " \n";
 
-	for (u32 x = 0; x < width; x++)
-		for (u32 y = 0; y < height; y++) {
-			color8 curColor = getPixel(img, x, y);
-            utils::v2u reflectPoint = dir == FD_X ? utils::v2u(width - 1 - x, y) : utils::v2u(x, height - 1 - y);
+    rectu area(0, 0, width, height);
+    v2u reflectPoint;
+    //u8 pixels = 0;
+    processPixelsBulk(img, &area,
+        [&] (u32 x, u32 y, color8 &curColor)
+        {
+            //if (pixels < 10)
+            //    core::InfoStream << "flip first pixel 1, time: " << TimeCounter::getRealTime() << " \n";
+            //if (pixels < 10)
+            //    core::InfoStream << "flip first pixel 2, time: " << TimeCounter::getRealTime() << " \n";
+            reflectPoint.X = dir == FD_X ? width - 1 - x : x;
+            reflectPoint.Y = dir == FD_X ? y : height - 1 - y;
 
-            setPixel(newImg, reflectPoint.X, reflectPoint.Y, curColor);
-		}
+            setPixelDirect(newImg, reflectPoint.X, reflectPoint.Y, curColor);
+            //if (pixels < 10)
+            //    core::InfoStream << "flip first pixel 3, time: " << TimeCounter::getRealTime() << " \n";
+            //++pixels;
+        });
+
+    //core::InfoStream << "flip 2, time: " << TimeCounter::getRealTime() << " \n";
 
     return newImg;
 }
 
-Image *ImageModifier::crop(Image *img, const utils::rectu &rect)
+Image *ImageModifier::crop(Image *img, const rectu &rect)
 {
 	if (rect.getSize() == img->getSize())
 		return img;

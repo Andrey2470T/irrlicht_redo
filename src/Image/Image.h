@@ -46,6 +46,7 @@ class Image
 
     u32 width;
     u32 height;
+    u32 pitch;
 
 	u8* data;
 	
@@ -63,7 +64,7 @@ public:
           Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
-		  bool _copyData = true, Palette *palette = nullptr);
+          bool _copyData = true, Palette *palette = nullptr, std::optional<u32> _pitch = std::nullopt);
 
 	~Image();
 
@@ -81,6 +82,11 @@ public:
 	{
         return height;
 	}
+
+    u32 getPitch() const
+    {
+        return pitch;
+    }
 
     v2u getSize() const
 	{

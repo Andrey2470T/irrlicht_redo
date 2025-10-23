@@ -26,7 +26,7 @@ enum BlendMode : u8
 
 #define CHECK_SAME_FORMAT(src_c, dst_c) \
     if (src_c.getFormat() != dst_c.getFormat()) {\
-        ErrorStream << "BlendModes function: the source and destination images formats have to be equal\n"; \
+        /*ErrorStream << "BlendModes function: the source and destination images formats have to be equal\n"; \*/ \
         return color8(src_c.getFormat(), 0, 0, 0, 0); \
     }
 

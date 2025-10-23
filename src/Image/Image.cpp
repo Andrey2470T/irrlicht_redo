@@ -30,7 +30,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
         Palette *_palette, ImageModifier *mdf)
 	: format(_format), width(_width), height(_height)
 {
-	if (!isFormatSupportedForImage(format)) {
+	if (!isFormatSupportedForColor8(format)) {
 		ErrorStream << "Image::Image() unsupported format for Image\n";
 		return;
 	}
@@ -45,6 +45,8 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
             palette = std::make_unique<Palette>(true, 0);
 	}
 
+    pitch = pixelSize * width;
+
     if (mdf) {
         mdf->fill(this, _initColor);
     }
@@ -56,10 +58,10 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 }
 
 Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
-	bool _copyData, Palette *_palette)
+    bool _copyData, Palette *_palette, std::optional<u32> _pitch)
 	: format(_format), width(_width), height(_height)
 {
-	if (!isFormatSupportedForImage(format)) {
+	if (!isFormatSupportedForColor8(format)) {
 		ErrorStream << "Image::Image() unsupported format for Image\n";
 		return;
 	}
@@ -72,14 +74,16 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
             palette = std::make_unique<Palette>(true, 0);
 	}
 
+    u32 pixelSize = pixelFormatInfo.at(format).size / 8;
 	if (!ownPixelData)
 		data = _data;
 	else {
-		u32 pixelSize = pixelFormatInfo.at(format).size / 8;
-
 		data = new u8[width * height * pixelSize];
         memcpy(data, _data, width * height * pixelSize);
 	}
+
+    if (!_pitch.has_value())
+        pitch = pixelSize * width;
 
     clipregion.pos = v2u(0, 0);
     clipregion.size = v2u(width, height);

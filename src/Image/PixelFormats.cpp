@@ -29,6 +29,46 @@ u32 getDataSizeFromFormat(PixelFormat format, u32 width, u32 height)
 	return pixelFormatInfo[format].size / 8 * width * height;
 }
 
+std::string formatToStr(PixelFormat format)
+{
+    switch(format) {
+    case PF_RGB8:
+        return "RGB8";
+    case PF_RGBA8:
+        return "RGBA8";
+    case PF_R16F:
+        return "PF_R16F";
+    case PF_RG16F:
+        return "PF_RG16F";
+    case PF_RGBA16F:
+        return "PF_RGBA16F";
+    case PF_R32F:
+        return "PF_R32F";
+    case PF_RG32F:
+        return "PF_RG32F";
+    case PF_RGBA32F:
+        return "PF_RGBA32F";
+    case PF_R8:
+        return "PF_R8";
+    case PF_RG8:
+        return "PF_RG8";
+    case PF_R16:
+        return "PF_R16";
+    case PF_RG16:
+        return "PF_RG16";
+    case PF_D16:
+        return "PF_D16";
+    case PF_D32:
+        return "PF_D32";
+    case PF_D24S8:
+        return "PF_D24S8";
+    case PF_INDEX_RGBA8:
+        return "PF_INDEX_RGBA8";
+    default:
+        return "RGBA8";
+    }
+}
+
 // Functions extracting one of the channels of the RGB8 or RGBA8 formats.
 u32 getRedMask(PixelFormat format)
 {

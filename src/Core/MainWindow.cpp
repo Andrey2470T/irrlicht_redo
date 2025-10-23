@@ -172,7 +172,7 @@ void MainWindow::setIcon(img::Image *newImg, img::ImageModifier *mdf)
         return;
 	}
 
-    //SDL_SetWindowIcon(Window, surface);
+    SDL_SetWindowIcon(Window, surface);
 
     surface->pixels = nullptr;
     SDL_FreeSurface(surface);
