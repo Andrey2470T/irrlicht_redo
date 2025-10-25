@@ -29,7 +29,7 @@ Image *ImageLoader::load(const std::string &path)
     auto img = convertSDLSurfaceToImage(surf);
     //InfoStream << "load:2\n";
 
-    SDL_FreeSurface(surf);
+    //SDL_FreeSurface(surf);
 
     return img;
 }

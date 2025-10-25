@@ -73,46 +73,65 @@ std::string formatToStr(PixelFormat format)
 u32 getRedMask(PixelFormat format)
 {
 	switch (format) {
-		case PF_RGB8:
-			return 0xFF0000;
-		case PF_RGBA8:
-			return 0xFF000000;
-		default:
-			return 0x0;
+    case PF_R8:
+    case PF_INDEX_RGBA8:
+        return 0xFF;
+    case PF_RG8:
+        return 0xFF00;
+    case PF_RGB8:
+        return 0xFF0000;
+    case PF_RGBA8:
+        return 0xFF000000;
+    default:
+        return 0x0;
 	}
 }
 
 u32 getGreenMask(PixelFormat format)
 {
 	switch (format) {
-		case PF_RGB8:
-			return 0x00FF00;
-		case PF_RGBA8:
-			return 0x00FF0000;
-		default:
-			return 0x0;
+    case PF_R8:
+    case PF_INDEX_RGBA8:
+        return 0x0;
+    case PF_RG8:
+        return 0x00FF;
+    case PF_RGB8:
+        return 0x00FF00;
+    case PF_RGBA8:
+        return 0x00FF0000;
+    default:
+        return 0x0;
 	}
 }
 
 u32 getBlueMask(PixelFormat format)
 {
 	switch (format) {
-		case PF_RGB8:
-			return 0x0000FF;
-		case PF_RGBA8:
-			return 0x0000FF00;
-		default:
-			return 0x0;
+    case PF_R8:
+    case PF_INDEX_RGBA8:
+    case PF_RG8:
+        return 0x0;
+    case PF_RGB8:
+        return 0x0000FF;
+    case PF_RGBA8:
+        return 0x0000FF00;
+    default:
+        return 0x0;
 	}
 }
 
 u32 getAlphaMask(PixelFormat format)
 {
 	switch (format) {
-		case PF_RGBA8:
-			return 0x000000FF;
-		default:
-			return 0x0;
+    case PF_R8:
+    case PF_INDEX_RGBA8:
+    case PF_RG8:
+    case PF_RGB8:
+        return 0x0;
+    case PF_RGBA8:
+        return 0x000000FF;
+    default:
+        return 0x0;
 	}
 }
 

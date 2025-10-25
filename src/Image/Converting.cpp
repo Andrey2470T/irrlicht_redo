@@ -5,8 +5,6 @@
 namespace img
 {
 
-    SDL_Surface* convertToTargetFormat(SDL_Surface* src_surface);
-
     // Note: converting doesn't copy the input data, but just transform it to another form
     Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage)
 	{
@@ -15,6 +13,7 @@ namespace img
         auto it = formatsEnumsMap.find(sdl_format->format);
 
         std::string formatStr = SDL_GetPixelFormatName(sdl_format->format);
+        InfoStream << "formatStr: " << formatStr << "\n";
         //InfoStream << "Loaded the image format: " << formatStr << "\n";
 		if (it == formatsEnumsMap.end()) {
             ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << formatStr << "\n";
@@ -60,7 +59,7 @@ namespace img
 
         //InfoStream << "convertSDLSurfaceToImage:1\n";
         //core::InfoStream << "convertSDLSurfaceToImage: creating image 4, time: " << TimeCounter::getRealTime() << "\n";
-        auto img = new Image(format, w, h, data, false, palette, pitch);
+        auto img = new Image(format, w, h, data, false, palette, pitch, sdl_format->format);
         //core::InfoStream << "convertSDLSurfaceToImage 3, time: " << TimeCounter::getRealTime() << " \n";
         //core::InfoStream << "convertSDLSurfaceToImage: created, flipping image, time: " << TimeCounter::getRealTime() << "\n";
 
@@ -85,27 +84,13 @@ namespace img
 
 	SDL_Surface *convertImageToSDLSurface(Image *img)
 	{
-		PixelFormat format = img->getFormat();
-		
-		auto it = std::find_if(formatsEnumsMap.begin(), formatsEnumsMap.end(), [&] (const std::pair<u32, u32> &p)
-		{
-			return p.second == format;
-        });
-		if (it == formatsEnumsMap.end()) {
-            ErrorStream << "convertImageToSDLSurface() unsupported pixel format:" << formatToStr(format) << "\n";
-			return nullptr;
-		}
+        u32 sdlFormat = img->getFormatsEnumsIndex();
 		s32 pixelBits = static_cast<s32>(pixelFormatInfo.at(img->getFormat()).size);
         s32 w = static_cast<s32>(img->getWidth());
         s32 h = static_cast<s32>(img->getHeight());
         s32 pitch = static_cast<s32>(img->getPitch());
 
-		u32 redMask = getRedMask(img->getFormat());
-		u32 greenMask = getGreenMask(img->getFormat());
-		u32 blueMask = getBlueMask(img->getFormat());
-		u32 alphaMask = getAlphaMask(img->getFormat());
-
-        return SDL_CreateRGBSurfaceFrom(img->getData(), w, h, pixelBits, pitch, redMask, greenMask, blueMask, alphaMask);
+        return SDL_CreateRGBSurfaceWithFormatFrom(img->getData(), w, h, pixelBits, pitch, sdlFormat);
 	}
 
     color8 convertColorToIndexImageFormat(Image *img, color8 color)

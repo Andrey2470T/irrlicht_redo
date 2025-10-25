@@ -60,11 +60,16 @@ int main(int argc, char *argv[])
 
     fs::path abs_icon_p = fs::absolute("icon.png");
 	core::InfoStream << "icon.png path:" << abs_icon_p << "\n";
-    auto img = img::ImageLoader::load(abs_icon_p.string());
 
-    img::ImageModifier imgmod;
-    imgmod.setBlendMode(img::BM_MULTIPLY);
-    imgmod.fill(img, img::red);
+    //SDL_Surface *surf = IMG_Load(abs_icon_p.string().c_str());
+    //SDL_SetWindowIcon(window->getWindow(), surf);
+
+    auto img = img::ImageLoader::load(abs_icon_p.string());
+    window->setIcon(img);
+
+    //img::ImageModifier imgmod;
+    //imgmod.setBlendMode(img::BM_MULTIPLY);
+    //imgmod.fill(img, img::red);
     //imgmod.setBlendMode(img::BM_NORMAL);
     //auto img2 = imgmod.rotate(img, img::RA_270);
     //delete img;
@@ -77,8 +82,8 @@ int main(int argc, char *argv[])
     auto img3 = imgmod.combine(img, img2);
     delete img;
     delete img2;*/
-    imgmod.setBlendMode(img::BM_NORMAL);
-    imgmod.resize(&img, rectu(v2u(0), newSize.X, newSize.Y), img::RF_BICUBIC);
+    //imgmod.setBlendMode(img::BM_NORMAL);
+    //imgmod.resize(&img, rectu(v2u(0), newSize.X, newSize.Y), img::RF_BICUBIC);
     //imgmod.setBlendMode(img::BM_ADD);
     //imgmod.fill(img, img::red);
     //imgmod.setBlendMode(img::BM_NORMAL);

@@ -44,6 +44,8 @@ class Image
 {
 	PixelFormat format;
 
+    u32 formatsEnumsIndex;
+
     u32 width;
     u32 height;
     u32 pitch;
@@ -61,10 +63,12 @@ class Image
     } clipregion;
 public:
     Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor=img::black,
-          Palette *_palette = nullptr, ImageModifier *mdf = nullptr);
+        Palette *_palette = nullptr, ImageModifier *mdf = nullptr,
+        std::optional<u32> _formatsEnumsIndex = std::nullopt);
 
 	Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
-          bool _copyData = true, Palette *palette = nullptr, std::optional<u32> _pitch = std::nullopt);
+        bool _copyData = true, Palette *palette = nullptr, std::optional<u32> _pitch = std::nullopt,
+          std::optional<u32> _formatsEnumsIndex = std::nullopt);
 
 	~Image();
 
@@ -72,6 +76,11 @@ public:
 	{
 		return format;
 	}
+
+    u32 getFormatsEnumsIndex() const
+    {
+        return formatsEnumsIndex;
+    }
 
 	u32 getWidth() const
 	{
@@ -119,8 +128,8 @@ public:
 	bool operator==(const Image *other)
 	{
 		u32 pixelSize = pixelFormatInfo.at(format).size / 8;
-		return (format == other->format && width == other->getWidth() && height == other->getHeight() &&
-		    !memcmp(data, other->getData(), width * height * pixelSize));
+        return (format == other->format && formatsEnumsIndex == other->formatsEnumsIndex && width == other->getWidth() &&
+            height == other->getHeight() && !memcmp(data, other->getData(), width * height * pixelSize));
     }
 };
 

@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "Image/Converting.h"
 #include "ImageModifier.h"
 
 namespace img
@@ -27,7 +28,7 @@ u8 Palette::findColorIndex(const color8 &c)
 }
 
 Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initColor,
-        Palette *_palette, ImageModifier *mdf)
+    Palette *_palette, ImageModifier *mdf, std::optional<u32> _formatsEnumsIndex)
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForColor8(format)) {
@@ -45,6 +46,17 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
             palette = std::make_unique<Palette>(true, 0);
 	}
 
+    if (!_formatsEnumsIndex.has_value()) {
+        auto it = std::find_if(formatsEnumsMap.begin(), formatsEnumsMap.end(),
+            [&] (const std::pair<u32, u32> &p)
+            {
+                return p.second == format;
+            });
+        formatsEnumsIndex = it->first;
+    }
+    else
+        formatsEnumsIndex = _formatsEnumsIndex.value();
+
     pitch = pixelSize * width;
 
     if (mdf) {
@@ -58,7 +70,8 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 }
 
 Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
-    bool _copyData, Palette *_palette, std::optional<u32> _pitch)
+    bool _copyData, Palette *_palette, std::optional<u32> _pitch,
+    std::optional<u32> _formatsEnumsIndex)
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForColor8(format)) {
@@ -74,6 +87,17 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
             palette = std::make_unique<Palette>(true, 0);
 	}
 
+    if (!_formatsEnumsIndex.has_value()) {
+        auto it = std::find_if(formatsEnumsMap.begin(), formatsEnumsMap.end(),
+            [&] (const std::pair<u32, u32> &p)
+            {
+                return p.second == format;
+            });
+        formatsEnumsIndex = it->first;
+    }
+    else
+        formatsEnumsIndex = _formatsEnumsIndex.value();
+
     u32 pixelSize = pixelFormatInfo.at(format).size / 8;
 	if (!ownPixelData)
 		data = _data;
@@ -84,6 +108,8 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 
     if (!_pitch.has_value())
         pitch = pixelSize * width;
+    else
+        pitch = _pitch.value();
 
     clipregion.pos = v2u(0, 0);
     clipregion.size = v2u(width, height);
@@ -98,7 +124,7 @@ Image::~Image()
 u8* Image::getData() const
 {
 	u32 pixelSize = pixelFormatInfo.at(format).size / 8;
-    return data + (clipregion.pos.Y * width + clipregion.pos.X) * pixelSize;
+    return data + clipregion.pos.Y * pitch + clipregion.pos.X * pixelSize;
 }
 
 void Image::setPaletteColors(const std::vector<color8> &colors)
@@ -124,7 +150,8 @@ void Image::setClipRegion(u32 x, u32 y, u32 size_x, u32 size_y)
 Image *Image::copy() const
 {
     v2u clipSize = getClipSize();
-    Image *newImg = new Image(getFormat(), clipSize.X, clipSize.Y, getData(), true);
+    Image *newImg = new Image(
+        getFormat(), clipSize.X, clipSize.Y, getData(), true, getPalette(), getPitch(), getFormatsEnumsIndex());
 	return newImg;
 }
 

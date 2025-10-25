@@ -161,11 +161,15 @@ MainWindow::~MainWindow()
 
 
 // Window params adjusting methods
-void MainWindow::setIcon(img::Image *newImg, img::ImageModifier *mdf)
+void MainWindow::setIcon(img::Image *newImg)
 {
     if (!Window) return;
 
-    SDL_Surface *surface = img::convertImageToSDLSurface(newImg);
+    auto localImgMod = new img::ImageModifier();
+    auto newImgFlipped = localImgMod->flip(newImg, img::FD_Y);
+    delete localImgMod;
+
+    SDL_Surface *surface = img::convertImageToSDLSurface(newImgFlipped);
 
 	if (!surface) {
 		ErrorStream << "Failed to create SDL suface\n";
@@ -173,6 +177,8 @@ void MainWindow::setIcon(img::Image *newImg, img::ImageModifier *mdf)
 	}
 
     SDL_SetWindowIcon(Window, surface);
+
+    delete newImgFlipped;
 
     surface->pixels = nullptr;
     SDL_FreeSurface(surface);

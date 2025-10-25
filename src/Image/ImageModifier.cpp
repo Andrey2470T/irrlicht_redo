@@ -241,7 +241,7 @@ bool ImageModifier::copyTo(
     }
 
     Image *srcPart = new Image(srcImg->getFormat(), targetRect.getWidth(), targetRect.getHeight(),
-        img::black, srcImg->getPalette());
+        img::black, srcImg->getPalette(), nullptr, srcImg->getFormatsEnumsIndex());
 
     for (u32 x = targetRect.ULC.X; x < targetRect.LRC.X; x++) {
         for (u32 y = targetRect.ULC.Y; y < targetRect.LRC.Y; y++)
@@ -298,7 +298,8 @@ Image *ImageModifier::copyWith2NPot2Scaling(Image *img, const rectu *rect)
     u32 newWidth = npot2(size.X);
     u32 newHeight = npot2(size.Y);
     rectu scaledRect(0, 0, newWidth, newHeight);
-    Image *scaledImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
+    Image *scaledImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette(),
+        nullptr, img->getFormatsEnumsIndex());
     copyTo(img, scaledImg, rect, &scaledRect, true);
 
     return scaledImg;
@@ -482,7 +483,7 @@ void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filte
 
     if (scaleX != 1.0f) {
         newImgScaledX = new Image((*img)->getFormat(), rect.getWidth(), (*img)->getHeight(),
-            img::black, (*img)->getPalette());
+            img::black, (*img)->getPalette(), nullptr, (*img)->getFormatsEnumsIndex());
         axisScale(*img, newImgScaledX, 0);
         wasScaled = true;
     }
@@ -490,7 +491,7 @@ void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filte
     Image *newImgScaledY = newImgScaledX;
     if (scaleY != 1.0f) {
         newImgScaledY = new Image(newImgScaledX->getFormat(), newImgScaledX->getWidth(), rect.getHeight(),
-            img::black, newImgScaledX->getPalette());
+            img::black, newImgScaledX->getPalette(), nullptr, newImgScaledX->getFormatsEnumsIndex());
         axisScale(newImgScaledX, newImgScaledY, 1);
 
         if (wasScaled)
@@ -515,7 +516,8 @@ Image *ImageModifier::rotate(Image *img, ROTATE_ANGLE angle)
 	if (angle == RA_90 || angle == RA_270)
 		std::swap(newWidth, newHeight);
 
-    Image *newImg = new Image(img->getFormat(), newWidth, newHeight, img::black, img->getPalette());
+    Image *newImg = new Image(
+        img->getFormat(), newWidth, newHeight, img::black, img->getPalette(), nullptr, img->getFormatsEnumsIndex());
 
     v2u oldCenter = img->getSize() / 2;
     v2u newCenter = v2u(newWidth, newHeight) / 2;
@@ -551,7 +553,8 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
 {
     u32 width = img->getWidth();
     u32 height = img->getHeight();
-    Image *newImg = new Image(img->getFormat(), width, height, img::black, img->getPalette());
+    Image *newImg = new Image(
+        img->getFormat(), width, height, img::black, img->getPalette(), nullptr, img->getFormatsEnumsIndex());
     //core::InfoStream << "flip 1, time: " << TimeCounter::getRealTime() << " \n";
 
     rectu area(0, 0, width, height);
@@ -583,7 +586,9 @@ Image *ImageModifier::crop(Image *img, const rectu &rect)
 	if (rect.getSize() == img->getSize())
 		return img;
 
-    Image *newImg = new Image(img->getFormat(), rect.getWidth(), rect.getHeight(), img::black, img->getPalette());
+    Image *newImg = new Image(
+        img->getFormat(), rect.getWidth(), rect.getHeight(), img::black, img->getPalette(),
+        nullptr, img->getFormatsEnumsIndex());
     copyTo(img, newImg, &rect);
 
 	return newImg;
@@ -595,7 +600,9 @@ Image *ImageModifier::combine(Image *img1, Image *img2)
 		ErrorStream << "ImageModifier::combine() pixel formats of both images must be same\n";
         return nullptr;
 	}
-    Image *newImg = new Image(img2->getFormat(), img2->getWidth(), img2->getHeight(), img::black, img2->getPalette());
+    Image *newImg = new Image(
+        img2->getFormat(), img2->getWidth(), img2->getHeight(), img::black, img2->getPalette(),
+        nullptr, img2->getFormatsEnumsIndex());
 	copyTo(img2, newImg);
 	copyTo(img1, img2, nullptr, nullptr, true);
 

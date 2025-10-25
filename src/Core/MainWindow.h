@@ -145,7 +145,7 @@ public:
 	~MainWindow();
 
 	// Window params adjusting methods
-    void setIcon(img::Image *newImg, img::ImageModifier *mdf);
+    void setIcon(img::Image *newImg);
     void setCaption(const std::wstring &newCaption);
 
 	bool isActive() const;
@@ -176,6 +176,10 @@ public:
     std::string getVendorName() const;
     std::string getGLVersionString() const;
 
+    SDL_Window *getWindow() const
+    {
+        return Window;
+    }
     v2u getWindowSize() const;
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
