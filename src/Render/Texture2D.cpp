@@ -1,4 +1,5 @@
 #include "Texture2D.h"
+#include "Image/Converting.h"
 #include "Render/Common.h"
 
 namespace render
@@ -55,18 +56,14 @@ void Texture2D::initTexture(img::Image *image)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
         TEST_GL_ERROR();
 
-        u8 *data = image->getData();
-        v2u size = image->getClipSize();
+        auto convImg = img::convertIndexImageToRGBA(image);
+        formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
 
-        if (format == img::PF_INDEX_RGBA8) {
-            formatInfo = img::pixelFormatInfo.at(img::PF_RGBA8);
-            convertIndicesToColors(image->getPalette(), &data, size);
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, size.X, size.Y, 0, formatInfo.pixelFormat, formatInfo.pixelType, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : image->getData());
         TEST_GL_ERROR();
 
-        if (format == img::PF_INDEX_RGBA8)
-            delete[] data;
+        if (convImg)
+            delete convImg;
 
 		if (texSettings.hasMipMaps) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
@@ -125,19 +122,16 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 
     auto formatInfo = img::pixelFormatInfo.at(format);
 
-    auto data = img->getData();
+    auto convImg = img::convertIndexImageToRGBA(img);
+    formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
 
-    if (img->getFormat() == img::PF_INDEX_RGBA8) {
-        formatInfo = img::pixelFormatInfo.at(img::PF_RGBA8);
-        convertIndicesToColors(img->getPalette(), &data, size);
-    }
     bind();
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
-        formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(data));
+        formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(convImg ? convImg->getData() : img->getData()));
     TEST_GL_ERROR();
 
-    if (img->getFormat() == img::PF_INDEX_RGBA8)
-         delete[] data;
+    if (convImg)
+         delete convImg;
 
     unbind();
 }
@@ -153,14 +147,23 @@ std::vector<img::Image *> Texture2D::downloadData()
         if (format == img::PF_INDEX_RGBA8) {
             formatInfo = img::pixelFormatInfo.at(img::PF_RGBA8);
         }
-        auto curData = img->getData();
-        glGetTexImage(tex2D(), 0, formatInfo.pixelFormat, formatInfo.pixelType, curData);
+
+        u8* tempData = new u8[width * height * formatInfo.size / 8];
+        glGetTexImage(tex2D(), 0, formatInfo.pixelFormat, formatInfo.pixelType, tempData);
         TEST_GL_ERROR();
 
         if (format == img::PF_INDEX_RGBA8) {
-            auto indexdata = convertColorsToIndices(img->getPalette(), curData, img->getClipSize());
-            delete[] curData;
-            curData = indexdata;
+            auto indexdata = convertRGBAImageDataToIndex(img->getPalette(), tempData, img->getSize(), img->getPitch());
+
+            memcpy(img->getData(), indexdata, width * height);
+
+            delete[] indexdata;
+            delete[] tempData;
+        }
+        else {
+            u32 dataSize = width * height * formatInfo.size / 8;
+            memcpy(img->getData(), tempData, dataSize);
+            delete[] tempData;
         }
 
         unbind();
@@ -235,33 +238,6 @@ Texture2D *Texture2D::copy(const std::string &name)
 	img::Image *cache = downloadData().at(0);
     std::string texName = name.empty() ? getName() : name;
     return new Texture2D(texName, std::unique_ptr<img::Image>(cache->copy()), texSettings);
-}
-
-void Texture2D::convertIndicesToColors(img::Palette *palette, u8 **data, v2u size)
-{
-    u8 *convdata = new u8[size.X * size.Y * 4];
-
-    for (u32 i = 0; i < size.X * size.Y; i++) {
-        auto found_color = palette->colors.at((*data)[i]);
-        convdata[i*4] = found_color.R();
-        convdata[i*4+1] = found_color.G();
-        convdata[i*4+2] = found_color.B();
-        convdata[i*4+3] = found_color.A();
-    }
-
-    *data = convdata;
-}
-
-u8 *Texture2D::convertColorsToIndices(img::Palette *palette, u8 *data, v2u size)
-{
-    u8 *convdata = new u8[size.X * size.Y];
-
-    for (u32 i = 0; i < size.X * size.Y; i++) {
-        img::color8 cur_color(img::PF_RGBA8, data[i], data[i+1], data[i+2], data[i+3]);
-        convdata[i] = palette->findColorIndex(cur_color);
-    }
-
-    return convdata;
 }
 
 }

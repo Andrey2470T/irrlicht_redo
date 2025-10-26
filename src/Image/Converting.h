@@ -20,6 +20,10 @@ namespace img
 
 	SDL_Surface *convertImageToSDLSurface(Image *img);
 
+    Image *convertIndexImageToRGBA(Image *img);
+
+    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u8 pitch);
+
     color8 convertColorToIndexImageFormat(Image *img, color8 color);
 
 	// Convert the numerical u32 color representation (ARGB) to the color8 object

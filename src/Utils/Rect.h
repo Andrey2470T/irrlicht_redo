@@ -146,6 +146,17 @@ public:
 				ULC.X < LRC.X);
 	}
 
+    bool isAdjacent(const Rect<T> &other) const
+    {
+        bool touchHorizontal = (LRC.X == other.ULC.X || ULC.X == other.LRC.X) &&
+            (ULC.Y < other.LRC.Y && LRC.Y > other.ULC.Y);
+
+        bool touchVertical = (LRC.Y == other.ULC.Y || ULC.Y == other.LRC.Y) &&
+            (ULC.X < other.LRC.X && LRC.X > other.ULC.X);
+
+        return touchHorizontal || touchVertical;
+    }
+
 	//! Clips this rectangle with another one.
 	/** \param other Rectangle to clip with */
 	void clipAgainst(const Rect<T> &other)

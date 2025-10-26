@@ -93,6 +93,67 @@ namespace img
         return SDL_CreateRGBSurfaceWithFormatFrom(img->getData(), w, h, pixelBits, pitch, sdlFormat);
 	}
 
+    Image *convertIndexImageToRGBA(Image *img)
+    {
+        if (img->getFormat() != PF_INDEX_RGBA8)
+            return nullptr;
+
+        auto palette = img->getPalette();
+        u32 width = img->getWidth();
+        u32 height = img->getHeight();
+        u32 pitch = img->getPitch();
+
+        if (width * height == 0)
+            return nullptr;
+
+        PixelFormat format = palette->hasAlpha ? PF_RGBA8 : PF_RGB8;
+        auto convImg = new Image(format, width, height);
+        u8 size = pixelFormatInfo.at(format).size / 8;
+
+        u8 *data = img->getData();
+        u8 *convdata = convImg->getData();
+
+        for (u32 y = 0; y < height; y++) {
+            for (u32 x = 0; x < width; x++) {
+                u8 i = y * pitch + x;
+                u8 i2 = y * width + x;
+                auto found_color = palette->colors.at(data[i]);
+                convdata[i2*size] = found_color.R();
+                convdata[i2*size+1] = found_color.G();
+                convdata[i2*size+2] = found_color.B();
+
+                if (format == PF_RGBA8)
+                    convdata[i2*size+3] = found_color.A();
+            }
+        }
+
+        return convImg;
+    }
+
+    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u8 pitch)
+    {
+        u32 width = size.X;
+        u32 height = size.Y;
+
+        if (width * height == 0)
+            return nullptr;
+
+        u8 *convData = new u8[width * height];
+
+        for (u32 y = 0; y < height; y++) {
+            for (u32 x = 0; x < width; x++) {
+                u8 i = y * pitch + x;
+                u8 i2 = y * width + x;
+
+                u8 alpha = palette->hasAlpha ? data[i+3] : 0;
+                img::color8 cur_color(img::PF_RGBA8, data[i], data[i+1], data[i+2], alpha);
+                convData[i2] = palette->findColorIndex(cur_color);
+            }
+        }
+
+        return convData;
+    }
+
     color8 convertColorToIndexImageFormat(Image *img, color8 color)
     {
         auto img_format = img->getFormat();

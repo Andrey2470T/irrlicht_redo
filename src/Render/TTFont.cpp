@@ -1,8 +1,10 @@
 #include "TTFont.h"
 #include "Core/TimeCounter.h"
+#include "Image/ImageLoader.h"
 #include "Utils/String.h"
 #include "Image/Converting.h"
 #include <iostream>
+#include <Utils/MathFuncs.h>
 
 namespace render
 {
@@ -161,6 +163,13 @@ u32 TTFont::getCurrentSize() const
     return curSize;
 }
 
+#define POINTS_PER_INCH 72.0
+
+u32 TTFont::getCurrentPixelSize(u32 dpi) const
+{
+    return (u32)round(curSize * (f32)dpi / POINTS_PER_INCH);
+}
+
 bool TTFont::isTransparent() const
 {
     return hasTransparency;
@@ -207,7 +216,7 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
     };
     Uint16 glyph = static_cast<Uint16>(ch);
     //core::InfoStream << "getGlyphImage: create glyph for " << ch << ", time: " << TimeCounter::getRealTime() << "\n";
-    SDL_Surface *surf = TTF_RenderGlyph_Solid(font, glyph, fg_color);
+    SDL_Surface *surf = TTF_RenderGlyph_Blended(font, glyph, fg_color);
     //core::InfoStream << "getGlyphImage: created, converting to img::Image, time: " << TimeCounter::getRealTime() << "\n";
 
     if (!surf) {
@@ -222,6 +231,10 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
 
     SDL_FreeSurface(surf);
    //InfoStream << "getGlyphImage:3\n";
+
+    if (ch == L'a') {
+        img::ImageLoader::save(surf_img, std::string("/home/andrey/minetests/luanti_fork/cache/atlases/") + std::to_string(hash(this)) + "glyph_a.png");
+    }
 
     return surf_img;
 }

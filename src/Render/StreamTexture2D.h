@@ -13,12 +13,13 @@ class StreamTexture2D : public Texture2D {
     u8 *pboData = nullptr;
     GLsync fence = nullptr;
 
-    std::list<rectu> dirtyRegions;
+    std::vector<rectu> dirtyRegions;
 
     bool bound = false;
 public:
     StreamTexture2D(const std::string &name, u32 width, u32 height,
         img::PixelFormat format, const TextureSettings &settings=TextureSettings());
+    StreamTexture2D(const std::string &name, img::Image *img, const TextureSettings &settings=TextureSettings());
 
     ~StreamTexture2D();
 
@@ -35,7 +36,7 @@ private:
     void createNewPBO(u32 width, u32 height);
     void deletePBO();
 
-    void mergeRegions(std::list<rectu> &mregions) const;
+    void mergeRegions(std::vector<rectu> &mregions) const;
 };
 
 }

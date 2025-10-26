@@ -1,5 +1,6 @@
 #include "StreamTexture2D.h"
 #include "Common.h"
+#include "Image/Converting.h"
 
 namespace render
 {
@@ -11,8 +12,18 @@ StreamTexture2D::StreamTexture2D(const std::string &name, u32 width, u32 height,
     createNewPBO(width, height);
 }
 
+StreamTexture2D::StreamTexture2D(const std::string &name, img::Image *img,
+    const TextureSettings &settings)
+    : Texture2D(name, std::unique_ptr<img::Image>(img), settings)
+{
+    createNewPBO(width, height);
+}
+
 StreamTexture2D::~StreamTexture2D()
 {
+    if (fence)
+        glDeleteSync(fence);
+
     deletePBO();
 }
 
@@ -86,15 +97,20 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
         rectu destRect(x, y, size.X, size.Y);
         imgMod->copyTo(img, imgCache.get(), &srcRect, &destRect);
     }
-    v2u imgSize = img->getSize();
-    u8* srcData = img->getData();
+
+    auto convImg = img::convertIndexImageToRGBA(img);
+
+    u8* srcData = convImg ? convImg->getData() : img->getData();
     for (u32 row = 0; row < size.Y; ++row) {
         memcpy(pboData + ((y + row) * width + x) * pixelSize,
-               srcData + row * imgSize.X * pixelSize,
+               srcData + row * size.X * pixelSize,
                size.X * pixelSize);
     }
 
-    dirtyRegions.emplace_back(x, y, size.X, size.Y);
+    if (convImg)
+        delete convImg;
+
+    dirtyRegions.emplace_back(x, y, x+size.X, y+size.Y);
 }
 
 void StreamTexture2D::flush()
@@ -109,13 +125,13 @@ void StreamTexture2D::flush()
         TEST_GL_ERROR();
     }
 
-    std::list<rectu> mergedRegions;
+    std::vector<rectu> mergedRegions;
     mergeRegions(mergedRegions);
 
     bind();
 
     auto formatInfo = img::pixelFormatInfo.at(format);
-    for (auto &region : mergedRegions) {
+    for (auto &region : dirtyRegions) {
         u32 x = region.ULC.X;
         u32 y = region.ULC.Y;
         u32 width = region.getWidth();
@@ -137,12 +153,35 @@ void StreamTexture2D::flush()
     unbind();
 }
 
-void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
+void StreamTexture2D::mergeRegions(std::vector<rectu> &mregions) const
 {
+    mregions.clear();
     if (dirtyRegions.empty())
         return;
 
-    for (auto &region : dirtyRegions) {
+    u32 atlasArea = width * height;
+
+    u32 changedSumArea = 0;
+
+    for (const auto &region : dirtyRegions)
+        changedSumArea += region.getArea();
+
+    if (changedSumArea / (f32)atlasArea < 0.25) {
+        mregions = dirtyRegions;
+    }
+    else {
+        rectu mergedRect = dirtyRegions.at(0);
+
+        for (const auto &region : dirtyRegions) {
+            mergedRect.ULC.X = std::min(mergedRect.ULC.X, region.ULC.X);
+            mergedRect.ULC.Y = std::min(mergedRect.ULC.Y, region.ULC.Y);
+            mergedRect.LRC.X = std::max(mergedRect.LRC.X, region.LRC.X);
+            mergedRect.LRC.Y = std::max(mergedRect.LRC.Y, region.LRC.Y);
+        }
+
+        mregions.push_back(mergedRect);
+    }
+    /*for (const auto &region : dirtyRegions) {
         auto rsize = region.getSize();
 
         for (auto &mregion : mregions) {
@@ -159,7 +198,7 @@ void StreamTexture2D::mergeRegions(std::list<rectu> &mregions) const
             else
                 mregions.emplace_back(region);
         }
-    }
+    }*/
 }
 
 void StreamTexture2D::createNewPBO(u32 newWidth, u32 newHeight)
@@ -171,7 +210,7 @@ void StreamTexture2D::createNewPBO(u32 newWidth, u32 newHeight)
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
     TEST_GL_ERROR();
 
-    auto pixelSize = img::pixelFormatInfo.at(format).size;
+    auto pixelSize = img::pixelFormatInfo.at(format).size / 8;
     glBufferStorage(GL_PIXEL_UNPACK_BUFFER, newWidth * newHeight * pixelSize, nullptr,
         GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
     TEST_GL_ERROR();
@@ -193,9 +232,10 @@ void StreamTexture2D::deletePBO()
     bind();
 
     if (pboData) {
-        pboData = nullptr;
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         TEST_GL_ERROR();
+
+        pboData = nullptr;
     }
 
     unbind();

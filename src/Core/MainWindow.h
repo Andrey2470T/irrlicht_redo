@@ -184,6 +184,7 @@ public:
     v2u getViewportSize() const;
     u32 getFullscreenFlag(bool fullscreen);
     f32 getDisplayDensity() const;
+    u32 getScreenDPI() const;
     const OpenGLVersion &getOpenGLVersion() const;
     const GLParameters *getGLParams() const;
     const Clipboard *getClipboard() const;

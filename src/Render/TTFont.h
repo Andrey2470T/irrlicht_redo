@@ -30,7 +30,7 @@ class TTFont
 
     FontMode mode = FontMode::MONO;
     FontStyle style = FontStyle::NORMAL;
-    u32 curSize;
+    u32 curSize; // in points
     bool hasTransparency = true;
     u32 shadowOffset;
     u32 shadowAlpha;
@@ -67,6 +67,7 @@ public:
     void getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const;
 
     u32 getCurrentSize() const;
+    u32 getCurrentPixelSize(u32 dpi) const;
     bool isTransparent() const;
 
     void getShadowParameters(u32 *offset, u32 *alpha) const

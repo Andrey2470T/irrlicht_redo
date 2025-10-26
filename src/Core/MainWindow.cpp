@@ -817,6 +817,18 @@ f32 MainWindow::getDisplayDensity() const
     return DisplayDensity;
 }
 
+#define DEFAULT_DPI 96.0
+#define POINTS_PER_INCH 72.0
+
+u32 MainWindow::getScreenDPI() const
+{
+    f32 ddpi, hdpi, vdpi;
+    if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) == 0) {
+        return (hdpi + vdpi) / 2.0f;
+    }
+    return DEFAULT_DPI; // Fallback
+}
+
 const OpenGLVersion &MainWindow::getOpenGLVersion() const
 {
     return GLVersion;
