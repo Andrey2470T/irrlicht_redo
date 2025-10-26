@@ -15,25 +15,27 @@ class StreamTexture2D : public Texture2D {
     std::vector<rectu> dirtyRegions;
 public:
     StreamTexture2D(const std::string &name, u32 width, u32 height,
-        img::PixelFormat format, const TextureSettings &settings=TextureSettings());
-    StreamTexture2D(const std::string &name, img::Image *img, const TextureSettings &settings=TextureSettings());
+        img::PixelFormat format, u8 maxMipLevel=0);
 
     ~StreamTexture2D();
 
     void bind() override;
     void unbind() override;
 
+    void mapPBO();
+    void unmapPBO();
+
     void resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod);
 
-    void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
-    void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;
+    //void uploadData(img::Image *img, img::ImageModifier *imgMod = nullptr) override {}
+    //void uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod = nullptr) override;
 
     void flush();
+
+    void mergeRegions(std::vector<rectu> &mregions) const;
 private:
     void createNewPBO(u32 width, u32 height);
     void deletePBO();
-
-    void mergeRegions(std::vector<rectu> &mregions) const;
 };
 
 }

@@ -5,9 +5,13 @@
 namespace render
 {
 
-Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n)
+Texture2D::Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n, u8 maxMipLevel)
     : Texture(name, width, height, format), msaa(msaa_n)
 {
+    if (maxMipLevel > 0) {
+        texSettings.hasMipMaps = true;
+        texSettings.maxMipLevel = maxMipLevel;
+    }
     initTexture(nullptr);
 }
 
@@ -59,7 +63,8 @@ void Texture2D::initTexture(img::Image *image)
         auto convImg = img::convertIndexImageToRGBA(image);
         formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, width, height, 0, formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : image->getData());
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, width, height, 0,
+            formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : image->getData());
         TEST_GL_ERROR();
 
         if (convImg)
@@ -101,15 +106,10 @@ void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
 
 void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
 {
-	if (texSettings.isRenderTarget) {
+    /*if (texSettings.isRenderTarget) {
 		ErrorStream << "Texture2D::uploadData() can not upload the user image data to the RTT\n";
 		return;
-	}
-
-	if (img->getFormat() != format) {
-		ErrorStream << "Texture2D::uploadData() the format of the uploaded image data is different\n";
-		return;
-	}
+    }*/
 
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
@@ -125,9 +125,22 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
     auto convImg = img::convertIndexImageToRGBA(img);
     formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
 
+    auto data = convImg ? convImg->getData() : img->getData();
+    auto pixelSize = img::pixelFormatInfo.at(img->getFormat()).size / 8;
+    for (u32 y = 0; y < size.X; y++) {
+        for (u32 x = 0; x < size.Y; x++) {
+            u8 index = y * img->getPitch() + x * pixelSize;
+            u8 red = data[index];
+            u8 green = data[index+1];
+            u8 blue = data[index+2];
+            u8 alpha = data[index+3];
+
+            index++;
+        }
+    }
     bind();
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
-        formatInfo.pixelFormat, formatInfo.pixelType, static_cast<void *>(convImg ? convImg->getData() : img->getData()));
+        formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : img->getData());
     TEST_GL_ERROR();
 
     if (convImg)

@@ -140,6 +140,8 @@ class MainWindow
 	bool Resizable;
     bool Close{false};
 public:
+    bool shouldUpdateViewport{false};
+
     MainWindow(const MainWindowParameters &params);
 
 	~MainWindow();

@@ -20,7 +20,7 @@ protected:
 
     bool bound = false;
 public:
-    Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n);
+    Texture2D(const std::string &name, u32 width, u32 height, img::PixelFormat format, u8 msaa_n, u8 maxMipLevel=0);
     Texture2D(const std::string &name, std::unique_ptr<img::Image> image, const TextureSettings &settings=TextureSettings());
 
 	TextureType getType() const override

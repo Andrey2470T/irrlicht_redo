@@ -133,6 +133,8 @@ MainWindow::MainWindow(const MainWindowParameters &params)
 
     InfoStream << "SDL Version: " << SDLVersion.major << "." <<
         SDLVersion.minor << "." << SDLVersion.patch;
+
+    shouldUpdateViewport = true;
 }
 
 MainWindow::~MainWindow()
@@ -559,8 +561,7 @@ bool MainWindow::pollEventsFromQueue()
                 f32 old_scale_x = Scale.X, old_scale_y = Scale.Y;
                 updateViewportAndScale();
                 if (old_w != Params.Width || old_h != Params.Height) {
-                    //if (VideoDriver)
-                    //    VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
+                    shouldUpdateViewport = true;
                 }
                 if (old_scale_x != Scale.X || old_scale_y != Scale.Y) {
                     irrevent.Type = ET_APPLICATION_EVENT;
