@@ -11,11 +11,8 @@ namespace render
 class StreamTexture2D : public Texture2D {
     u32 pboID;
     u8 *pboData = nullptr;
-    GLsync fence = nullptr;
 
     std::vector<rectu> dirtyRegions;
-
-    bool bound = false;
 public:
     StreamTexture2D(const std::string &name, u32 width, u32 height,
         img::PixelFormat format, const TextureSettings &settings=TextureSettings());

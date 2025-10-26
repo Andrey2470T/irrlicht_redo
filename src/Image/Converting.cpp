@@ -13,7 +13,7 @@ namespace img
         auto it = formatsEnumsMap.find(sdl_format->format);
 
         std::string formatStr = SDL_GetPixelFormatName(sdl_format->format);
-        InfoStream << "formatStr: " << formatStr << "\n";
+        //InfoStream << "formatStr: " << formatStr << "\n";
         //InfoStream << "Loaded the image format: " << formatStr << "\n";
 		if (it == formatsEnumsMap.end()) {
             ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << formatStr << "\n";
