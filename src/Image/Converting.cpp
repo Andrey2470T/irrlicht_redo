@@ -13,8 +13,7 @@ namespace img
         auto it = formatsEnumsMap.find(sdl_format->format);
 
         std::string formatStr = SDL_GetPixelFormatName(sdl_format->format);
-        //InfoStream << "formatStr: " << formatStr << "\n";
-        //InfoStream << "Loaded the image format: " << formatStr << "\n";
+
 		if (it == formatsEnumsMap.end()) {
             ErrorStream << "convertSDLSurfaceToImage() unsupported pixel format:" << formatStr << "\n";
 			return nullptr;
@@ -26,22 +25,14 @@ namespace img
         u32 pitch = static_cast<u32>(surf->pitch);
         u8 *data = static_cast<u8*>(surf->pixels);
         surf->pixels = nullptr;
-        //u32 rowSize = w * pixelSize;
-        
-        //InfoStream << "Surface info: SDL format=" << sdl_format->format << ", our format=" << format << ", w=" << w << ", h=" << h << ", pitch=" << pitch << ", pixelSize=" << pixelSize << ", BitsPerPixel=" << (int)sdl_format->BitsPerPixel << "\n";
 
-        //core::InfoStream << "convertSDLSurfaceToImage: creating image, time: " << TimeCounter::getRealTime() << "\n";
-        // load the SDL palette
-        //core::InfoStream << "convertSDLSurfaceToImage 1, time: " << TimeCounter::getRealTime() << " \n";
         Palette *palette = nullptr;
         if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
             SDL_Palette *sdl_palette = sdl_format->palette;
 
             std::vector<img::color8> colors;
             colors.resize(sdl_palette->ncolors);
-            //core::InfoStream << "convertSDLSurfaceToImage: creating image 2, time: " << TimeCounter::getRealTime() << "\n";
 
-            //InfoStream << "convertSDLSurfaceToImage 1 palette size: " << sdl_palette->ncolors << "\n";
             for (s32 i = 0; i < sdl_palette->ncolors; i++) {
                 SDL_Color &sdl_color = sdl_palette->colors[i];
                 colors[i].R(sdl_color.r);
@@ -49,35 +40,21 @@ namespace img
                 colors[i].B(sdl_color.b);
                 colors[i].A(sdl_color.a);
             }
-            //InfoStream << "convertSDLSurfaceToImage 2\n";
 
-            //core::InfoStream << "convertSDLSurfaceToImage: creating image 3, time: " << TimeCounter::getRealTime() << "\n";
             palette = new Palette(true, colors.size(), colors);
-            //InfoStream << "convertSDLSurfaceToImage 3\n";
         }
-        //core::InfoStream << "convertSDLSurfaceToImage 2, time: " << TimeCounter::getRealTime() << " \n";
 
-        //InfoStream << "convertSDLSurfaceToImage:1\n";
-        //core::InfoStream << "convertSDLSurfaceToImage: creating image 4, time: " << TimeCounter::getRealTime() << "\n";
         auto img = new Image(format, w, h, data, false, palette, pitch, sdl_format->format);
-        //core::InfoStream << "convertSDLSurfaceToImage 3, time: " << TimeCounter::getRealTime() << " \n";
-        //core::InfoStream << "convertSDLSurfaceToImage: created, flipping image, time: " << TimeCounter::getRealTime() << "\n";
 
         if (flipImage) {
             auto localImgMod = new img::ImageModifier();
-            //InfoStream << "convertSDLSurfaceToImage:2\n";
             auto flipped_y = localImgMod->flip(img, FD_Y);
-            //core::InfoStream << "convertSDLSurfaceToImage: created, flipped, deleting now, time: " << TimeCounter::getRealTime() << "\n";
-            //InfoStream << "convertSDLSurfaceToImage:3\n";
+
             delete img;
-            //InfoStream << "convertSDLSurfaceToImage:4\n";
             delete localImgMod;
-            //InfoStream << "convertSDLSurfaceToImage:5\n";
-            //core::InfoStream << "convertSDLSurfaceToImage: created, deleted, time: " << TimeCounter::getRealTime() << "\n";
 
             img = flipped_y;
         }
-        //core::InfoStream << "convertSDLSurfaceToImage 4, time: " << TimeCounter::getRealTime() << " \n";
 
         return img;
 	}

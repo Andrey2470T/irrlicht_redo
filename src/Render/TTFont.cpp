@@ -215,22 +215,20 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
         char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
     Uint16 glyph = static_cast<Uint16>(ch);
-    //core::InfoStream << "getGlyphImage: create glyph for " << ch << ", time: " << TimeCounter::getRealTime() << "\n";
     SDL_Surface *surf = TTF_RenderGlyph_Blended(font, glyph, fg_color);
-    //core::InfoStream << "getGlyphImage: created, converting to img::Image, time: " << TimeCounter::getRealTime() << "\n";
 
     if (!surf) {
         ErrorStream << "TTFont::getGlyphImage() failed to render glyph for " << ch << ": " << TTF_GetError() << "\n";
         return nullptr;
     }
 
-    //InfoStream << "getGlyphImage:1\n";
-    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, false);
-    //core::InfoStream << "getGlyphImage: created, converted, time: " << TimeCounter::getRealTime() << "\n";
-    //InfoStream << "getGlyphImage:2\n";
+    SDL_Surface *copySurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, surf->format->BitsPerPixel, surf->format->format);
+    SDL_BlitSurface(surf, nullptr, copySurf, nullptr);
+
+    img::Image *surf_img = img::convertSDLSurfaceToImage(copySurf, true);
 
     SDL_FreeSurface(surf);
-   //InfoStream << "getGlyphImage:3\n";
+    SDL_FreeSurface(copySurf);
 
     if (ch == L'a') {
         img::ImageLoader::save(surf_img, std::string("/home/andrey/minetests/luanti_fork/cache/atlases/") + std::to_string(hash(this)) + "glyph_a.png");

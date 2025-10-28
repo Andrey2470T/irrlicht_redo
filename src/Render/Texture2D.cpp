@@ -106,11 +106,6 @@ void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
 
 void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
 {
-    /*if (texSettings.isRenderTarget) {
-		ErrorStream << "Texture2D::uploadData() can not upload the user image data to the RTT\n";
-		return;
-    }*/
-
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
 
@@ -125,19 +120,6 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
     auto convImg = img::convertIndexImageToRGBA(img);
     formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
 
-    auto data = convImg ? convImg->getData() : img->getData();
-    auto pixelSize = img::pixelFormatInfo.at(img->getFormat()).size / 8;
-    for (u32 y = 0; y < size.X; y++) {
-        for (u32 x = 0; x < size.Y; x++) {
-            u8 index = y * img->getPitch() + x * pixelSize;
-            u8 red = data[index];
-            u8 green = data[index+1];
-            u8 blue = data[index+2];
-            u8 alpha = data[index+3];
-
-            index++;
-        }
-    }
     bind();
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
         formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : img->getData());
@@ -151,6 +133,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 
 std::vector<img::Image *> Texture2D::downloadData()
 {
+    img::Image *cachedImg = nullptr;
     if (!imgCache) {
 		img::Image *img = new img::Image(format, width, height);
 
@@ -181,10 +164,13 @@ std::vector<img::Image *> Texture2D::downloadData()
 
         unbind();
 
-        imgCache.reset(img);
+        cachedImg = img;
+        //imgCache.reset(img);
 	}
+    else
+        cachedImg = imgCache.get();
 
-    return {imgCache.get()};
+    return {cachedImg};
 }
 
 void Texture2D::regenerateMipMaps()

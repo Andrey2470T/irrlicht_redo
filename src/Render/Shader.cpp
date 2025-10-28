@@ -105,39 +105,39 @@ void Shader::setUniformUIntArray(const std::string &name, std::vector<u32> value
     TEST_GL_ERROR();
 }
 
-void Shader::setUniform2Float(const std::string &name, utils::v2f value)
+void Shader::setUniform2Float(const std::string &name, v2f value)
 {
 	glUniform2f(getUniformLocation(name), value.X, value.Y);
     TEST_GL_ERROR();
 }
-void Shader::setUniform2Int(const std::string &name, utils::v2i value)
+void Shader::setUniform2Int(const std::string &name, v2i value)
 {
 	glUniform2i(getUniformLocation(name), value.X, value.Y);
     TEST_GL_ERROR();
 }
-void Shader::setUniform2UInt(const std::string &name, utils::v2u value)
+void Shader::setUniform2UInt(const std::string &name, v2u value)
 {
 	glUniform2ui(getUniformLocation(name), value.X, value.Y);
     TEST_GL_ERROR();
 }
 
-void Shader::setUniform3Float(const std::string &name, utils::v3f value)
+void Shader::setUniform3Float(const std::string &name, v3f value)
 {
 	glUniform3f(getUniformLocation(name), value.X, value.Y, value.Z);
     TEST_GL_ERROR();
 }
-void Shader::setUniform3Int(const std::string &name, utils::v3i value)
+void Shader::setUniform3Int(const std::string &name, v3i value)
 {
 	glUniform3i(getUniformLocation(name), value.X, value.Y, value.Z);
     TEST_GL_ERROR();
 }
-void Shader::setUniform3UInt(const std::string &name, utils::v3u value)
+void Shader::setUniform3UInt(const std::string &name, v3u value)
 {
 	glUniform3ui(getUniformLocation(name), value.X, value.Y, value.Z);
     TEST_GL_ERROR();
 }
 
-void Shader::setUniform4x4Matrix(const std::string &name, utils::matrix4 value)
+void Shader::setUniform4x4Matrix(const std::string &name, matrix4 value)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.pointer());
     TEST_GL_ERROR();

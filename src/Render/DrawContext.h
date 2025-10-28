@@ -16,49 +16,49 @@ enum class GLBlendMode : u8
     ALPHA,
     ADD,
     SUBTRACT,
-    CUSTOM
+    NONE
 };
 
 struct BlendState
 {
-    bool enabled = true;
-    GLBlendMode mode = GLBlendMode::NORMAL;
+    bool enabled = false;
+    GLBlendMode mode = GLBlendMode::NONE;
     img::colorf color;
-    BlendFunc func_srcrgb = BF_SRC_ALPHA;
-    BlendFunc func_srca = BF_SRC_ALPHA;
-    BlendFunc func_destrgb = BF_ONE_MINUS_SRC_ALPHA;
-    BlendFunc func_desta = BF_ONE_MINUS_SRC_ALPHA;
-    BlendOp op = BO_ADD;
+    BlendFunc func_srcrgb = BF_COUNT;
+    BlendFunc func_srca = BF_COUNT;
+    BlendFunc func_destrgb = BF_COUNT;
+    BlendFunc func_desta = BF_COUNT;
+    BlendOp op = BO_COUNT;
 };
 
 struct DepthTestState
 {
 	bool enabled = false;
-	bool mask = true;
-	CompareFunc func;
+	bool mask = false;
+	CompareFunc func = CF_COUNT;
 };
 
 struct CullFaceState
 {
 	bool enabled = false;
-	CullMode mode;
+	CullMode mode = CM_COUNT;
 };
 
 struct StencilTestState
 {
 	bool enabled = false;
-	CompareFunc func = CF_ALWAYS;
+	CompareFunc func = CF_COUNT;
 	s32 ref;
 	u32 mask;
-	StencilOp sfail_op;
-	StencilOp dpfail_op;
-	StencilOp dppass_op;
+	StencilOp sfail_op = SO_COUNT;
+	StencilOp dpfail_op = SO_COUNT;
+	StencilOp dppass_op = SO_COUNT;
 };
 
 struct ScissorTestState
 {
 	bool enabled = false;
-	utils::recti box;
+	recti box;
 };
 
 struct PolygonOffsetState
@@ -70,8 +70,8 @@ struct PolygonOffsetState
 
 struct PolygonModeState
 {
-    CullMode face;
-    PolygonMode mode;
+    CullMode face = CM_COUNT;
+    PolygonMode mode = PM_COUNT;
 };
 
 enum ClearBufferFlags : u8
@@ -102,10 +102,10 @@ enum ColorPlane : u8
 
 class DrawContext
 {
-	FrameBuffer *curFBO;
-	Shader *curShader;
-	Mesh *curMesh;
-	UniformBuffer *curUBO;
+	FrameBuffer *curFBO = nullptr;
+	Shader *curShader = nullptr;
+	Mesh *curMesh = nullptr;
+	UniformBuffer *curUBO = nullptr;
 
     u32 maxTextureUnits;
 	std::vector<Texture *> activeUnits;
@@ -123,17 +123,17 @@ class DrawContext
 
     PolygonModeState curPolygonMode;
 
-	f32 pointSize = 1.0f;
-	f32 lineWidth = 1.0f;
+    f32 pointSize;
+    f32 lineWidth;
 
-    bool sampleCoverage;
+    bool sampleCoverage = false;
 
-	utils::recti viewport;
+	recti viewport;
 
     u8 colorMask;
 public:
 	//! Constructor
-    DrawContext(const utils::recti &viewportSize, u32 _maxTextureUnits)
+    DrawContext(const recti &viewportSize, u32 _maxTextureUnits)
 		: maxTextureUnits(_maxTextureUnits)
 	{
 		activeUnits.resize(_maxTextureUnits, nullptr);
@@ -142,7 +142,7 @@ public:
 	}
 
 	//! Getters
-	utils::recti getViewportSize() const
+    recti getViewportSize() const
 	{
 		return viewport;
 	}
@@ -204,13 +204,13 @@ public:
 
     void enableSampleCoverage(bool samplecoverage);
 
-	void setViewportSize(utils::recti viewportSize);
+    void setViewportSize(recti viewportSize);
 
     void clearBuffers(u16 flags, img::color8 color=img::black, f32 depth=1.0f, u8 stencil=0);
 
     void setColorMask(u8 mask);
 private:
-	void initContext(utils::recti viewportSize);
+    void initContext(recti viewportSize);
 };
 
 }

@@ -241,7 +241,7 @@ void DrawContext::setBlendFunc(BlendFunc srcfunc, BlendFunc destfunc)
 }
 
 void DrawContext::setBlendSeparateFunc(BlendFunc srcrgb_func, BlendFunc destrgb_func,
-                          BlendFunc srca_func, BlendFunc desta_func)
+    BlendFunc srca_func, BlendFunc desta_func)
 {
 	if (!curBlend.enabled)
 	    return;
@@ -406,7 +406,7 @@ void DrawContext::enableScissorTest(bool scissortest)
 	}
 }
 
-void DrawContext::setScissorBox(const utils::recti &box)
+void DrawContext::setScissorBox(const recti &box)
 {
 	if (!curScissorTest.enabled)
 		return;
@@ -491,7 +491,7 @@ void DrawContext::enableSampleCoverage(bool samplecoverage)
     }
 }
 
-void DrawContext::setViewportSize(utils::recti viewportSize)
+void DrawContext::setViewportSize(recti viewportSize)
 {
 	if (viewport != viewportSize) {
         glViewport(viewportSize.ULC.X, viewportSize.ULC.Y, viewportSize.getWidth(), viewportSize.getHeight());
@@ -560,11 +560,14 @@ void DrawContext::setColorMask(u8 mask)
     }
 }
 
-void DrawContext::initContext(utils::recti viewportSize)
+void DrawContext::initContext(recti viewportSize)
 {
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
     setBlendMode(GLBlendMode::ALPHA);
+
+    setPointSize(1.0f);
+    setLineWidth(1.0f);
 
 	enableCullFace(curCullFace.enabled);
 	setCullMode(curCullFace.mode);

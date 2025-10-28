@@ -80,7 +80,7 @@ size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 {
     size_t size = 0;
 	for (const auto &attr : vtype.Attributes)
-		size += attr.ComponentCount * utils::getSizeOfType(attr.ComponentType);
+		size += attr.ComponentCount * getSizeOfType(attr.ComponentType);
 
 	return size;
 }

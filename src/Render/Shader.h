@@ -49,15 +49,15 @@ public:
 	void setUniformIntArray(const std::string &name, std::vector<s32> values);
 	void setUniformUIntArray(const std::string &name, std::vector<u32> values);
 
-    void setUniform2Float(const std::string &name, utils::v2f value);
-    void setUniform2Int(const std::string &name, utils::v2i value);
-    void setUniform2UInt(const std::string &name, utils::v2u value);
+    void setUniform2Float(const std::string &name, v2f value);
+    void setUniform2Int(const std::string &name, v2i value);
+    void setUniform2UInt(const std::string &name, v2u value);
 
-    void setUniform3Float(const std::string &name, utils::v3f value);
-    void setUniform3Int(const std::string &name, utils::v3i value);
-    void setUniform3UInt(const std::string &name, utils::v3u value);
+    void setUniform3Float(const std::string &name, v3f value);
+    void setUniform3Int(const std::string &name, v3i value);
+    void setUniform3UInt(const std::string &name, v3u value);
 
-    void setUniform4x4Matrix(const std::string &name, utils::matrix4 value);
+    void setUniform4x4Matrix(const std::string &name, matrix4 value);
 
 	void setUniformBlock(const std::string &name, UniformBuffer *ubo);
 

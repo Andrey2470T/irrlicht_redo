@@ -555,28 +555,32 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
     u32 height = img->getHeight();
     Image *newImg = new Image(
         img->getFormat(), width, height, img::black, img->getPalette(), nullptr, img->getFormatsEnumsIndex());
-    //core::InfoStream << "flip 1, time: " << TimeCounter::getRealTime() << " \n";
 
     rectu area(0, 0, width, height);
     v2u reflectPoint;
-    //u8 pixels = 0;
-    processPixelsBulk(img, &area,
-        [&] (u32 x, u32 y, color8 &curColor)
-        {
-            //if (pixels < 10)
-            //    core::InfoStream << "flip first pixel 1, time: " << TimeCounter::getRealTime() << " \n";
-            //if (pixels < 10)
-            //    core::InfoStream << "flip first pixel 2, time: " << TimeCounter::getRealTime() << " \n";
-            reflectPoint.X = dir == FD_X ? width - 1 - x : x;
-            reflectPoint.Y = dir == FD_X ? y : height - 1 - y;
 
-            setPixelDirect(newImg, reflectPoint.X, reflectPoint.Y, curColor);
-            //if (pixels < 10)
-            //    core::InfoStream << "flip first pixel 3, time: " << TimeCounter::getRealTime() << " \n";
-            //++pixels;
-        });
+    if (dir == FD_Y) {
+        auto srcData = img->getData();
+        auto dstData = newImg->getData();
+        u32 pitch = img->getPitch();
 
-    //core::InfoStream << "flip 2, time: " << TimeCounter::getRealTime() << " \n";
+        for (u32 y = 0; y < height; y++) {
+            auto srcRow = srcData + y * pitch;
+            auto dstRow = dstData + (height - 1 - y) * pitch;
+
+            memcpy(dstRow, srcRow, pitch);
+        }
+    }
+    else {
+        processPixelsBulk(img, &area,
+            [&] (u32 x, u32 y, color8 &curColor)
+            {
+                reflectPoint.X = width - 1 - x;
+                reflectPoint.Y = y;
+
+                setPixelDirect(newImg, reflectPoint.X, reflectPoint.Y, curColor);
+            });
+    }
 
     return newImg;
 }
