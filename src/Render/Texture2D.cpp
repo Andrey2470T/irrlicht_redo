@@ -1,5 +1,6 @@
 #include "Texture2D.h"
 #include "Image/Converting.h"
+#include "Image/ImageLoader.h"
 #include "Render/Common.h"
 
 namespace render

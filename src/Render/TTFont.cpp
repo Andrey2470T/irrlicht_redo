@@ -77,6 +77,45 @@ FontStyle TTFont::getStyle() const
 	return style;
 }
 
+std::string TTFont::getName() const
+{
+    std::ostringstream name("TTFont_");
+
+    switch(mode) {
+    case render::FontMode::MONO:
+        name << "Mono_";
+        break;
+    case render::FontMode::GRAY:
+        name << "Gray_";
+        break;
+    case render::FontMode::FALLBACK:
+        name << "Fallback_";
+        break;
+    }
+
+    switch (style) {
+    case render::FontStyle::NORMAL:
+        name << "Normal_";
+        break;
+    case render::FontStyle::BOLD:
+        name << "Bold_";
+        break;
+    case render::FontStyle::ITALIC:
+        name << "Italic_";
+        break;
+    case render::FontStyle::STRIKETHROUGH:
+        name << "Strikethrough_";
+        break;
+    case render::FontStyle::UNDERLINE:
+        name << "Underline_";
+        break;
+    }
+
+    name << "x" << curSize;
+
+    return name.str();
+}
+
 u32 TTFont::getGlyphsNum() const
 {
     return glyphsSet.size();

@@ -411,7 +411,7 @@ void DrawContext::setScissorBox(const recti &box)
 	if (!curScissorTest.enabled)
 		return;
 	if (curScissorTest.box != box) {
-        glScissor(box.ULC.X, box.ULC.Y, abs(box.getWidth()), abs(box.getHeight()));
+        glScissor(box.ULC.X, viewport.getHeight()-box.LRC.Y, abs(box.getWidth()), abs(box.getHeight()));
 		curScissorTest.box = box;
 
         TEST_GL_ERROR();

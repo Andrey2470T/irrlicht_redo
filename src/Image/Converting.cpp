@@ -76,31 +76,31 @@ namespace img
             return nullptr;
 
         auto palette = img->getPalette();
-        u32 width = img->getWidth();
-        u32 height = img->getHeight();
+        v2u pos = img->getClipPos();
+        v2u size = img->getClipSize();
         u32 pitch = img->getPitch();
 
-        if (width * height == 0)
+        if (size.X * size.Y == 0)
             return nullptr;
 
         PixelFormat format = palette->hasAlpha ? PF_RGBA8 : PF_RGB8;
-        auto convImg = new Image(format, width, height);
-        u8 size = pixelFormatInfo.at(format).size / 8;
+        auto convImg = new Image(format, size.X, size.Y);
+        u8 pixelSize = pixelFormatInfo.at(format).size / 8;
 
         u8 *data = img->getData();
         u8 *convdata = convImg->getData();
 
-        for (u32 y = 0; y < height; y++) {
-            for (u32 x = 0; x < width; x++) {
-                u8 i = y * pitch + x;
-                u8 i2 = y * width + x;
-                auto found_color = palette->colors.at(data[i]);
-                convdata[i2*size] = found_color.R();
-                convdata[i2*size+1] = found_color.G();
-                convdata[i2*size+2] = found_color.B();
+        for (u32 y = 0; y < size.Y; y++) {
+            for (u32 x = 0; x < size.X; x++) {
+                u8 i = pos.X + (pos.Y + y) * pitch + x;
+                u8 i2 = y * size.X + x;
+                auto found_color = palette->getColorByIndex(data[i]);
+                convdata[i2*pixelSize] = found_color.R();
+                convdata[i2*pixelSize+1] = found_color.G();
+                convdata[i2*pixelSize+2] = found_color.B();
 
                 if (format == PF_RGBA8)
-                    convdata[i2*size+3] = found_color.A();
+                    convdata[i2*pixelSize+3] = found_color.A();
             }
         }
 

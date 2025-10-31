@@ -815,7 +815,7 @@ u32 MainWindow::getFullscreenFlag(bool fullscreen)
 
 f32 MainWindow::getDisplayDensity() const
 {
-    return DisplayDensity;
+    return std::max(Scale.X * 96.0f, Scale.Y * 96.0f);;
 }
 
 #define DEFAULT_DPI 96.0

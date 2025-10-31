@@ -16,20 +16,16 @@ Image *ImageLoader::load(const std::string &path)
 		return nullptr;
 	}
 
-    //core::InfoStream << "load 1, time: " << TimeCounter::getRealTime() << " \n";
 	SDL_Surface *surf = IMG_Load(path.c_str());
-    //core::InfoStream << "load 2, time: " << TimeCounter::getRealTime() << " \n";
 
 	if (!surf) {
 		ErrorStream << "ImageLoader:load() could not load the image: " << path << "\n";
 		return nullptr;
 	}
 
-    //InfoStream << "load:1\n";
     auto img = convertSDLSurfaceToImage(surf);
-    //InfoStream << "load:2\n";
 
-    //SDL_FreeSurface(surf);
+    SDL_FreeSurface(surf);
 
     return img;
 }

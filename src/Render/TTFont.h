@@ -51,6 +51,7 @@ public:
     FontMode getMode() const;
     FontStyle getStyle() const;
 
+    std::string getName() const;
     u32 getGlyphsNum() const;
     const std::vector<wchar_t> &getGlyphsSet() const;
 
@@ -82,9 +83,9 @@ public:
 
     void setSize(u32 size);
 
-    img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
+    img::Image *getGlyphImage(wchar_t ch, const img::color8 &char_color=img::white);
 
-    img::Image *drawText(const std::wstring &text, const img::color8 &color=img::color8(img::PF_RGBA8, 255, 255, 255, 255));
+    img::Image *drawText(const std::wstring &text, const img::color8 &color=img::white);
 
     static u64 hash(const TTFont *font);
     static u64 hash(u32 size, bool transparent, FontStyle style, FontMode mode);
