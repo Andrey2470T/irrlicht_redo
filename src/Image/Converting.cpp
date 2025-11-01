@@ -6,7 +6,7 @@ namespace img
 {
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage)
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage, bool copyData)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
 		
@@ -23,8 +23,10 @@ namespace img
         u32 w = static_cast<u32>(surf->w);
         u32 h = static_cast<u32>(surf->h);
         u32 pitch = static_cast<u32>(surf->pitch);
-        u8 *data = static_cast<u8*>(surf->pixels);
-        surf->pixels = nullptr;
+        u8 *data = (u8*)surf->pixels;
+
+        if (!copyData)
+            surf->pixels = nullptr;
 
         Palette *palette = nullptr;
         if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
@@ -44,7 +46,7 @@ namespace img
             palette = new Palette(true, colors.size(), colors);
         }
 
-        auto img = new Image(format, w, h, data, false, palette, pitch, sdl_format->format);
+        auto img = new Image(format, w, h, data, copyData, palette, pitch, sdl_format->format);
 
         if (flipImage) {
             auto localImgMod = new img::ImageModifier();
@@ -92,8 +94,8 @@ namespace img
 
         for (u32 y = 0; y < size.Y; y++) {
             for (u32 x = 0; x < size.X; x++) {
-                u8 i = pos.X + (pos.Y + y) * pitch + x;
-                u8 i2 = y * size.X + x;
+                u32 i = pos.X + (pos.Y + y) * pitch + x;
+                u32 i2 = y * size.X + x;
                 auto found_color = palette->getColorByIndex(data[i]);
                 convdata[i2*pixelSize] = found_color.R();
                 convdata[i2*pixelSize+1] = found_color.G();
@@ -107,7 +109,7 @@ namespace img
         return convImg;
     }
 
-    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u8 pitch)
+    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u32 pitch)
     {
         u32 width = size.X;
         u32 height = size.Y;
@@ -119,8 +121,8 @@ namespace img
 
         for (u32 y = 0; y < height; y++) {
             for (u32 x = 0; x < width; x++) {
-                u8 i = y * pitch + x;
-                u8 i2 = y * width + x;
+                u32 i = y * pitch + x;
+                u32 i2 = y * width + x;
 
                 u8 alpha = palette->hasAlpha ? data[i+3] : 0;
                 img::color8 cur_color(img::PF_RGBA8, data[i], data[i+1], data[i+2], alpha);

@@ -166,12 +166,18 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
         return;
     }
 
-    if (texture && activeUnits[index] != texture) {
-		glActiveTexture(GL_TEXTURE0 + index);
+    if (activeUnits[index] != texture) {
+        glActiveTexture(GL_TEXTURE0 + index);
         TEST_GL_ERROR();
 
-		texture->bind();
-        activeUnits[index] = texture;
+        if (activeUnits[index]) {
+            activeUnits[index]->unbind();
+            activeUnits[index] = nullptr;
+        }
+        if (texture) {
+            texture->bind();
+            activeUnits[index] = texture;
+        }
 
         curShader->setSampler(index);
 	}
@@ -394,28 +400,26 @@ void DrawContext::setStencilOp(StencilOp _sfail_op, StencilOp _dpfail_op, Stenci
 
 void DrawContext::enableScissorTest(bool scissortest)
 {
-	if (curScissorTest.enabled != scissortest) {
-		if (scissortest)
-			glEnable(GL_SCISSOR_TEST);
-		else
-			glDisable(GL_SCISSOR_TEST);
+    if (scissortest)
+        glEnable(GL_SCISSOR_TEST);
+    else
+        glDisable(GL_SCISSOR_TEST);
 
-		curScissorTest.enabled = scissortest;
+    curScissorTest.enabled = scissortest;
 
-        TEST_GL_ERROR();
-	}
+    TEST_GL_ERROR();
 }
 
 void DrawContext::setScissorBox(const recti &box)
 {
 	if (!curScissorTest.enabled)
 		return;
-	if (curScissorTest.box != box) {
-        glScissor(box.ULC.X, viewport.getHeight()-box.LRC.Y, abs(box.getWidth()), abs(box.getHeight()));
-		curScissorTest.box = box;
 
-        TEST_GL_ERROR();
-	}
+    glScissor(box.ULC.X, viewport.getHeight()-box.LRC.Y, abs(box.getWidth()), abs(box.getHeight()));
+
+    curScissorTest.box = box;
+
+    TEST_GL_ERROR();
 }
 
 void DrawContext::enablePolygonOffset(bool polygonoffset)

@@ -562,13 +562,18 @@ Image *ImageModifier::flip(Image *img, FLIP_DIR dir)
     if (dir == FD_Y) {
         auto srcData = img->getData();
         auto dstData = newImg->getData();
-        u32 pitch = img->getPitch();
+        u32 srcPitch = img->getPitch();
+        u32 dstPitch = newImg->getPitch();
+        
+        // Calculate actual bytes per row based on width and pixel format
+        u32 pixelSize = pixelFormatInfo.at(img->getFormat()).size / 8;
+        u32 rowBytes = width * pixelSize;
 
         for (u32 y = 0; y < height; y++) {
-            auto srcRow = srcData + y * pitch;
-            auto dstRow = dstData + (height - 1 - y) * pitch;
+            auto srcRow = srcData + y * srcPitch;
+            auto dstRow = dstData + (height - 1 - y) * dstPitch;
 
-            memcpy(dstRow, srcRow, pitch);
+            memcpy(dstRow, srcRow, rowBytes);
         }
     }
     else {

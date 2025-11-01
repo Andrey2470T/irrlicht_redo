@@ -99,17 +99,19 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
         formatsEnumsIndex = _formatsEnumsIndex.value();
 
     u32 pixelSize = pixelFormatInfo.at(format).size / 8;
-	if (!ownPixelData)
-		data = _data;
-	else {
-		data = new u8[width * height * pixelSize];
-        memcpy(data, _data, width * height * pixelSize);
-	}
 
     if (!_pitch.has_value())
         pitch = pixelSize * width;
-    else
+    else {
         pitch = _pitch.value();
+    }
+
+	if (!ownPixelData)
+		data = _data;
+	else {
+        data = new u8[height * pitch];
+        memcpy(data, _data, height * pitch);
+	}
 
     clipregion.pos = v2u(0, 0);
     clipregion.size = v2u(width, height);

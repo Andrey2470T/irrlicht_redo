@@ -16,13 +16,13 @@ namespace img
 	};
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage=true);
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage=true, bool copyData=false);
 
 	SDL_Surface *convertImageToSDLSurface(Image *img);
 
     Image *convertIndexImageToRGBA(Image *img);
 
-    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u8 pitch);
+    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u32 pitch);
 
     color8 convertColorToIndexImageFormat(Image *img, color8 color);
 
