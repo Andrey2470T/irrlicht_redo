@@ -251,7 +251,7 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
 	    return nullptr;
 
     SDL_Color fg_color = {
-        255, 255, 255, 0
+        char_color.R(), char_color.G(), char_color.B(), char_color.A()
     };
 
     Uint16 glyph = static_cast<Uint16>(ch);
@@ -262,7 +262,7 @@ img::Image *TTFont::getGlyphImage(wchar_t ch, const img::color8 &char_color)
         return nullptr;
     }
 
-    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, true, true);
+    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, true);
 
     SDL_FreeSurface(surf);
 
@@ -276,10 +276,14 @@ img::Image *TTFont::drawText(const std::wstring &text, const img::color8 &color)
     };
     auto str16 = wstring_to_uint16(text);
 
-    SDL_Surface *surf = TTF_RenderUNICODE_Solid(
-        font, str16.data(), fg_color);
+    SDL_Surface *surf = TTF_RenderUNICODE_Blended(font, str16.data(), fg_color);
 
-    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, false);
+    if (!surf) {
+        ErrorStream << "TTFont::drawText() failed to render text: " << wide_to_utf8(text) << ": " << TTF_GetError() << "\n";
+        return nullptr;
+    }
+
+    img::Image *surf_img = img::convertSDLSurfaceToImage(surf, true);
 
     SDL_FreeSurface(surf);
 

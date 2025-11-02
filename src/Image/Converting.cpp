@@ -6,7 +6,7 @@ namespace img
 {
 
     // Note: converting doesn't copy the input data, but just transform it to another form
-    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage, bool copyData)
+    Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage)
 	{
 		SDL_PixelFormat *sdl_format = surf->format;
 		
@@ -24,15 +24,13 @@ namespace img
         u32 h = static_cast<u32>(surf->h);
         u32 pitch = static_cast<u32>(surf->pitch);
         u8 *data = (u8*)surf->pixels;
-
-        if (!copyData)
-            surf->pixels = nullptr;
+        surf->pixels = nullptr;
 
         Palette *palette = nullptr;
         if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
             SDL_Palette *sdl_palette = sdl_format->palette;
 
-            std::vector<img::color8> colors;
+            std::vector<color8> colors;
             colors.resize(sdl_palette->ncolors);
 
             for (s32 i = 0; i < sdl_palette->ncolors; i++) {
@@ -46,10 +44,16 @@ namespace img
             palette = new Palette(true, colors.size(), colors);
         }
 
-        auto img = new Image(format, w, h, data, copyData, palette, pitch, sdl_format->format);
+        auto img = new Image(format, w, h, data, false, palette, pitch, sdl_format->format);
+
+        if (format == PF_INDEX_RGBA8) {
+            auto img2 = convertIndexImageToRGBA(img);
+            delete img;
+            img = img2;
+        }
 
         if (flipImage) {
-            auto localImgMod = new img::ImageModifier();
+            auto localImgMod = new ImageModifier();
             auto flipped_y = localImgMod->flip(img, FD_Y);
 
             delete img;
@@ -125,7 +129,7 @@ namespace img
                 u32 i2 = y * width + x;
 
                 u8 alpha = palette->hasAlpha ? data[i+3] : 0;
-                img::color8 cur_color(img::PF_RGBA8, data[i], data[i+1], data[i+2], alpha);
+                color8 cur_color(PF_RGBA8, data[i], data[i+1], data[i+2], alpha);
                 convData[i2] = palette->findColorIndex(cur_color);
             }
         }

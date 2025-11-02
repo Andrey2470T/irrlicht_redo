@@ -229,48 +229,82 @@ bool ImageModifier::copyTo(
     const rectu *dstRect,
 	bool allowScale)
 {
-    rectu targetRect;
-
-    if (srcRect) {
-        targetRect.ULC = srcRect->ULC;
-        targetRect.LRC = srcRect->LRC;
-    }
-    else {
-        targetRect.ULC = v2u(0, 0);
-        targetRect.LRC = srcImg->getSize();
+    if (srcImg->getFormat() != dstImg->getFormat()) {
+        ErrorStream << "ImageModifier::copyTo() source and destination formats must match\n";
+        return false;
     }
 
-    Image *srcPart = new Image(srcImg->getFormat(), targetRect.getWidth(), targetRect.getHeight(),
-        img::black, srcImg->getPalette(), nullptr, srcImg->getFormatsEnumsIndex());
+    rectu srcProcessRect = srcRect ? *srcRect : rectu(0, 0, srcImg->getWidth(), srcImg->getHeight());
+    rectu dstProcessRect = dstRect ? *dstRect : rectu(0, 0, dstImg->getWidth(), dstImg->getHeight());
 
-    for (u32 x = targetRect.ULC.X; x < targetRect.LRC.X; x++) {
-        for (u32 y = targetRect.ULC.Y; y < targetRect.LRC.Y; y++)
-            setPixel(srcPart, x - targetRect.ULC.X, y - targetRect.ULC.Y, getPixel(srcImg, x, y));
+    if (srcProcessRect.getWidth() == 0 || srcProcessRect.getHeight() == 0 ||
+        dstProcessRect.getWidth() == 0 || dstProcessRect.getHeight() == 0) {
+        ErrorStream << "ImageModifier::copyTo() invalid source or destination region\n";
+        return false;
     }
 
-    if (dstRect && targetRect.getSize() != dstRect->getSize()) {
-		if (!allowScale) {
-			ErrorStream << "ImageModifier::copyTo() copying to destination image with another size is not allowed\n";
-            delete srcPart;
-			return false;
-		}
+    srcProcessRect.clipAgainst(rectu(0, 0, srcImg->getWidth(), srcImg->getHeight()));
+    dstProcessRect.clipAgainst(rectu(0, 0, dstImg->getWidth(), dstImg->getHeight()));
 
-        resize(&srcPart, *dstRect, RF_BICUBIC);
-	}
+    bool needsScaling = allowScale && srcProcessRect.getSize() != dstProcessRect.getSize();
+    Image *tempSrcImg = nullptr;
 
-	for (u32 x = 0; x < srcPart->getWidth(); x++)
-		for (u32 y = 0; y < srcPart->getHeight(); y++) {
-			color8 curColor = getPixel(srcPart, x, y);
+    if (needsScaling) {
+        tempSrcImg = new Image(srcImg->getFormat(),
+            srcProcessRect.getWidth(), srcProcessRect.getHeight(),
+            img::black, srcImg->getPalette(), nullptr,
+            srcImg->getFormatsEnumsIndex());
 
-			if (!dstRect)
-				setPixel(dstImg, x, y, curColor);
-			else
-				setPixel(dstImg, x + dstRect->ULC.X, y + dstRect->ULC.Y, curColor);
-		}
+        processPixelsBulk(srcImg, &srcProcessRect,
+            [tempSrcImg, &srcProcessRect, this](u32 x, u32 y, color8 &curColor) {
+                u32 destX = x - srcProcessRect.ULC.X;
+                u32 destY = y - srcProcessRect.ULC.Y;
+                setPixelDirect(tempSrcImg, destX, destY, curColor);
+            });
 
-    delete srcPart;
+        v2u targetSize = dstProcessRect.getSize();
+        resize(&tempSrcImg, targetSize, RF_BICUBIC);
 
-	return true;
+        processPixelsBulk(tempSrcImg, nullptr,
+            [dstImg, &dstProcessRect, this](u32 x, u32 y, color8 &curColor) {
+                u32 destX = dstProcessRect.ULC.X + x;
+                u32 destY = dstProcessRect.ULC.Y + y;
+
+                if (destX < dstImg->getWidth() && destY < dstImg->getHeight()) {
+                    color8 dstColor = getPixel(dstImg, destX, destY);
+                    setPixelDirectWithBlend(dstImg, destX, destY, curColor, dstColor);
+                }
+            });
+    } else {
+        v2u actualCopySize(
+            std::min(srcProcessRect.getSize().X, dstProcessRect.getSize().X),
+            std::min(srcProcessRect.getSize().Y, dstProcessRect.getSize().Y)
+        );
+
+        processPixelsBulk(srcImg, &srcProcessRect,
+            [dstImg, &srcProcessRect, &dstProcessRect, &actualCopySize, this](
+                u32 srcX, u32 srcY, color8 &curColor) {
+
+                    u32 relX = srcX - srcProcessRect.ULC.X;
+                    u32 relY = srcY - srcProcessRect.ULC.Y;
+
+                    if (relX >= actualCopySize.X || relY >= actualCopySize.Y)
+                        return;
+
+                    u32 destX = dstProcessRect.ULC.X + relX;
+                    u32 destY = dstProcessRect.ULC.Y + relY;
+
+                    if (destX < dstImg->getWidth() && destY < dstImg->getHeight()) {
+                        color8 dstColor = getPixel(dstImg, destX, destY);
+                        setPixelDirectWithBlend(dstImg, destX, destY, curColor, dstColor);
+                    }
+            });
+    }
+
+    if (tempSrcImg)
+        delete tempSrcImg;
+
+    return true;
 }
 
 // Compute next-higher power of 2 efficiently, e.g. for power-of-2 texture sizes.
@@ -381,10 +415,10 @@ color8 ImageModifier::imageAverageColor(Image *img)
 
 // Scales (up or down) the image before the given rect.
 // The convolution algorithm is used with one of filter types.
-void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filter)
+void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
 {
-    f32 scaleX = (*img)->getWidth() / (f32)rect.getWidth();
-    f32 scaleY = (*img)->getHeight() / (f32)rect.getHeight();
+    f32 scaleX = (*img)->getWidth() / (f32)size.X;
+    f32 scaleY = (*img)->getHeight() / (f32)size.Y;
 
     if (scaleX == 1.0f && scaleY == 1.0f) {
         WarnStream << "ImageModifier::resize() no need in scaling (scale factor = 1.0)\n";
@@ -482,7 +516,7 @@ void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filte
     bool wasScaled = false;
 
     if (scaleX != 1.0f) {
-        newImgScaledX = new Image((*img)->getFormat(), rect.getWidth(), (*img)->getHeight(),
+        newImgScaledX = new Image((*img)->getFormat(), size.X, (*img)->getHeight(),
             img::black, (*img)->getPalette(), nullptr, (*img)->getFormatsEnumsIndex());
         axisScale(*img, newImgScaledX, 0);
         wasScaled = true;
@@ -490,7 +524,7 @@ void ImageModifier::resize(Image **img, const rectu &rect, RESAMPLE_FILTER filte
 
     Image *newImgScaledY = newImgScaledX;
     if (scaleY != 1.0f) {
-        newImgScaledY = new Image(newImgScaledX->getFormat(), newImgScaledX->getWidth(), rect.getHeight(),
+        newImgScaledY = new Image(newImgScaledX->getFormat(), newImgScaledX->getWidth(), size.Y,
             img::black, newImgScaledX->getPalette(), nullptr, newImgScaledX->getFormatsEnumsIndex());
         axisScale(newImgScaledX, newImgScaledY, 1);
 

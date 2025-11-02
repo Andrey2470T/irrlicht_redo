@@ -79,7 +79,7 @@ public:
 
 	// Scales (up or down) the image before the given rect.
 	// The convolution algorithm is used with one of filter types.
-    void resize(Image **img, const rectu &rect, RESAMPLE_FILTER filter=RF_NEAREST);
+    void resize(Image **img, const v2u &size, RESAMPLE_FILTER filter=RF_NEAREST);
 
 	// Rotates the given image by the angle multiple by 90 degrees
 	Image *rotate(Image *img, ROTATE_ANGLE angle);

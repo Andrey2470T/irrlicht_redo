@@ -58,14 +58,19 @@ int main(int argc, char *argv[])
 
 	core::InfoStream << "Load the icon.png...\n";
 
-    fs::path abs_icon_p = fs::absolute("icon.png");
+    fs::path abs_icon_p = fs::absolute("unknown_item.png");
 	core::InfoStream << "icon.png path:" << abs_icon_p << "\n";
 
-    //SDL_Surface *surf = IMG_Load(abs_icon_p.string().c_str());
-    //SDL_SetWindowIcon(window->getWindow(), surf);
+    auto img = img::ImageLoader::load(fs::absolute("unknown_item.png"));
+    auto img2 = img::ImageLoader::load(fs::absolute("unknown_node.png"));
 
-    auto img = img::ImageLoader::load(abs_icon_p.string());
-    window->setIcon(img);
+    //window->setIcon(img);
+
+    img::ImageModifier imgmod;
+    imgmod.setBlendMode(img::BM_ALPHA);
+    imgmod.copyTo(img, img2);
+    //rectu dst(0, 0, img->getWidth()*4, img->getHeight()*4);
+    //auto img3 = imgmod.crop(img2, dst);
 
     //img::ImageModifier imgmod;
     //imgmod.setBlendMode(img::BM_MULTIPLY);
@@ -73,8 +78,8 @@ int main(int argc, char *argv[])
     //imgmod.setBlendMode(img::BM_NORMAL);
     //auto img2 = imgmod.rotate(img, img::RA_270);
     //delete img;
-    v2u curSize = img->getSize();
-    v2u newSize = img->getSize() * 2;
+    //v2u curSize = img->getSize();
+    //v2u newSize = img->getSize() * 2;
 
     /*fs::path abs_icon_p2 = fs::absolute("default_cobble.png");
     auto img2 = img::ImageLoader::load(abs_icon_p2.string());
@@ -94,7 +99,7 @@ int main(int argc, char *argv[])
 	core::InfoStream << "Setup and create the texture...\n";
 	render::TextureSettings settings;
 	settings.isRenderTarget = false;
-    auto texture = std::make_unique<render::Texture2D>("MT Image", std::unique_ptr<img::Image>(img), settings);
+    auto texture = std::make_unique<render::Texture2D>("MT Image", std::unique_ptr<img::Image>(img2), settings);
 
     auto shader = std::make_unique<render::Shader>(fs::absolute("shader2d_vertex.glsl"), fs::absolute("shader2d_fragment.glsl"));
 
