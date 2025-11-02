@@ -190,11 +190,6 @@ void Texture2D::regenerateMipMaps()
 
 void Texture2D::updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy)
 {
-    if (texSettings.isRenderTarget) {
-        ErrorStream << "Texture2D::updateParameters() can not update settings for RTT\n";
-        return;
-    }
-
     bind();
     if (texSettings.wrapU != newTexSettings.wrapU) {
         texSettings.wrapU = newTexSettings.wrapU;

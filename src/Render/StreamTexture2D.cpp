@@ -61,7 +61,41 @@ void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *im
     if (newWidth <= width || newHeight <= height) // only increasing is allowed
         return;
 
-    auto newImg = new img::Image(format, newWidth, newHeight);
+    u32 oldTexID = texID;
+    texID = 0;
+
+    glGenTextures(1, &texID);
+    Texture2D::bind();
+
+    auto formatInfo = img::pixelFormatInfo.at(format);
+    glTexImage2D(tex2D(), 0, formatInfo.internalFormat, newWidth, newHeight,
+        0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
+
+    updateParameters(texSettings, true, true);
+
+    u32 srcFBO, dstFBO;
+
+    glGenFramebuffers(1, &srcFBO);
+    glGenFramebuffers(1, &dstFBO);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        tex2D(), oldTexID, 0);
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        tex2D(), texID, 0);
+
+    glBlitFramebuffer(0, 0, width, height,
+                      0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glDeleteFramebuffers(1, &srcFBO);
+    glDeleteFramebuffers(1, &dstFBO);
+    glDeleteTextures(1, &oldTexID);
+
+    Texture2D::unbind();
+    /*auto newImg = new img::Image(format, newWidth, newHeight);
     auto oldImg = downloadData().at(0);
 
     rectu dstRect(0, 0, oldImg->getWidth(), oldImg->getHeight());
@@ -80,6 +114,8 @@ void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *im
     }
 
     Texture2D::unbind();
+
+    delete newImg;*/
 
     //createNewPBO(newWidth, newHeight);
 
