@@ -135,6 +135,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 std::vector<img::Image *> Texture2D::downloadData()
 {
     img::Image *cachedImg = nullptr;
+
     if (!imgCache) {
 		img::Image *img = new img::Image(format, width, height);
 
@@ -166,7 +167,6 @@ std::vector<img::Image *> Texture2D::downloadData()
         unbind();
 
         cachedImg = img;
-        //imgCache.reset(img);
 	}
     else
         cachedImg = imgCache.get();
@@ -224,6 +224,49 @@ void Texture2D::updateParameters(const TextureSettings &newTexSettings, bool upd
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, clampedAnisotropy);
         TEST_GL_ERROR();
     }
+
+    unbind();
+}
+
+void Texture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod)
+{
+    if (newWidth <= width || newHeight <= height) // only increasing is allowed
+        return;
+
+    u32 oldTexID = texID;
+    texID = 0;
+
+    u32 oldWidth = width;
+    u32 oldHeight = height;
+
+    width = newWidth;
+    height = newHeight;
+
+    initTexture(nullptr);
+
+    bind();
+
+    u32 srcFBO, dstFBO;
+
+    glGenFramebuffers(1, &srcFBO);
+    glGenFramebuffers(1, &dstFBO);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           tex2D(), oldTexID, 0);
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           tex2D(), texID, 0);
+
+    glBlitFramebuffer(0, 0, oldWidth, oldHeight,
+                      0, 0, oldWidth, oldHeight,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glDeleteFramebuffers(1, &srcFBO);
+    glDeleteFramebuffers(1, &dstFBO);
+
+    glDeleteTextures(1, &oldTexID);
 
     unbind();
 }

@@ -40,6 +40,7 @@ public:
 
     void updateParameters(const TextureSettings &newTexSettings, bool updateLodBias, bool updateAnisotropy) override;
     
+    void resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod);
     Texture2D *copy(const std::string &name="");
 
     u32 tex2D() const

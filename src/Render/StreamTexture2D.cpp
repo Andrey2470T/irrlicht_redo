@@ -9,30 +9,30 @@ StreamTexture2D::StreamTexture2D(const std::string &name, u32 width, u32 height,
     img::PixelFormat format, u8 maxMipLevel)
     : Texture2D(name, width, height, format, 0, maxMipLevel)
 {
-    //createNewPBO(width, height);
+    createNewPBO(width, height);
 }
 
 StreamTexture2D::~StreamTexture2D()
 {
-    //deletePBO();
+    deletePBO();
 }
 
 void StreamTexture2D::bind()
 {
-    /*if (bound)
+    if (bound)
         return;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID);
-    TEST_GL_ERROR();*/
+    TEST_GL_ERROR();
 
     Texture2D::bind();
 }
 
 void StreamTexture2D::unbind()
 {
-    /*if (!bound)
+    if (!bound)
         return;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    TEST_GL_ERROR();*/
+    TEST_GL_ERROR();
 
     Texture2D::unbind();
 }
@@ -56,74 +56,7 @@ void StreamTexture2D::unmapPBO()
     pboData = nullptr;
 }
 
-void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod)
-{
-    if (newWidth <= width || newHeight <= height) // only increasing is allowed
-        return;
-
-    u32 oldTexID = texID;
-    texID = 0;
-
-    glGenTextures(1, &texID);
-    Texture2D::bind();
-
-    auto formatInfo = img::pixelFormatInfo.at(format);
-    glTexImage2D(tex2D(), 0, formatInfo.internalFormat, newWidth, newHeight,
-        0, formatInfo.pixelFormat, formatInfo.pixelType, 0);
-
-    updateParameters(texSettings, true, true);
-
-    u32 srcFBO, dstFBO;
-
-    glGenFramebuffers(1, &srcFBO);
-    glGenFramebuffers(1, &dstFBO);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        tex2D(), oldTexID, 0);
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        tex2D(), texID, 0);
-
-    glBlitFramebuffer(0, 0, width, height,
-                      0, 0, width, height,
-                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    glDeleteFramebuffers(1, &srcFBO);
-    glDeleteFramebuffers(1, &dstFBO);
-    glDeleteTextures(1, &oldTexID);
-
-    Texture2D::unbind();
-    /*auto newImg = new img::Image(format, newWidth, newHeight);
-    auto oldImg = downloadData().at(0);
-
-    rectu dstRect(0, 0, oldImg->getWidth(), oldImg->getHeight());
-    imgMod->copyTo(oldImg, newImg, nullptr, &dstRect);
-
-    Texture2D::bind();
-
-    auto &formatInfo = img::pixelFormatInfo.at(format);
-    glTexImage2D(GL_TEXTURE_2D, 0, formatInfo.internalFormat, newWidth, newHeight, 0,
-        formatInfo.pixelFormat, formatInfo.pixelType, newImg->getData());
-    TEST_GL_ERROR();
-
-    if (texSettings.hasMipMaps) {
-        glGenerateMipmap(GL_TEXTURE_2D);
-        TEST_GL_ERROR();
-    }
-
-    Texture2D::unbind();
-
-    delete newImg;*/
-
-    //createNewPBO(newWidth, newHeight);
-
-    width = newWidth;
-    height = newHeight;
-}
-
-/*void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
+void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
 {
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
@@ -144,7 +77,7 @@ void StreamTexture2D::resize(u32 newWidth, u32 newHeight, img::ImageModifier *im
         delete convImg;
 
     dirtyRegions.emplace_back(x, y, x+size.X, y+size.Y);
-}*/
+}
 
 void StreamTexture2D::flush()
 {
