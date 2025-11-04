@@ -211,7 +211,7 @@ bool TTFont::isTransparent() const
     return hasTransparency;
 }
 
-std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) const
+s32 TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) const
 {
     s32 x = 0;
     u32 num = 0;
@@ -227,7 +227,7 @@ std::optional<u32> TTFont::getCharFromPos(const std::wstring &str, s32 pixel_x) 
         prevChar = c;
     }
 
-    return std::nullopt;
+    return -1;
 }
 
 bool TTFont::hasGlyph(wchar_t ch) const

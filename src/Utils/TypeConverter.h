@@ -5,28 +5,23 @@
 
 namespace utils
 {
-    v2f toV2f(const v2i &v);
 
-    v2i toV2i(const v2f &v);
+template<typename T1, typename T2>
+Vector2D<T1> toV2T(const Vector2D<T2> &v)
+{
+    return Vector2D<T1>(v.X, v.Y);
+}
 
-    v2u toV2u(const v2i &v);
+template<typename T1, typename T2>
+Vector3D<T1> toV3T(const Vector3D<T2> &v)
+{
+    return Vector3D<T1>(v.X, v.Y, v.Z);
+}
 
-    v2i toV2i(const v2u &v);
-
-    v3f toV3f(const v3i &v);
-
-    v3i toV3i(const v3f &v);
-
-    v3u toV3u(const v3i &v);
-
-    v3i toV3i(const v3u &v);
-
-    rectf toRectf(const recti &r);
-
-    recti toRecti(const rectf &r);
-
-    recti toRecti(const rectu &r);
-
-    rectu toRectu(const recti &r);
+template<typename T1, typename T2>
+Rect<T1> toRectT(const Rect<T2> &r)
+{
+    return Rect<T1>(r.ULC.X, r.ULC.Y, r.LRC.X, r.LRC.Y);
+}
 
 }

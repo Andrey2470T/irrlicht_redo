@@ -77,7 +77,7 @@ public:
         *alpha = shadowAlpha;
     }
 
-    std::optional<u32> getCharFromPos(const std::wstring &str, s32 pixel_x) const;
+    s32 getCharFromPos(const std::wstring &str, s32 pixel_x) const;
     
     bool hasGlyph(wchar_t c) const;
 
