@@ -877,8 +877,6 @@ void MainWindow::updateViewportAndScale()
 
     Params.Width = drawable_w;
     Params.Height = drawable_h;
-
-    DisplayDensity = std::max(Scale.X * 96.0f, Scale.Y * 96.0f);
 }
 
 bool MainWindow::initWindow()

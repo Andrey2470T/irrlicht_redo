@@ -183,18 +183,15 @@ s32 TTFont::getFontDescent() const
     return TTF_FontDescent(font);
 }
 
-void TTFont::getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const
+void TTFont::getGlyphMetrics(wchar_t ch, s32 *minx, s32 *maxx, s32 *miny, s32 *maxy, s32 *advance) const
 {
-    if (!offsetx || !offsety || !advance) {
+    if (!minx || !maxx || !miny || !maxy || !advance) {
         ErrorStream << "TTFont::getGlyphMetrics() no offset or/and advance provided\n";
         return;
     }
 
     Uint16 glyph = static_cast<Uint16>(ch);
-    s32 minx, maxx, miny, maxy;
-    TTF_GlyphMetrics(font, glyph, &minx, &maxx, &miny, &maxy, advance);
-    *offsetx = minx;
-    *offsety = miny;
+    TTF_GlyphMetrics(font, glyph, minx, maxx, miny, maxy, advance);
 }
 
 u32 TTFont::getCurrentSize() const

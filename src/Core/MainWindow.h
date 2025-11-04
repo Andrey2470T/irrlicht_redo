@@ -46,7 +46,7 @@ struct MainWindowParameters
 	u32 Width = 800;
 	u32 Height = 600;
 
-	utils::v2i Pos = utils::v2i(-1, -1);
+    v2i Pos{-1, -1};
 
 	std::wstring Caption = L"";
 
@@ -125,12 +125,11 @@ class MainWindow
 
 	MainWindowParameters Params;
 
-    utils::v2i MousePos{0, 0};
-    utils::v2i MouseRelPos{0, 0};
+    v2i MousePos{0, 0};
+    v2i MouseRelPos{0, 0};
     u32 MouseButtonStates{0};
 
-	utils::v2f Scale{1.0f, 1.0f};
-    f32 DisplayDensity{0.0f};
+    v2f Scale{1.0f, 1.0f};
 
     s32 CurrentTouchCount{0};
     bool IsInBackground{false};

@@ -65,7 +65,7 @@ public:
 
     s32 getFontAscent() const;
     s32 getFontDescent() const;
-    void getGlyphMetrics(wchar_t ch, s32 *offsetx, s32 *offsety, s32 *advance) const;
+    void getGlyphMetrics(wchar_t ch, s32 *minx, s32 *maxx, s32 *miny, s32 *maxy, s32 *advance) const;
 
     u32 getCurrentSize() const;
     u32 getCurrentPixelSize(u32 dpi) const;
