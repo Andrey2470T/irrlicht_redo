@@ -1,4 +1,5 @@
 #include "Converting.h"
+#include "Image/ImageLoader.h"
 #include "Image/ImageModifier.h"
 #include "Core/TimeCounter.h"
 
@@ -76,6 +77,40 @@ namespace img
         return SDL_CreateRGBSurfaceWithFormatFrom(img->getData(), w, h, pixelBits, pitch, sdlFormat);
 	}
 
+    Image *convertRGBImageToRGBA(Image *img)
+    {
+        if (img->getFormat() != PF_RGB8)
+            return nullptr;
+
+        v2u pos = img->getClipPos();
+        v2u size = img->getClipSize();
+        u32 pitch = img->getPitch();
+        u8 pixelSize = pixelFormatInfo.at(img->getFormat()).size / 8;
+
+        if (size.X * size.Y == 0)
+            return nullptr;
+
+        auto convImg = new Image(PF_RGBA8, size.X, size.Y);
+        u8 convPixelSize = pixelFormatInfo.at(PF_RGBA8).size / 8;
+
+        u8 *data = img->getData();
+        u8 *convdata = convImg->getData();
+
+        for (u32 y = 0; y < size.Y; y++) {
+            for (u32 x = 0; x < size.X; x++) {
+                u32 i = pos.X + (pos.Y + y) * pitch + x * pixelSize;
+                u32 i2 = (y * size.X + x) * convPixelSize;
+
+                convdata[i2] = data[i];
+                convdata[i2+1] = data[i+1];
+                convdata[i2+2] = data[i+2];
+                convdata[i2+3] = 255;
+            }
+        }
+
+        return convImg;
+    }
+
     Image *convertIndexImageToRGBA(Image *img)
     {
         if (img->getFormat() != PF_INDEX_RGBA8)
@@ -105,8 +140,12 @@ namespace img
                 convdata[i2*pixelSize+1] = found_color.G();
                 convdata[i2*pixelSize+2] = found_color.B();
 
-                if (format == PF_RGBA8)
-                    convdata[i2*pixelSize+3] = found_color.A();
+                if (format == PF_RGBA8) {
+                    if (found_color.R() == 0 && found_color.G() == 0 && found_color.B() == 0 && found_color.A() == 255)
+                        convdata[i2*pixelSize+3] = 0;
+                    else
+                        convdata[i2*pixelSize+3] = found_color.A();
+                }
             }
         }
 
@@ -150,15 +189,28 @@ namespace img
         return target_c;
     }
 
+    color8 convertARGBtoRGBA(const img::color8 &c)
+    {
+        img::color8 newC = c;
+
+        newC.A(c.B());
+        newC.B(c.A());
+
+        return newC;
+    };
+
 	// Convert the numerical u32 color representation (ARGB) to the color8 object
-	color8 colorU32NumberToObject(u32 color)
+    color8 colorU32NumberToObject(u32 color, bool toRGBA)
 	{
 		u8 alpha = color >> 24;
 		u8 red = (color >> 16) & 0xFF;
 		u8 green = (color >> 8) & 0xFF;
 		u8 blue = color & 0xFF;
 
-		return color8(PF_RGBA8, red, green, blue, alpha);
+        if (toRGBA)
+            return color8(PF_RGBA8, alpha, green, blue, red);
+        else
+            return color8(PF_RGBA8, red, green, blue, alpha);
 	}
 
 	u32 colorObjectToU32Number(color8 color)

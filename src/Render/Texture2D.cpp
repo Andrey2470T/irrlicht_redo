@@ -109,6 +109,7 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 {
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
+    img::PixelFormat format = img->getFormat();
 
     if (imgCache && imgMod) {
         rectu srcRect(pos.X, pos.Y, size.X, size.Y);
@@ -116,17 +117,21 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
         imgMod->copyTo(img, imgCache.get(), &srcRect, &dstRect);
     }
 
-    auto formatInfo = img::pixelFormatInfo.at(format);
+    auto convImg = img;
 
-    auto convImg = img::convertIndexImageToRGBA(img);
-    formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
+    if (format == img::PF_INDEX_RGBA8)
+        convImg = img::convertIndexImageToRGBA(img);
+    else if (format == img::PF_RGB8)
+        convImg = img::convertRGBImageToRGBA(img);
+
+    auto formatInfo = img::pixelFormatInfo.at(convImg->getFormat());
 
     bind();
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
-        formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : img->getData());
+                    formatInfo.pixelFormat, formatInfo.pixelType, convImg->getData());
     TEST_GL_ERROR();
 
-    if (convImg)
+    if (format == img::PF_INDEX_RGBA8 || format == img::PF_RGB8)
          delete convImg;
 
     unbind();

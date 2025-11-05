@@ -12,7 +12,8 @@ namespace img
 		{SDL_PIXELFORMAT_ABGR8888, PF_RGBA8},
 		{SDL_PIXELFORMAT_BGRA8888, PF_RGBA8},
 		{SDL_PIXELFORMAT_ARGB8888, PF_RGBA8},
-		{SDL_PIXELFORMAT_INDEX8, PF_INDEX_RGBA8}
+        {SDL_PIXELFORMAT_INDEX8, PF_INDEX_RGBA8},
+        {SDL_PIXELFORMAT_RGB24, PF_RGB8}
 	};
 
     // Note: converting doesn't copy the input data, but just transform it to another form
@@ -20,14 +21,18 @@ namespace img
 
 	SDL_Surface *convertImageToSDLSurface(Image *img);
 
+    Image *convertRGBImageToRGBA(Image *img);
+
     Image *convertIndexImageToRGBA(Image *img);
 
     u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u32 pitch);
 
     color8 convertColorToIndexImageFormat(Image *img, color8 color);
 
+    color8 convertARGBtoRGBA(const img::color8 &c);
+
 	// Convert the numerical u32 color representation (ARGB) to the color8 object
-	color8 colorU32NumberToObject(u32 color);
+    color8 colorU32NumberToObject(u32 color, bool toRGBA=false);
 
 	u32 colorObjectToU32Number(color8 color);
 
