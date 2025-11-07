@@ -45,6 +45,7 @@ public:
         switch (constructor) {
         case EM4CONST_NOTHING:
         case EM4CONST_COPY:
+            makeNull();
             break;
         case EM4CONST_IDENTITY:
         case EM4CONST_INVERSE:
@@ -191,6 +192,8 @@ public:
 	//! Multiply by scalar.
 	Matrix4<T> &operator*=(const T &scalar);
 
+    //! Set matrix to null.
+    Matrix4<T> &makeNull();
 	//! Set matrix to identity.
 	Matrix4<T> &makeIdentity();
 

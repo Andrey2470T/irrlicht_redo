@@ -75,7 +75,4 @@ extern size_t sizeOfVertexType(const VertexTypeDescriptor &vtype);
 // Default 3D vertex type (position, color, normal and uv).
 extern const VertexTypeDescriptor DefaultVType;
 
-// Default 2D vertex type (position, color and uv).
-//extern const VertexTypeDescriptor VType2D;
-
 }

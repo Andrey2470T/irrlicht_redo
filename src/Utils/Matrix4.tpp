@@ -465,6 +465,16 @@ Matrix4<T> &Matrix4<T>::setRotationAxisRadians(const T &angle, const Vector3D<T>
 /*!
  */
 template <class T>
+Matrix4<T> &Matrix4<T>::makeNull()
+{
+    memset(M, 0, 16 * sizeof(T));;
+
+    return *this;
+}
+
+/*!
+ */
+template <class T>
 Matrix4<T> &Matrix4<T>::makeIdentity()
 {
 	memset(M, 0, 16 * sizeof(T));

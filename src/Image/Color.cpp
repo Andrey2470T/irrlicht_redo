@@ -529,11 +529,13 @@ color8 getColor8(const ByteArray *arr, u32 n, img::PixelFormat format)
     }
     color8 c(format);
 
-	c.R(arr->getUInt8(n));
-	c.G(arr->getUInt8(n+1));
-	c.B(arr->getUInt8(n+2));
+    c.R(arr->getUInt8(n));
+    c.G(arr->getUInt8(n+1));
+    c.B(arr->getUInt8(n+2));
 
-    if (format == img::PF_RGBA8) c.A(arr->getUInt8(n+3));
+    if (format == img::PF_RGBA8) {
+        c.A(arr->getUInt8(n+3));
+    }
 
 	return c;
 }
@@ -544,10 +546,33 @@ void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format)
         ErrorStream << "setColor8() unsupported format\n";
         return;
     }
-	arr->setUInt8(c.R(), n);
+
+    arr->setUInt8(c.R(), n);
     arr->setUInt8(c.G(), n+1);
     arr->setUInt8(c.B(), n+2);
-    if (format == img::PF_RGBA8) arr->setUInt8(c.A(), n+3);
+
+    if (format == img::PF_RGBA8)
+        arr->setUInt8(c.A(), n+3);
+}
+
+colorf getColorF32(const ByteArray *arr, u32 n)
+{
+    colorf c;
+
+    c.R(arr->getFloat(n));
+    c.G(arr->getFloat(n+1));
+    c.B(arr->getFloat(n+2));
+    c.A(arr->getFloat(n+3));
+
+    return c;
+}
+
+void setColorF32(ByteArray *arr, const colorf &c, u32 n)
+{
+    arr->setFloat(c.R(), n);
+    arr->setFloat(c.G(), n+1);
+    arr->setFloat(c.B(), n+2);
+    arr->setFloat(c.A(), n+3);
 }
 
 }
