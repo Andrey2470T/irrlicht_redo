@@ -50,27 +50,27 @@ static u8 divCh(u8 ch1, u8 ch2)
 }
 
 color8::color8()
-    : format(PF_RGBA8), color(pixelFormatInfo[PF_RGBA8].channels, pixelFormatInfo[PF_RGBA8].size / 8)
+    : format(PF_RGBA8), color(pixelFormatInfo[PF_RGBA8].size / 8)
 {
     set(0, 0, 0, 0);
 }
 
 color8::color8(PixelFormat _format)
-    : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
+    : format(_format), color(pixelFormatInfo[format].size / 8)
 {
     assert(isFormatSupportedForColor8(format));
     set(0, 0, 0, 0);
 }
 
 color8::color8(PixelFormat _format, u8 _R, u8 _G, u8 _B, u8 _A)
-    : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
+    : format(_format), color(pixelFormatInfo[format].size / 8)
 {
     assert(isFormatSupportedForColor8(format));
     set(_R, _G, _B, _A);
 }
 
 color8::color8(PixelFormat _format, u32 colorNum)
-    : format(_format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
+    : format(_format), color(pixelFormatInfo[format].size / 8)
 {
     assert(isFormatSupportedForColor8(format));
 
@@ -83,7 +83,7 @@ color8::color8(PixelFormat _format, u32 colorNum)
 }
 
 color8::color8(const color8 &other)
-    : format(other.format), color(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8)
+    : format(other.format), color(pixelFormatInfo[format].size / 8)
 {
     assert(isFormatSupportedForColor8(format));
     set(other.R(), other.G(), other.B(), other.A());
@@ -94,7 +94,7 @@ color8 &color8::operator=(const color8 &other)
     format = other.getFormat();
     assert(isFormatSupportedForColor8(format));
 
-    color.reallocate(pixelFormatInfo[format].channels, pixelFormatInfo[format].size / 8);
+    color.reallocate(pixelFormatInfo[format].size / 8);
     set(other.R(), other.G(), other.B(), other.A());
 
     return *this;
@@ -383,7 +383,7 @@ u8 color8::getChannel(u32 n) const
     if (n >= channelsCount)
         return 0;
 
-    return color.getUInt8(n);
+    return color.getUInt8(n, 0);
 }
 
 void color8::setChannel(u8 v, u32 n)
@@ -393,7 +393,7 @@ void color8::setChannel(u8 v, u32 n)
     if (n >= channelsCount)
         return;
 
-    color.setUInt8(v, n);
+    color.setUInt8(v, n, 0);
 }
 
 
@@ -519,60 +519,6 @@ f32 ColorHSL::toRGBA1(f32 rm1, f32 rm2, f32 rh) const
 		rm1 = rm1 + (rm2 - rm1) * ((2.f / 3.f) - rh) * 6.f;
 
 	return rm1;
-}
-
-color8 getColor8(const ByteArray *arr, u32 n, img::PixelFormat format)
-{
-    if (format != img::PF_RGB8 && format != img::PF_RGBA8) {
-        ErrorStream << "getColor8() unsupported format\n";
-        return color8();
-    }
-    color8 c(format);
-
-    c.R(arr->getUInt8(n));
-    c.G(arr->getUInt8(n+1));
-    c.B(arr->getUInt8(n+2));
-
-    if (format == img::PF_RGBA8) {
-        c.A(arr->getUInt8(n+3));
-    }
-
-	return c;
-}
-
-void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format)
-{
-    if (format != img::PF_RGB8 && format != img::PF_RGBA8) {
-        ErrorStream << "setColor8() unsupported format\n";
-        return;
-    }
-
-    arr->setUInt8(c.R(), n);
-    arr->setUInt8(c.G(), n+1);
-    arr->setUInt8(c.B(), n+2);
-
-    if (format == img::PF_RGBA8)
-        arr->setUInt8(c.A(), n+3);
-}
-
-colorf getColorF32(const ByteArray *arr, u32 n)
-{
-    colorf c;
-
-    c.R(arr->getFloat(n));
-    c.G(arr->getFloat(n+1));
-    c.B(arr->getFloat(n+2));
-    c.A(arr->getFloat(n+3));
-
-    return c;
-}
-
-void setColorF32(ByteArray *arr, const colorf &c, u32 n)
-{
-    arr->setFloat(c.R(), n);
-    arr->setFloat(c.G(), n+1);
-    arr->setFloat(c.B(), n+2);
-    arr->setFloat(c.A(), n+3);
 }
 
 }

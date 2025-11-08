@@ -1,7 +1,5 @@
 #include "Converting.h"
-#include "Image/ImageLoader.h"
 #include "Image/ImageModifier.h"
-#include "Core/TimeCounter.h"
 
 namespace img
 {

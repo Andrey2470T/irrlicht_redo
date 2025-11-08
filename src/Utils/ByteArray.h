@@ -3,116 +3,137 @@
 #include "ExtBasicIncludes.h"
 #include "Utils/Matrix4.h"
 
+namespace img
+{
+    class color8;
+    class colorf;
+}
+
 namespace utils
 {
 
+enum ByteArrayElementType : u8
+{
+    U8,
+    U16,
+    FLOAT,
+    V2F,
+    V3F,
+    MAT4,
+    COLOR_RGB8,
+    COLOR_RGBA8,
+    COLORF
+};
+
+size_t sizeOfElement(const ByteArrayElementType &elemType);
+
+// Can be basic type (u8, u16, f32) and complex (v2f, v3f and mat4)
+struct ByteArrayElement
+{
+    std::string Name;
+    ByteArrayElementType Type;
+    u32 BytesCount;
+    u32 BytesOffset = 0; // in bytes from the begin
+
+    bool operator==(const ByteArrayElement other) const
+    {
+        return (Name == other.Name && Type == other.Type &&
+            BytesCount == other.BytesCount && BytesOffset == other.BytesOffset);
+    }
+};
+
+size_t sizeOfDescriptor(const std::vector<ByteArrayElement> &desc);
+
+struct ByteArrayDescriptor
+{
+    std::string Name;
+    std::vector<ByteArrayElement> Elements;
+
+    ByteArrayDescriptor(const std::string &_Name, const std::vector<ByteArrayElement> &_Elements);
+    ByteArrayDescriptor(const ByteArrayDescriptor &other);
+
+    bool operator==(const ByteArrayDescriptor &other) const
+    {
+        return (Name == other.Name && Elements == other.Elements);
+    }
+};
+
+//! Array of a bytes sequence formatted by some descriptor
 class ByteArray
 {
-	struct ByteArrayElement
-	{
-		BasicType type;
-		u32 bytes_count;
-        u32 offset = 0; // in bytes from the begin
-	};
-
+    //! Elements descriptor
+    ByteArrayDescriptor Descriptor;
+    //! Size of all descriptor elements
+    size_t DescriptorSize;
+    //! Count of 'std::vector<ByteArrayElement>' vectors
+    u32 ElementsSetsCount = 0;
 	//! Bytes storage
-	std::vector<u8> bytes;
-	//! Elements (base types) saving inside 'bytes'
-	std::vector<ByteArrayElement> elements;
+    std::vector<u8> Bytes;
 public:
-	ByteArray() = default;
-
     //! Constructor. 'count' is an initial bytes count
-    ByteArray(u32 elemCount, u32 bytesCount)
-	{
-        reallocate(elemCount, bytesCount);
-	}
+    ByteArray(u32 bytesCount);
+    //! Constructor. '_ElementsSetsCount' is an initial 'std::vector<ByteArrayElement>' count
+    ByteArray(const ByteArrayDescriptor &desc, u32 _ElementsSetsCount=1);
 
+    ByteArray(const ByteArray &other);
+
+    //! Count of 'std::vector<ByteArrayElement>' vectors
 	u32 count() const
 	{
-		return elements.size();
+        return ElementsSetsCount;
 	}
 
+    //! Size of 'Bytes' vector
     u32 bytesCount() const
     {
-        return bytes.size();
+        return Bytes.size();
     }
 
-    void reallocate(u32 elemCount, u32 bytesCount);
-
-    void extendBytes(const ByteArray *add_bytes, u32 offset, u32 count);
+    void reallocate(u32 _ElementsSetsCount, const u8 *addData=nullptr);
 
     void clear()
     {
-        elements.clear();
-        bytes.clear();
+        ElementsSetsCount = 0;
+        Bytes.clear();
     }
 
     const void *data() const
 	{
-        const u8 *bytes_data = bytes.data();
-        return reinterpret_cast<const void*>(bytes_data);
+        return reinterpret_cast<const void*>(Bytes.data());
 	}
 
 	void *data()
 	{
-        u8 *bytes_data = bytes.data();
-        return reinterpret_cast<void*>(bytes_data);
+        return reinterpret_cast<void*>(Bytes.data());
 	}
 
+    //! 'elemsSetN' is a number of 'std::vector<ByteArrayElement>' vector
+    //! 'elemN' is a number of the element inside the ByteArrayDescriptor
+
 	//! Setters
-    // 'n' is a number of the byte array element which is necessary to change
-    void setUInt8(u8 elem, u32 n);
-    void setUInt16(u16 elem, u32 n);
-    void setUInt32(u32 elem, u32 n);
-    void setUInt64(u64 elem, u32 n);
+    void setUInt8(u8 elem, u32 elemsSetN, u32 elemN);
+    void setUInt16(u16 elem, u32 elemsSetN, u32 elemN);
+    void setFloat(f32 elem, u32 elemsSetN, u32 elemN);
+    void setV2F(v2f elem, u32 elemsSetN, u32 elemN);
+    void setV3F(v3f elem, u32 elemsSetN, u32 elemN);
+    void setM4x4(const matrix4 &elem, u32 elemsSetN, u32 elemN);
+    void setColor8(const img::color8 &elem, u32 elemsSetN, u32 elemN);
+    void setColorf(const img::colorf &elem, u32 elemsSetN, u32 elemN);
 
-    void setChar(c8 elem, u32 n);
-    void setShort(s16 elem, u32 n);
-    void setInt(s32 elem, u32 n);
-    void setLongInt(s64 elem, u32 n);
-
-    void setFloat(f32 elem, u32 n);
-    void setDouble(f64 elem, u32 n);
-
-    void setV2U(v2u elem, u32 n);
-    void setV2I(v2i elem, u32 n);
-    void setV2F(v2f elem, u32 n);
-
-    void setV3U(v3u elem, u32 n);
-    void setV3I(v3i elem, u32 n);
-    void setV3F(v3f elem, u32 n);
-
-    void setM4x4(const matrix4 &elem, u32 n);
 
 	//! Getters
-	// 'n' is a number of the byte array element
-    u8 getUInt8(u32 n) const;
-    u16 getUInt16(u32 n) const;
-    u32 getUInt32(u32 n) const;
-    u64 getUInt64(u32 n) const;
-
-    v2u getV2U(u32 n) const;
-    v2i getV2I(u32 n) const;
-    v2f getV2F(u32 n) const;
-
-    v3u getV3U(u32 n) const;
-    v3i getV3I(u32 n) const;
-    v3f getV3F(u32 n) const;
-
-    matrix4 getM4x4(u32 n) const;
-
-    s8 getChar(u32 n) const;
-    s16 getShort(u32 n) const;
-    s32 getInt(u32 n) const;
-    s64 getLongInt(u32 n) const;
-    f32 getFloat(u32 n) const;
-    f64 getDouble(u32 n) const;
+    u8 getUInt8(u32 elemsSetN, u32 elemN) const;
+    u16 getUInt16(u32 elemsSetN, u32 elemN) const;
+    f32 getFloat(u32 elemsSetN, u32 elemN) const;
+    v2f getV2F(u32 elemsSetN, u32 elemN) const;
+    v3f getV3F(u32 elemsSetN, u32 elemN) const;
+    matrix4 getM4x4(u32 elemsSetN, u32 elemN) const;
+    img::color8 getColorRGB8(u32 elemsSetN, u32 elemN) const;
+    img::color8 getColorRGBA8(u32 elemsSetN, u32 elemN) const;
+    img::colorf getColorf(u32 elemsSetN, u32 elemN) const;
 private:
-	u32 countBytesBefore(u32 n) const;
-
-	std::vector<u8> getElement(u32 n) const;
-    void setElement(ByteArrayElement &&elem, void *data, u32 n);
+    void getElement(void *data, u32 elemsSetN, u32 elemN) const;
+    void setElement(const void *data, u32 elemsSetN, u32 elemN);
 };
 
 }

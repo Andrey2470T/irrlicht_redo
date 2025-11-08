@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Utils/ByteArray.h"
 
 namespace render
 {
@@ -17,9 +18,9 @@ struct VertexAttribute
 	};
 	std::string Name;
 	u8 ComponentCount;
-	BasicType ComponentType;
+    ByteArrayElementType ComponentType;
     DataFormat Format = DataFormat::Regular;
-	u8 Offset = 0; // in summary components count from the beginning
+    u8 Offset = 0; // in summary components count from the beginning
 
 	bool operator==(const VertexAttribute other) const
 	{

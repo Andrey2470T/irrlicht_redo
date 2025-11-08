@@ -1,5 +1,4 @@
 #include <algorithm>
-#include "Core/TimeCounter.h"
 #include "Image/Converting.h"
 #include "ImageModifier.h"
 

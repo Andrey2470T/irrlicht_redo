@@ -54,6 +54,15 @@ public:
 	//! Get average intensity of the color
     u32 getAverage() const;
 
+    void *data()
+    {
+        return color.data();
+    }
+    const void *data() const
+    {
+        return color.data();
+    }
+
     bool operator==(const color8 &other) const;
 
     bool operator!=(const color8 &other) const;
@@ -202,12 +211,6 @@ public:
 private:
 	inline f32 toRGBA1(f32 rm1, f32 rm2, f32 rh) const;
 };
-
-color8 getColor8(const ByteArray *arr, u32 n, img::PixelFormat format=img::PF_RGBA8);
-void setColor8(ByteArray *arr, const color8 &c, u32 n, img::PixelFormat format=img::PF_RGBA8);
-
-colorf getColorF32(const ByteArray *arr, u32 n);
-void setColorF32(ByteArray *arr, const colorf &c, u32 n);
 
 }
 

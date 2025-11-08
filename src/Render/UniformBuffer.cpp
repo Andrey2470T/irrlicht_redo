@@ -6,11 +6,12 @@ namespace render
 {
 
 UniformBuffer::UniformBuffer(u32 bindingPoint, const ByteArray &uniforms)
+    : uniformsData(uniforms)
 {
 	glGenBuffers(1, &uboID);
     TEST_GL_ERROR();
     bind();
-    glBufferData(GL_UNIFORM_BUFFER, uniforms.bytesCount(), uniforms.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, uniformsData.bytesCount(), uniformsData.data(), GL_STATIC_DRAW);
     TEST_GL_ERROR();
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, uboID);
@@ -19,7 +20,6 @@ UniformBuffer::UniformBuffer(u32 bindingPoint, const ByteArray &uniforms)
     unbind();
 
 	uboBP = bindingPoint;
-    uniformsData = uniforms;
 }
 
 UniformBuffer::~UniformBuffer()

@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include "Image/Color.h"
 #include "Utils/ByteArray.h"
-#include "Utils/TypeSize.h"
 
 namespace render
 {
@@ -89,11 +88,8 @@ void Mesh::reallocate(const void *vertices, u32 vertexCount, const u32 *indices,
 
     vbo.reallocate(vertices, vertexCount);
     
-    //InfoStream << "Mesh::reallocate() \n";
-    if (ibo.ID != 0) {
-        //InfoStream << "Mesh::reallocate() reallocate ibo\n";
+    if (ibo.ID != 0)
         ibo.reallocate(indices, indexCount);
-    }
 
     unbind();
 }
@@ -241,7 +237,7 @@ void Mesh::init(bool initIBO)
 		glEnableVertexAttribArray(i);
         TEST_GL_ERROR();
 
-        offset += attr.ComponentCount * getSizeOfType(attr.ComponentType);
+        offset += attr.ComponentCount * sizeOfElement(attr.ComponentType);
 	}
 
     unbind();

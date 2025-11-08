@@ -1,11 +1,11 @@
 #include "VertexTypeDescriptor.h"
-#include "Utils/TypeSize.h"
 
 namespace render
 {
 
 VertexTypeDescriptor::VertexTypeDescriptor(u8 pos_coords_count, u8 color_cmp_count, bool init_normal, bool init_uv, u8 uv_count)
-    : Name(""), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
+    : Name(""), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count),
+      InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 {
     if (!checkForAttrsCmpsCount())
         return;
@@ -14,7 +14,8 @@ VertexTypeDescriptor::VertexTypeDescriptor(u8 pos_coords_count, u8 color_cmp_cou
 
 VertexTypeDescriptor::VertexTypeDescriptor(const std::string &name, const std::vector<VertexAttribute> &attributes,
     u8 pos_coords_count, u8 color_cmp_count, bool init_normal, bool init_uv, u8 uv_count)
-    : Name(name), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count), InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
+    : Name(name), PosCoordsCount(pos_coords_count), ColorCmpCount(color_cmp_count),
+      InitNormal(init_normal), InitUV(init_uv), UVCount(uv_count)
 {
     if (!checkForAttrsCmpsCount())
         return;
@@ -45,14 +46,14 @@ void VertexTypeDescriptor::appendAttr(const VertexAttribute &attr)
 }
 void VertexTypeDescriptor::initAttributes()
 {
-    appendAttr({"Position", PosCoordsCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
-    appendAttr({"Color", ColorCmpCount, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
+    appendAttr({"Position", PosCoordsCount, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
+    appendAttr({"Color", ColorCmpCount, ByteArrayElementType::U8, VertexAttribute::DataFormat::Normalized});
 
     if (InitNormal)
-        appendAttr({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+        appendAttr({"Normal", 3, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
 
     if (InitUV)
-        appendAttr({"UV", UVCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+        appendAttr({"UV", UVCount, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
 }
 
 bool VertexTypeDescriptor::checkForAttrsCmpsCount()
@@ -79,10 +80,10 @@ bool VertexTypeDescriptor::checkForAttrsCmpsCount()
 size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 {
     size_t size = 0;
-	for (const auto &attr : vtype.Attributes)
-		size += attr.ComponentCount * getSizeOfType(attr.ComponentType);
+    for (const auto &attr : vtype.Attributes)
+        size += attr.ComponentCount * sizeOfElement(attr.ComponentType);
 
-	return size;
+    return size;
 }
 
 
