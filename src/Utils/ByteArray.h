@@ -16,6 +16,7 @@ enum ByteArrayElementType : u8
 {
     U8,
     U16,
+    U32,
     FLOAT,
     V2F,
     V3F,
@@ -32,7 +33,7 @@ struct ByteArrayElement
 {
     std::string Name;
     ByteArrayElementType Type;
-    u32 BytesCount;
+    u32 BytesCount = 0;
     u32 BytesOffset = 0; // in bytes from the begin
 
     bool operator==(const ByteArrayElement other) const
@@ -73,7 +74,7 @@ public:
     //! Constructor. 'count' is an initial bytes count
     ByteArray(u32 bytesCount);
     //! Constructor. '_ElementsSetsCount' is an initial 'std::vector<ByteArrayElement>' count
-    ByteArray(const ByteArrayDescriptor &desc, u32 _ElementsSetsCount=1);
+    ByteArray(const ByteArrayDescriptor &desc, u32 _ElementsSetsCount);
 
     ByteArray(const ByteArray &other);
 
@@ -113,6 +114,7 @@ public:
 	//! Setters
     void setUInt8(u8 elem, u32 elemsSetN, u32 elemN);
     void setUInt16(u16 elem, u32 elemsSetN, u32 elemN);
+    void setUInt32(u32 elem, u32 elemsSetN, u32 elemN);
     void setFloat(f32 elem, u32 elemsSetN, u32 elemN);
     void setV2F(v2f elem, u32 elemsSetN, u32 elemN);
     void setV3F(v3f elem, u32 elemsSetN, u32 elemN);
@@ -124,6 +126,7 @@ public:
 	//! Getters
     u8 getUInt8(u32 elemsSetN, u32 elemN) const;
     u16 getUInt16(u32 elemsSetN, u32 elemN) const;
+    u32 getUInt32(u32 elemsSetN, u32 elemN) const;
     f32 getFloat(u32 elemsSetN, u32 elemN) const;
     v2f getV2F(u32 elemsSetN, u32 elemN) const;
     v3f getV3F(u32 elemsSetN, u32 elemN) const;

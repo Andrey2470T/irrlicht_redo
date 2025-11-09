@@ -174,6 +174,33 @@ public:
 		return !(*this == other);
 	}
 
+    T &operator[](u8 n)
+    {
+        switch (n) {
+        case 0:
+            return X;
+        case 1:
+            return Y;
+        case 2:
+            return Z;
+        default:
+            return X;
+        }
+    }
+    const T &operator[](u8 n) const
+    {
+        switch (n) {
+        case 0:
+            return X;
+        case 1:
+            return Y;
+        case 2:
+            return Z;
+        default:
+            return X;
+        }
+    }
+
 	// functions
 
 	//! Checks if the length of the vector is null

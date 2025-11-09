@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common.h"
-#include "Utils/ByteArray.h"
 
 namespace render
 {
@@ -18,7 +17,7 @@ struct VertexAttribute
 	};
 	std::string Name;
 	u8 ComponentCount;
-    ByteArrayElementType ComponentType;
+    BasicType ComponentType;
     DataFormat Format = DataFormat::Regular;
     u8 Offset = 0; // in summary components count from the beginning
 
@@ -69,6 +68,8 @@ private:
 
     bool checkForAttrsCmpsCount();
 };
+
+extern size_t sizeOfBasicType(BasicType type);
 
 // Returns size of the vertex type in bytes.
 extern size_t sizeOfVertexType(const VertexTypeDescriptor &vtype);

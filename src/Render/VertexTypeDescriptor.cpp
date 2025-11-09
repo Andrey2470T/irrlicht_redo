@@ -46,14 +46,14 @@ void VertexTypeDescriptor::appendAttr(const VertexAttribute &attr)
 }
 void VertexTypeDescriptor::initAttributes()
 {
-    appendAttr({"Position", PosCoordsCount, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
-    appendAttr({"Color", ColorCmpCount, ByteArrayElementType::U8, VertexAttribute::DataFormat::Normalized});
+    appendAttr({"Position", PosCoordsCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
+    appendAttr({"Color", ColorCmpCount, BasicType::UINT8, VertexAttribute::DataFormat::Normalized});
 
     if (InitNormal)
-        appendAttr({"Normal", 3, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
+        appendAttr({"Normal", 3, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 
     if (InitUV)
-        appendAttr({"UV", UVCount, ByteArrayElementType::FLOAT, VertexAttribute::DataFormat::Regular});
+        appendAttr({"UV", UVCount, BasicType::FLOAT, VertexAttribute::DataFormat::Regular});
 }
 
 bool VertexTypeDescriptor::checkForAttrsCmpsCount()
@@ -76,12 +76,40 @@ bool VertexTypeDescriptor::checkForAttrsCmpsCount()
     return true;
 }
 
+size_t sizeOfBasicType(BasicType type)
+{
+    switch (type) {
+    case BasicType::UINT8:
+        return sizeof(u8);
+    case BasicType::UINT16:
+        return sizeof(u16);
+    case BasicType::UINT32:
+        return sizeof(u32);
+    case BasicType::UINT64:
+        return sizeof(u64);
+    case BasicType::CHAR:
+        return sizeof(s8);
+    case BasicType::SHORT:
+        return sizeof(s16);
+    case BasicType::INT:
+        return sizeof(s32);
+    case BasicType::LONG_INT:
+        return sizeof(s64);
+    case BasicType::FLOAT:
+        return sizeof(f32);
+    case BasicType::DOUBLE:
+        return sizeof(f64);
+    default:
+        return 0;
+    };
+}
+
 // Returns size of the vertex type in bytes.
 size_t sizeOfVertexType(const VertexTypeDescriptor &vtype)
 {
     size_t size = 0;
     for (const auto &attr : vtype.Attributes)
-        size += attr.ComponentCount * sizeOfElement(attr.ComponentType);
+        size += attr.ComponentCount * sizeOfBasicType(attr.ComponentType);
 
     return size;
 }

@@ -156,6 +156,28 @@ public:
 	{
 		return equals(X, other.X) && equals(Y, other.Y);
 	}
+    T &operator[](u8 n)
+    {
+        switch (n) {
+        case 0:
+            return X;
+        case 1:
+            return Y;
+        default:
+            return X;
+        }
+    }
+    const T &operator[](u8 n) const
+    {
+        switch (n) {
+        case 0:
+            return X;
+        case 1:
+            return Y;
+        default:
+            return X;
+        }
+    }
 
 	//! Inequality
 	bool operator!=(const Vector2D<T> &other) const

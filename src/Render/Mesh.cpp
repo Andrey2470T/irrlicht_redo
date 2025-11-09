@@ -224,10 +224,10 @@ void Mesh::init(bool initIBO)
 
 		switch (attr.Format) {
 			case VertexAttribute::DataFormat::Regular:
-                glVertexAttribPointer(i, (int)attr.ComponentCount, GL_FLOAT, GL_FALSE, vertexSize, (void*)offset);
+                glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], GL_FALSE, vertexSize, (void*)offset);
                 break;
 			case VertexAttribute::DataFormat::Normalized:
-                glVertexAttribPointer(i, (int)attr.ComponentCount, GL_UNSIGNED_BYTE, GL_TRUE, vertexSize, (void*)offset);
+                glVertexAttribPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], GL_TRUE, vertexSize, (void*)offset);
                 break;
 			case VertexAttribute::DataFormat::Integral:
                 glVertexAttribIPointer(i, (int)attr.ComponentCount, toGLType[(std::size_t)attr.ComponentType], vertexSize, (void*)offset);
@@ -237,7 +237,7 @@ void Mesh::init(bool initIBO)
 		glEnableVertexAttribArray(i);
         TEST_GL_ERROR();
 
-        offset += attr.ComponentCount * sizeOfElement(attr.ComponentType);
+        offset += attr.ComponentCount * sizeOfBasicType(attr.ComponentType);
 	}
 
     unbind();

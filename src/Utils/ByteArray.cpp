@@ -11,6 +11,8 @@ size_t sizeOfElement(const ByteArrayElementType &elemType)
         return sizeof(u8);
     case ByteArrayElementType::U16:
         return sizeof(u16);
+    case ByteArrayElementType::U32:
+        return sizeof(u32);
     case ByteArrayElementType::FLOAT:
         return sizeof(f32);
     case ByteArrayElementType::V2F:
@@ -92,6 +94,7 @@ void ByteArray::reallocate(u32 _ElementsSetsCount, const u8 *addData)
 
 void ByteArray::setUInt8(u8 elem, u32 elemsSetN, u32 elemN)                     { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setUInt16(u16 elem, u32 elemsSetN, u32 elemN)                   { setElement(&elem, elemsSetN, elemN); }
+void ByteArray::setUInt32(u32 elem, u32 elemsSetN, u32 elemN)                   { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setFloat(f32 elem, u32 elemsSetN, u32 elemN)                    { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setV2F(v2f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setV3F(v3f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
@@ -110,6 +113,12 @@ u8 ByteArray::getUInt8(u32 elemsSetN, u32 elemN) const
 u16 ByteArray::getUInt16(u32 elemsSetN, u32 elemN) const
 {
     u16 elem;
+    getElement(&elem, elemsSetN, elemN);
+    return elem;
+}
+u32 ByteArray::getUInt32(u32 elemsSetN, u32 elemN) const
+{
+    u32 elem;
     getElement(&elem, elemsSetN, elemN);
     return elem;
 }
@@ -158,12 +167,14 @@ img::colorf ByteArray::getColorf(u32 elemsSetN, u32 elemN) const
 
 void ByteArray::getElement(void *data, u32 elemsSetN, u32 elemN) const
 {
+    assert(elemsSetN < ElementsSetsCount);
     auto &elem = Descriptor.Elements.at(elemN);
     memcpy(data, Bytes.data() + DescriptorSize * elemsSetN + elem.BytesOffset, elem.BytesCount);
 }
 
 void ByteArray::setElement(const void *data, u32 elemsSetN, u32 elemN)
 {
+    assert(elemsSetN < ElementsSetsCount);
     auto &elem = Descriptor.Elements.at(elemN);
     memcpy(Bytes.data() + DescriptorSize * elemsSetN + elem.BytesOffset, data, elem.BytesCount);
 }
