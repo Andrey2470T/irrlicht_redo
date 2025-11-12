@@ -32,7 +32,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, const color8 &_initCo
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForColor8(format)) {
-		ErrorStream << "Image::Image() unsupported format for Image\n";
+        ErrorStream << "Image::Image() unsupported format for Image: " << formatToStr(format) << "\n";
 		return;
 	}
 	u32 pixelSize = pixelFormatInfo.at(format).size / 8;
@@ -75,7 +75,7 @@ Image::Image(PixelFormat _format, u32 _width, u32 _height, u8 *_data,
 	: format(_format), width(_width), height(_height)
 {
 	if (!isFormatSupportedForColor8(format)) {
-		ErrorStream << "Image::Image() unsupported format for Image\n";
+        ErrorStream << "Image::Image() unsupported format for Image: " << formatToStr(format) << "\n";
 		return;
 	}
 	ownPixelData = _copyData;

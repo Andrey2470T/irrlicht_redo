@@ -37,35 +37,35 @@ std::string formatToStr(PixelFormat format)
     case PF_RGBA8:
         return "RGBA8";
     case PF_R16F:
-        return "PF_R16F";
+        return "R16F";
     case PF_RG16F:
-        return "PF_RG16F";
+        return "RG16F";
     case PF_RGBA16F:
-        return "PF_RGBA16F";
+        return "RGBA16F";
     case PF_R32F:
-        return "PF_R32F";
+        return "R32F";
     case PF_RG32F:
-        return "PF_RG32F";
+        return "RG32F";
     case PF_RGBA32F:
-        return "PF_RGBA32F";
+        return "RGBA32F";
     case PF_R8:
-        return "PF_R8";
+        return "R8";
     case PF_RG8:
-        return "PF_RG8";
+        return "RG8";
     case PF_R16:
-        return "PF_R16";
+        return "R16";
     case PF_RG16:
-        return "PF_RG16";
+        return "RG16";
     case PF_D16:
-        return "PF_D16";
+        return "D16";
     case PF_D32:
-        return "PF_D32";
+        return "D32";
     case PF_D24S8:
-        return "PF_D24S8";
+        return "D24S8";
     case PF_INDEX_RGBA8:
-        return "PF_INDEX_RGBA8";
+        return "INDEX_RGBA8";
     default:
-        return "RGBA8";
+        return "COUNT";
     }
 }
 

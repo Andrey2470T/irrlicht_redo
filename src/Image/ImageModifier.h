@@ -26,16 +26,37 @@ class ImageModifier
 {
     BlendMode Mode = BM_NORMAL;
 
+public:
+	ImageModifier() {}
+
     template<typename Func>
-    void processPixelsBulk(Image* img, const rectu* rect, Func&& pixelFunc);
+    void processPixelsBulk(Image* img, const rectu* rect, Func&& pixelFunc)
+    {
+        rectu processRect;
+        if (rect) {
+            processRect = *rect;
+        } else {
+            processRect.ULC = v2u(0, 0);
+            processRect.LRC = img->getSize();
+        }
+
+        rectu clipRect(img->getClipPos(), img->getClipSize().X, img->getClipSize().Y);
+        processRect.clipAgainst(clipRect);
+
+        color8 curColor(img->getFormat());
+        for (u32 y = processRect.ULC.Y; y < processRect.LRC.Y; ++y) {
+            for (u32 x = processRect.ULC.X; x < processRect.LRC.X; ++x) {
+                getPixelDirect(img, x, y, curColor);
+                pixelFunc(x, y, curColor);
+            }
+        }
+    }
 
     void blendWithPalette(const Image *img, const color8 &srcColor, color8 &dstColor);
 
     void getPixelDirect(const Image *img, u32 x, u32 y, color8 &color) const;
     void setPixelDirect(Image *img, u32 x, u32 y, color8 &color);
     void setPixelDirectWithBlend(Image *img, u32 x, u32 y, const color8 &srcColor, color8 &dstColor);
-public:
-	ImageModifier() {}
 
 	// Returns a pixel from the image
 	color8 getPixel(const Image *img, u32 x, u32 y) const;

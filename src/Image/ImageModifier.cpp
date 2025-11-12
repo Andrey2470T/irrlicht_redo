@@ -5,29 +5,6 @@
 namespace img
 {
 
-template<typename Func>
-void ImageModifier::processPixelsBulk(Image* img, const rectu* rect, Func&& pixelFunc)
-{
-    rectu processRect;
-    if (rect) {
-        processRect = *rect;
-    } else {
-        processRect.ULC = v2u(0, 0);
-        processRect.LRC = img->getSize();
-    }
-
-    rectu clipRect(img->getClipPos(), img->getClipSize());
-    processRect.clipAgainst(clipRect);
-
-    color8 curColor(img->getFormat());
-    for (u32 y = processRect.ULC.Y; y < processRect.LRC.Y; ++y) {
-        for (u32 x = processRect.ULC.X; x < processRect.LRC.X; ++x) {
-            getPixelDirect(img, x, y, curColor);
-            pixelFunc(x, y, curColor);
-        }
-    }
-}
-
 void ImageModifier::blendWithPalette(const Image *img, const color8 &srcColor, color8 &dstColor)
 {
     if (img->getFormat() != PF_INDEX_RGBA8)
