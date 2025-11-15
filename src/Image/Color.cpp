@@ -260,7 +260,7 @@ color8 &color8::operator*=(const color8 &other)
     R(mulCh(R(), other.R()));
     G(mulCh(G(), other.G()));
     B(mulCh(B(), other.B()));
-    B(other.A());
+    A(other.A());
 
     return *this;
 }
@@ -299,7 +299,7 @@ color8 &color8::operator/=(const color8 &other)
     R(divCh(R(), other.R()));
     G(divCh(G(), other.G()));
     B(divCh(B(), other.B()));
-    B(other.A());
+    A(other.A());
 
     return *this;
 }

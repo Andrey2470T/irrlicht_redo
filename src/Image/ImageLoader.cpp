@@ -18,7 +18,8 @@ Image *ImageLoader::load(const std::string &path)
 	SDL_Surface *surf = IMG_Load(path.c_str());
 
 	if (!surf) {
-		ErrorStream << "ImageLoader:load() could not load the image: " << path << "\n";
+        ErrorStream << "ImageLoader:load() could not load the image " << path << " :" <<
+            IMG_GetError() << "\n";
 		return nullptr;
 	}
 
@@ -31,8 +32,14 @@ Image *ImageLoader::load(const std::string &path)
 
 Image *ImageLoader::loadFromMem(void *mem, s32 size)
 {
-    SDL_RWops *rw = SDL_RWFromMem(mem, size);
-    SDL_Surface *surf = IMG_Load_RW(rw, 0);
+    SDL_RWops *rw = SDL_RWFromConstMem(mem, size);
+    SDL_Surface *surf = IMG_Load_RW(rw, 1);
+
+    if (!surf) {
+        ErrorStream << "ImageLoader:loadFromMem() could not load RW for the image:" <<
+            IMG_GetError() << "\n";
+        return nullptr;
+    }
 
     auto img = convertSDLSurfaceToImage(surf);
 
