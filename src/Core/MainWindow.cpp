@@ -167,9 +167,7 @@ void MainWindow::setIcon(img::Image *newImg)
 {
     if (!Window) return;
 
-    auto localImgMod = new img::ImageModifier();
-    auto newImgFlipped = localImgMod->flip(newImg, img::FD_Y);
-    delete localImgMod;
+    auto newImgFlipped = img::g_imgmod->flip(newImg, img::FD_Y);
 
     SDL_Surface *surface = img::convertImageToSDLSurface(newImgFlipped);
 

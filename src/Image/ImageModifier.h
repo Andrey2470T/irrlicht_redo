@@ -117,4 +117,6 @@ public:
 	}
 };
 
+extern ImageModifier *g_imgmod;
+
 }

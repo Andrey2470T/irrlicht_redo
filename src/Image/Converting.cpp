@@ -4,6 +4,65 @@
 namespace img
 {
 
+    void RGB8ToRGBA(u8 *srcData, u8 *dstData, u32 srci, u32 dsti, Palette *palette)
+    {
+        dstData[dsti] = srcData[srci];
+        dstData[dsti+1] = srcData[srci+1];
+        dstData[dsti+2] = srcData[srci+2];
+        dstData[dsti+3] = 255;
+    }
+
+    void IndexToRGBA(u8 *srcData, u8 *dstData, u32 srci, u32 dsti, Palette *palette)
+    {
+        auto found_color = palette->getColorByIndex(srcData[srci]);
+        dstData[dsti] = found_color.R();
+        dstData[dsti+1] = found_color.G();
+        dstData[dsti+2] = found_color.B();
+
+        if (found_color.R() == 0 && found_color.G() == 0 && found_color.B() == 0 && found_color.A() == 255)
+            dstData[dsti+3] = 0;
+        else
+            dstData[dsti+3] = found_color.A();
+    }
+
+    void RGB565ToRGBA(u8 *srcData, u8 *dstData, u32 srci, u32 dsti, Palette *palette)
+    {
+        u8 r = srcData[srci] >> 3;
+        u8 g = (srcData[srci] & 0x7) << 3;
+        g |= ((srcData[srci+1] & 0xE0) >> 5);
+        u8 b = srcData[srci+1] & 0x1F;
+
+        dstData[dsti] = r;
+        dstData[dsti+1] = g;
+        dstData[dsti+2] = b;
+        dstData[dsti+3] = 255;
+    }
+
+    template<typename Func>
+    u8 *convertImageDataToRGBA(u8 *data, u32 width, u32 height, u32 srcPitch,
+        PixelFormat srcFormat, Func&& pixelFunc, Palette *palette=nullptr)
+    {
+        if (width * height == 0)
+            return nullptr;
+
+        u8 srcPixelSize = pixelFormatInfo[srcFormat].size / 8;
+        u8 dstPixelSize = pixelFormatInfo[img::PF_RGBA8].size / 8;
+
+        u32 dstPitch = dstPixelSize * width;
+        u8 *convData = new u8[height * dstPitch];
+
+        for (u32 y = 0; y < height; y++) {
+            for (u32 x = 0; x < width; x++) {
+                u32 srci = y * srcPitch + x * srcPixelSize;
+                u32 dsti = y * dstPitch + x * dstPixelSize;
+
+                pixelFunc(data, convData, srci, dsti, palette);
+            }
+        }
+
+        return convData;
+    }
+
     // Note: converting doesn't copy the input data, but just transform it to another form
     Image *convertSDLSurfaceToImage(SDL_Surface *surf, bool flipImage)
 	{
@@ -23,7 +82,6 @@ namespace img
         u32 h = static_cast<u32>(surf->h);
         u32 pitch = static_cast<u32>(surf->pitch);
         u8 *data = (u8*)surf->pixels;
-        surf->pixels = nullptr;
 
         Palette *palette = nullptr;
         if (sdl_format->format == SDL_PIXELFORMAT_INDEX8) {
@@ -43,21 +101,35 @@ namespace img
             palette = new Palette(true, colors.size(), colors);
         }
 
-        auto img = new Image(format, w, h, data, false, palette, pitch, sdl_format->format);
+        u8 *convData = data;
 
-        if (format == PF_INDEX_RGBA8) {
-            auto img2 = convertIndexImageToRGBA(img);
-            delete img;
-            img = img2;
+        bool converted = false;
+        if (sdl_format->format == SDL_PIXELFORMAT_RGB565) {
+            convData = convertImageDataToRGBA(data, w, h, pitch, PF_RG8, RGB565ToRGBA);
+            converted = true;
+        }
+        else if (format == PF_RGB8) {
+            convData = convertImageDataToRGBA(data, w, h, pitch, PF_RGB8, RGB8ToRGBA);
+            converted = true;
+        }
+        else if (format == PF_INDEX_RGBA8) {
+            convData = convertImageDataToRGBA(data, w, h, pitch, PF_INDEX_RGBA8, IndexToRGBA, palette);
+            converted = true;
         }
 
+        if (converted)
+            pitch = pixelFormatInfo[PF_RGBA8].size / 8 * w;
+
+        if (sdl_format->format == SDL_PIXELFORMAT_INDEX8)
+            delete palette;
+
+        auto img = new Image(PF_RGBA8, w, h, convData, converted ? false : true,
+            nullptr, pitch, SDL_PIXELFORMAT_ABGR8888);
+
         if (flipImage) {
-            auto localImgMod = new ImageModifier();
-            auto flipped_y = localImgMod->flip(img, FD_Y);
+            auto flipped_y = g_imgmod->flip(img, FD_Y);
 
             delete img;
-            delete localImgMod;
-
             img = flipped_y;
         }
 
@@ -73,105 +145,41 @@ namespace img
         s32 pitch = static_cast<s32>(img->getPitch());
 
         return SDL_CreateRGBSurfaceWithFormatFrom(img->getData(), w, h, pixelBits, pitch, sdlFormat);
-	}
-
-    Image *convertRGBImageToRGBA(Image *img)
-    {
-        if (img->getFormat() != PF_RGB8)
-            return nullptr;
-
-        v2u pos = img->getClipPos();
-        v2u size = img->getClipSize();
-        u32 pitch = img->getPitch();
-        u8 pixelSize = pixelFormatInfo.at(img->getFormat()).size / 8;
-
-        if (size.X * size.Y == 0)
-            return nullptr;
-
-        auto convImg = new Image(PF_RGBA8, size.X, size.Y);
-        u8 convPixelSize = pixelFormatInfo.at(PF_RGBA8).size / 8;
-
-        u8 *data = img->getData();
-        u8 *convdata = convImg->getData();
-
-        for (u32 y = 0; y < size.Y; y++) {
-            for (u32 x = 0; x < size.X; x++) {
-                u32 i = pos.X + (pos.Y + y) * pitch + x * pixelSize;
-                u32 i2 = (y * size.X + x) * convPixelSize;
-
-                convdata[i2] = data[i];
-                convdata[i2+1] = data[i+1];
-                convdata[i2+2] = data[i+2];
-                convdata[i2+3] = 255;
-            }
-        }
-
-        return convImg;
     }
 
-    Image *convertIndexImageToRGBA(Image *img)
+    Image *convertImageToRGBA(Image *img, bool &converted)
     {
-        if (img->getFormat() != PF_INDEX_RGBA8)
-            return nullptr;
-
-        auto palette = img->getPalette();
-        v2u pos = img->getClipPos();
-        v2u size = img->getClipSize();
-        u32 pitch = img->getPitch();
-
-        if (size.X * size.Y == 0)
-            return nullptr;
-
-        PixelFormat format = palette->hasAlpha ? PF_RGBA8 : PF_RGB8;
-        auto convImg = new Image(format, size.X, size.Y);
-        u8 pixelSize = pixelFormatInfo.at(format).size / 8;
-
-        u8 *data = img->getData();
-        u8 *convdata = convImg->getData();
-
-        for (u32 y = 0; y < size.Y; y++) {
-            for (u32 x = 0; x < size.X; x++) {
-                u32 i = pos.X + (pos.Y + y) * pitch + x;
-                u32 i2 = y * size.X + x;
-                auto found_color = palette->getColorByIndex(data[i]);
-                convdata[i2*pixelSize] = found_color.R();
-                convdata[i2*pixelSize+1] = found_color.G();
-                convdata[i2*pixelSize+2] = found_color.B();
-
-                if (format == PF_RGBA8) {
-                    if (found_color.R() == 0 && found_color.G() == 0 && found_color.B() == 0 && found_color.A() == 255)
-                        convdata[i2*pixelSize+3] = 0;
-                    else
-                        convdata[i2*pixelSize+3] = found_color.A();
-                }
-            }
+        if (img->getFormat() == PF_RGBA8) {
+            converted = false;
+            return img;
         }
 
-        return convImg;
-    }
+        u8 *convData = nullptr;
 
-    u8 *convertRGBAImageDataToIndex(Palette *palette, u8 *data, const v2u &size, u32 pitch)
-    {
-        u32 width = size.X;
-        u32 height = size.Y;
-
-        if (width * height == 0)
-            return nullptr;
-
-        u8 *convData = new u8[width * height];
-
-        for (u32 y = 0; y < height; y++) {
-            for (u32 x = 0; x < width; x++) {
-                u32 i = y * pitch + x;
-                u32 i2 = y * width + x;
-
-                u8 alpha = palette->hasAlpha ? data[i+3] : 0;
-                color8 cur_color(PF_RGBA8, data[i], data[i+1], data[i+2], alpha);
-                convData[i2] = palette->findColorIndex(cur_color);
-            }
+        u32 w = img->getWidth();
+        u32 h = img->getHeight();
+        switch(img->getFormat()) {
+        case PF_RGB8:
+            convData = convertImageDataToRGBA(img->getData(), w, h,
+                img->getPitch(), PF_RGB8, RGB8ToRGBA);
+            break;
+        case PF_INDEX_RGBA8:
+            convData = convertImageDataToRGBA(img->getData(), w, h,
+                img->getPitch(), PF_INDEX_RGBA8, IndexToRGBA, img->getPalette());
+            break;
+        default:
+            break;
         }
 
-        return convData;
+        if (!convData) {
+            converted = false;
+            return img;
+        }
+
+        u32 pitch = pixelFormatInfo[PF_RGBA8].size / 8 * w;
+        converted = true;
+
+        return new Image(PF_RGBA8, w, h, convData, false, nullptr, pitch, SDL_PIXELFORMAT_RGBA8888);
     }
 
     color8 convertColorToIndexImageFormat(Image *img, color8 color)
@@ -186,16 +194,6 @@ namespace img
         target_c.R(img->getPalette()->findColorIndex(color));
         return target_c;
     }
-
-    color8 convertARGBtoRGBA(const img::color8 &c)
-    {
-        img::color8 newC = c;
-
-        newC.A(c.B());
-        newC.B(c.A());
-
-        return newC;
-    };
 
 	// Convert the numerical u32 color representation (ARGB) to the color8 object
     color8 colorU32NumberToObject(u32 color, bool toRGBA)

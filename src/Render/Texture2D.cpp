@@ -61,14 +61,15 @@ void Texture2D::initTexture(img::Image *image)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrap.at(texSettings.wrapV));
         TEST_GL_ERROR();
 
-        auto convImg = img::convertIndexImageToRGBA(image);
-        formatInfo = convImg ? img::pixelFormatInfo.at(img::PF_RGBA8) : formatInfo;
+        bool converted;
+        auto convImg = img::convertImageToRGBA(image, converted);
+        auto formatInfo = img::pixelFormatInfo.at(convImg->getFormat());
 
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)formatInfo.internalFormat, width, height, 0,
             formatInfo.pixelFormat, formatInfo.pixelType, convImg ? convImg->getData() : image->getData());
         TEST_GL_ERROR();
 
-        if (convImg)
+        if (converted)
             delete convImg;
 
 		if (texSettings.hasMipMaps) {
@@ -109,7 +110,6 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
 {
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
-    img::PixelFormat format = img->getFormat();
 
     if (imgCache && imgMod) {
         rectu srcRect(pos.X, pos.Y, size.X, size.Y);
@@ -117,22 +117,18 @@ void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier 
         imgMod->copyTo(img, imgCache.get(), &srcRect, &dstRect);
     }
 
-    auto convImg = img;
-
-    if (format == img::PF_INDEX_RGBA8)
-        convImg = img::convertIndexImageToRGBA(img);
-    else if (format == img::PF_RGB8)
-        convImg = img::convertRGBImageToRGBA(img);
+    bool converted;
+    auto convImg = img::convertImageToRGBA(img, converted);
 
     auto formatInfo = img::pixelFormatInfo.at(convImg->getFormat());
 
     bind();
     glTexSubImage2D(GL_TEXTURE_2D, 0, (s32)x, (s32)y, (s32)size.X, (s32)size.Y,
-                    formatInfo.pixelFormat, formatInfo.pixelType, convImg->getData());
+        formatInfo.pixelFormat, formatInfo.pixelType, convImg->getData());
     TEST_GL_ERROR();
 
-    if (format == img::PF_INDEX_RGBA8 || format == img::PF_RGB8)
-         delete convImg;
+    if (converted)
+        delete convImg;
 
     unbind();
 }
@@ -155,19 +151,9 @@ std::vector<img::Image *> Texture2D::downloadData()
         glGetTexImage(tex2D(), 0, formatInfo.pixelFormat, formatInfo.pixelType, tempData);
         TEST_GL_ERROR();
 
-        if (format == img::PF_INDEX_RGBA8) {
-            auto indexdata = convertRGBAImageDataToIndex(img->getPalette(), tempData, img->getSize(), img->getPitch());
-
-            memcpy(img->getData(), indexdata, width * height);
-
-            delete[] indexdata;
-            delete[] tempData;
-        }
-        else {
-            u32 dataSize = width * height * formatInfo.size / 8;
-            memcpy(img->getData(), tempData, dataSize);
-            delete[] tempData;
-        }
+        u32 dataSize = width * height * formatInfo.size / 8;
+        memcpy(img->getData(), tempData, dataSize);
+        delete[] tempData;
 
         unbind();
 

@@ -627,4 +627,7 @@ Image *ImageModifier::combine(Image *img1, Image *img2)
 
 	return newImg;
 }
+
+ImageModifier *g_imgmod = new ImageModifier();
+
 }

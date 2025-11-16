@@ -61,10 +61,11 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();
 
-    auto convImg = img::convertIndexImageToRGBA(img);
+    bool converted;
+    auto convImg = img::convertImageToRGBA(img, converted);
 
-    auto pixelSize = img::pixelFormatInfo.at(format).size / 8;
-    u8* srcData = convImg ? convImg->getData() : img->getData();
+    auto pixelSize = img::pixelFormatInfo.at(convImg->getFormat()).size / 8;
+    u8* srcData = convImg->getData();
     u32 imgWidth = img->getWidth();
 
     for (u32 row = 0; row < size.Y; ++row) {
@@ -73,7 +74,7 @@ void StreamTexture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageMod
                size.X * pixelSize);
     }
 
-    if (convImg)
+    if (converted)
         delete convImg;
 
     dirtyRegions.emplace_back(x, y, x+size.X, y+size.Y);
