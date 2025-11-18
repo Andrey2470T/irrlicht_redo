@@ -506,11 +506,11 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
 
         if (wasScaled)
             delete newImgScaledX;
-        wasScaled = true;
+        //wasScaled = true;
     }
 
-    if (wasScaled)
-        delete *img;
+    //if (wasScaled)
+    //    delete *img;
 
     *img = newImgScaledY;
 }
