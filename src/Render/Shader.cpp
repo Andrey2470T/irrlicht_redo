@@ -10,7 +10,6 @@ namespace render
 
 std::string readFile(const std::string &path)
 {
-    InfoStream << "readFile() path: " << path << "\n";
 	std::ifstream file;
 
     if (path.empty()) return "";
