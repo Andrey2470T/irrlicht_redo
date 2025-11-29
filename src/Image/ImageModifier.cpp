@@ -241,13 +241,14 @@ bool ImageModifier::copyTo(
         v2u targetSize = dstProcessRect.getSize();
         resize(&tempSrcImg, targetSize, RF_BICUBIC);
 
+        color8 dstColor;
         processPixelsBulk(tempSrcImg, nullptr,
-            [dstImg, &dstProcessRect, this](u32 x, u32 y, color8 &curColor) {
+            [&dstColor, dstImg, &dstProcessRect, this](u32 x, u32 y, color8 &curColor) {
                 u32 destX = dstProcessRect.ULC.X + x;
                 u32 destY = dstProcessRect.ULC.Y + y;
 
                 if (destX < dstImg->getWidth() && destY < dstImg->getHeight()) {
-                    color8 dstColor = getPixel(dstImg, destX, destY);
+                    getPixelDirect(dstImg, destX, destY, dstColor);
                     setPixelDirectWithBlend(dstImg, destX, destY, curColor, dstColor);
                 }
             });
@@ -257,8 +258,9 @@ bool ImageModifier::copyTo(
             std::min(srcProcessRect.getSize().Y, dstProcessRect.getSize().Y)
         );
 
+        color8 dstColor;
         processPixelsBulk(srcImg, &srcProcessRect,
-            [dstImg, &srcProcessRect, &dstProcessRect, &actualCopySize, this](
+            [&dstColor, dstImg, &srcProcessRect, &dstProcessRect, &actualCopySize, this](
                 u32 srcX, u32 srcY, color8 &curColor) {
 
                     u32 relX = srcX - srcProcessRect.ULC.X;
@@ -271,7 +273,7 @@ bool ImageModifier::copyTo(
                     u32 destY = dstProcessRect.ULC.Y + relY;
 
                     if (destX < dstImg->getWidth() && destY < dstImg->getHeight()) {
-                        color8 dstColor = getPixel(dstImg, destX, destY);
+                        getPixelDirect(dstImg, destX, destY, dstColor);
                         setPixelDirectWithBlend(dstImg, destX, destY, curColor, dstColor);
                     }
             });
@@ -370,9 +372,10 @@ color8 ImageModifier::imageAverageColor(Image *img)
     const u32 stepx = std::max(1U, size.X / 16),
         stepy = std::max(1U, size.Y / 16);
     
+    color8 c;
     for (u32 x = 0; x < size.X; x += stepx) {
         for (u32 y = 0; y < size.Y; y += stepy) {
-            color8 c = getPixelColor(img, x, y);
+            getPixelDirect(img, x, y, c);
             if (c.A() > 0) {
                 total++;
                 col_acc += srgb_to_linear(c);
@@ -414,6 +417,7 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
 
         f32 ss = 1.0f / fscale;
 
+        color8 pixel;
         for (u32 outIdx1 = 0; outIdx1 < outSize1; outIdx1++) {
             f32 inCenter = (outIdx1 + 0.5f) * scale - 0.5f;
 
@@ -425,11 +429,11 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
                 for (u32 outIdx2 = 0; outIdx2 < outSize2; outIdx2++) {
                     u32 x = (axis == 0) ? nearestX : outIdx2;
                     u32 y = (axis == 0) ? outIdx2 : nearestX;
-                    color8 pixel = getPixelColor(inImg, x, y);
+                    getPixelDirect(inImg, x, y, pixel);
 
                     u32 resultX = (axis == 0) ? outIdx1 : outIdx2;
                     u32 resultY = (axis == 0) ? outIdx2 : outIdx1;
-                    setPixelColor(outImg, resultX, resultY, pixel);
+                    setPixelDirect(outImg, resultX, resultY, pixel);
                 }
                 continue;
             }
@@ -459,6 +463,7 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
                 for (auto& w : weights) w /= w_sum;
             }
 
+            color8 curPixel;
             for (u32 outIdx2 = 0; outIdx2 < outSize2; outIdx2++) {
                 color8 resColor((*img)->getFormat());
 
@@ -473,7 +478,7 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
                         y = std::min<u32>(std::max<u32>(r, 0), (s32)inImg->getHeight() - 1);
                     }
 
-                    color8 curPixel = getPixelColor(inImg, x, y);
+                    getPixelDirect(inImg, x, y, curPixel);
                     curPixel.R(curPixel.R() * weights[i]);
                     curPixel.G(curPixel.G() * weights[i]);
                     curPixel.B(curPixel.B() * weights[i]);
@@ -483,7 +488,7 @@ void ImageModifier::resize(Image **img, const v2u &size, RESAMPLE_FILTER filter)
                 u32 resultX = (axis == 0) ? outIdx1 : outIdx2;
                 u32 resultY = (axis == 0) ? outIdx2 : outIdx1;
 
-                setPixelColor(outImg, resultX, resultY, resColor);
+                setPixelDirect(outImg, resultX, resultY, resColor);
             }
         }
 	};
