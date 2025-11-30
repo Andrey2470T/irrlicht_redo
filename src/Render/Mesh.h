@@ -3,6 +3,7 @@
 #include "OpenGLIncludes.h"
 #include "Render/toGLEnum.h"
 #include "VertexTypeDescriptor.h"
+#include <cassert>
 
 namespace render
 {
@@ -40,8 +41,8 @@ class Mesh
 
     bool bound = false;
 public:
+    Mesh(const VertexTypeDescriptor &descr, MeshUsage usage);
     Mesh(const VertexTypeDescriptor &descr, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
-
     Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr, u32 indicesCount=0,
          const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 	
@@ -54,6 +55,7 @@ public:
 
     void bind()
 	{
+        assert(vaoID != 0);
         if (bound)
             return;
 		glBindVertexArray(vaoID);
@@ -62,6 +64,7 @@ public:
 
     void unbind()
 	{
+        assert(vaoID != 0);
         if (!bound)
             return;
 		glBindVertexArray(0);
@@ -81,8 +84,8 @@ public:
 	{
 		return vaoID == other->vaoID;
 	}
-private:
-    void init(bool initIBO=true);
+
+    void init(bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 };
 
 }

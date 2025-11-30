@@ -58,17 +58,21 @@ void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
     TEST_GL_ERROR();
 }
 
+Mesh::Mesh(const VertexTypeDescriptor &descr, MeshUsage usage)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
+{}
+
 Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
     : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
-    init(initIBO);
+    init(initIBO, usage);
 }
 
 Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
     u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
     : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
-    init(initIBO);
+    init(initIBO, usage);
 
     bind();
     reallocate(vertices, verticesCount, indices, indicesCount);
@@ -84,6 +88,8 @@ Mesh::~Mesh()
 
 void Mesh::reallocate(const void *vertices, u32 vertexCount, const u32 *indices, u32 indexCount)
 {
+    if (vaoID == 0)
+        init(indexCount > 0, vbo.usage);
     bind();
 
     vbo.reallocate(vertices, vertexCount);
@@ -198,11 +204,11 @@ void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u3
     unbind();
 }
 
-void Mesh::init(bool initIBO)
+void Mesh::init(bool initIBO, MeshUsage usage)
 {
     glGenVertexArrays(1, &vaoID);
     TEST_GL_ERROR();
-	vbo.generate();
+    vbo.generate();
 
     if (initIBO)
         ibo.generate();
