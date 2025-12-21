@@ -98,7 +98,6 @@ void FrameBuffer::setDepthStencilTexture(Texture *texture, CubeMapFace dsCubeMap
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, target, texture->getID(), 0);
 #else
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target, texture->getID(), 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, target, texture->getID(), 0);
 #endif
         TEST_GL_ERROR();
 		depthStencilTexture = texture;

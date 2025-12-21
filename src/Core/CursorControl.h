@@ -65,10 +65,10 @@ public:
 	void setPosition(utils::v2i newPos);
 
 	//! Returns the current position of the mouse cursor.
-	const utils::v2i &getPosition(bool updateCursor);
+    const utils::v2i &getPosition(bool updateCursor = true);
 
 	//! Returns the current position of the mouse cursor.
-	utils::v2f getRelativePosition(bool updateCursor);
+    utils::v2f getRelativePosition(bool updateCursor = true);
 
 	void setRelativeMode(bool relative);
 

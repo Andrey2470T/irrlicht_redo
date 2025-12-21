@@ -204,7 +204,7 @@ bool MainWindow::isActive() const
 	}
 #endif
     const u32 windowFlags = SDL_GetWindowFlags(Window);
-    return windowFlags & SDL_WINDOW_SHOWN && windowFlags & SDL_WINDOW_INPUT_FOCUS;
+    return (windowFlags & SDL_WINDOW_SHOWN) && (windowFlags & SDL_WINDOW_INPUT_FOCUS);
 }
 
 bool MainWindow::isFocused() const
