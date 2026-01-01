@@ -57,19 +57,19 @@ UniformBuffer *DrawContext::getUniformBuffer() const
 	return curUBO;
 }
 
-Texture *DrawContext::getActiveUnit(u32 index) const
+Texture *DrawContext::getTextureUnit(u32 index) const
 {
-	if (index >= activeUnits.size()) {
+    if (index >= textureUnits.size()) {
 		ErrorStream << "DrawContext::getActiveUnit() indexing the active unit out of the range\n";
 		return nullptr;
 	}
 
-	return activeUnits[index];
+    return textureUnits[index];
 }
 
-std::vector<Texture *> DrawContext::getActiveUnits() const
+std::vector<Texture *> DrawContext::getTextureUnits() const
 {
-	return activeUnits;
+    return textureUnits;
 }
 
 BlendState DrawContext::getBlendState() const
@@ -156,7 +156,7 @@ void DrawContext::setUniformBuffer(UniformBuffer *ubo)
 
 void DrawContext::setActiveUnit(u32 index, Texture *texture)
 {
-    if (index >= activeUnits.size()) {
+    if (index >= textureUnits.size()) {
 		ErrorStream << "DrawContext::setActiveUnit() setting the new active unit index out of the range\n";
 		return;
 	}
@@ -166,17 +166,20 @@ void DrawContext::setActiveUnit(u32 index, Texture *texture)
         return;
     }
 
-    if (activeUnits[index] != texture) {
-        glActiveTexture(GL_TEXTURE0 + index);
-        TEST_GL_ERROR();
+    if (textureUnits[index] != texture) {
+        if (activeUnit != index) {
+            glActiveTexture(GL_TEXTURE0 + index);
+            activeUnit = index;
+            TEST_GL_ERROR();
+        }
 
-        if (activeUnits[index]) {
-            activeUnits[index]->unbind();
-            activeUnits[index] = nullptr;
+        if (textureUnits[index]) {
+            textureUnits[index]->unbind();
+            textureUnits[index] = nullptr;
         }
         if (texture) {
             texture->bind();
-            activeUnits[index] = texture;
+            textureUnits[index] = texture;
         }
 
         curShader->setSampler(index);

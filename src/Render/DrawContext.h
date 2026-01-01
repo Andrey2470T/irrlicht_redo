@@ -108,7 +108,8 @@ class DrawContext
 	UniformBuffer *curUBO = nullptr;
 
     u32 maxTextureUnits;
-	std::vector<Texture *> activeUnits;
+    std::vector<Texture *> textureUnits;
+    u32 activeUnit;
 
     BlendState curBlend;
 	DepthTestState curDepthTest;
@@ -136,7 +137,7 @@ public:
     DrawContext(const recti &viewportSize, u32 _maxTextureUnits)
 		: maxTextureUnits(_maxTextureUnits)
 	{
-		activeUnits.resize(_maxTextureUnits, nullptr);
+        textureUnits.resize(_maxTextureUnits, nullptr);
 
 		initContext(viewportSize);
 	}
@@ -151,8 +152,8 @@ public:
 	Shader *getShader() const;
 	Mesh *getMesh() const;
 	UniformBuffer *getUniformBuffer() const;
-	Texture *getActiveUnit(u32 index) const;
-	std::vector<Texture *> getActiveUnits() const;
+    Texture *getTextureUnit(u32 index) const;
+    std::vector<Texture *> getTextureUnits() const;
 
     BlendState getBlendState() const;
 	DepthTestState getDepthTest() const;
