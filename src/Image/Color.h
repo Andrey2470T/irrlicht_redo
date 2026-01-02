@@ -19,13 +19,13 @@ class color8
 
 	//! Color represented as a byte array saving the color data
 	//! depending on the format
-    ByteArray color;
+    u32 rgba;
 public:
     color8();
 
     color8(PixelFormat _format);
 
-    color8(PixelFormat _format, u8 _R, u8 _G = 0, u8 _B = 0, u8 _A = 0);
+    color8(PixelFormat _format, u8 r, u8 g = 0, u8 b = 0, u8 a = 0);
 
     color8(PixelFormat _format, u32 colorNum);
 
@@ -33,15 +33,17 @@ public:
 
     color8 &operator=(const color8 &other);
 
-    u8 R() const { return getChannel(0); }
-    u8 G() const { return getChannel(1); }
-    u8 B() const { return getChannel(2); }
-    u8 A() const { return getChannel(3); }
+    u8 R() const { return rgba >> 24; }
+    u8 G() const { return (rgba >> 16) & 0xff; }
+    u8 B() const { return (rgba >> 8) & 0xff; }
+    u8 A() const { return rgba & 0xff; }
 
-    void R(u8 R) { return setChannel(R, 0); }
-    void G(u8 G) { return setChannel(G, 1); }
-    void B(u8 B) { return setChannel(B, 2); }
-    void A(u8 A) { return setChannel(A, 3); }
+    void R(u8 r);
+    void G(u8 g);
+    void B(u8 b);
+    void A(u8 a);
+
+    void set(u8 r, u8 g, u8 b, u8 a);
 
 	PixelFormat getFormat() const { return format; }
 
@@ -54,13 +56,9 @@ public:
 	//! Get average intensity of the color
     u32 getAverage() const;
 
-    void *data()
+    u32 data()
     {
-        return color.data();
-    }
-    const void *data() const
-    {
-        return color.data();
+        return rgba;
     }
 
     bool operator==(const color8 &other) const;
@@ -116,11 +114,9 @@ public:
     // res = c1 * d + c2 * (1- d)
     static color8 linInterp(const color8 &c1, const color8 &c2, f32 d);
 private:
-    void set(u8 R, u8 G, u8 B, u8 A);
-
-    u8 getChannel(u32 n) const;
-
-    void setChannel(u8 v, u32 n);
+    bool hasGreen() const;
+    bool hasBlue() const;
+    bool hasAlpha() const;
 };
 
 class colorf

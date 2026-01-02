@@ -50,27 +50,27 @@ static u8 divCh(u8 ch1, u8 ch2)
 }
 
 color8::color8()
-    : format(PF_RGBA8), color(pixelFormatInfo[PF_RGBA8].size / 8)
+    : format(PF_RGBA8)
 {
     set(0, 0, 0, 0);
 }
 
 color8::color8(PixelFormat _format)
-    : format(_format), color(pixelFormatInfo[format].size / 8)
+    : format(_format)
 {
     assert(isFormatSupportedForColor8(format));
     set(0, 0, 0, 0);
 }
 
-color8::color8(PixelFormat _format, u8 _R, u8 _G, u8 _B, u8 _A)
-    : format(_format), color(pixelFormatInfo[format].size / 8)
+color8::color8(PixelFormat _format, u8 r, u8 g, u8 b, u8 a)
+    : format(_format)
 {
     assert(isFormatSupportedForColor8(format));
-    set(_R, _G, _B, _A);
+    set(r, g, b, a);
 }
 
 color8::color8(PixelFormat _format, u32 colorNum)
-    : format(_format), color(pixelFormatInfo[format].size / 8)
+    : format(_format)
 {
     assert(isFormatSupportedForColor8(format));
 
@@ -83,7 +83,7 @@ color8::color8(PixelFormat _format, u32 colorNum)
 }
 
 color8::color8(const color8 &other)
-    : format(other.format), color(pixelFormatInfo[format].size / 8)
+    : format(other.format)
 {
     assert(isFormatSupportedForColor8(format));
     set(other.R(), other.G(), other.B(), other.A());
@@ -93,11 +93,33 @@ color8 &color8::operator=(const color8 &other)
 {
     format = other.getFormat();
     assert(isFormatSupportedForColor8(format));
-
-    color.reallocate(pixelFormatInfo[format].size / 8);
     set(other.R(), other.G(), other.B(), other.A());
 
     return *this;
+}
+
+void color8::R(u8 r) {
+    rgba = ((u32)r << 24) | (rgba & 0x00ffffff);
+}
+void color8::G(u8 g) {
+    if (!hasGreen()) return;
+    rgba = ((u32)g << 16) | (rgba & 0xff00ffff);
+}
+void color8::B(u8 b) {
+    if (!hasBlue()) return;
+    rgba = ((u32)b << 8) | (rgba & 0xffff00ff);
+}
+void color8::A(u8 a) {
+    if (!hasAlpha()) return;
+    rgba = ((u32)a) | (rgba & 0xffffff00);
+}
+
+void color8::set(u8 r, u8 g, u8 b, u8 a)
+{
+    R(r);
+    G(g);
+    B(b);
+    A(a);
 }
 
 //! Get lightness of the color
@@ -362,21 +384,20 @@ color8 color8::linInterp(const color8 &c1, const color8 &c2, f32 d)
         c1.A());
 }
 
-void color8::set(u8 R, u8 G, u8 B, u8 A)
+bool color8::hasGreen() const
 {
-    u8 channelsCount = pixelFormatInfo[format].channels;
-
-    setChannel(R, 0);
-
-    if (channelsCount > 1)
-        setChannel(G, 1);
-    if (channelsCount > 2)
-        setChannel(B, 2);
-    if (channelsCount > 3)
-        setChannel(A, 3);
+    return pixelFormatInfo[format].channels > 1;
+}
+bool color8::hasBlue() const
+{
+    return pixelFormatInfo[format].channels > 2;
+}
+bool color8::hasAlpha() const
+{
+    return pixelFormatInfo[format].channels > 3;
 }
 
-u8 color8::getChannel(u32 n) const
+/*u8 color8::getChannel(u32 n) const
 {
     auto channelsCount = pixelFormatInfo[format].channels;
 
@@ -394,7 +415,7 @@ void color8::setChannel(u8 v, u32 n)
         return;
 
     color.setUInt8(v, n, 0);
-}
+}*/
 
 
 colorf colorf::linInterp(const colorf &other, f32 d) const

@@ -99,7 +99,10 @@ void ByteArray::setFloat(f32 elem, u32 elemsSetN, u32 elemN)                    
 void ByteArray::setV2F(v2f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setV3F(v3f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
 void ByteArray::setM4x4(const matrix4 &elem, u32 elemsSetN, u32 elemN)          { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setColor8(const img::color8 &elem, u32 elemsSetN, u32 elemN)    { setElement(elem.data(), elemsSetN, elemN); }
+void ByteArray::setColor8(const img::color8 &elem, u32 elemsSetN, u32 elemN)    {
+    std::vector<u8> color = {elem.R(), elem.G(), elem.B(), elem.A()};
+    setElement(color.data(), elemsSetN, elemN);
+}
 void ByteArray::setColorf(const img::colorf &elem, u32 elemsSetN, u32 elemN)    { setElement(&elem, elemsSetN, elemN); }
 
 //! Getters
@@ -149,13 +152,17 @@ matrix4 ByteArray::getM4x4(u32 elemsSetN, u32 elemN) const
 img::color8 ByteArray::getColorRGB8(u32 elemsSetN, u32 elemN) const
 {
     img::color8 elem(img::PF_RGB8);
-    getElement(elem.data(), elemsSetN, elemN);
+    std::vector<u8> color = {elem.R(), elem.G(), elem.B(), elem.A()};
+    getElement(color.data(), elemsSetN, elemN);
+    elem.set(color[0], color[1], color[2], color[3]);
     return elem;
 }
 img::color8 ByteArray::getColorRGBA8(u32 elemsSetN, u32 elemN) const
 {
     img::color8 elem(img::PF_RGBA8);
-    getElement(elem.data(), elemsSetN, elemN);
+    std::vector<u8> color = {elem.R(), elem.G(), elem.B(), elem.A()};
+    getElement(color.data(), elemsSetN, elemN);
+    elem.set(color[0], color[1], color[2], color[3]);
     return elem;
 }
 img::colorf ByteArray::getColorf(u32 elemsSetN, u32 elemN) const
