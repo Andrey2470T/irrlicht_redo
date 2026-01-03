@@ -92,18 +92,18 @@ void ByteArray::reallocate(u32 _ElementsSetsCount, const u8 *addData)
     }
 }
 
-void ByteArray::setUInt8(u8 elem, u32 elemsSetN, u32 elemN)                     { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setUInt16(u16 elem, u32 elemsSetN, u32 elemN)                   { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setUInt32(u32 elem, u32 elemsSetN, u32 elemN)                   { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setFloat(f32 elem, u32 elemsSetN, u32 elemN)                    { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setV2F(v2f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setV3F(v3f elem, u32 elemsSetN, u32 elemN)                      { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setM4x4(const matrix4 &elem, u32 elemsSetN, u32 elemN)          { setElement(&elem, elemsSetN, elemN); }
-void ByteArray::setColor8(const img::color8 &elem, u32 elemsSetN, u32 elemN)    {
+void ByteArray::setUInt8(u8 elem, u32 elemN, s64 elemsSetN)                     { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setUInt16(u16 elem, u32 elemN, s64 elemsSetN)                   { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setUInt32(u32 elem, u32 elemN, s64 elemsSetN)                   { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setFloat(f32 elem, u32 elemN, s64 elemsSetN)                    { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setV2F(v2f elem, u32 elemN, s64 elemsSetN)                      { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setV3F(v3f elem, u32 elemN, s64 elemsSetN)                      { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setM4x4(const matrix4 &elem, u32 elemN, s64 elemsSetN)          { setElement(&elem, elemN, elemsSetN); }
+void ByteArray::setColor8(const img::color8 &elem, u32 elemN, s64 elemsSetN)    {
     std::vector<u8> color = {elem.R(), elem.G(), elem.B(), elem.A()};
-    setElement(color.data(), elemsSetN, elemN);
+    setElement(color.data(), elemN, elemsSetN);
 }
-void ByteArray::setColorf(const img::colorf &elem, u32 elemsSetN, u32 elemN)    { setElement(&elem, elemsSetN, elemN); }
+void ByteArray::setColorf(const img::colorf &elem, u32 elemN, s64 elemsSetN)    { setElement(&elem, elemN, elemsSetN); }
 
 //! Getters
 // 'n' is a number of the byte array element
@@ -172,18 +172,23 @@ img::colorf ByteArray::getColorf(u32 elemsSetN, u32 elemN) const
     return elem;
 }
 
-void ByteArray::getElement(void *data, u32 elemsSetN, u32 elemN) const
+void ByteArray::getElement(void *data, u32 elemN, s64 elemsSetN) const
 {
     assert(elemsSetN < ElementsSetsCount);
     auto &elem = Descriptor.Elements.at(elemN);
     memcpy(data, Bytes.data() + DescriptorSize * elemsSetN + elem.BytesOffset, elem.BytesCount);
 }
 
-void ByteArray::setElement(const void *data, u32 elemsSetN, u32 elemN)
+void ByteArray::setElement(const void *data, u32 elemN, s64 elemsSetN)
 {
-    assert(elemsSetN < ElementsSetsCount);
     auto &elem = Descriptor.Elements.at(elemN);
-    memcpy(Bytes.data() + DescriptorSize * elemsSetN + elem.BytesOffset, data, elem.BytesCount);
+
+    if (elemsSetN != -1) {
+        assert(elemsSetN < ElementsSetsCount);
+        ByteIndex = DescriptorSize * elemsSetN + elem.BytesOffset;
+    }
+    memcpy(Bytes.data() + ByteIndex, data, elem.BytesCount);
+    ByteIndex += elem.BytesCount;
 }
 
 }

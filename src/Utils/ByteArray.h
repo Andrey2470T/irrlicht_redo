@@ -68,6 +68,8 @@ class ByteArray
     size_t DescriptorSize;
     //! Count of 'std::vector<ByteArrayElement>' vectors
     u32 ElementsSetsCount = 0;
+    //! Current byte index in 'Bytes'
+    u32 ByteIndex = 0;
 	//! Bytes storage
     std::vector<u8> Bytes;
 public:
@@ -112,15 +114,15 @@ public:
     //! 'elemN' is a number of the element inside the ByteArrayDescriptor
 
 	//! Setters
-    void setUInt8(u8 elem, u32 elemsSetN, u32 elemN);
-    void setUInt16(u16 elem, u32 elemsSetN, u32 elemN);
-    void setUInt32(u32 elem, u32 elemsSetN, u32 elemN);
-    void setFloat(f32 elem, u32 elemsSetN, u32 elemN);
-    void setV2F(v2f elem, u32 elemsSetN, u32 elemN);
-    void setV3F(v3f elem, u32 elemsSetN, u32 elemN);
-    void setM4x4(const matrix4 &elem, u32 elemsSetN, u32 elemN);
-    void setColor8(const img::color8 &elem, u32 elemsSetN, u32 elemN);
-    void setColorf(const img::colorf &elem, u32 elemsSetN, u32 elemN);
+    void setUInt8(u8 elem, u32 elemN, s64 elemsSetN=-1);
+    void setUInt16(u16 elem, u32 elemN, s64 elemsSetN=-1);
+    void setUInt32(u32 elem, u32 elemN, s64 elemsSetN=-1);
+    void setFloat(f32 elem, u32 elemN, s64 elemsSetN=-1);
+    void setV2F(v2f elem, u32 elemN, s64 elemsSetN=-1);
+    void setV3F(v3f elem, u32 elemN, s64 elemsSetN=-1);
+    void setM4x4(const matrix4 &elem, u32 elemN, s64 elemsSetN=-1);
+    void setColor8(const img::color8 &elem, u32 elemN, s64 elemsSetN=-1);
+    void setColorf(const img::colorf &elem, u32 elemN, s64 elemsSetN=-1);
 
 
 	//! Getters
@@ -135,8 +137,8 @@ public:
     img::color8 getColorRGBA8(u32 elemsSetN, u32 elemN) const;
     img::colorf getColorf(u32 elemsSetN, u32 elemN) const;
 private:
-    void getElement(void *data, u32 elemsSetN, u32 elemN) const;
-    void setElement(const void *data, u32 elemsSetN, u32 elemN);
+    void getElement(void *data, u32 elemN, s64 elemsSetN=-1) const;
+    void setElement(const void *data, u32 elemN, s64 elemsSetN=-1);
 };
 
 }
