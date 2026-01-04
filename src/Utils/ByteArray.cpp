@@ -185,10 +185,10 @@ void ByteArray::setElement(const void *data, u32 elemN, s64 elemsSetN)
 
     if (elemsSetN != -1) {
         assert(elemsSetN < ElementsSetsCount);
-        ByteIndex = DescriptorSize * elemsSetN + elem.BytesOffset;
+        ElementsSetIndex = elemsSetN;
     }
-    memcpy(Bytes.data() + ByteIndex, data, elem.BytesCount);
-    ByteIndex += elem.BytesCount;
+    memcpy(Bytes.data() + DescriptorSize * ElementsSetIndex + elem.BytesOffset, data, elem.BytesCount);
+    ++ElementsSetIndex;
 }
 
 }

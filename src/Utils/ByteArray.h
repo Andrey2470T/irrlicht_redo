@@ -68,8 +68,8 @@ class ByteArray
     size_t DescriptorSize;
     //! Count of 'std::vector<ByteArrayElement>' vectors
     u32 ElementsSetsCount = 0;
-    //! Current byte index in 'Bytes'
-    u32 ByteIndex = 0;
+    //! Current index of 'std::vector<ByteArrayElement>' vectors
+    u32 ElementsSetIndex = 0;
 	//! Bytes storage
     std::vector<u8> Bytes;
 public:
@@ -98,17 +98,17 @@ public:
     {
         ElementsSetsCount = 0;
         Bytes.clear();
-        ByteIndex = 0;
+        ElementsSetIndex = 0;
     }
 
-    u32 getByteIndex() const
+    u32 getElemsSetIndex() const
     {
-        return ByteIndex;
+        return ElementsSetIndex;
     }
 
-    void setByteIndex(u32 index)
+    void setElemsSetIndex(u32 index)
     {
-        ByteIndex = index;
+        ElementsSetIndex = index;
     }
 
     const void *data() const
