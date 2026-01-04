@@ -98,6 +98,17 @@ public:
     {
         ElementsSetsCount = 0;
         Bytes.clear();
+        ByteIndex = 0;
+    }
+
+    u32 getByteIndex() const
+    {
+        return ByteIndex;
+    }
+
+    void setByteIndex(u32 index)
+    {
+        ByteIndex = index;
     }
 
     const void *data() const
