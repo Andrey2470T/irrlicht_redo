@@ -30,7 +30,7 @@ class Mesh
 	    ~BufferObject();
 	
 	    void generate();
-	    void reallocate(const void *data=nullptr, u32 count=0);
+        void reallocate(u32 count=0);
 	    void upload(const void *data, u32 count, u32 offset=0);
 	};
 	u32 vaoID;
@@ -43,8 +43,8 @@ class Mesh
 public:
     Mesh(const VertexTypeDescriptor &descr, MeshUsage usage);
     Mesh(const VertexTypeDescriptor &descr, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
-    Mesh(const void *vertices, u32 verticesCount, const u32 *indices=nullptr, u32 indicesCount=0,
-         const VertexTypeDescriptor &descr = DefaultVType, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
+    Mesh(u32 verticesCount, u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType,
+        bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 	
 	~Mesh();
 
@@ -71,8 +71,7 @@ public:
         bound = false;
 	}
 
-    void reallocate(const void *vertices, u32 vertexCount,
-        const u32 *indices=nullptr, u32 indexCount=0);
+    void reallocate(u32 vertexCount, u32 indexCount=0);
     void uploadVertexData(const void *vertices, u32 count, u32 offset=0);
     void uploadIndexData(const u32 *indices, u32 count, u32 offset=0);
 

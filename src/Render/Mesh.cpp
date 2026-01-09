@@ -26,7 +26,7 @@ void Mesh::BufferObject::generate()
     TEST_GL_ERROR();
 }
 
-void Mesh::BufferObject::reallocate(const void *data, u32 count)
+void Mesh::BufferObject::reallocate(u32 count)
 {
     glBindBuffer(BufConst(isVBO), ID);
     TEST_GL_ERROR();
@@ -45,7 +45,7 @@ void Mesh::BufferObject::reallocate(const void *data, u32 count)
         break;
     };
 
-    glBufferData(BufConst(isVBO), count * elemSize, data, glUsage);
+    glBufferData(BufConst(isVBO), count * elemSize, nullptr, glUsage);
 
     TEST_GL_ERROR();
 }
@@ -68,14 +68,13 @@ Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
     init(initIBO, usage);
 }
 
-Mesh::Mesh(const void *vertices, u32 verticesCount, const u32 *indices,
-    u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
+Mesh::Mesh(u32 verticesCount, u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
     : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
 {
     init(initIBO, usage);
 
     bind();
-    reallocate(vertices, verticesCount, indices, indicesCount);
+    reallocate(verticesCount, indicesCount);
     unbind();
 }
 
@@ -86,16 +85,16 @@ Mesh::~Mesh()
 	TEST_GL_ERROR();
 }
 
-void Mesh::reallocate(const void *vertices, u32 vertexCount, const u32 *indices, u32 indexCount)
+void Mesh::reallocate(u32 vertexCount, u32 indexCount)
 {
     if (vaoID == 0)
         init(indexCount > 0, vbo.usage);
     bind();
 
-    vbo.reallocate(vertices, vertexCount);
+    vbo.reallocate(vertexCount);
     
     if (ibo.ID != 0)
-        ibo.reallocate(indices, indexCount);
+        ibo.reallocate(indexCount);
 
     unbind();
 }
