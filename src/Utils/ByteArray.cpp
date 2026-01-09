@@ -172,7 +172,7 @@ img::colorf ByteArray::getColorf(u32 elemsSetN, u32 elemN) const
     return elem;
 }
 
-void ByteArray::getElement(void *data, u32 elemN, s64 elemsSetN) const
+void ByteArray::getElement(void *data, u32 elemN, u32 elemsSetN) const
 {
     assert(elemsSetN < ElementsSetsCount);
     auto &elem = Descriptor.Elements.at(elemN);
@@ -188,7 +188,7 @@ void ByteArray::setElement(const void *data, u32 elemN, s64 elemsSetN)
         ElementsSetIndex = elemsSetN;
     }
     memcpy(Bytes.data() + DescriptorSize * ElementsSetIndex + elem.BytesOffset, data, elem.BytesCount);
-    ++ElementsSetIndex;
+    ElementsSetIndex += (elemN+1)/(Descriptor.Elements.size());
 }
 
 }
