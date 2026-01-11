@@ -148,7 +148,7 @@ public:
     img::color8 getColorRGBA8(u32 elemsSetN, u32 elemN) const;
     img::colorf getColorf(u32 elemsSetN, u32 elemN) const;
 private:
-    void getElement(void *data, u32 elemN, u32 elemsSetN) const;
+    void getElement(void *data, u32 elemsSetN, u32 elemN) const;
     void setElement(const void *data, u32 elemN, s64 elemsSetN=-1);
 };
 
