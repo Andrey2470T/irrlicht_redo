@@ -287,8 +287,10 @@ public:
 		X -= center.X;
 		Z -= center.Z;
 
-		X = (T)(X * cs - Z * sn);
-		Z = (T)(X * sn + Z * cs);
+        f32 newX = (T)(X * cs - Z * sn);
+        f32 newZ = (T)(X * sn + Z * cs);
+        X = newX;
+        Z = newZ;
 
 		X += center.X;
 		Z += center.Z;
@@ -305,8 +307,10 @@ public:
 		X -= center.X;
 		Y -= center.Y;
 
-		X = (T)(X * cs - Y * sn);
-		Y = (T)(X * sn + Y * cs);
+        f32 newX = (T)(X * cs - Y * sn);
+        f32 newY = (T)(X * sn + Y * cs);
+        X = newX;
+        Y = newY;
 
 		X += center.X;
 		Y += center.Y;
@@ -323,8 +327,10 @@ public:
 		Z -= center.Z;
 		Y -= center.Y;
 
-		Y = (T)(Y * cs - Z * sn);
-		Z = (T)(Y * sn + Z * cs);
+        f32 newY = (T)(Y * cs - Z * sn);
+        f32 newZ = (T)(Y * sn + Z * cs);
+        Y = newY;
+        Z = newZ;
 
 		Z += center.Z;
 		Y += center.Y;
