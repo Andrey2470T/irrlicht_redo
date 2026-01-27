@@ -37,21 +37,13 @@ class Mesh
     BufferObject vbo;
     BufferObject ibo;
 
-	VertexTypeDescriptor descriptor;
-
     bool bound = false;
 public:
-    Mesh(const VertexTypeDescriptor &descr, MeshUsage usage);
     Mesh(const VertexTypeDescriptor &descr, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
     Mesh(u32 verticesCount, u32 indicesCount=0, const VertexTypeDescriptor &descr = DefaultVType,
         bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 	
 	~Mesh();
-
-	VertexTypeDescriptor getVertexType() const
-	{
-		return descriptor;
-	}
 
     void bind()
 	{
@@ -84,7 +76,7 @@ public:
 		return vaoID == other->vaoID;
 	}
 
-    void init(bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
+    void init(const VertexTypeDescriptor &descr, bool initIBO=true, MeshUsage usage=MeshUsage::STATIC);
 };
 
 }

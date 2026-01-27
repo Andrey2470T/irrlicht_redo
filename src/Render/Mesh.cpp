@@ -58,20 +58,16 @@ void Mesh::BufferObject::upload(const void *data, u32 count, u32 offset)
     TEST_GL_ERROR();
 }
 
-Mesh::Mesh(const VertexTypeDescriptor &descr, MeshUsage usage)
-    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
-{}
-
 Mesh::Mesh(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
-    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage)
 {
-    init(initIBO, usage);
+    init(descr, initIBO, usage);
 }
 
 Mesh::Mesh(u32 verticesCount, u32 indicesCount, const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
-    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage), descriptor(descr)
+    : vaoID(0), vbo(true, sizeOfVertexType(descr), usage), ibo(false, sizeof(u32), usage)
 {
-    init(initIBO, usage);
+    init(descr, initIBO, usage);
 
     bind();
     reallocate(verticesCount, indicesCount);
@@ -87,8 +83,6 @@ Mesh::~Mesh()
 
 void Mesh::reallocate(u32 vertexCount, u32 indexCount)
 {
-    if (vaoID == 0)
-        init(indexCount > 0, vbo.usage);
     bind();
 
     vbo.reallocate(vertexCount);
@@ -203,7 +197,7 @@ void Mesh::multiDraw(PrimitiveType mode, const s32 *count, const s32 *offset, u3
     unbind();
 }
 
-void Mesh::init(bool initIBO, MeshUsage usage)
+void Mesh::init(const VertexTypeDescriptor &descr, bool initIBO, MeshUsage usage)
 {
     glGenVertexArrays(1, &vaoID);
     TEST_GL_ERROR();
@@ -221,11 +215,11 @@ void Mesh::init(bool initIBO, MeshUsage usage)
         TEST_GL_ERROR();
     }
 
-    size_t vertexSize = sizeOfVertexType(descriptor);
+    size_t vertexSize = sizeOfVertexType(descr);
 
     std::size_t offset = 0;
-    for (int i = 0; i < descriptor.Attributes.size(); i++) {
-        auto &attr = descriptor.Attributes[i];
+    for (int i = 0; i < descr.Attributes.size(); i++) {
+        auto &attr = descr.Attributes[i];
 
 		switch (attr.Format) {
 			case VertexAttribute::DataFormat::Regular:
