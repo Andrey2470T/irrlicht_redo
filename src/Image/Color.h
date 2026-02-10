@@ -56,7 +56,7 @@ public:
 	//! Get average intensity of the color
     u32 getAverage() const;
 
-    u32 data()
+    u32 data() const
     {
         return rgba;
     }
