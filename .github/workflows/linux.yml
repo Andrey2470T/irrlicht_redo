@@ -1,0 +1,53 @@
+name: linux
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths_ignore:
+      - '.github/workflows/macos.yml'
+      - '.github/workflows/windows.yml'
+  workflow_dispatch:
+    branches:
+      - 'main'
+    paths_ignore:
+      - '.github/workflows/macos.yml'
+      - '.github/workflows/windows.yml'
+jobs:
+  linux-gl3-plus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++ make libpng-dev libjpeg-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libglew-dev
+
+      - name: Build
+        run: |
+          cmake -B . -DRENDERER=OpenGL3+
+          cmake --build . --parallel $(nproc)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IrrlichtRedo-linux-gl3-plus
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.so
+  
+  linux-gles2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++ make libpng-dev libjpeg-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libglew-dev
+
+      - name: Build
+        run: |
+          cmake -B . -DRENDERER=OpenGLES2
+          cmake --build . --parallel $(nproc)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IrrlichtRedo-linux-gles2
+          path: /home/runner/work/irrlicht_redo/irrlicht_redo/src/libIrrlichtRedo.so
