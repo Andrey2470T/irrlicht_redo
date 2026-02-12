@@ -56,20 +56,6 @@ elseif(MSVC)
 	add_compile_options(/D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 endif()
 
-# Sanity-check version
-
-include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-unset(REVISION_SANITY_CHECK CACHE)
-check_cxx_source_compiles("#include <IrrCompileConfig.h>\n\
-#if IRRLICHT_VERSION_MT_REVISION != ${IRRLICHTMT_REVISION}\n\
-#error\n\
-#endif\n\
-int main() {}" REVISION_SANITY_CHECK)
-if(NOT REVISION_SANITY_CHECK)
-	message(FATAL_ERROR "IrrlichtMt revision number mismatches between CMake and headers.")
-endif()
-
 # Platform-independent configuration (hard-coded currently)
 add_definitions(
 	-DIRR_ENABLE_BUILTIN_FONT
@@ -514,31 +500,31 @@ add_library(IRRGUIOBJ OBJECT
 
 # Library
 
-add_library(IrrlichtMt)
+add_library(IrrlichtRedo)
 foreach(object_lib
 	IRRMESHOBJ IRROBJ IRRVIDEOOBJ
 	IRRIOOBJ IRROTHEROBJ IRRGUIOBJ)
 	# Set include directories for object library compilation
 	target_include_directories(${object_lib} PRIVATE ${link_includes})
 	# Add objects from object library to main library
-	target_sources(IrrlichtMt PRIVATE $<TARGET_OBJECTS:${object_lib}>)
+	target_sources(IrrlichtRedo PRIVATE $<TARGET_OBJECTS:${object_lib}>)
 endforeach()
 
 # Alias target provides add_submodule compatibility
-add_library(IrrlichtMt::IrrlichtMt ALIAS IrrlichtMt)
+add_library(IrrlichtRedo::IrrlichtRedo ALIAS IrrlichtRedo)
 
-target_include_directories(IrrlichtMt
+target_include_directories(IrrlichtRedo
 	PUBLIC
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irrlichtmt>"
+		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/IrrlichtRedo>"
 	PRIVATE
 		${link_includes}
 )
 
 # this needs to be here and not in a variable (like link_includes) due to issues
 # with the generator expressions on at least CMake 3.22, but not 3.28 or later
-target_link_libraries(IrrlichtMt PRIVATE
+target_link_libraries(IrrlichtRedo PRIVATE
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
@@ -558,23 +544,23 @@ target_link_libraries(IrrlichtMt PRIVATE
 )
 
 if(WIN32)
-	target_compile_definitions(IrrlichtMt INTERFACE _IRR_WINDOWS_API_) # used in _IRR_DEBUG_BREAK_IF definition in a public header
+	target_compile_definitions(IrrlichtRedo INTERFACE _IRR_WINDOWS_API_) # used in _IRR_DEBUG_BREAK_IF definition in a public header
 endif()
-target_compile_definitions(IrrlichtMt INTERFACE "IRRLICHT_API=${API_IMPORT}")
+target_compile_definitions(IrrlichtRedo INTERFACE "IRRLICHT_API=${API_IMPORT}")
 if(APPLE OR ANDROID OR EMSCRIPTEN)
-	target_compile_definitions(IrrlichtMt PUBLIC IRR_MOBILE_PATHS)
+	target_compile_definitions(IrrlichtRedo PUBLIC IRR_MOBILE_PATHS)
 endif()
 
-set_target_properties(IrrlichtMt PROPERTIES
+set_target_properties(IrrlichtRedo PROPERTIES
 	VERSION ${PROJECT_VERSION}
 )
 
 if(WIN32)
-	set_target_properties(IrrlichtMt PROPERTIES PREFIX "") # for DLL name
+	set_target_properties(IrrlichtRedo PROPERTIES PREFIX "") # for DLL name
 endif()
 
 # Installation of library
-install(TARGETS IrrlichtMt
-	EXPORT IrrlichtMt-export
+install(TARGETS IrrlichtRedo
+	EXPORT IrrlichtRedo-export
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
