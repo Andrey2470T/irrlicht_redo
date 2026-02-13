@@ -14,7 +14,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libxi-dev libgl1-mesa-dev libpng-dev libjpeg-dev zlib1g-dev -qyy
+          sudo apt-get install g++ cmake libsdl2-dev libxi-dev libgl1-mesa-dev libpng-dev libjpeg-dev zlib1g-dev -qyy
 
       - name: Build
         run: |
@@ -39,7 +39,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libxi-dev libgles2-mesa-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
+          sudo apt-get install g++ cmake libsdl2-dev libxi-dev libgles2-mesa-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
 
       - name: Build
         run: |
@@ -127,7 +127,7 @@ jobs:
       - name: Install deps
         run: |
           brew update --auto-update
-          brew install cmake libpng jpeg
+          brew install cmake libpng jpeg sdl2
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -240,7 +240,7 @@ jobs:
         run: |
           sudo rm /var/lib/man-db/auto-update
           sudo apt-get update
-          sudo apt-get install -qyy wget unzip zip gcc-multilib make cmake
+          sudo apt-get install -qyy wget unzip zip gcc-multilib make cmake sdl2
 
       - name: Cache NDK
         id: cache-ndk
