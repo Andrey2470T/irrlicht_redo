@@ -36,11 +36,6 @@ enable_testing()
 add_subdirectory(src)
 add_subdirectory(test)
 
-option(BUILD_EXAMPLES "Build example applications" FALSE)
-if(BUILD_EXAMPLES)
-	add_subdirectory(examples)
-endif()
-
 # Export a file that describes the targets that IrrlichtRedo creates.
 # The file is placed in the location FILE points to, where CMake can easily
 # locate it by pointing CMAKE_PREFIX_PATH to this project root.
