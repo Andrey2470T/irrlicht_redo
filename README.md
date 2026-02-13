@@ -1,17 +1,15 @@
-IrrlichtMt version 1.9
-======================
+IrrlichtRedo version 1.0.0
+==========================
 
 Notice
-------
+My fork of the IrrlichtMt [Minetest](https://github.com/minetest/irrlicht). Represents the much modified version of the 3D engine which aiming to be more modern and readable.
 
-IrrlichtMt has been moved into the [main Minetest repository](https://github.com/minetest) during Minetest 5.9 development. This repository is an archive useful for building older versions of Minetest.
-
-About
+Features
 -----
 
-IrrlichtMt is the 3D engine of [Minetest](https://github.com/minetest).
-It is based on the [Irrlicht Engine](https://irrlicht.sourceforge.io/) but is now developed independently.
-It is intentionally not compatible to upstream and is planned to be eventually absorbed into Minetest.
+* Support of OpenGL 3.1+ and ES 2.0+ with using their new features.
+* Low-level graphics API representing the abstraction wrappers over OpenGL.
+* Much more flexible and readable comparing to the original, free from the the messed and invent-biked code.
 
 Build
 -----
