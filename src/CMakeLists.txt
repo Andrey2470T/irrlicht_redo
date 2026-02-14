@@ -330,37 +330,33 @@ set(link_includes
 # Source files
 
 set(IRRMESHLOADER
-	CB3DMeshFileLoader.cpp
-	COBJMeshFileLoader.cpp
-	CXMeshFileLoader.cpp
+	Mesh/CB3DMeshFileLoader.cpp
+	Mesh/COBJMeshFileLoader.cpp
+	Mesh/CXMeshFileLoader.cpp
 )
 
 add_library(IRRMESHOBJ OBJECT
-	CSkinnedMesh.cpp
-	CBoneSceneNode.cpp
-	CMeshSceneNode.cpp
-	CAnimatedMeshSceneNode.cpp
+	Mesh/CSkinnedMesh.cpp
+	Mesh/CMeshCache.cpp
+	Mesh/CMeshManipulator.cpp
 	${IRRMESHLOADER}
 )
 
-add_library(IRROBJ OBJECT
-	CBillboardSceneNode.cpp
-	CCameraSceneNode.cpp
-	CDummyTransformationSceneNode.cpp
-	CEmptySceneNode.cpp
-	CMeshManipulator.cpp
-	CSceneCollisionManager.cpp
-	CSceneManager.cpp
-	CMeshCache.cpp
+add_library(IRRSCENEOBJ OBJECT
+	Scene/CBoneSceneNode.cpp
+	Scene/CMeshSceneNode.cpp
+	Scene/CAnimatedMeshSceneNode.cpp
+	Scene/CBillboardSceneNode.cpp
+	Scene/CCameraSceneNode.cpp
+	Scene/CDummyTransformationSceneNode.cpp
+	Scene/CEmptySceneNode.cpp
+	Scene/CSceneCollisionManager.cpp
+	Scene/CSceneManager.cpp
 )
 
 set(IRRDRVROBJ
-	CNullDriver.cpp
-	CGLXManager.cpp
-	CWGLManager.cpp
-	CEGLManager.cpp
-	CSDLManager.cpp
-	mt_opengl_loader.cpp
+	Video/CNullDriver.cpp
+	Video/mt_opengl_loader.cpp
 )
 
 # the two legacy drivers
@@ -368,18 +364,18 @@ set(IRRDRVROBJ
 if(ENABLE_OPENGL)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		COpenGLCacheHandler.cpp
-		COpenGLDriver.cpp
-		COpenGLSLMaterialRenderer.cpp
-		COpenGLExtensionHandler.cpp
+		Video/COpenGLCacheHandler.cpp
+		Video/COpenGLDriver.cpp
+		Video/COpenGLSLMaterialRenderer.cpp
+		Video/COpenGLExtensionHandler.cpp
 	)
 endif()
 
 if(ENABLE_GLES1)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		COGLESDriver.cpp
-		COGLESExtensionHandler.cpp
+		Video/COGLESDriver.cpp
+		Video/COGLESExtensionHandler.cpp
 	)
 endif()
 
@@ -388,73 +384,77 @@ endif()
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGL/Driver.cpp
-		OpenGL/ExtensionHandler.cpp
-		OpenGL/FixedPipelineRenderer.cpp
-		OpenGL/MaterialRenderer.cpp
-		OpenGL/Renderer2D.cpp
+		Video/OpenGL/Driver.cpp
+		Video/OpenGL/ExtensionHandler.cpp
+		Video/OpenGL/FixedPipelineRenderer.cpp
+		Video/OpenGL/MaterialRenderer.cpp
+		Video/OpenGL/Renderer2D.cpp
 	)
 endif()
 
 if(ENABLE_OPENGL3)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGL3/Driver.cpp
+		Video/OpenGL3/Driver.cpp
 	)
 endif()
 
 if(ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		OpenGLES2/Driver.cpp
+		Video/OpenGLES2/Driver.cpp
 	)
 endif()
 
 set(IRRIMAGEOBJ
-	CColorConverter.cpp
-	CImage.cpp
-	CImageLoaderBMP.cpp
-	CImageLoaderJPG.cpp
-	CImageLoaderPNG.cpp
-	CImageLoaderTGA.cpp
-	CImageWriterJPG.cpp
-	CImageWriterPNG.cpp
+	Image/CColorConverter.cpp
+	Image/CImage.cpp
+	Image/CImageLoaderBMP.cpp
+	Image/CImageLoaderJPG.cpp
+	Image/CImageLoaderPNG.cpp
+	Image/CImageLoaderTGA.cpp
+	Image/CImageWriterJPG.cpp
+	Image/CImageWriterPNG.cpp
 )
 
 add_library(IRRVIDEOOBJ OBJECT
-	CFPSCounter.cpp
+	Video/CFPSCounter.cpp
 	${IRRDRVROBJ}
 	${IRRIMAGEOBJ}
 )
 
 add_library(IRRIOOBJ OBJECT
-	CFileList.cpp
-	CFileSystem.cpp
-	CLimitReadFile.cpp
-	CMemoryFile.cpp
-	CReadFile.cpp
-	CWriteFile.cpp
-	CZipReader.cpp
-	CAttributes.cpp
+	IO/CFileList.cpp
+	IO/CFileSystem.cpp
+	IO/CLimitReadFile.cpp
+	IO/CMemoryFile.cpp
+	IO/CReadFile.cpp
+	IO/CWriteFile.cpp
+	IO/CZipReader.cpp
 )
 
-add_library(IRROTHEROBJ OBJECT
-	CIrrDeviceSDL.cpp
-	CIrrDeviceLinux.cpp
-	CIrrDeviceStub.cpp
-	CIrrDeviceWin32.cpp
-	CLogger.cpp
-	COSOperator.cpp
-	Irrlicht.cpp
-	os.cpp
+add_library(IRRDEVICEOBJ OBJECT
+	Device/CGLXManager.cpp
+	Device/CWGLManager.cpp
+	Device/CEGLManager.cpp
+	Device/CSDLManager.cpp
+	Device/CIrrDeviceSDL.cpp
+	Device/CIrrDeviceLinux.cpp
+	Device/CIrrDeviceStub.cpp
+	Device/CIrrDeviceWin32.cpp
+	Device/CLogger.cpp
+	Device/COSOperator.cpp
+	Device/Irrlicht.cpp
+	Device/os.cpp
+	Device/CAttributes.cpp
 )
 
 if(ENABLE_OPENGL3)
-	target_compile_definitions(IRROTHEROBJ PRIVATE ENABLE_OPENGL3)
+	target_compile_definitions(IRRDEVICEOBJ PRIVATE ENABLE_OPENGL3)
 endif()
 
 if(ANDROID)
-	target_sources(IRROTHEROBJ PRIVATE
+	target_sources(IRRDEVICEOBJ PRIVATE
 		Android/CIrrDeviceAndroid.cpp
 		Android/CAndroidAssetReader.cpp
 		Android/CAndroidAssetFileArchive.cpp
@@ -462,49 +462,49 @@ if(ANDROID)
 	)
 elseif(APPLE)
 	# Build all IRROTHEROBJ sources as objc++, including the .cpp's
-	set_target_properties(IRROTHEROBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
-	target_sources(IRROTHEROBJ PRIVATE
-		CIrrDeviceOSX.mm
-		CNSOGLManager.mm
+	set_target_properties(IRRDEVICEOBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
+	target_sources(IRRDEVICEOBJ PRIVATE
+		Device/CIrrDeviceOSX.mm
+		Device/CNSOGLManager.mm
 	)
 endif()
 
 if(USE_X11)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_COMPILE_WITH_X11_)
+	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_COMPILE_WITH_X11_)
 endif()
 
 if(USE_XINPUT2)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
+	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
 endif()
 
 if(USE_XCURSOR)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_XCURSOR_)
+	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_LINUX_XCURSOR_)
 endif()
 
 add_library(IRRGUIOBJ OBJECT
-	CGUIButton.cpp
-	CGUICheckBox.cpp
-	CGUIComboBox.cpp
-	CGUIEditBox.cpp
-	CGUIEnvironment.cpp
-	CGUIFileOpenDialog.cpp
-	CGUIFont.cpp
-	CGUIImage.cpp
-	CGUIListBox.cpp
-	CGUIScrollBar.cpp
-	CGUISkin.cpp
-	CGUIStaticText.cpp
-	CGUITabControl.cpp
-	CGUISpriteBank.cpp
-	CGUIImageList.cpp
+	GUI/CGUIButton.cpp
+	GUI/CGUICheckBox.cpp
+	GUI/CGUIComboBox.cpp
+	GUI/CGUIEditBox.cpp
+	GUI/CGUIEnvironment.cpp
+	GUI/CGUIFileOpenDialog.cpp
+	GUI/CGUIFont.cpp
+	GUI/CGUIImage.cpp
+	GUI/CGUIListBox.cpp
+	GUI/CGUIScrollBar.cpp
+	GUI/CGUISkin.cpp
+	GUI/CGUIStaticText.cpp
+	GUI/CGUITabControl.cpp
+	GUI/CGUISpriteBank.cpp
+	GUI/CGUIImageList.cpp
 )
 
 # Library
 
 add_library(IrrlichtRedo)
 foreach(object_lib
-	IRRMESHOBJ IRROBJ IRRVIDEOOBJ
-	IRRIOOBJ IRROTHEROBJ IRRGUIOBJ)
+	IRRMESHOBJ IRRSCENEOBJ IRRVIDEOOBJ
+	IRRIOOBJ IRRDEVICEOBJ IRRGUIOBJ)
 	# Set include directories for object library compilation
 	target_include_directories(${object_lib} PRIVATE ${link_includes})
 	# Add objects from object library to main library

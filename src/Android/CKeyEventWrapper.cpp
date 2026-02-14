@@ -3,7 +3,7 @@
 
 #include "CKeyEventWrapper.h"
 
-#include "os.h"
+#include "Device/os.h"
 
 namespace irr
 {

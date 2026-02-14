@@ -5,7 +5,7 @@
 
 #include "CIrrDeviceAndroid.h"
 
-#include "os.h"
+#include "Device/os.h"
 #include "CFileSystem.h"
 #include "CAndroidAssetReader.h"
 #include "CAndroidAssetFileArchive.h"
