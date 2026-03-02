@@ -15,8 +15,7 @@
 #include "IGUIEnvironment.h"
 #include "CEGLManager.h"
 
-namespace irr
-{
+
 namespace video
 {
 IVideoDriver *createOGLES1Driver(const SIrrlichtCreationParameters &params,
@@ -27,8 +26,7 @@ IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params,
 }
 }
 
-namespace irr
-{
+
 
 CIrrDeviceAndroid::CIrrDeviceAndroid(const SIrrlichtCreationParameters &param) :
 		CIrrDeviceStub(param), Accelerometer(0), Gyroscope(0), Initialized(false),
@@ -825,4 +823,3 @@ bool CIrrDeviceAndroid::isGyroscopeAvailable()
 	return (Gyroscope != 0);
 }
 
-} // end namespace irr

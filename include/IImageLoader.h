@@ -10,8 +10,7 @@
 #include "path.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace io
 {
 class IReadFile;
@@ -46,4 +45,3 @@ public:
 };
 
 } // end namespace video
-} // end namespace irr

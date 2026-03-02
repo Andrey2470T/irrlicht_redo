@@ -10,8 +10,7 @@
 #include "SColor.h"
 #include <cstring>
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -194,7 +193,7 @@ public:
 		So if you just get level 1 you also have the data for all other levels.
 		There is no level 0 - use getData to get the original image data.
 	*/
-	void *getMipMapsData(irr::u32 mipLevel = 1) const
+	void *getMipMapsData(u32 mipLevel = 1) const
 	{
 		if (MipMapsData && mipLevel > 0) {
 			size_t dataSize = 0;
@@ -421,4 +420,3 @@ protected:
 };
 
 } // end namespace video
-} // end namespace irr

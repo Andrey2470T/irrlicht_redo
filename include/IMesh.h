@@ -8,8 +8,7 @@
 #include "SMaterial.h"
 #include "EHardwareBufferFlags.h"
 
-namespace irr
-{
+
 namespace scene
 {
 //! Possible types of meshes.
@@ -120,4 +119,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

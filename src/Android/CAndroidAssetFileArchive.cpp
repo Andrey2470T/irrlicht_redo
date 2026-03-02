@@ -14,8 +14,7 @@
 #include <android/native_activity.h>
 #include <android/log.h>
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -97,4 +96,3 @@ void CAndroidAssetFileArchive::addDirectoryToFileList(const io::path &dirname_)
 }
 
 } // end namespace io
-} // end namespace irr

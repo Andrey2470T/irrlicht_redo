@@ -11,8 +11,7 @@
 #include <climits> // For INT_MAX / UINT_MAX
 #include <type_traits>
 
-namespace irr
-{
+
 namespace core
 {
 
@@ -221,8 +220,8 @@ union FloatIntUnion32
 	// Portable sign-extraction
 	bool sign() const { return (i >> 31) != 0; }
 
-	irr::s32 i;
-	irr::f32 f;
+	s32 i;
+	f32 f;
 };
 
 //! We compare the difference in ULP's (spacing between floating-point numbers, aka ULP=1 means there exists no float between).
@@ -471,7 +470,6 @@ inline f32 fract(f32 x)
 }
 
 } // end namespace core
-} // end namespace irr
 
-using irr::core::FR;
-using irr::core::IR;
+using core::FR;
+using core::IR;

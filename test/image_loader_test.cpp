@@ -4,8 +4,6 @@
 #include <vector>
 #include <irrlicht.h>
 
-using namespace irr;
-
 struct ImageDesc
 {
 	const char *name;

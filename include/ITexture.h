@@ -11,8 +11,7 @@
 #include "path.h"
 #include "matrix4.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -334,4 +333,3 @@ protected:
 };
 
 } // end namespace video
-} // end namespace irr

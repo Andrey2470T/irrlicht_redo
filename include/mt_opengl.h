@@ -778,7 +778,7 @@ private:
 	std::unordered_set<std::string> extensions;
 public:
 	// Call this once after creating the context.
-	void LoadAllProcedures(irr::video::IContextManager *cmgr);
+	void LoadAllProcedures(video::IContextManager *cmgr);
 	// Check if an extension is supported.
 	inline bool IsExtensionPresent(const std::string &ext) const
 	{

@@ -14,8 +14,7 @@
 #include <android/native_activity.h>
 #endif
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -322,7 +321,7 @@ EGLConfig CEGLManager::chooseConfig(EConfigStyle confStyle)
 	return configResult;
 }
 
-irr::s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
+s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 {
 	// some values must be there or we ignore the config
 #ifdef EGL_VERSION_1_3

@@ -6,8 +6,7 @@
 
 #include "irrTypes.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -30,5 +29,4 @@ public:
 	u8 MaxTextureUnits;
 };
 
-}
 }

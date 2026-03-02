@@ -15,8 +15,7 @@
 #include "SceneParameters.h"
 #include "ISkinnedMesh.h"
 
-namespace irr
-{
+
 struct SKeyMap;
 struct SEvent;
 
@@ -629,4 +628,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

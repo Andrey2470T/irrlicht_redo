@@ -6,8 +6,7 @@
 
 #include "path.h"
 
-namespace irr
-{
+
 
 static io::path getExampleMediaPath()
 {
@@ -18,4 +17,3 @@ static io::path getExampleMediaPath()
 #endif
 }
 
-} // end namespace irr

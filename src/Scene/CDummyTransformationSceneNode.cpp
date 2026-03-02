@@ -5,8 +5,7 @@
 #include "CDummyTransformationSceneNode.h"
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -99,4 +98,3 @@ void CDummyTransformationSceneNode::setPosition(const core::vector3df &newpos)
 }
 
 } // end namespace scene
-} // end namespace irr

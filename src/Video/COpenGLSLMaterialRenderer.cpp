@@ -26,8 +26,7 @@
 
 #include "COpenGLCoreFeature.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -678,6 +677,5 @@ IVideoDriver *COpenGLSLMaterialRenderer::getVideoDriver()
 }
 
 } // end namespace video
-} // end namespace irr
 
 #endif

@@ -10,8 +10,7 @@
 #include "IGUIFont.h"
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -414,7 +413,7 @@ video::SColor CGUIButton::getOverrideColor() const
 	return OverrideColor;
 }
 
-irr::video::SColor CGUIButton::getActiveColor() const
+video::SColor CGUIButton::getActiveColor() const
 {
 	if (OverrideColorEnabled)
 		return OverrideColor;
@@ -497,4 +496,3 @@ bool CGUIButton::isDrawingBorder() const
 }
 
 } // end namespace gui
-} // end namespace irr

@@ -11,8 +11,7 @@
 #include "IEventReceiver.h"
 #include "path.h"
 
-namespace irr
-{
+
 class IOSOperator;
 class IEventReceiver;
 
@@ -411,4 +410,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

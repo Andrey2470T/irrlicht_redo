@@ -6,8 +6,7 @@
 #include <cassert>
 #include "mt_opengl.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -85,5 +84,4 @@ IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io:
 	return driver;
 }
 
-}
 }

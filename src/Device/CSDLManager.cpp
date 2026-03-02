@@ -9,8 +9,7 @@
 #include "CIrrDeviceSDL.h"
 #include "Video/COpenGLCommon.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -49,7 +48,6 @@ bool CSDLManager::swapBuffers()
 	return true;
 }
 
-}
 }
 
 #endif

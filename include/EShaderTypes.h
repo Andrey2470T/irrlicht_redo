@@ -2,8 +2,7 @@
 
 #include "irrTypes.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -82,4 +81,3 @@ const c8 *const GEOMETRY_SHADER_TYPE_NAMES[] = {
 		0};
 
 } // end namespace video
-} // end namespace irr

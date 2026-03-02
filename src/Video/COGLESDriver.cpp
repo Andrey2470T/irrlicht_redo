@@ -23,8 +23,7 @@
 #include "android_native_app_glue.h"
 #endif
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -1963,7 +1962,7 @@ ITexture *COGLES1Driver::addRenderTargetTexture(const core::dimension2d<u32> &si
 	return renderTargetTexture;
 }
 
-ITexture *COGLES1Driver::addRenderTargetTextureCubemap(const irr::u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
+ITexture *COGLES1Driver::addRenderTargetTextureCubemap(const u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
@@ -2365,7 +2364,7 @@ bool COGLES1Driver::queryTextureFormat(ECOLOR_FORMAT format) const
 	return getColorFormatParameters(format, dummyInternalFormat, dummyPixelFormat, dummyPixelType, &dummyConverter);
 }
 
-bool COGLES1Driver::needsTransparentRenderPass(const irr::video::SMaterial &material) const
+bool COGLES1Driver::needsTransparentRenderPass(const video::SMaterial &material) const
 {
 	return CNullDriver::needsTransparentRenderPass(material) || material.isAlphaBlendOperation();
 }
@@ -2380,8 +2379,7 @@ COGLES1CacheHandler *COGLES1Driver::getCacheHandler() const
 
 #endif // _IRR_COMPILE_WITH_OGLES1_
 
-namespace irr
-{
+
 namespace video
 {
 

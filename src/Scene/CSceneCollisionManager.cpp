@@ -9,8 +9,7 @@
 #include "Device/os.h"
 #include "irrMath.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -71,4 +70,3 @@ core::line3d<f32> CSceneCollisionManager::getRayFromScreenCoordinates(
 }
 
 } // end namespace scene
-} // end namespace irr

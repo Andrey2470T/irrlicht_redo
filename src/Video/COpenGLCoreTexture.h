@@ -14,8 +14,7 @@
 
 #include "mt_opengl.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -413,7 +412,7 @@ public:
 	}
 
 protected:
-	void *getLockImageData(irr::u32 miplevel) const
+	void *getLockImageData(u32 miplevel) const
 	{
 		if (KeepImage && MipLevelStored > 0 && LockImage->getMipMapsData(MipLevelStored)) {
 			return LockImage->getMipMapsData(MipLevelStored);
@@ -604,5 +603,4 @@ protected:
 	mutable SStatesCache StatesCache;
 };
 
-}
 }

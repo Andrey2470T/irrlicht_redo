@@ -10,8 +10,7 @@
 
 #include <android/native_activity.h>
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -55,4 +54,3 @@ protected:
 }; // CAndroidAssetFileArchive
 
 } // end namespace io
-} // end namespace irr

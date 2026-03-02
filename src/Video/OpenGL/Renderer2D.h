@@ -6,8 +6,7 @@
 
 #include "MaterialRenderer.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -28,5 +27,4 @@ protected:
 	s32 TextureUsageID;
 };
 
-}
 }

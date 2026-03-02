@@ -5,8 +5,7 @@
 #pragma once
 #include "OpenGL/Driver.h"
 
-namespace irr
-{
+
 namespace video
 {
 

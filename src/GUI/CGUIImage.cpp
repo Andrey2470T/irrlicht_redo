@@ -8,8 +8,7 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -161,4 +160,3 @@ core::rect<f32> CGUIImage::getDrawBounds() const
 }
 
 } // end namespace gui
-} // end namespace irr

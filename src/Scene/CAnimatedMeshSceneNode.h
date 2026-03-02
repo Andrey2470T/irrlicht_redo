@@ -9,8 +9,7 @@
 
 #include "matrix4.h"
 
-namespace irr
-{
+
 namespace scene
 {
 class IDummyTransformationSceneNode;
@@ -174,4 +173,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

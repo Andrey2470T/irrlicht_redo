@@ -14,8 +14,7 @@
 #include "irrString.h"
 #include "IrrCompileConfig.h" // for IRRLICHT_SDK_VERSION
 
-namespace irr
-{
+
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0),
@@ -170,7 +169,7 @@ u32 CIrrDeviceStub::checkSuccessiveClicks(s32 mouseX, s32 mouseY, EMOUSE_INPUT_E
 {
 	const s32 MAX_MOUSEMOVE = 3;
 
-	irr::u32 clickTime = getTimer()->getRealTime();
+	u32 clickTime = getTimer()->getRealTime();
 
 	if ((clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime && core::abs_(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE && core::abs_(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE && MouseMultiClicks.CountSuccessiveClicks < 3 && MouseMultiClicks.LastMouseInputEvent == inputEvent) {
 		++MouseMultiClicks.CountSuccessiveClicks;
@@ -373,4 +372,3 @@ bool CIrrDeviceStub::acceptsIME()
 	return elem && elem->acceptsIME();
 }
 
-} // end namespace irr

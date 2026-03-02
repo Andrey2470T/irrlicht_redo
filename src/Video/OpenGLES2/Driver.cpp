@@ -6,8 +6,7 @@
 #include <cassert>
 #include <CColorConverter.h>
 
-namespace irr
-{
+
 namespace video
 {
 

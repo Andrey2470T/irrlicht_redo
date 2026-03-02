@@ -13,8 +13,7 @@
 	to modify the behavior of plugins and mesh loaders.
 */
 
-namespace irr
-{
+
 namespace scene
 {
 //! Name of the parameter for changing how Irrlicht handles the ZWrite flag for transparent (blending) materials
@@ -47,4 +46,3 @@ SceneManager->getParameters()->setAttribute(scene::OBJ_LOADER_IGNORE_MATERIAL_FI
 const c8 *const OBJ_LOADER_IGNORE_MATERIAL_FILES = "OBJ_IgnoreMaterialFiles";
 
 } // end namespace scene
-} // end namespace irr

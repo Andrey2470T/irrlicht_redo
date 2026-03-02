@@ -7,7 +7,7 @@
 
 OpenGLProcedures GL = OpenGLProcedures();
 
-void OpenGLProcedures::LoadAllProcedures(irr::video::IContextManager *cmgr)
+void OpenGLProcedures::LoadAllProcedures(video::IContextManager *cmgr)
 {
 
 	if (!CullFace) CullFace = (PFNGLCULLFACEPROC_MT)cmgr->getProcAddress("glCullFace");

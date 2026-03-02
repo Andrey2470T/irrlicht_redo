@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 
 enum EKEY_CODE
 {
@@ -182,4 +181,3 @@ enum EKEY_CODE
 	KEY_KEY_CODES_COUNT = 0x100 // this is not a key, but the amount of keycodes there are.
 };
 
-} // end namespace irr

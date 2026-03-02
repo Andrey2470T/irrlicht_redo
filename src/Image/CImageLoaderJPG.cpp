@@ -9,8 +9,7 @@
 #include "Device/os.h"
 #include "irrString.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -260,4 +259,3 @@ IImageLoader *createImageLoaderJPG()
 }
 
 } // end namespace video
-} // end namespace irr

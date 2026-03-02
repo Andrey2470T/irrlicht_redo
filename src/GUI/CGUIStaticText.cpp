@@ -10,8 +10,7 @@
 #include "IVideoDriver.h"
 #include "rect.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -224,7 +223,7 @@ video::SColor CGUIStaticText::getOverrideColor() const
 	return OverrideColor;
 }
 
-irr::video::SColor CGUIStaticText::getActiveColor() const
+video::SColor CGUIStaticText::getActiveColor() const
 {
 	if (OverrideColorEnabled)
 		return OverrideColor;
@@ -508,4 +507,3 @@ s32 CGUIStaticText::getTextWidth() const
 }
 
 } // end namespace gui
-} // end namespace irr

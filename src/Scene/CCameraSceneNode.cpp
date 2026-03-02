@@ -7,8 +7,7 @@
 #include "IVideoDriver.h"
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -310,5 +309,4 @@ ISceneNode *CCameraSceneNode::clone(ISceneNode *newParent, ISceneManager *newMan
 	return nb;
 }
 
-} // end namespace
 } // end namespace

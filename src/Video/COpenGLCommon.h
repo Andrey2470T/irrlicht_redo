@@ -19,8 +19,7 @@
 // To check if this header is in the current compile unit (different GL driver implementations use different "GLCommon" headers in Irrlicht)
 #define IRR_COMPILE_GL_COMMON
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -42,7 +41,6 @@ typedef COpenGLCoreTexture<COpenGLDriver> COpenGLTexture;
 typedef COpenGLCoreRenderTarget<COpenGLDriver, COpenGLTexture> COpenGLRenderTarget;
 class COpenGLCacheHandler;
 
-}
 }
 
 #endif

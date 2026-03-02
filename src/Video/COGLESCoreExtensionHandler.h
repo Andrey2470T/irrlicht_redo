@@ -10,8 +10,7 @@
 #include "irrMath.h"
 #include "COpenGLCoreFeature.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -185,5 +184,4 @@ protected:
 	bool StencilBuffer;
 	bool FeatureAvailable[IRR_OGLES_Feature_Count];
 };
-}
 }

@@ -11,8 +11,7 @@
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
 
-namespace irr
-{
+
 class CIrrDeviceAndroid : public CIrrDeviceStub
 {
 public:
@@ -95,4 +94,3 @@ private:
 	core::array<EKEY_CODE> KeyMap;
 };
 
-} // end namespace irr

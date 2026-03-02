@@ -10,8 +10,7 @@
 #include "irrArray.h"
 #include <map>
 
-namespace irr
-{
+
 
 namespace video
 {
@@ -104,4 +103,3 @@ private:
 };
 
 } // end namespace gui
-} // end namespace irr

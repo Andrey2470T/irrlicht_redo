@@ -6,8 +6,7 @@
 
 #include "IGUIElement.h"
 
-namespace irr
-{
+
 
 namespace video
 {
@@ -256,4 +255,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

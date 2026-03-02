@@ -10,8 +10,7 @@ struct AAssetManager;
 struct AAsset;
 struct ANativeActivity;
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -61,4 +60,3 @@ private:
 };
 
 } // end namespace io
-} // end namespace irr

@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -29,4 +28,3 @@ enum E_ATTRIBUTE_TYPE
 };
 
 } // end namespace io
-} // end namespace irr

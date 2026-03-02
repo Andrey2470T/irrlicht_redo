@@ -6,8 +6,7 @@
 
 #include "IImageLoader.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -78,4 +77,3 @@ private:
 };
 
 } // end namespace video
-} // end namespace irr

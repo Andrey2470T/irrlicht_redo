@@ -41,8 +41,7 @@ static const bool sdl_supports_primary_selection = [] {
 }();
 #endif
 
-namespace irr
-{
+
 
 #if defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 // constructor  linux
@@ -264,5 +263,3 @@ bool COSOperator::getSystemMemory(u32 *Total, u32 *Avail) const
 	return false;
 #endif
 }
-
-} // end namespace

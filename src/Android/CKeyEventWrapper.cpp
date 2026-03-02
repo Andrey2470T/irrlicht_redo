@@ -5,8 +5,7 @@
 
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace jni
 {
 
@@ -49,4 +48,3 @@ int CKeyEventWrapper::getUnicodeChar(int metaState)
 }
 
 } // namespace jni
-} // namespace irr

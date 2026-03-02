@@ -6,8 +6,7 @@
 
 #include "Video/SoftwareDriver2_helper.h"
 
-namespace irr
-{
+
 
 //! f18 - fixpoint 14.18 limit to 16k Textures
 #define CBLIT_USE_FIXPOINT18
@@ -937,6 +936,4 @@ static s32 Blit(eBlitter operation,
 	blitter(&job);
 
 	return 1;
-}
-
 }

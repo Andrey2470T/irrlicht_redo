@@ -6,8 +6,7 @@
 
 #include "matrix4.h"
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -235,4 +234,3 @@ private:
 };
 
 } // end namespace video
-} // end namespace irr

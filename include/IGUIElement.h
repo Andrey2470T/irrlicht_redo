@@ -17,8 +17,7 @@
 #include <list>
 #include <vector>
 
-namespace irr
-{
+
 namespace gui
 {
 //! Base class of all GUI elements.
@@ -938,4 +937,3 @@ protected:
 };
 
 } // end namespace gui
-} // end namespace irr

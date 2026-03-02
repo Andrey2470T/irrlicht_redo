@@ -9,8 +9,7 @@
 #include "aabbox3d.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace scene
 {
 //! Simple implementation of the IMesh interface.
@@ -129,4 +128,3 @@ struct SMesh : public IMesh
 };
 
 } // end namespace scene
-} // end namespace irr

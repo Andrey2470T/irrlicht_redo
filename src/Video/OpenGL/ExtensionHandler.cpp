@@ -14,8 +14,7 @@
 
 // FIXME: this basically duplicates what mt_opengl.h already does
 
-namespace irr
-{
+
 namespace video
 {
 void COpenGL3ExtensionHandler::initExtensionsOld()
@@ -58,4 +57,3 @@ void COpenGL3ExtensionHandler::extensionsLoaded()
 }
 
 } // end namespace video
-} // end namespace irr

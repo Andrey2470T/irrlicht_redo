@@ -13,8 +13,7 @@
 #include "SMaterialLayer.h"
 #include "IrrCompileConfig.h" // for IRRLICHT_API
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -180,7 +179,7 @@ inline bool textureBlendFunc_hasAlpha(const E_BLEND_FACTOR factor)
 to coverage.
 Some drivers don't support a per-material setting of the anti-aliasing
 modes. In those cases, FSAA/multisampling is defined by the device mode
-chosen upon creation via irr::SIrrCreationParameters.
+chosen upon creation via SIrrCreationParameters.
 */
 enum E_ANTI_ALIASING_MODE
 {
@@ -563,4 +562,3 @@ public:
 //! global const identity Material
 IRRLICHT_API extern SMaterial IdentityMaterial;
 } // end namespace video
-} // end namespace irr

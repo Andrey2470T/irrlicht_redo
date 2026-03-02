@@ -18,8 +18,7 @@
 // otherwise identity check will always compare the elements
 // #define USE_MATRIX_TEST
 
-namespace irr
-{
+
 namespace core
 {
 
@@ -2279,4 +2278,3 @@ typedef CMatrix4<f32> matrix4;
 IRRLICHT_API extern const matrix4 IdentityMatrix;
 
 } // end namespace core
-} // end namespace irr

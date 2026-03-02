@@ -8,8 +8,7 @@
 #include "S3DVertex.h"
 #include "SColor.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -41,4 +40,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

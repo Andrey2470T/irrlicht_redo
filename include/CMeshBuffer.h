@@ -7,8 +7,7 @@
 #include "irrArray.h"
 #include "IMeshBuffer.h"
 
-namespace irr
-{
+
 namespace scene
 {
 //! Template implementation of the IMeshBuffer interface
@@ -109,7 +108,7 @@ public:
 	{
 		if (!Vertices.empty()) {
 			BoundingBox.reset(Vertices[0].Pos);
-			const irr::u32 vsize = Vertices.size();
+			const u32 vsize = Vertices.size();
 			for (u32 i = 1; i < vsize; ++i)
 				BoundingBox.addInternalPoint(Vertices[i].Pos);
 		} else
@@ -271,4 +270,3 @@ typedef CMeshBuffer<video::S3DVertex2TCoords> SMeshBufferLightMap;
 //! Meshbuffer with vertices having tangents stored, e.g. for normal mapping
 typedef CMeshBuffer<video::S3DVertexTangents> SMeshBufferTangents;
 } // end namespace scene
-} // end namespace irr

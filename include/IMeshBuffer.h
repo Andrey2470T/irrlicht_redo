@@ -12,8 +12,7 @@
 #include "EHardwareBufferFlags.h"
 #include "EPrimitiveTypes.h"
 
-namespace irr
-{
+
 namespace scene
 {
 //! Struct for holding a mesh with a single material.
@@ -179,4 +178,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

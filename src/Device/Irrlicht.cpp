@@ -32,8 +32,7 @@ static const char *const copyright = "Irrlicht Engine (c) 2002-2017 Nikolaus Geb
 #include "Android/CIrrDeviceAndroid.h"
 #endif
 
-namespace irr
-{
+
 //! stub for calling createDeviceEx
 IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDevice(video::E_DRIVER_TYPE driverType,
 		const core::dimension2d<u32> &windowSize,
@@ -134,7 +133,6 @@ extern "C" IRRLICHT_API bool IRRCALLCONV isDriverSupported(E_DRIVER_TYPE driver)
 }
 }
 
-} // end namespace irr
 
 #if defined(_IRR_WINDOWS_API_) && !defined(_IRR_STATIC_LIB_)
 

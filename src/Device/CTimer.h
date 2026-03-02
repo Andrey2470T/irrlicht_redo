@@ -7,8 +7,7 @@
 #include "ITimer.h"
 #include "Device/os.h"
 
-namespace irr
-{
+
 //! Device independent implementation of the timer
 class CTimer : public ITimer
 {
@@ -92,5 +91,3 @@ public:
 		os::Timer::tick();
 	}
 };
-
-} // end namespace

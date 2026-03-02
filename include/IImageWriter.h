@@ -8,8 +8,7 @@
 #include "irrString.h"
 #include "coreutil.h"
 
-namespace irr
-{
+
 namespace io
 {
 class IWriteFile;
@@ -37,4 +36,3 @@ public:
 };
 
 } // namespace video
-} // namespace irr

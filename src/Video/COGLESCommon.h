@@ -90,8 +90,7 @@ typedef char GLchar;
 // to check if this header is in the current compile unit (different GL implementation used different "GLCommon" headers in Irrlicht
 #define IRR_COMPILE_GLES_COMMON
 
-namespace irr
-{
+
 namespace video
 {
 

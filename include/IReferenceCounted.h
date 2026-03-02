@@ -6,8 +6,7 @@
 
 #include "irrTypes.h"
 
-namespace irr
-{
+
 
 //! Base class of most objects of the Irrlicht Engine.
 /** This class provides reference counting through the methods grab() and drop().
@@ -159,4 +158,3 @@ private:
 	mutable s32 ReferenceCounter;
 };
 
-} // end namespace irr

@@ -14,8 +14,7 @@
 #define GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT
 #endif
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -349,5 +348,4 @@ protected:
 	TOpenGLDriver *Driver;
 };
 
-}
 }

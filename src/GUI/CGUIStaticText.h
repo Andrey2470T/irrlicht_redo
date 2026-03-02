@@ -7,8 +7,7 @@
 #include "IGUIStaticText.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace gui
 {
 class CGUIStaticText : public IGUIStaticText
@@ -128,4 +127,3 @@ private:
 };
 
 } // end namespace gui
-} // end namespace irr

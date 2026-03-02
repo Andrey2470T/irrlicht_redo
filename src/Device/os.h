@@ -10,8 +10,7 @@
 #include "ILogger.h"
 #include "ITimer.h"
 
-namespace irr
-{
+
 
 namespace os
 {
@@ -88,4 +87,3 @@ private:
 };
 
 } // end namespace os
-} // end namespace irr

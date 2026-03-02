@@ -7,8 +7,7 @@
 #include "IReferenceCounted.h"
 #include "irrString.h"
 
-namespace irr
-{
+
 
 //! The OSOperator provides OS-specific methods and information.
 class IOSOperator : public virtual IReferenceCounted
@@ -41,5 +40,3 @@ public:
 	\return True if successful, false if not */
 	virtual bool getSystemMemory(u32 *totalBytes, u32 *availableBytes) const = 0;
 };
-
-} // end namespace

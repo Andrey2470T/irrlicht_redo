@@ -12,8 +12,7 @@
 #include <android_native_app_glue.h>
 #include <android/native_activity.h>
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -62,4 +61,3 @@ const io::path &CAndroidAssetReader::getFileName() const
 }
 
 } // end namespace io
-} // end namespace irr

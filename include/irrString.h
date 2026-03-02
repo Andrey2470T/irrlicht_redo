@@ -13,8 +13,7 @@
 #include <codecvt>
 #include <locale>
 
-namespace irr
-{
+
 namespace core
 {
 
@@ -928,4 +927,3 @@ inline size_t wStringToUTF8(stringc &destination, const stringw &source)
 }
 
 } // end namespace core
-} // end namespace irr

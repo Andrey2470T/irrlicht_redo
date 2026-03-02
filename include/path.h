@@ -6,8 +6,7 @@
 
 #include "irrString.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -83,4 +82,3 @@ private:
 };
 
 } // io
-} // irr

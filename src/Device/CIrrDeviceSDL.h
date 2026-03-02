@@ -25,8 +25,7 @@
 
 #include <memory>
 
-namespace irr
-{
+
 
 class CIrrDeviceSDL : public CIrrDeviceStub
 {
@@ -321,6 +320,5 @@ private:
 	s32 CurrentTouchCount;
 };
 
-} // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_SDL_DEVICE_

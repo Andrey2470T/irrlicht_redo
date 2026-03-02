@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -79,4 +78,3 @@ enum E_MATERIAL_PROP
 };
 
 } // end namespace video
-} // end namespace irr

@@ -7,8 +7,7 @@
 #include "IMeshCache.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 
 namespace scene
 {
@@ -113,4 +112,3 @@ protected:
 };
 
 } // end namespace scene
-} // end namespace irr

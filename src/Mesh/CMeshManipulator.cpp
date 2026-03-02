@@ -9,8 +9,7 @@
 #include "SAnimatedMesh.h"
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -67,7 +66,7 @@ void recalculateNormalsT(IMeshBuffer *buffer, bool smooth, bool angleWeighted)
 
 			core::vector3df weight(1.f, 1.f, 1.f);
 			if (angleWeighted)
-				weight = irr::scene::getAngleWeight(v1, v2, v3); // writing irr::scene:: necessary for borland
+				weight = scene::getAngleWeight(v1, v2, v3); // writing scene:: necessary for borland
 
 			buffer->getNormal(idx[i + 0]) += weight.X * normal;
 			buffer->getNormal(idx[i + 1]) += weight.Y * normal;
@@ -215,4 +214,3 @@ IAnimatedMesh *CMeshManipulator::createAnimatedMesh(scene::IMesh *mesh, scene::E
 }
 
 } // end namespace scene
-} // end namespace irr

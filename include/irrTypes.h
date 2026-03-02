@@ -6,8 +6,7 @@
 
 #include <cstdint>
 
-namespace irr
-{
+
 
 //! 8 bit unsigned variable.
 typedef uint8_t u8;
@@ -45,7 +44,6 @@ typedef float f32;
 /** This is a typedef for double, it ensures portability of the engine. */
 typedef double f64;
 
-} // end namespace irr
 
 //! Defines for snprintf_irr because snprintf method does not match the ISO C
 //! standard on Windows platforms.
@@ -56,14 +54,12 @@ typedef double f64;
 #define snprintf_irr snprintf
 #endif // _MSC_VER
 
-namespace irr
-{
+
 
 //! Type name for character type used by the file system (legacy).
 typedef char fschar_t;
 #define _IRR_TEXT(X) X
 
-} // end namespace irr
 
 //! define a break macro for debugging.
 #if defined(_DEBUG)
@@ -89,5 +85,5 @@ typedef char fschar_t;
 /** some compilers can create those by directly writing the
 code like 'code', but some generate warnings so we use this macro here */
 #define MAKE_IRR_ID(c0, c1, c2, c3)                             \
-	((irr::u32)(irr::u8)(c0) | ((irr::u32)(irr::u8)(c1) << 8) | \
-			((irr::u32)(irr::u8)(c2) << 16) | ((irr::u32)(irr::u8)(c3) << 24))
+	((u32)(u8)(c0) | ((u32)(u8)(c1) << 8) | \
+			((u32)(u8)(c2) << 16) | ((u32)(u8)(c3) << 24))

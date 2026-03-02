@@ -13,8 +13,7 @@
 
 #include "Common.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -89,5 +88,4 @@ protected:
 	s32 UserData;
 };
 
-}
 }

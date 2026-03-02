@@ -7,8 +7,7 @@
 #include "IGUIElement.h"
 #include "SColor.h"
 
-namespace irr
-{
+
 namespace gui
 {
 class IGUIFont;
@@ -130,4 +129,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

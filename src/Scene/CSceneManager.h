@@ -12,8 +12,7 @@
 #include "IMeshLoader.h"
 #include "Device/CAttributes.h"
 
-namespace irr
-{
+
 namespace io
 {
 class IFileSystem;
@@ -304,5 +303,4 @@ private:
 	E_SCENE_NODE_RENDER_PASS CurrentRenderPass;
 };
 
-} // end namespace video
 } // end namespace scene

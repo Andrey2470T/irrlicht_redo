@@ -8,8 +8,7 @@
 #include "dimension2d.h"
 #include "position2d.h"
 
-namespace irr
-{
+
 namespace core
 {
 
@@ -278,4 +277,3 @@ typedef rect<f32> rectf;
 typedef rect<s32> recti;
 
 } // end namespace core
-} // end namespace irr

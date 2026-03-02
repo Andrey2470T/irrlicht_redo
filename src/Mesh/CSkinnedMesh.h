@@ -10,8 +10,7 @@
 #include "SMeshBuffer.h"
 #include "quaternion.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -209,4 +208,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

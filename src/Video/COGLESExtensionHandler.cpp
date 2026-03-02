@@ -18,8 +18,7 @@
 #include <GLES/egl.h>
 #endif
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -89,6 +88,5 @@ void COGLES1ExtensionHandler::initExtensions()
 }
 
 } // end namespace video
-} // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_OGLES2_

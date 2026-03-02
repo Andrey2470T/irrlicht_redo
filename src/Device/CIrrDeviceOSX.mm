@@ -432,13 +432,11 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void *key)
 	return value;
 }
 
-namespace irr
-{
+
 namespace video
 {
 IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &param, io::IFileSystem *io, IContextManager *contextManager);
 }
-} // end namespace irr
 
 static bool firstLaunch = true;
 
@@ -520,8 +518,7 @@ static bool firstLaunch = true;
 
 @end
 
-namespace irr
-{
+
 //! constructor
 CIrrDeviceMacOSX::CIrrDeviceMacOSX(const SIrrlichtCreationParameters &param) :
 		CIrrDeviceStub(param), Window(NULL), Display(NULL),

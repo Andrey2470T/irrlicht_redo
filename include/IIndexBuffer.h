@@ -9,8 +9,7 @@
 #include "EHardwareBufferFlags.h"
 #include "SVertexIndex.h"
 
-namespace irr
-{
+
 
 namespace video
 {
@@ -56,4 +55,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

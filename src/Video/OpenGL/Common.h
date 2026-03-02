@@ -14,8 +14,7 @@
 #include "vendor/gl.h"
 #endif
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -53,5 +52,4 @@ struct OpenGLVersion
 	u8 Release;
 };
 
-}
 }

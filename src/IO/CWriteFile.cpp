@@ -5,8 +5,7 @@
 #include "CWriteFile.h"
 #include <cstdio>
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -103,4 +102,3 @@ IWriteFile *CWriteFile::createWriteFile(const io::path &fileName, bool append)
 }
 
 } // end namespace io
-} // end namespace irr

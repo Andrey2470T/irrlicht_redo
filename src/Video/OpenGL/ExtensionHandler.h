@@ -17,8 +17,7 @@
 
 #include "Video/COGLESCoreExtensionHandler.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -166,5 +165,4 @@ private:
 	std::unordered_set<std::string> Extensions;
 };
 
-}
 }

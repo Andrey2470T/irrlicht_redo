@@ -9,8 +9,7 @@
 #include "rect.h"
 #include "irrString.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -96,4 +95,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

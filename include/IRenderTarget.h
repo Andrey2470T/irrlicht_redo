@@ -8,8 +8,7 @@
 #include "EDriverTypes.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -115,5 +114,4 @@ private:
 	IRenderTarget &operator=(const IRenderTarget &);
 };
 
-}
 }

@@ -5,10 +5,9 @@
 #pragma once
 
 #include "irrTypes.h"
-#include "irrMath.h" // for irr::core::equals()
+#include "irrMath.h" // for core::equals()
 
-namespace irr
-{
+
 namespace core
 {
 template <class T>
@@ -213,4 +212,3 @@ typedef dimension2d<u32> dimension2du;
 typedef dimension2d<s32> dimension2di;
 
 } // end namespace core
-} // end namespace irr

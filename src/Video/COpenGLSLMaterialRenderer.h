@@ -15,8 +15,7 @@
 
 #include "COpenGLCommon.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -120,6 +119,5 @@ protected:
 };
 
 } // end namespace video
-} // end namespace irr
 
 #endif // compile with OpenGL

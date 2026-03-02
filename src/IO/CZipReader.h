@@ -10,8 +10,7 @@
 #include "IFileSystem.h"
 #include "CFileList.h"
 
-namespace irr
-{
+
 namespace io
 {
 // set if the file is encrypted
@@ -215,4 +214,3 @@ protected:
 };
 
 } // end namespace io
-} // end namespace irr

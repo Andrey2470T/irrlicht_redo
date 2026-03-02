@@ -6,8 +6,7 @@
 
 #include "IGUIElement.h"
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -79,4 +78,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

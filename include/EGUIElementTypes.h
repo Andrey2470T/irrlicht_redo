@@ -6,8 +6,7 @@
 
 #include "irrTypes.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -130,4 +129,3 @@ const c8 *const GUIElementTypeNames[] = {
 	};
 
 } // end namespace gui
-} // end namespace irr

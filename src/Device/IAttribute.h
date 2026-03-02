@@ -15,8 +15,7 @@
 #include "irrArray.h"
 #include "EAttributes.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -48,4 +47,3 @@ public:
 };
 
 } // end namespace io
-} // end namespace irr

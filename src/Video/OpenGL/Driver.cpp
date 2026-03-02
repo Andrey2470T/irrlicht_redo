@@ -27,8 +27,7 @@
 
 #include "mt_opengl.h"
 
-namespace irr
-{
+
 namespace video
 {
 struct VertexAttribute
@@ -429,7 +428,7 @@ void COpenGL3DriverBase::createMaterialRenderers()
 	delete[] fs2DData;
 }
 
-bool COpenGL3DriverBase::setMaterialTexture(irr::u32 layerIdx, const irr::video::ITexture *texture)
+bool COpenGL3DriverBase::setMaterialTexture(u32 layerIdx, const video::ITexture *texture)
 {
 	Material.TextureLayers[layerIdx].Texture = const_cast<ITexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
 	return CacheHandler->getTextureCache().set(0, texture);
@@ -908,7 +907,7 @@ void COpenGL3DriverBase::draw2DImageBatch(const video::ITexture *texture,
 				clipRect->getWidth(), clipRect->getHeight());
 	}
 
-	const irr::u32 drawCount = core::min_<u32>(positions.size(), sourceRects.size());
+	const u32 drawCount = core::min_<u32>(positions.size(), sourceRects.size());
 	assert(6 * drawCount <= QuadIndexCount); // FIXME split the batch? or let it crash?
 
 	core::array<S3DVertex> vtx(drawCount * 4);
@@ -1704,7 +1703,7 @@ ITexture *COpenGL3DriverBase::addRenderTargetTexture(const core::dimension2d<u32
 	return renderTargetTexture;
 }
 
-ITexture *COpenGL3DriverBase::addRenderTargetTextureCubemap(const irr::u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
+ITexture *COpenGL3DriverBase::addRenderTargetTextureCubemap(const u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
@@ -1921,7 +1920,7 @@ u32 COpenGL3DriverBase::getClipPlaneCount() const
 	return UserClipPlane.size();
 }
 
-const core::plane3df &COpenGL3DriverBase::getClipPlane(irr::u32 index) const
+const core::plane3df &COpenGL3DriverBase::getClipPlane(u32 index) const
 {
 	if (index < UserClipPlane.size())
 		return UserClipPlane[index].Plane;
@@ -1972,7 +1971,7 @@ bool COpenGL3DriverBase::queryTextureFormat(ECOLOR_FORMAT format) const
 	return TextureFormats[format].InternalFormat != 0;
 }
 
-bool COpenGL3DriverBase::needsTransparentRenderPass(const irr::video::SMaterial &material) const
+bool COpenGL3DriverBase::needsTransparentRenderPass(const video::SMaterial &material) const
 {
 	return CNullDriver::needsTransparentRenderPass(material) || material.isAlphaBlendOperation();
 }
@@ -1987,5 +1986,4 @@ COpenGL3CacheHandler *COpenGL3DriverBase::getCacheHandler() const
 	return CacheHandler;
 }
 
-} // end namespace
 } // end namespace

@@ -7,8 +7,7 @@
 #include "ITexture.h"
 #include "IVideoDriver.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -141,4 +140,3 @@ public:
 };
 
 } // end namespace io
-} // end namespace irr

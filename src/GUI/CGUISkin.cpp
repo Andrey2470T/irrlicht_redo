@@ -10,8 +10,7 @@
 #include "IVideoDriver.h"
 #include "IAttributes.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -888,4 +887,3 @@ void CGUISkin::draw2DRectangle(IGUIElement *element,
 }
 
 } // end namespace gui
-} // end namespace irr

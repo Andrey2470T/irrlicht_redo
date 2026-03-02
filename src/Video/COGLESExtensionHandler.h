@@ -15,8 +15,7 @@
 
 #include "COGLESCoreExtensionHandler.h"
 
-namespace irr
-{
+
 namespace video
 {
 

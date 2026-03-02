@@ -7,8 +7,7 @@
 #include "IReadFile.h"
 #include "IFileList.h"
 
-namespace irr
-{
+
 
 namespace io
 {
@@ -124,4 +123,3 @@ public:
 };
 
 } // end namespace io
-} // end namespace irr

@@ -7,8 +7,7 @@
 #include "IFileSystem.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -134,5 +133,4 @@ private:
 	core::array<IFileArchive *> FileArchives;
 };
 
-} // end namespace irr
 } // end namespace io

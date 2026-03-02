@@ -7,8 +7,7 @@
 
 struct android_app;
 
-namespace irr
-{
+
 namespace jni
 {
 
@@ -32,4 +31,3 @@ private:
 };
 
 } // namespace jni
-} // namespace irr

@@ -8,8 +8,7 @@
 #include "irrString.h"
 #include "CSkinnedMesh.h"
 
-namespace irr
-{
+
 namespace io
 {
 class IReadFile;
@@ -178,4 +177,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

@@ -21,8 +21,7 @@
 	numerical
 */
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -318,7 +317,7 @@ bool CGUIEditBox::processKey(const SEvent &event)
 				// add the string
 				const c8 *p = Operator->getTextFromClipboard();
 				if (p) {
-					irr::core::stringw widep;
+					core::stringw widep;
 					core::utf8ToWString(widep, p);
 
 					if (MarkBegin == MarkEnd) {
@@ -939,13 +938,13 @@ wchar_t CGUIEditBox::getCursorChar() const
 }
 
 //! Set the blinktime for the cursor. 2x blinktime is one full cycle.
-void CGUIEditBox::setCursorBlinkTime(irr::u32 timeMs)
+void CGUIEditBox::setCursorBlinkTime(u32 timeMs)
 {
 	CursorBlinkTime = timeMs;
 }
 
 //! Get the cursor blinktime
-irr::u32 CGUIEditBox::getCursorBlinkTime() const
+u32 CGUIEditBox::getCursorBlinkTime() const
 {
 	return CursorBlinkTime;
 }
@@ -953,7 +952,7 @@ irr::u32 CGUIEditBox::getCursorBlinkTime() const
 bool CGUIEditBox::processMouse(const SEvent &event)
 {
 	switch (event.MouseInput.Event) {
-	case irr::EMIE_LMOUSE_LEFT_UP:
+	case EMIE_LMOUSE_LEFT_UP:
 		if (Environment->hasFocus(this)) {
 			CursorPos = getCursorPos(event.MouseInput.X, event.MouseInput.Y);
 			if (MouseMarking) {
@@ -964,7 +963,7 @@ bool CGUIEditBox::processMouse(const SEvent &event)
 			return true;
 		}
 		break;
-	case irr::EMIE_MOUSE_MOVED: {
+	case EMIE_MOUSE_MOVED: {
 		if (MouseMarking) {
 			CursorPos = getCursorPos(event.MouseInput.X, event.MouseInput.Y);
 			setTextMarkers(MarkBegin, CursorPos);
@@ -1014,7 +1013,7 @@ bool CGUIEditBox::processMouse(const SEvent &event)
 
 		// paste from the primary selection
 		inputString([&] {
-			irr::core::stringw inserted_text;
+			core::stringw inserted_text;
 			if (!Operator)
 				return inserted_text;
 			const c8 *inserted_text_utf8 = Operator->getTextFromPrimarySelection();
@@ -1355,7 +1354,7 @@ void CGUIEditBox::calculateScrollPos()
 	{
 		// get cursor position
 		// get cursor area
-		irr::u32 cursorWidth = font->getDimension(CursorChar.c_str()).Width;
+		u32 cursorWidth = font->getDimension(CursorChar.c_str()).Width;
 		core::stringw *txtLine = hasBrokenText ? &BrokenText[cursLine] : &Text;
 		s32 cPos = hasBrokenText ? CursorPos - BrokenTextPositions[cursLine] : CursorPos; // column
 		s32 cStart = font->getDimension(txtLine->subString(0, cPos).c_str()).Width;       // pixels from text-start
@@ -1386,9 +1385,9 @@ void CGUIEditBox::calculateScrollPos()
 
 	// calculate vertical scrolling
 	if (hasBrokenText) {
-		irr::u32 lineHeight = font->getDimension(L"A").Height + font->getKerningHeight();
+		u32 lineHeight = font->getDimension(L"A").Height + font->getKerningHeight();
 		// only up to 1 line fits?
-		if (lineHeight >= (irr::u32)FrameRect.getHeight()) {
+		if (lineHeight >= (u32)FrameRect.getHeight()) {
 			VScrollPos = 0;
 			setTextRect(cursLine);
 			s32 unscrolledPos = CurrentTextRect.UpperLeftCorner.Y;
@@ -1492,4 +1491,3 @@ bool CGUIEditBox::acceptsIME()
 }
 
 } // end namespace gui
-} // end namespace irr
