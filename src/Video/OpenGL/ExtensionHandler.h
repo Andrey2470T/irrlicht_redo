@@ -13,7 +13,6 @@
 #include "Device/os.h"
 
 #include "Common.h"
-#include <mt_opengl.h> // must be after Common.h
 
 #include "Video/COGLESCoreExtensionHandler.h"
 
@@ -79,13 +78,13 @@ public:
 	static GLint GetInteger(GLenum key)
 	{
 		GLint val = 0;
-		GL.GetIntegerv(key, &val);
+		glGetIntegerv(key, &val);
 		return val;
 	};
 
 	inline void irrGlActiveTexture(GLenum texture)
 	{
-		GL.ActiveTexture(texture);
+		glActiveTexture(texture);
 	}
 
 	inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
@@ -102,57 +101,57 @@ public:
 
 	inline void irrGlUseProgram(GLuint prog)
 	{
-		GL.UseProgram(prog);
+		glUseProgram(prog);
 	}
 
 	inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
 	{
-		GL.BindFramebuffer(target, framebuffer);
+		glBindFramebuffer(target, framebuffer);
 	}
 
 	inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 	{
-		GL.DeleteFramebuffers(n, framebuffers);
+		glDeleteFramebuffers(n, framebuffers);
 	}
 
 	inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
 	{
-		GL.GenFramebuffers(n, framebuffers);
+		glGenFramebuffers(n, framebuffers);
 	}
 
 	inline GLenum irrGlCheckFramebufferStatus(GLenum target)
 	{
-		return GL.CheckFramebufferStatus(target);
+		return glCheckFramebufferStatus(target);
 	}
 
 	inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 	{
-		GL.FramebufferTexture2D(target, attachment, textarget, texture, level);
+		glFramebufferTexture2D(target, attachment, textarget, texture, level);
 	}
 
 	inline void irrGlGenerateMipmap(GLenum target)
 	{
-		GL.GenerateMipmap(target);
+		glGenerateMipmap(target);
 	}
 
 	inline void irrGlDrawBuffer(GLenum mode)
 	{
-		GL.DrawBuffer(mode);
+		glDrawBuffer(mode);
 	}
 
 	inline void irrGlDrawBuffers(GLsizei n, const GLenum *bufs)
 	{
-		GL.DrawBuffers(n, bufs);
+		glDrawBuffers(n, bufs);
 	}
 
 	inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 	{
-		GL.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+		glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 	}
 
 	inline void irrGlBlendEquation(GLenum mode)
 	{
-		GL.BlendEquation(mode);
+		glBlendEquation(mode);
 	}
 
 	bool AnisotropicFilterSupported = false;

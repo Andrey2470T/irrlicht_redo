@@ -232,6 +232,7 @@ endif()
 
 # Required libs
 
+find_package(GLEW REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
@@ -356,7 +357,6 @@ add_library(IRRSCENEOBJ OBJECT
 
 set(IRRDRVROBJ
 	Video/CNullDriver.cpp
-	Video/mt_opengl_loader.cpp
 )
 
 # the two legacy drivers
@@ -528,6 +528,7 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
+	GLEW::GLEW
 	"$<$<BOOL:${USE_SDL2}>:SDL2::SDL2>"
 
 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
@@ -541,6 +542,8 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	"$<$<PLATFORM_ID:Windows>:winmm>"
 	"$<$<BOOL:${USE_X11}>:${X11_X11_LIB}>"
 	"$<$<BOOL:${USE_X11}>:${X11_Xi_LIB}>"
+
+	${OPENGL_LIBRARIES}
 )
 
 if(WIN32)

@@ -10,16 +10,15 @@
 #include "SMaterial.h"
 #include "fast_atof.h"
 #include "Device/os.h"
-#include <mt_opengl.h>
 
-// FIXME: this basically duplicates what mt_opengl.h already does
+// FIXME: this basically duplicates what mt_openglh already does
 
 
 namespace video
 {
 void COpenGL3ExtensionHandler::initExtensionsOld()
 {
-	auto extensions_string = reinterpret_cast<const char *>(GL.GetString(GL_EXTENSIONS));
+	auto extensions_string = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
 	const char *pos = extensions_string;
 	while (const char *next = strchr(pos, ' ')) {
 		addExtension(std::string{pos, next});
@@ -33,7 +32,7 @@ void COpenGL3ExtensionHandler::initExtensionsNew()
 {
 	int ext_count = GetInteger(GL_NUM_EXTENSIONS);
 	for (int k = 0; k < ext_count; k++)
-		addExtension(reinterpret_cast<const char *>(GL.GetStringi(GL_EXTENSIONS, k)));
+		addExtension(reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, k)));
 	extensionsLoaded();
 }
 

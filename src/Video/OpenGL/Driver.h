@@ -391,7 +391,7 @@ private:
 	void initQuadsIndices(int max_vertex_count = 65536);
 
 	void debugCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message);
-	static void APIENTRY debugCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
+	static void debugCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 };
 
 } // end namespace video

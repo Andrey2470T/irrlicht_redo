@@ -18,8 +18,6 @@
 #include "COpenGLCoreTexture.h"
 #include "COpenGLCoreRenderTarget.h"
 
-#include "mt_opengl.h"
-
 
 namespace video
 {
@@ -43,7 +41,6 @@ bool COpenGLDriver::initDriver()
 	ContextManager->generateContext();
 	ExposedData = ContextManager->getContext();
 	ContextManager->activateContext(ExposedData, false);
-	GL.LoadAllProcedures(ContextManager);
 
 	genericDriverInit();
 

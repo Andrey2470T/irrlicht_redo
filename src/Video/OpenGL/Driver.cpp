@@ -25,8 +25,6 @@
 #include "android_native_app_glue.h"
 #endif
 
-#include "mt_opengl.h"
-
 
 namespace video
 {
@@ -130,7 +128,7 @@ static const VertexType vtPrimitive = {
 		},
 };
 
-void APIENTRY COpenGL3DriverBase::debugCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
+void COpenGL3DriverBase::debugCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
 	((COpenGL3DriverBase *)userParam)->debugCb(source, type, id, severity, length, message);
 }
@@ -160,8 +158,7 @@ COpenGL3DriverBase::COpenGL3DriverBase(const SIrrlichtCreationParameters &params
 	ContextManager->generateContext();
 	ExposedData = ContextManager->getContext();
 	ContextManager->activateContext(ExposedData, false);
-	GL.LoadAllProcedures(ContextManager);
-	GL.DebugMessageCallback(debugCb, this);
+	glDebugMessageCallback(debugCb, this);
 	initQuadsIndices();
 }
 
@@ -201,20 +198,20 @@ void COpenGL3DriverBase::initQuadsIndices(int max_vertex_count)
 		QuadsIndices.push_back(4 * k + 2);
 		QuadsIndices.push_back(4 * k + 3);
 	}
-	GL.GenBuffers(1, &QuadIndexBuffer);
-	GL.BindBuffer(GL_ARRAY_BUFFER, QuadIndexBuffer);
-	GL.BufferData(GL_ARRAY_BUFFER, sizeof(QuadsIndices[0]) * QuadsIndices.size(), QuadsIndices.data(), GL_STATIC_DRAW);
-	GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+	glGenBuffers(1, &QuadIndexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, QuadIndexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(QuadsIndices[0]) * QuadsIndices.size(), QuadsIndices.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	QuadIndexCount = QuadsIndices.size();
 }
 
 void COpenGL3DriverBase::initVersion()
 {
-	Name = GL.GetString(GL_VERSION);
+	Name = glGetString(GL_VERSION);
 	printVersion();
 
 	// print renderer information
-	VendorName = GL.GetString(GL_VENDOR);
+	VendorName = glGetString(GL_VENDOR);
 	os::Printer::log("Vendor", VendorName.c_str(), ELL_INFORMATION);
 
 	Version = getVersionFromOpenGL();
@@ -241,7 +238,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 
 	StencilBuffer = stencilBuffer;
 
-	GL.PixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	UserClipPlane.reallocate(0);
 
@@ -249,10 +246,10 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 		setTransform(static_cast<E_TRANSFORMATION_STATE>(i), core::IdentityMatrix);
 
 	setAmbientLight(SColorf(0.0f, 0.0f, 0.0f, 0.0f));
-	GL.ClearDepthf(1.0f);
+	glClearDepthf(1.0f);
 
-	GL.Hint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-	GL.FrontFace(GL_CW);
+	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	glFrontFace(GL_CW);
 
 	// create material renderers
 	createMaterialRenderers();
@@ -437,7 +434,7 @@ bool COpenGL3DriverBase::endScene()
 {
 	CNullDriver::endScene();
 
-	GL.Flush();
+	glFlush();
 
 	if (ContextManager)
 		return ContextManager->swapBuffers();
@@ -475,7 +472,7 @@ bool COpenGL3DriverBase::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 	// get or create buffer
 	bool newBuffer = false;
 	if (!HWBuffer->vbo_verticesID) {
-		GL.GenBuffers(1, &HWBuffer->vbo_verticesID);
+		glGenBuffers(1, &HWBuffer->vbo_verticesID);
 		if (!HWBuffer->vbo_verticesID)
 			return false;
 		newBuffer = true;
@@ -483,11 +480,11 @@ bool COpenGL3DriverBase::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 		newBuffer = true;
 	}
 
-	GL.BindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
+	glBindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
 
 	// copy data to graphics card
 	if (!newBuffer)
-		GL.BufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, buffer);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, buffer);
 	else {
 		HWBuffer->vbo_verticesSize = bufferSize;
 
@@ -496,10 +493,10 @@ bool COpenGL3DriverBase::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuff
 			usage = GL_STREAM_DRAW;
 		else if (HWBuffer->Mapped_Index == scene::EHM_DYNAMIC)
 			usage = GL_DYNAMIC_DRAW;
-		GL.BufferData(GL_ARRAY_BUFFER, bufferSize, buffer, usage);
+		glBufferData(GL_ARRAY_BUFFER, bufferSize, buffer, usage);
 	}
 
-	GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	return (!testGLError(__LINE__));
 }
@@ -532,7 +529,7 @@ bool COpenGL3DriverBase::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuffe
 	// get or create buffer
 	bool newBuffer = false;
 	if (!HWBuffer->vbo_indicesID) {
-		GL.GenBuffers(1, &HWBuffer->vbo_indicesID);
+		glGenBuffers(1, &HWBuffer->vbo_indicesID);
 		if (!HWBuffer->vbo_indicesID)
 			return false;
 		newBuffer = true;
@@ -540,11 +537,11 @@ bool COpenGL3DriverBase::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuffe
 		newBuffer = true;
 	}
 
-	GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
 
 	// copy data to graphics card
 	if (!newBuffer)
-		GL.BufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexCount * indexSize, indices);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indexCount * indexSize, indices);
 	else {
 		HWBuffer->vbo_indicesSize = indexCount * indexSize;
 
@@ -553,10 +550,10 @@ bool COpenGL3DriverBase::updateIndexHardwareBuffer(SHWBufferLink_opengl *HWBuffe
 			usage = GL_STREAM_DRAW;
 		else if (HWBuffer->Mapped_Index == scene::EHM_DYNAMIC)
 			usage = GL_DYNAMIC_DRAW;
-		GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * indexSize, indices, usage);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * indexSize, indices, usage);
 	}
 
-	GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	return (!testGLError(__LINE__));
 }
@@ -625,11 +622,11 @@ void COpenGL3DriverBase::deleteHardwareBuffer(SHWBufferLink *_HWBuffer)
 
 	SHWBufferLink_opengl *HWBuffer = static_cast<SHWBufferLink_opengl *>(_HWBuffer);
 	if (HWBuffer->vbo_verticesID) {
-		GL.DeleteBuffers(1, &HWBuffer->vbo_verticesID);
+		glDeleteBuffers(1, &HWBuffer->vbo_verticesID);
 		HWBuffer->vbo_verticesID = 0;
 	}
 	if (HWBuffer->vbo_indicesID) {
-		GL.DeleteBuffers(1, &HWBuffer->vbo_indicesID);
+		glDeleteBuffers(1, &HWBuffer->vbo_indicesID);
 		HWBuffer->vbo_indicesID = 0;
 	}
 
@@ -651,12 +648,12 @@ void COpenGL3DriverBase::drawHardwareBuffer(SHWBufferLink *_HWBuffer)
 	const void *indexList = mb->getIndices();
 
 	if (HWBuffer->Mapped_Vertex != scene::EHM_NEVER) {
-		GL.BindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
+		glBindBuffer(GL_ARRAY_BUFFER, HWBuffer->vbo_verticesID);
 		vertices = 0;
 	}
 
 	if (HWBuffer->Mapped_Index != scene::EHM_NEVER) {
-		GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, HWBuffer->vbo_indicesID);
 		indexList = 0;
 	}
 
@@ -666,10 +663,10 @@ void COpenGL3DriverBase::drawHardwareBuffer(SHWBufferLink *_HWBuffer)
 			mb->getIndexType());
 
 	if (HWBuffer->Mapped_Vertex != scene::EHM_NEVER)
-		GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	if (HWBuffer->Mapped_Index != scene::EHM_NEVER)
-		GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 IRenderTarget *COpenGL3DriverBase::addRenderTarget()
@@ -727,25 +724,25 @@ void COpenGL3DriverBase::drawVertexPrimitiveList(const void *vertices, u32 verte
 	switch (pType) {
 	case scene::EPT_POINTS:
 	case scene::EPT_POINT_SPRITES:
-		GL.DrawArrays(GL_POINTS, 0, primitiveCount);
+		glDrawArrays(GL_POINTS, 0, primitiveCount);
 		break;
 	case scene::EPT_LINE_STRIP:
-		GL.DrawElements(GL_LINE_STRIP, primitiveCount + 1, indexSize, indexList);
+		glDrawElements(GL_LINE_STRIP, primitiveCount + 1, indexSize, indexList);
 		break;
 	case scene::EPT_LINE_LOOP:
-		GL.DrawElements(GL_LINE_LOOP, primitiveCount, indexSize, indexList);
+		glDrawElements(GL_LINE_LOOP, primitiveCount, indexSize, indexList);
 		break;
 	case scene::EPT_LINES:
-		GL.DrawElements(GL_LINES, primitiveCount * 2, indexSize, indexList);
+		glDrawElements(GL_LINES, primitiveCount * 2, indexSize, indexList);
 		break;
 	case scene::EPT_TRIANGLE_STRIP:
-		GL.DrawElements(GL_TRIANGLE_STRIP, primitiveCount + 2, indexSize, indexList);
+		glDrawElements(GL_TRIANGLE_STRIP, primitiveCount + 2, indexSize, indexList);
 		break;
 	case scene::EPT_TRIANGLE_FAN:
-		GL.DrawElements(GL_TRIANGLE_FAN, primitiveCount + 2, indexSize, indexList);
+		glDrawElements(GL_TRIANGLE_FAN, primitiveCount + 2, indexSize, indexList);
 		break;
 	case scene::EPT_TRIANGLES:
-		GL.DrawElements((LastMaterial.Wireframe) ? GL_LINES : (LastMaterial.PointCloud) ? GL_POINTS
+		glDrawElements((LastMaterial.Wireframe) ? GL_LINES : (LastMaterial.PointCloud) ? GL_POINTS
 																						: GL_TRIANGLES,
 				primitiveCount * 3, indexSize, indexList);
 		break;
@@ -811,8 +808,8 @@ void COpenGL3DriverBase::draw2DImage(const video::ITexture *texture, const core:
 		if (!clipRect->isValid())
 			return;
 
-		GL.Enable(GL_SCISSOR_TEST);
-		GL.Scissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
 				clipRect->getWidth(), clipRect->getHeight());
 	}
 
@@ -830,7 +827,7 @@ void COpenGL3DriverBase::draw2DImage(const video::ITexture *texture, const core:
 	drawQuad(vt2DImage, vertices);
 
 	if (clipRect)
-		GL.Disable(GL_SCISSOR_TEST);
+		glDisable(GL_SCISSOR_TEST);
 
 	testGLError(__LINE__);
 }
@@ -889,8 +886,8 @@ void COpenGL3DriverBase::draw2DImageBatch(const video::ITexture *texture,
 		if (!clipRect->isValid())
 			return;
 
-		GL.Enable(GL_SCISSOR_TEST);
-		GL.Scissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
 				clipRect->getWidth(), clipRect->getHeight());
 	}
 
@@ -934,12 +931,12 @@ void COpenGL3DriverBase::draw2DImageBatch(const video::ITexture *texture,
 				tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y));
 	}
 
-	GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, QuadIndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, QuadIndexBuffer);
 	drawElements(GL_TRIANGLES, vt2DImage, vtx.const_pointer(), vtx.size(), 0, 6 * drawCount);
-	GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (clipRect)
-		GL.Disable(GL_SCISSOR_TEST);
+		glDisable(GL_SCISSOR_TEST);
 }
 
 //! draw a 2d rectangle
@@ -1048,30 +1045,30 @@ void COpenGL3DriverBase::drawQuad(const VertexType &vertexType, const S3DVertex 
 void COpenGL3DriverBase::drawArrays(GLenum primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount)
 {
 	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
-	GL.DrawArrays(primitiveType, 0, vertexCount);
+	glDrawArrays(primitiveType, 0, vertexCount);
 	endDraw(vertexType);
 }
 
 void COpenGL3DriverBase::drawElements(GLenum primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
 {
 	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
-	GL.DrawRangeElements(primitiveType, 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
+	glDrawRangeElements(primitiveType, 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
 	endDraw(vertexType);
 }
 
 void COpenGL3DriverBase::beginDraw(const VertexType &vertexType, uintptr_t verticesBase)
 {
 	for (auto attr : vertexType) {
-		GL.EnableVertexAttribArray(attr.Index);
+		glEnableVertexAttribArray(attr.Index);
 		switch (attr.mode) {
 		case VertexAttribute::Mode::Regular:
-			GL.VertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_FALSE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_FALSE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		case VertexAttribute::Mode::Normalized:
-			GL.VertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_TRUE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_TRUE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		case VertexAttribute::Mode::Integral:
-			GL.VertexAttribIPointer(attr.Index, attr.ComponentCount, attr.ComponentType, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribIPointer(attr.Index, attr.ComponentCount, attr.ComponentType, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		}
 	}
@@ -1080,7 +1077,7 @@ void COpenGL3DriverBase::beginDraw(const VertexType &vertexType, uintptr_t verti
 void COpenGL3DriverBase::endDraw(const VertexType &vertexType)
 {
 	for (auto attr : vertexType)
-		GL.DisableVertexAttribArray(attr.Index);
+		glDisableVertexAttribArray(attr.Index);
 }
 
 ITexture *COpenGL3DriverBase::createDeviceDependentTexture(const io::path &name, IImage *image)
@@ -1116,7 +1113,7 @@ void COpenGL3DriverBase::setMaterial(const SMaterial &material)
 bool COpenGL3DriverBase::testGLError(int code)
 {
 #ifdef _DEBUG
-	GLenum g = GL.GetError();
+	GLenum g = glGetError();
 	switch (g) {
 	case GL_NO_ERROR:
 		return false;
@@ -1356,14 +1353,14 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 	// TODO: Polygon Offset. Not sure if it was left out deliberately or if it won't work with this driver.
 
 	if (resetAllRenderStates || lastmaterial.Thickness != material.Thickness)
-		GL.LineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), DimAliasedLine[0], DimAliasedLine[1]));
+		glLineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), DimAliasedLine[0], DimAliasedLine[1]));
 
 	// Anti aliasing
 	if (resetAllRenderStates || lastmaterial.AntiAliasing != material.AntiAliasing) {
 		if (material.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			GL.Enable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 		else if (lastmaterial.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			GL.Disable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 	}
 
 	// Texture parameters
@@ -1390,7 +1387,7 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].MagFilter != tmpTexture->getStatesCache().MagFilter) {
 			E_TEXTURE_MAG_FILTER magFilter = material.TextureLayers[i].MagFilter;
-			GL.TexParameteri(tmpTextureType, GL_TEXTURE_MAG_FILTER,
+			glTexParameteri(tmpTextureType, GL_TEXTURE_MAG_FILTER,
 					magFilter == ETMAGF_NEAREST ? GL_NEAREST : (assert(magFilter == ETMAGF_LINEAR), GL_LINEAR));
 
 			tmpTexture->getStatesCache().MagFilter = magFilter;
@@ -1400,7 +1397,7 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 			if (!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].MinFilter != tmpTexture->getStatesCache().MinFilter ||
 					!tmpTexture->getStatesCache().MipMapStatus) {
 				E_TEXTURE_MIN_FILTER minFilter = material.TextureLayers[i].MinFilter;
-				GL.TexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
+				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
 						minFilter == ETMINF_NEAREST_MIPMAP_NEAREST ? GL_NEAREST_MIPMAP_NEAREST : minFilter == ETMINF_LINEAR_MIPMAP_NEAREST ? GL_LINEAR_MIPMAP_NEAREST
 																						 : minFilter == ETMINF_NEAREST_MIPMAP_LINEAR       ? GL_NEAREST_MIPMAP_LINEAR
 																																		   : (assert(minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR_MIPMAP_LINEAR));
@@ -1412,7 +1409,7 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 			if (!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].MinFilter != tmpTexture->getStatesCache().MinFilter ||
 					tmpTexture->getStatesCache().MipMapStatus) {
 				E_TEXTURE_MIN_FILTER minFilter = material.TextureLayers[i].MinFilter;
-				GL.TexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
+				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
 						(minFilter == ETMINF_NEAREST_MIPMAP_NEAREST || minFilter == ETMINF_NEAREST_MIPMAP_LINEAR) ? GL_NEAREST : (assert(minFilter == ETMINF_LINEAR_MIPMAP_NEAREST || minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR));
 
 				tmpTexture->getStatesCache().MinFilter = minFilter;
@@ -1422,19 +1419,19 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 
 		if (AnisotropicFilterSupported &&
 				(!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].AnisotropicFilter != tmpTexture->getStatesCache().AnisotropicFilter)) {
-			GL.TexParameteri(tmpTextureType, GL.TEXTURE_MAX_ANISOTROPY,
+			glTexParameteri(tmpTextureType, GL_TEXTURE_MAX_ANISOTROPY,
 					material.TextureLayers[i].AnisotropicFilter > 1 ? core::min_(MaxAnisotropy, material.TextureLayers[i].AnisotropicFilter) : 1);
 
 			tmpTexture->getStatesCache().AnisotropicFilter = material.TextureLayers[i].AnisotropicFilter;
 		}
 
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].TextureWrapU != tmpTexture->getStatesCache().WrapU) {
-			GL.TexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, getTextureWrapMode(material.TextureLayers[i].TextureWrapU));
+			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, getTextureWrapMode(material.TextureLayers[i].TextureWrapU));
 			tmpTexture->getStatesCache().WrapU = material.TextureLayers[i].TextureWrapU;
 		}
 
 		if (!tmpTexture->getStatesCache().IsCached || material.TextureLayers[i].TextureWrapV != tmpTexture->getStatesCache().WrapV) {
-			GL.TexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, getTextureWrapMode(material.TextureLayers[i].TextureWrapV));
+			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, getTextureWrapMode(material.TextureLayers[i].TextureWrapV));
 			tmpTexture->getStatesCache().WrapV = material.TextureLayers[i].TextureWrapV;
 		}
 
@@ -1774,7 +1771,7 @@ void COpenGL3DriverBase::clearBuffers(u16 flag, SColor color, f32 depth, u8 sten
 		CacheHandler->setColorMask(ECP_ALL);
 
 		const f32 inv = 1.0f / 255.0f;
-		GL.ClearColor(color.getRed() * inv, color.getGreen() * inv,
+		glClearColor(color.getRed() * inv, color.getGreen() * inv,
 				color.getBlue() * inv, color.getAlpha() * inv);
 
 		mask |= GL_COLOR_BUFFER_BIT;
@@ -1782,17 +1779,17 @@ void COpenGL3DriverBase::clearBuffers(u16 flag, SColor color, f32 depth, u8 sten
 
 	if (flag & ECBF_DEPTH) {
 		CacheHandler->setDepthMask(true);
-		GL.ClearDepthf(depth);
+		glClearDepthf(depth);
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flag & ECBF_STENCIL) {
-		GL.ClearStencil(stencil);
+		glClearStencil(stencil);
 		mask |= GL_STENCIL_BUFFER_BIT;
 	}
 
 	if (mask)
-		GL.Clear(mask);
+		glClear(mask);
 
 	CacheHandler->setColorMask(colorMask);
 	CacheHandler->setDepthMask(depthMask);
@@ -1810,8 +1807,8 @@ IImage *COpenGL3DriverBase::createScreenShot(video::ECOLOR_FORMAT format, video:
 	GLint internalformat = GL_RGBA;
 	GLint type = GL_UNSIGNED_BYTE;
 	{
-		//			GL.GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &internalformat);
-		//			GL.GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &type);
+		//			glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &internalformat);
+		//			glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &type);
 		// there's a format we don't support ATM
 		if (GL_UNSIGNED_SHORT_4_4_4_4 == type) {
 			internalformat = GL_RGBA;
@@ -1841,7 +1838,7 @@ IImage *COpenGL3DriverBase::createScreenShot(video::ECOLOR_FORMAT format, video:
 		return 0;
 	}
 
-	GL.ReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, internalformat, type, pixels);
+	glReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, internalformat, type, pixels);
 	testGLError(__LINE__);
 
 	// opengl images are horizontally flipped, so we have to fix that here.

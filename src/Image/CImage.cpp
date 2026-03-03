@@ -7,7 +7,7 @@
 #include "CColorConverter.h"
 #include "CBlit.h"
 #include "Device/os.h"
-#include "Video/SoftwareDriver2_helper.h"
+#include "SoftwareDriver2_helper.h"
 
 
 namespace video

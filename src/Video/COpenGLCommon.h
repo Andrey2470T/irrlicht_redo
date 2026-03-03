@@ -6,6 +6,8 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
+#include <GL/glew.h>
+
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_) && defined(IRR_PREFER_SDL_GL_HEADER)
 #include <SDL_video.h>
 #include <SDL_opengl.h>
