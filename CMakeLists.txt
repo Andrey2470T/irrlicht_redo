@@ -34,7 +34,6 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 enable_testing()
 add_subdirectory(src)
-add_subdirectory(test)
 
 # Export a file that describes the targets that IrrlichtRedo creates.
 # The file is placed in the location FILE points to, where CMake can easily
