@@ -827,21 +827,6 @@ public:
 	\return Size of render target or screen/window */
 	virtual const core::dimension2d<u32> &getCurrentRenderTargetSize() const = 0;
 
-	//! Returns current frames per second value.
-	/** This value is updated approximately every 1.5 seconds and
-	is only intended to provide a rough guide to the average frame
-	rate. It is not suitable for use in performing timing
-	calculations or framerate independent movement.
-	\return Approximate amount of frames per second drawn. */
-	virtual s32 getFPS() const = 0;
-
-	//! Returns amount of primitives (mostly triangles) which were drawn in the last frame.
-	/** Together with getFPS() very useful method for statistics.
-	\param mode Defines if the primitives drawn are accumulated or
-	counted per frame.
-	\return Amount of primitives drawn in the last frame. */
-	virtual u32 getPrimitiveCountDrawn(u32 mode = 0) const = 0;
-
 	//! Gets name of this video driver.
 	/** \return Returns the name of the video driver, e.g. in case
 	of the Direct3D8 driver, it would return "Direct3D 8.1". */

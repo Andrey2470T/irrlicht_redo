@@ -9,12 +9,11 @@
 
 #include <GL/glew.h>
 
-// even though we have mt_opengl.h our driver code still uses GL_* constants
-#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
-#include <SDL_video.h>
-#include <SDL_opengl.h>
+#ifdef _IRR_USE_SDL3_
+	#include <SDL3/SDL_opengl.h>
 #else
-#include "vendor/gl.h"
+	#include <SDL_video.h>
+	#include <SDL_opengl.h>
 #endif
 
 

@@ -12,7 +12,6 @@
 #include "IMesh.h"
 #include "IMeshBuffer.h"
 #include "IMeshSceneNode.h"
-#include "CFPSCounter.h"
 #include "S3DVertex.h"
 #include "SVertexIndex.h"
 #include "SExposedVideoData.h"
@@ -186,13 +185,6 @@ public:
 
 	//! get render target size
 	const core::dimension2d<u32> &getCurrentRenderTargetSize() const override;
-
-	// get current frames per second value
-	s32 getFPS() const override;
-
-	//! returns amount of primitives (mostly triangles) were drawn in the last frame.
-	//! very useful method for statistics.
-	u32 getPrimitiveCountDrawn(u32 param = 0) const override;
 
 	//! \return Returns the name of the video driver. Example: In case of the DIRECT3D8
 	//! driver, it would return "Direct3D8.1".
@@ -702,8 +694,6 @@ protected:
 	core::rect<s32> ViewPort;
 	core::dimension2d<u32> ScreenSize;
 	core::matrix4 TransformationMatrix;
-
-	CFPSCounter FPSCounter;
 
 	u32 PrimitivesDrawn;
 	u32 MinVertexCountForVBO;

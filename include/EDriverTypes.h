@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include "irrTypes.h"
-
-
 namespace video
 {
 
@@ -17,14 +14,6 @@ enum E_DRIVER_TYPE
 	/** The null device is able to load textures, but does not
 	render and display any graphics. */
 	EDT_NULL,
-
-	//! OpenGL device, available on most platforms.
-	/** Performs hardware accelerated rendering of 3D and 2D
-	primitives. */
-	EDT_OPENGL,
-
-	//! OpenGL-ES 1.x driver, for embedded and mobile systems
-	EDT_OGLES1,
 
 	//! OpenGL-ES 2.x driver, for embedded and mobile systems
 	/** Supports shaders etc. */

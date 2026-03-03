@@ -11,7 +11,6 @@
 #include "position2d.h"
 #include "path.h"
 
-
 class IEventReceiver;
 
 //! Structure for holding Irrlicht Device creation parameters.
@@ -21,7 +20,7 @@ struct SIrrlichtCreationParameters
 	//! Constructs a SIrrlichtCreationParameters structure with default values.
 	SIrrlichtCreationParameters() :
 			DeviceType(EIDT_BEST),
-			DriverType(video::EDT_OPENGL),
+            DriverType(video::EDT_OPENGL3),
 			WindowSize(core::dimension2d<u32>(800, 600)),
 			WindowPosition(core::position2di(-1, -1)),
 			Bits(32),
@@ -43,12 +42,40 @@ struct SIrrlichtCreationParameters
 			LoggingLevel(ELL_INFORMATION),
 #endif
 			PrivateData(0),
-#ifdef IRR_MOBILE_PATHS
-			OGLES2ShaderPath("media/Shaders/")
-#else
-			OGLES2ShaderPath("../../media/Shaders/")
-#endif
+			OGLES2ShaderPath("SHADER_PATH_WAS_NOT_SET"),
+			DriverDebug(false)
 	{
+	}
+
+	SIrrlichtCreationParameters(const SIrrlichtCreationParameters &other)
+	{
+		*this = other;
+	}
+
+	SIrrlichtCreationParameters &operator=(const SIrrlichtCreationParameters &other)
+	{
+		DeviceType = other.DeviceType;
+		DriverType = other.DriverType;
+		WindowSize = other.WindowSize;
+		WindowPosition = other.WindowPosition;
+		Bits = other.Bits;
+		ZBufferBits = other.ZBufferBits;
+		Fullscreen = other.Fullscreen;
+		WindowMaximized = other.WindowMaximized;
+		WindowResizable = other.WindowResizable;
+		Stencilbuffer = other.Stencilbuffer;
+		Vsync = other.Vsync;
+		AntiAlias = other.AntiAlias;
+		WithAlphaChannel = other.WithAlphaChannel;
+		Doublebuffer = other.Doublebuffer;
+		Stereobuffer = other.Stereobuffer;
+		EventReceiver = other.EventReceiver;
+		WindowId = other.WindowId;
+		LoggingLevel = other.LoggingLevel;
+		PrivateData = other.PrivateData;
+		OGLES2ShaderPath = other.OGLES2ShaderPath;
+		DriverDebug = other.DriverDebug;
+		return *this;
 	}
 
 	//! Type of the device.
@@ -223,5 +250,7 @@ struct SIrrlichtCreationParameters
 	/** This is about the shaders which can be found in media/Shaders by default. It's only necessary
 	to set when using OGL-ES 2.0 */
 	io::path OGLES2ShaderPath;
-};
 
+	//! Enable debug and error checks in video driver.
+	bool DriverDebug;
+};

@@ -8,12 +8,7 @@
 
 #include "irrString.h"
 #include "irrArray.h"
-#include "Device/os.h"
-
-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
-#include <android/native_activity.h>
-#endif
-
+#include "os.h"
 
 namespace video
 {
@@ -21,11 +16,7 @@ namespace video
 CEGLManager::CEGLManager() :
 		IContextManager(), EglWindow(0), EglDisplay(EGL_NO_DISPLAY),
 		EglSurface(EGL_NO_SURFACE), EglContext(EGL_NO_CONTEXT), EglConfig(0), MajorVersion(0), MinorVersion(0)
-{
-#ifdef _DEBUG
-	setDebugName("CEGLManager");
-#endif
-}
+{}
 
 CEGLManager::~CEGLManager()
 {
@@ -44,40 +35,27 @@ bool CEGLManager::initialize(const SIrrlichtCreationParameters &params, const SE
 		return true;
 
 		// Window is depend on platform.
-#if defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_)
-	EglWindow = (NativeWindowType)Data.OpenGLWin32.HWnd;
-	Data.OpenGLWin32.HDc = GetDC((HWND)EglWindow);
-	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLWin32.HDc);
-#elif defined(_IRR_EMSCRIPTEN_PLATFORM_)
+#if defined(_IRR_EMSCRIPTEN_PLATFORM_)
 	EglWindow = 0;
-	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-#elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
-	EglWindow = (NativeWindowType)Data.OpenGLLinux.X11Window;
-	EglDisplay = eglGetDisplay((NativeDisplayType)Data.OpenGLLinux.X11Display);
-#elif defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
-	EglWindow = (ANativeWindow *)Data.OGLESAndroid.Window;
-	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-#elif defined(_IRR_COMPILE_WITH_FB_DEVICE_)
-	EglWindow = (NativeWindowType)Data.OpenGLFB.Window;
 	EglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #endif
 
 	// We must check if EGL display is valid.
 	if (EglDisplay == EGL_NO_DISPLAY) {
-		os::Printer::log("Could not get EGL display.");
+		g_irrlogger->log("Could not get EGL display.");
 		terminate();
 		return false;
 	}
 
 	// Initialize EGL here.
 	if (!eglInitialize(EglDisplay, &MajorVersion, &MinorVersion)) {
-		os::Printer::log("Could not initialize EGL display.");
+		g_irrlogger->log("Could not initialize EGL display.");
 
 		EglDisplay = EGL_NO_DISPLAY;
 		terminate();
 		return false;
 	} else
-		os::Printer::log("EGL version", core::stringc(MajorVersion + (MinorVersion * 0.1f)).c_str());
+		g_irrlogger->log("EGL version", core::stringc(MajorVersion + (MinorVersion * 0.1f)).c_str());
 
 	return true;
 }
@@ -95,13 +73,6 @@ void CEGLManager::terminate()
 		EglDisplay = EGL_NO_DISPLAY;
 	}
 
-#if defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_)
-	if (Data.OpenGLWin32.HDc) {
-		ReleaseDC((HWND)EglWindow, (HDC)Data.OpenGLWin32.HDc);
-		Data.OpenGLWin32.HDc = 0;
-	}
-#endif
-
 	MajorVersion = 0;
 	MinorVersion = 0;
 }
@@ -118,10 +89,6 @@ bool CEGLManager::generateSurface()
 		// at this time only Android support this feature.
 		// this needs an update method instead!
 
-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
-	EglWindow = (ANativeWindow *)Data.OGLESAndroid.Window;
-#endif
-
 #if defined(_IRR_EMSCRIPTEN_PLATFORM_)
 	// eglChooseConfig is currently only implemented as stub in emscripten (version 1.37.22 at point of writing)
 	// But the other solution would also be fine as it also only generates a single context so there is not much to choose from.
@@ -131,16 +98,9 @@ bool CEGLManager::generateSurface()
 #endif
 
 	if (EglConfig == 0) {
-		os::Printer::log("Could not get config for EGL display.");
+		g_irrlogger->log("Could not get config for EGL display.");
 		return false;
 	}
-
-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
-	EGLint Format = 0;
-	eglGetConfigAttrib(EglDisplay, EglConfig, EGL_NATIVE_VISUAL_ID, &Format);
-
-	ANativeWindow_setBuffersGeometry(EglWindow, 0, 0, Format);
-#endif
 
 	// Now we are able to create EGL surface.
 	EglSurface = eglCreateWindowSurface(EglDisplay, EglConfig, EglWindow, 0);
@@ -149,7 +109,7 @@ bool CEGLManager::generateSurface()
 		EglSurface = eglCreateWindowSurface(EglDisplay, EglConfig, 0, 0);
 
 	if (EGL_NO_SURFACE == EglSurface)
-		os::Printer::log("Could not create EGL surface.");
+		g_irrlogger->log("Could not create EGL surface.");
 
 #ifdef EGL_VERSION_1_2
 	if (MinorVersion > 1)
@@ -169,9 +129,6 @@ EGLConfig CEGLManager::chooseConfig(EConfigStyle confStyle)
 	// Find proper OpenGL BIT.
 	EGLint eglOpenGLBIT = 0;
 	switch (Params.DriverType) {
-	case EDT_OGLES1:
-		eglOpenGLBIT = EGL_OPENGL_ES_BIT;
-		break;
 	case EDT_OGLES2:
 	case EDT_WEBGL1:
 		eglOpenGLBIT = EGL_OPENGL_ES2_BIT;
@@ -263,19 +220,19 @@ EGLConfig CEGLManager::chooseConfig(EConfigStyle confStyle)
 		}
 
 		if (Params.AntiAlias && !Attribs[17])
-			os::Printer::log("No multisampling.");
+			g_irrlogger->log("No multisampling.");
 
 		if (Params.WithAlphaChannel && !Attribs[7])
-			os::Printer::log("No alpha.");
+			g_irrlogger->log("No alpha.");
 
 		if (Params.Stencilbuffer && !Attribs[15])
-			os::Printer::log("No stencil buffer.");
+			g_irrlogger->log("No stencil buffer.");
 
 		if (Params.ZBufferBits > Attribs[13])
-			os::Printer::log("No full depth buffer.");
+			g_irrlogger->log("No full depth buffer.");
 
 		if (Params.Bits > Attribs[9])
-			os::Printer::log("No full color buffer.");
+			g_irrlogger->log("No full color buffer.");
 	} else if (confStyle == ECS_IRR_CHOOSE) {
 		// find number of available configs
 		EGLint numConfigs;
@@ -329,7 +286,7 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_RENDERABLE_TYPE, &attribRenderableType);
 	if (attribRenderableType != eglOpenGLBIT) {
 		if (log)
-			os::Printer::log("EGL_RENDERABLE_TYPE != eglOpenGLBIT");
+			g_irrlogger->log("EGL_RENDERABLE_TYPE != eglOpenGLBIT");
 		return -1;
 	}
 #endif
@@ -337,7 +294,7 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_SURFACE_TYPE, &attribSurfaceType);
 	if (attribSurfaceType != EGL_WINDOW_BIT) {
 		if (log)
-			os::Printer::log("EGL_SURFACE_TYPE!= EGL_WINDOW_BIT");
+			g_irrlogger->log("EGL_SURFACE_TYPE!= EGL_WINDOW_BIT");
 		return -1;
 	}
 
@@ -351,12 +308,12 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_BUFFER_SIZE, &attribBufferSize);
 	if (attribBufferSize < Params.Bits) {
 		if (log)
-			os::Printer::log("No full color buffer.");
+			g_irrlogger->log("No full color buffer.");
 		rating += 100;
 	}
 	if (attribBufferSize > Params.Bits) {
 		if (log)
-			os::Printer::log("Larger color buffer.", ELL_DEBUG);
+			g_irrlogger->log("Larger color buffer.", ELL_DEBUG);
 		++rating;
 	}
 
@@ -389,11 +346,11 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_ALPHA_SIZE, &attribAlphaSize);
 	if (Params.WithAlphaChannel && attribAlphaSize == 0) {
 		if (log)
-			os::Printer::log("No alpha.");
+			g_irrlogger->log("No alpha.");
 		rating += 10;
 	} else if (!Params.WithAlphaChannel && attribAlphaSize > 0) {
 		if (log)
-			os::Printer::log("Got alpha (unrequested).", ELL_DEBUG);
+			g_irrlogger->log("Got alpha (unrequested).", ELL_DEBUG);
 		rating++;
 	}
 
@@ -401,11 +358,11 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_STENCIL_SIZE, &attribStencilSize);
 	if (Params.Stencilbuffer && attribStencilSize == 0) {
 		if (log)
-			os::Printer::log("No stencil buffer.");
+			g_irrlogger->log("No stencil buffer.");
 		rating += 10;
 	} else if (!Params.Stencilbuffer && attribStencilSize > 0) {
 		if (log)
-			os::Printer::log("Got a stencil buffer (unrequested).", ELL_DEBUG);
+			g_irrlogger->log("Got a stencil buffer (unrequested).", ELL_DEBUG);
 		rating++;
 	}
 
@@ -414,17 +371,17 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	if (attribDepthSize < Params.ZBufferBits) {
 		if (log) {
 			if (attribDepthSize > 0)
-				os::Printer::log("No full depth buffer.");
+				g_irrlogger->log("No full depth buffer.");
 			else
-				os::Printer::log("No depth buffer.");
+				g_irrlogger->log("No depth buffer.");
 		}
 		rating += 50;
 	} else if (attribDepthSize != Params.ZBufferBits) {
 		if (log) {
 			if (Params.ZBufferBits == 0)
-				os::Printer::log("Got a depth buffer (unrequested).", ELL_DEBUG);
+				g_irrlogger->log("Got a depth buffer (unrequested).", ELL_DEBUG);
 			else
-				os::Printer::log("Got a larger depth buffer.", ELL_DEBUG);
+				g_irrlogger->log("Got a larger depth buffer.", ELL_DEBUG);
 		}
 		rating++;
 	}
@@ -434,19 +391,19 @@ s32 CEGLManager::rateConfig(EGLConfig config, EGLint eglOpenGLBIT, bool log)
 	eglGetConfigAttrib(EglDisplay, config, EGL_SAMPLES, &attribSamples);
 	if (Params.AntiAlias && attribSampleBuffers == 0) {
 		if (log)
-			os::Printer::log("No multisampling.");
+			g_irrlogger->log("No multisampling.");
 		rating += 20;
 	} else if (Params.AntiAlias && attribSampleBuffers && attribSamples < Params.AntiAlias) {
 		if (log)
-			os::Printer::log("Multisampling with less samples than requested.", ELL_DEBUG);
+			g_irrlogger->log("Multisampling with less samples than requested.", ELL_DEBUG);
 		rating += 10;
 	} else if (Params.AntiAlias && attribSampleBuffers && attribSamples > Params.AntiAlias) {
 		if (log)
-			os::Printer::log("Multisampling with more samples than requested.", ELL_DEBUG);
+			g_irrlogger->log("Multisampling with more samples than requested.", ELL_DEBUG);
 		rating += 5;
 	} else if (!Params.AntiAlias && attribSampleBuffers > 0) {
 		if (log)
-			os::Printer::log("Got multisampling (unrequested).", ELL_DEBUG);
+			g_irrlogger->log("Got multisampling (unrequested).", ELL_DEBUG);
 		rating += 3;
 	}
 
@@ -476,9 +433,6 @@ bool CEGLManager::generateContext()
 	EGLint OpenGLESVersion = 0;
 
 	switch (Params.DriverType) {
-	case EDT_OGLES1:
-		OpenGLESVersion = 1;
-		break;
 	case EDT_OGLES2:
 	case EDT_WEBGL1:
 		OpenGLESVersion = 2;
@@ -497,11 +451,11 @@ bool CEGLManager::generateContext()
 	EglContext = eglCreateContext(EglDisplay, EglConfig, EGL_NO_CONTEXT, ContextAttrib);
 
 	if (testEGLError()) {
-		os::Printer::log("Could not create EGL context.", ELL_ERROR);
+		g_irrlogger->log("Could not create EGL context.", ELL_ERROR);
 		return false;
 	}
 
-	os::Printer::log("EGL context created with OpenGLESVersion: ", core::stringc((int)OpenGLESVersion), ELL_DEBUG);
+	g_irrlogger->log("EGL context created with OpenGLESVersion: ", core::stringc((int)OpenGLESVersion), ELL_DEBUG);
 
 	return true;
 }
@@ -523,7 +477,7 @@ bool CEGLManager::activateContext(const SExposedVideoData &videoData, bool resto
 	eglMakeCurrent(EglDisplay, EglSurface, EglSurface, EglContext);
 
 	if (testEGLError()) {
-		os::Printer::log("Could not make EGL context current.");
+		g_irrlogger->log("Could not make EGL context current.");
 		return false;
 	}
 	return true;
@@ -546,65 +500,62 @@ bool CEGLManager::swapBuffers()
 
 bool CEGLManager::testEGLError()
 {
-#if defined(EGL_VERSION_1_0) && defined(_DEBUG)
+	if (!Params.DriverDebug)
+		return false;
 	EGLint status = eglGetError();
 
 	switch (status) {
 	case EGL_SUCCESS:
 		return false;
 	case EGL_NOT_INITIALIZED:
-		os::Printer::log("Not Initialized", ELL_ERROR);
+		g_irrlogger->log("Not Initialized", ELL_ERROR);
 		break;
 	case EGL_BAD_ACCESS:
-		os::Printer::log("Bad Access", ELL_ERROR);
+		g_irrlogger->log("Bad Access", ELL_ERROR);
 		break;
 	case EGL_BAD_ALLOC:
-		os::Printer::log("Bad Alloc", ELL_ERROR);
+		g_irrlogger->log("Bad Alloc", ELL_ERROR);
 		break;
 	case EGL_BAD_ATTRIBUTE:
-		os::Printer::log("Bad Attribute", ELL_ERROR);
+		g_irrlogger->log("Bad Attribute", ELL_ERROR);
 		break;
 	case EGL_BAD_CONTEXT:
-		os::Printer::log("Bad Context", ELL_ERROR);
+		g_irrlogger->log("Bad Context", ELL_ERROR);
 		break;
 	case EGL_BAD_CONFIG:
-		os::Printer::log("Bad Config", ELL_ERROR);
+		g_irrlogger->log("Bad Config", ELL_ERROR);
 		break;
 	case EGL_BAD_CURRENT_SURFACE:
-		os::Printer::log("Bad Current Surface", ELL_ERROR);
+		g_irrlogger->log("Bad Current Surface", ELL_ERROR);
 		break;
 	case EGL_BAD_DISPLAY:
-		os::Printer::log("Bad Display", ELL_ERROR);
+		g_irrlogger->log("Bad Display", ELL_ERROR);
 		break;
 	case EGL_BAD_SURFACE:
-		os::Printer::log("Bad Surface", ELL_ERROR);
+		g_irrlogger->log("Bad Surface", ELL_ERROR);
 		break;
 	case EGL_BAD_MATCH:
-		os::Printer::log("Bad Match", ELL_ERROR);
+		g_irrlogger->log("Bad Match", ELL_ERROR);
 		break;
 	case EGL_BAD_PARAMETER:
-		os::Printer::log("Bad Parameter", ELL_ERROR);
+		g_irrlogger->log("Bad Parameter", ELL_ERROR);
 		break;
 	case EGL_BAD_NATIVE_PIXMAP:
-		os::Printer::log("Bad Native Pixmap", ELL_ERROR);
+		g_irrlogger->log("Bad Native Pixmap", ELL_ERROR);
 		break;
 	case EGL_BAD_NATIVE_WINDOW:
-		os::Printer::log("Bad Native Window", ELL_ERROR);
+		g_irrlogger->log("Bad Native Window", ELL_ERROR);
 		break;
 	case EGL_CONTEXT_LOST:
-		os::Printer::log("Context Lost", ELL_ERROR);
+		g_irrlogger->log("Context Lost", ELL_ERROR);
 		break;
 	default:
 		break;
 	};
 
 	return true;
-#else
-	return false;
-#endif
 }
 
-}
 }
 
 #endif

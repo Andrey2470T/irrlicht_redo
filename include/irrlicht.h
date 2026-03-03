@@ -75,7 +75,6 @@
 #include "IImage.h"
 #include "IImageLoader.h"
 #include "IImageWriter.h"
-#include "IIndexBuffer.h"
 #include "ILogger.h"
 #include "IMaterialRenderer.h"
 #include "IMaterialRendererServices.h"
@@ -102,7 +101,6 @@
 #include "ISkinnedMesh.h"
 #include "ITexture.h"
 #include "ITimer.h"
-#include "IVertexBuffer.h"
 #include "IVideoDriver.h"
 #include "IWriteFile.h"
 #include "Keycodes.h"
@@ -168,7 +166,7 @@
  * int main()
  * {
  *	// start up the engine
- *	IrrlichtDevice *device = createDevice(video::EDT_OPENGL,
+ *	IrrlichtDevice *device = createDevice(video::EDT_OPENGL3,
  *		core::dimension2d<u32>(640,480));
  *
  *	video::IVideoDriver* driver = device->getVideoDriver();
@@ -260,7 +258,7 @@ for the vertical retrace period, otherwise not.
 device could not be created.
 */
 extern "C" IrrlichtDevice *createDevice(
-		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL,
+		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL3,
 		// parentheses are necessary for some compilers
 		const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
 		u32 bits = 32,

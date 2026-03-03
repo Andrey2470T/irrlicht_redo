@@ -6,14 +6,17 @@
 
 #include "IReferenceCounted.h"
 #include "dimension2d.h"
-#include "IVideoDriver.h"
 #include "EDriverTypes.h"
 #include "EDeviceTypes.h"
 #include "IEventReceiver.h"
 #include "ICursorControl.h"
 #include "ITimer.h"
 #include "IOSOperator.h"
-
+#include "irrArray.h"
+#include "position2d.h"
+#include "SColor.h" // video::ECOLOR_FORMAT
+#include <string>
+#include <variant>
 
 class ILogger;
 class IEventReceiver;
@@ -36,6 +39,8 @@ class ISceneManager;
 namespace video
 {
 class IContextManager;
+class IImage;
+class IVideoDriver;
 extern "C" bool isDriverSupported(E_DRIVER_TYPE driver);
 } // end namespace video
 
@@ -177,16 +182,19 @@ public:
 	/** \return True if window is fullscreen. */
 	virtual bool isFullscreen() const = 0;
 
+	//! Enables or disables fullscreen mode.
+	/** Only works on SDL.
+	\return True on success. */
+	virtual bool setFullscreen(bool fullscreen) { return false; }
+
 	//! Checks if the window could possibly be visible.
-	//! Currently, this only returns false when the activity is stopped on
-	//! Android. Note that for Android activities, "stopped" means something
-	//! different than you might expect (and also something different than
-	//! "paused"). Read the Android lifecycle documentation.
+	/** If this returns false, you should not do any rendering. */
 	virtual bool isWindowVisible() const { return true; };
 
-	//! Get the current color format of the window
-	/** \return Color format of the window. */
-	virtual video::ECOLOR_FORMAT getColorFormat() const = 0;
+	//! Checks if the Irrlicht device supports touch events.
+	/** Intentionally doesn't check whether a touch input device is available
+	or similar. */
+	virtual bool supportsTouchEvents() const { return false; }
 
 	//! Notifies the device that it should close itself.
 	/** IrrlichtDevice::run() will always return false after closeDevice() was called. */
@@ -317,6 +325,12 @@ public:
 	used. */
 	virtual E_DEVICE_TYPE getType() const = 0;
 
+	//! Get the version string of the underlying system (e.g. SDL)
+	virtual std::string getVersionString() const
+	{
+		return "";
+	}
+
 	//! Get the display density in dots per inch.
 	//! Returns 0.0f on failure.
 	virtual float getDisplayDensity() const = 0;
@@ -328,5 +342,26 @@ public:
 	{
 		return video::isDriverSupported(driver);
 	}
-};
 
+	//! Get the corresponding scancode for the keycode.
+	/**
+	\param key The keycode to convert.
+	\return The implementation-dependent scancode for the key (represented by the u32 component) or, if a scancode is not
+	available, the corresponding Irrlicht keycode (represented by the EKEY_CODE component).
+	*/
+	virtual std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const {
+		if (auto pv = std::get_if<EKEY_CODE>(&key))
+			return *pv;
+		return (u32)std::get<wchar_t>(key);
+	}
+
+	//! Get the corresponding keycode for the scancode.
+	/**
+	\param scancode The implementation-dependent scancode for the key.
+	\return The corresponding keycode.
+	*/
+	virtual Keycode getKeyFromScancode(const u32 scancode) const {
+		(void)scancode;
+		return Keycode(KEY_UNKNOWN, (wchar_t)0xFFFF);
+	}
+};

@@ -5,11 +5,8 @@
 #pragma once
 
 #include "ILogger.h"
-#include "Device/os.h"
 #include "irrString.h"
 #include "IEventReceiver.h"
-
-
 
 //! Class for logging messages, warnings and errors to stdout
 class CLogger : public ILogger
@@ -36,3 +33,5 @@ private:
 	ELOG_LEVEL LogLevel;
 	IEventReceiver *Receiver;
 };
+
+extern ILogger *g_irrlogger;

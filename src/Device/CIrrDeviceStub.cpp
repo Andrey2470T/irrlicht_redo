@@ -8,10 +8,38 @@
 #include "IFileSystem.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
-#include "Device/os.h"
-#include "CTimer.h"
+#include "IVideoDriver.h"
 #include "CLogger.h"
+#include "CTimer.h"
 #include "irrString.h"
+
+namespace video
+{
+
+#ifndef ENABLE_OPENGL3
+IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	g_irrlogger->log("No OpenGL 3 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+
+#ifndef _IRR_COMPILE_WITH_OGLES2_
+IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	g_irrlogger->log("No OpenGL ES 2 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+
+#ifndef _IRR_COMPILE_WITH_WEBGL1_
+IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	g_irrlogger->log("No WebGL 1 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+}
 
 
 //! constructor
@@ -23,17 +51,17 @@ CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		CreationParams(params), Close(false)
 {
 	Timer = new CTimer();
-	if (os::Printer::Logger) {
-		os::Printer::Logger->grab();
-		Logger = (CLogger *)os::Printer::Logger;
+    if (g_irrlogger) {
+        g_irrlogger->grab();
+        Logger = (CLogger *)g_irrlogger;
 		Logger->setReceiver(UserReceiver);
 	} else {
 		Logger = new CLogger(UserReceiver);
-		os::Printer::Logger = Logger;
+        g_irrlogger = Logger;
 	}
 	Logger->setLogLevel(CreationParams.LoggingLevel);
 
-	os::Printer::Logger = Logger;
+    g_irrlogger = Logger;
 
 	FileSystem = io::createFileSystem();
 }
@@ -66,11 +94,10 @@ CIrrDeviceStub::~CIrrDeviceStub()
 
 	CursorControl = 0;
 
-	if (Timer)
-		Timer->drop();
+    delete Timer;
 
 	if (Logger->drop())
-		os::Printer::Logger = 0;
+        g_irrlogger = nullptr;
 }
 
 void CIrrDeviceStub::createGUIAndScene()
@@ -225,12 +252,6 @@ bool CIrrDeviceStub::isFullscreen() const
 	return CreationParams.Fullscreen;
 }
 
-//! returns color format
-video::ECOLOR_FORMAT CIrrDeviceStub::getColorFormat() const
-{
-	return video::ECF_R5G6B5;
-}
-
 //! No-op in this implementation
 bool CIrrDeviceStub::activateJoysticks(core::array<SJoystickInfo> &joystickInfo)
 {
@@ -340,4 +361,3 @@ bool CIrrDeviceStub::acceptsIME()
 	gui::IGUIElement *elem = GUIEnvironment->getFocus();
 	return elem && elem->acceptsIME();
 }
-

@@ -12,7 +12,6 @@
 #include "SExposedVideoData.h"
 #include "IContextManager.h"
 
-
 namespace video
 {
 // EGL manager.
@@ -108,6 +107,5 @@ private:
 	EGLint MajorVersion;
 	EGLint MinorVersion;
 };
-}
 }
 #endif
