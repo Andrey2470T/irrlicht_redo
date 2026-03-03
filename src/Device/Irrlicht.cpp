@@ -34,7 +34,7 @@ static const char *const copyright = "Irrlicht Engine (c) 2002-2017 Nikolaus Geb
 
 
 //! stub for calling createDeviceEx
-IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDevice(video::E_DRIVER_TYPE driverType,
+IrrlichtDevice *createDevice(video::E_DRIVER_TYPE driverType,
 		const core::dimension2d<u32> &windowSize,
 		u32 bits, bool fullscreen,
 		bool stencilbuffer, bool vsync, IEventReceiver *res)
@@ -53,7 +53,7 @@ IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDevice(video::E_DRIVER_TYPE drive
 	return createDeviceEx(p);
 }
 
-extern "C" IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDeviceEx(const SIrrlichtCreationParameters &params)
+extern "C" IrrlichtDevice *createDeviceEx(const SIrrlichtCreationParameters &params)
 {
 
 	IrrlichtDevice *dev = 0;
@@ -102,7 +102,7 @@ namespace video
 {
 SMaterial IdentityMaterial;
 
-extern "C" IRRLICHT_API bool IRRCALLCONV isDriverSupported(E_DRIVER_TYPE driver)
+extern "C" bool isDriverSupported(E_DRIVER_TYPE driver)
 {
 	switch (driver) {
 	case EDT_NULL:

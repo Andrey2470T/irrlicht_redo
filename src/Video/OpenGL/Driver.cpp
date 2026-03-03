@@ -241,19 +241,6 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 
 	StencilBuffer = stencilBuffer;
 
-	DriverAttributes->setAttribute("MaxTextures", (s32)Feature.MaxTextureUnits);
-	DriverAttributes->setAttribute("MaxSupportedTextures", (s32)Feature.MaxTextureUnits);
-	//		DriverAttributes->setAttribute("MaxLights", MaxLights);
-	DriverAttributes->setAttribute("MaxAnisotropy", MaxAnisotropy);
-	//		DriverAttributes->setAttribute("MaxUserClipPlanes", MaxUserClipPlanes);
-	//		DriverAttributes->setAttribute("MaxAuxBuffers", MaxAuxBuffers);
-	//		DriverAttributes->setAttribute("MaxMultipleRenderTargets", MaxMultipleRenderTargets);
-	DriverAttributes->setAttribute("MaxIndices", (s32)MaxIndices);
-	DriverAttributes->setAttribute("MaxTextureSize", (s32)MaxTextureSize);
-	DriverAttributes->setAttribute("MaxTextureLODBias", MaxTextureLODBias);
-	DriverAttributes->setAttribute("Version", 100 * Version.Major + Version.Minor);
-	DriverAttributes->setAttribute("AntiAlias", AntiAlias);
-
 	GL.PixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	UserClipPlane.reallocate(0);

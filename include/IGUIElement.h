@@ -10,7 +10,6 @@
 #include "IEventReceiver.h"
 #include "EGUIElementTypes.h"
 #include "EGUIAlignment.h"
-#include "IAttributes.h"
 #include "IGUIEnvironment.h"
 #include <cassert>
 #include <algorithm>

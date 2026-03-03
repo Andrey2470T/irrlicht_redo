@@ -8,6 +8,7 @@
 #include "IBoneSceneNode.h"
 #include "IAnimatedMesh.h"
 #include "SSkinMeshBuffer.h"
+#include "quaternion.h"
 
 #include <optional>
 

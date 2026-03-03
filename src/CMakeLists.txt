@@ -446,7 +446,6 @@ add_library(IRRDEVICEOBJ OBJECT
 	Device/COSOperator.cpp
 	Device/Irrlicht.cpp
 	Device/os.cpp
-	Device/CAttributes.cpp
 )
 
 if(ENABLE_OPENGL3)

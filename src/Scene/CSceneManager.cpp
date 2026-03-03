@@ -37,7 +37,7 @@ CSceneManager::CSceneManager(video::IVideoDriver *driver,
 		ISceneNode(0, 0),
 		Driver(driver),
 		CursorControl(cursorControl),
-		ActiveCamera(0), ShadowColor(150, 0, 0, 0), AmbientLight(0, 0, 0, 0), Parameters(0),
+		ActiveCamera(0), ShadowColor(150, 0, 0, 0), AmbientLight(0, 0, 0, 0),
 		MeshCache(cache), CurrentRenderPass(ESNRP_NONE)
 {
 #ifdef _DEBUG
@@ -59,9 +59,6 @@ CSceneManager::CSceneManager(video::IVideoDriver *driver,
 		MeshCache = new CMeshCache();
 	else
 		MeshCache->grab();
-
-	// set scene parameters
-	Parameters = new io::CAttributes();
 
 	// create collision manager
 	CollisionManager = new CSceneCollisionManager(this, Driver);
@@ -104,9 +101,6 @@ CSceneManager::~CSceneManager()
 
 	if (MeshCache)
 		MeshCache->drop();
-
-	if (Parameters)
-		Parameters->drop();
 
 	// remove all nodes before dropping the driver
 	// as render targets may be destroyed twice
@@ -485,7 +479,7 @@ void CSceneManager::drawAll()
 	for (i = video::ETS_COUNT - 1; i >= video::ETS_TEXTURE_0; --i)
 		Driver->setTransform((video::E_TRANSFORMATION_STATE)i, core::IdentityMatrix);
 	// TODO: This should not use an attribute here but a real parameter when necessary (too slow!)
-	Driver->setAllowZWriteOnTransparent(Parameters->getAttributeAsBool(ALLOW_ZWRITE_ON_TRANSPARENT));
+	Driver->setAllowZWriteOnTransparent(true);
 
 	// do animations and other stuff.
 	OnAnimate(os::Timer::getTime());
@@ -749,12 +743,6 @@ void CSceneManager::removeAll()
 void CSceneManager::clear()
 {
 	removeAll();
-}
-
-//! Returns interface to the parameters set in this scene.
-io::IAttributes *CSceneManager::getParameters()
-{
-	return Parameters;
 }
 
 //! Returns current render pass.

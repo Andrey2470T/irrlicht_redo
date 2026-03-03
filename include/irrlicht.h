@@ -45,7 +45,6 @@
 #include "fast_atof.h"
 #include "IAnimatedMesh.h"
 #include "IAnimatedMeshSceneNode.h"
-#include "IAttributes.h"
 #include "IBillboardSceneNode.h"
 #include "IBoneSceneNode.h"
 #include "ICameraSceneNode.h"
@@ -128,7 +127,6 @@
 #include "SViewFrustum.h"
 #include "vector2d.h"
 #include "vector3d.h"
-#include "IrrCompileConfig.h" // for IRRLICHT_API and IRRCALLCONV
 
 /*! \mainpage Irrlicht Engine 1.9 API documentation
  *
@@ -261,7 +259,7 @@ for the vertical retrace period, otherwise not.
 \return Returns pointer to the created IrrlichtDevice or null if the
 device could not be created.
 */
-extern "C" IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDevice(
+extern "C" IrrlichtDevice *createDevice(
 		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL,
 		// parentheses are necessary for some compilers
 		const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
@@ -279,7 +277,7 @@ handle in which the device should be created.
 See SIrrlichtCreationParameters for details.
 \return Returns pointer to the created IrrlichtDevice or null if the
 device could not be created. */
-extern "C" IRRLICHT_API IrrlichtDevice *IRRCALLCONV createDeviceEx(
+extern "C" IrrlichtDevice *createDeviceEx(
 		const SIrrlichtCreationParameters &parameters);
 
 // THE FOLLOWING IS AN EMPTY LIST OF ALL SUB NAMESPACES

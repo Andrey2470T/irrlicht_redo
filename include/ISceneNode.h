@@ -12,7 +12,6 @@
 #include "irrString.h"
 #include "aabbox3d.h"
 #include "matrix4.h"
-#include "IAttributes.h"
 
 #include <list>
 #include <optional>

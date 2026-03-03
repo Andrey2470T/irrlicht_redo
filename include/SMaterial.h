@@ -11,7 +11,6 @@
 #include "EMaterialTypes.h"
 #include "EMaterialProps.h"
 #include "SMaterialLayer.h"
-#include "IrrCompileConfig.h" // for IRRLICHT_API
 
 
 namespace video
@@ -560,5 +559,5 @@ public:
 };
 
 //! global const identity Material
-IRRLICHT_API extern SMaterial IdentityMaterial;
+extern SMaterial IdentityMaterial;
 } // end namespace video

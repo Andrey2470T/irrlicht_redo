@@ -13,7 +13,6 @@
 #include "ICursorControl.h"
 #include "ITimer.h"
 #include "IOSOperator.h"
-#include "IrrCompileConfig.h"
 
 
 class ILogger;
@@ -37,7 +36,7 @@ class ISceneManager;
 namespace video
 {
 class IContextManager;
-extern "C" IRRLICHT_API bool IRRCALLCONV isDriverSupported(E_DRIVER_TYPE driver);
+extern "C" bool isDriverSupported(E_DRIVER_TYPE driver);
 } // end namespace video
 
 //! The Irrlicht device. You can create it with createDevice() or createDeviceEx().
@@ -192,12 +191,6 @@ public:
 	//! Notifies the device that it should close itself.
 	/** IrrlichtDevice::run() will always return false after closeDevice() was called. */
 	virtual void closeDevice() = 0;
-
-	//! Get the version of the engine.
-	/** The returned string
-	will look like this: "1.2.3" or this: "1.2".
-	\return String which contains the version. */
-	virtual const c8 *getVersion() const = 0;
 
 	//! Sets a new user event receiver which will receive events from the engine.
 	/** Return true in IEventReceiver::OnEvent to prevent the event from continuing along
