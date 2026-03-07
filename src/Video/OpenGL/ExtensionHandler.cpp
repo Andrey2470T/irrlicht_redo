@@ -48,9 +48,9 @@ bool COpenGL3ExtensionHandler::queryExtension(const std::string &name) const noe
 
 void COpenGL3ExtensionHandler::extensionsLoaded()
 {
-	os::Printer::log((std::string("Loaded ") + std::to_string(Extensions.size()) + " extensions:").c_str(), ELL_DEBUG);
+	g_irrlogger->log((std::string("Loaded ") + std::to_string(Extensions.size()) + " extensions:").c_str(), ELL_DEBUG);
 	for (const auto &it : Extensions)
-		os::Printer::log((std::string("  ") + it).c_str(), ELL_DEBUG);
+		g_irrlogger->log((std::string("  ") + it).c_str(), ELL_DEBUG);
 	for (size_t j = 0; j < IRR_OGLES_Feature_Count; ++j)
 		FeatureAvailable[j] = queryExtension(getFeatureString(j));
 }

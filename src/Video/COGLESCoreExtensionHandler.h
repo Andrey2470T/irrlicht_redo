@@ -7,8 +7,10 @@
 // Can be included from different ES versions
 // (this is also the reason why this file is header-only as correct OGL ES headers have to be included first)
 
+#include "Device/CLogger.h"
 #include "irrMath.h"
 #include "COpenGLCoreFeature.h"
+#include "irrString.h"
 
 
 namespace video
@@ -77,7 +79,7 @@ public:
 	void dump() const
 	{
 		for (u32 i = 0; i < IRR_OGLES_Feature_Count; ++i)
-			os::Printer::log(getFeatureString(i), FeatureAvailable[i] ? " true" : " false");
+			g_irrlogger->log(getFeatureString(i), FeatureAvailable[i] ? " true" : " false");
 	}
 
 	bool queryGLESFeature(EOGLESFeatures feature) const
@@ -144,7 +146,7 @@ protected:
 	void getGLExtensions()
 	{
 		core::stringc extensions = glGetString(GL_EXTENSIONS);
-		os::Printer::log(extensions.c_str());
+		g_irrlogger->log(extensions.c_str());
 
 		const u32 size = extensions.size() + 1;
 		c8 *str = new c8[size];

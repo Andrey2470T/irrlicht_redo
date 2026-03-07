@@ -478,7 +478,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 		}
 	}
 
-	core::stringc sdlver = "SDL ";
+	std::string sdlver = "SDL ";
 	{
 		sdlver += getVersionString();
 		sdlver += " on ";
@@ -767,7 +767,7 @@ bool CIrrDeviceSDL::createWindowWithContext()
 
     GLenum glewStatus = glewInit();
     if (glewStatus != GLEW_OK) {
-		os::Printer::log("Could not initialize GLEW: ", glewGetErrorString(glewStatus), ELL_ERROR);
+		g_irrlogger->log("Could not initialize GLEW: ", (const char *)glewGetErrorString(glewStatus), ELL_ERROR);
         Close = true;
         return false;
     }
@@ -1048,7 +1048,7 @@ bool CIrrDeviceSDL::run()
 			auto key = entry == KeyMap.end() ? KEY_UNKNOWN : entry->second;
 
 			if (!Keycode::isValid(key))
-				os::Printer::log("keycode not mapped", core::stringc(keysym), ELL_DEBUG);
+				g_irrlogger->log("keycode not mapped", core::stringc(keysym), ELL_DEBUG);
 
 			// Make sure to only input special characters if something is in focus,
 			// as SDL_EVENT_TEXT_INPUT handles normal unicode already

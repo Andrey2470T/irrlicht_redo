@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COBJMeshFileLoader.h"
+#include "Device/CLogger.h"
 #include "IMeshManipulator.h"
 #include "IVideoDriver.h"
 #include "SMesh.h"
@@ -117,7 +118,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			c8 grp[WORD_BUFFER_LENGTH];
 			bufPtr = goAndCopyNextWord(grp, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-			os::Printer::log("Loaded group start", grp, ELL_DEBUG);
+			g_irrlogger->log("Loaded group start", grp, ELL_DEBUG);
 #endif
 			grpName = ('\0' != grp[0]) ? grp : "default";
 			mtlChanged = true;
@@ -128,7 +129,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			c8 smooth[WORD_BUFFER_LENGTH];
 			bufPtr = goAndCopyNextWord(smooth, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-			os::Printer::log("Loaded smoothing group start", smooth, ELL_DEBUG);
+			g_irrlogger->log("Loaded smoothing group start", smooth, ELL_DEBUG);
 #endif
 			if (TAG_OFF == smooth)
 				smoothingGroup = 0;
@@ -144,7 +145,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				c8 matName[WORD_BUFFER_LENGTH];
 				bufPtr = goAndCopyNextWord(matName, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-				os::Printer::log("Loaded material start", matName, ELL_DEBUG);
+				g_irrlogger->log("Loaded material start", matName, ELL_DEBUG);
 #endif
 				mtlName = matName;
 				mtlChanged = true;
@@ -190,7 +191,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				if (Idx[0] >= 0 && Idx[0] < (s32)vertexBuffer.size())
 					v.Pos = vertexBuffer[Idx[0]];
 				else {
-					os::Printer::log("Invalid vertex index in this line", wordBuffer.c_str(), ELL_ERROR);
+					g_irrlogger->log("Invalid vertex index in this line", wordBuffer.c_str(), ELL_ERROR);
 					delete[] buf;
 					cleanUp();
 					return 0;
@@ -223,7 +224,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			}
 
 			if (faceCorners.size() < 3) {
-				os::Printer::log("Too few vertices in this line", wordBuffer.c_str(), ELL_ERROR);
+				g_irrlogger->log("Too few vertices in this line", wordBuffer.c_str(), ELL_ERROR);
 				delete[] buf;
 				cleanUp();
 				return 0;
@@ -258,7 +259,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 		core::stringc log(degeneratedFaces);
 		log += " degenerated faces removed in ";
 		log += core::stringc(fullName);
-		os::Printer::log(log.c_str(), ELL_INFORMATION);
+		g_irrlogger->log(log.c_str(), ELL_INFORMATION);
 	}
 
 	SMesh *mesh = new SMesh();

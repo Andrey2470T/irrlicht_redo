@@ -4,6 +4,7 @@
 
 #include "CGUIFont.h"
 
+#include "Device/CLogger.h"
 #include "Device/os.h"
 #include "coreutil.h"
 #include "IGUIEnvironment.h"
@@ -91,7 +92,7 @@ bool CGUIFont::load(io::IXMLReader* xml, const io::path& directory)
 				// couldn't load texture, abort.
 				if (!SpriteBank->getTexture(i))
 				{
-					os::Printer::log("Unable to load all textures in the font, aborting", ELL_ERROR);
+					g_irrlogger->log("Unable to load all textures in the font, aborting", ELL_ERROR);
 					return false;
 				}
 				else
@@ -270,7 +271,7 @@ bool CGUIFont::loadTexture(video::IImage *image, const io::path &name)
 		deleteTmpImage = true;
 		break;
 	default:
-		os::Printer::log("Unknown texture format provided for CGUIFont::loadTexture", ELL_ERROR);
+		g_irrlogger->log("Unknown texture format provided for CGUIFont::loadTexture", ELL_ERROR);
 		return false;
 	}
 	readPositions(tmpImage, lowerRightPositions);
@@ -279,9 +280,9 @@ bool CGUIFont::loadTexture(video::IImage *image, const io::path &name)
 
 	// output warnings
 	if (!lowerRightPositions || !SpriteBank->getSprites().size())
-		os::Printer::log("Either no upper or lower corner pixels in the font file. If this font was made using the new font tool, please load the XML file instead. If not, the font may be corrupted.", ELL_ERROR);
+		g_irrlogger->log("Either no upper or lower corner pixels in the font file. If this font was made using the new font tool, please load the XML file instead. If not, the font may be corrupted.", ELL_ERROR);
 	else if (lowerRightPositions != (s32)SpriteBank->getPositions().size())
-		os::Printer::log("The amount of upper corner pixels and the lower corner pixels is not equal, font file may be corrupted.", ELL_ERROR);
+		g_irrlogger->log("The amount of upper corner pixels and the lower corner pixels is not equal, font file may be corrupted.", ELL_ERROR);
 
 	bool ret = (!SpriteBank->getSprites().empty() && lowerRightPositions);
 

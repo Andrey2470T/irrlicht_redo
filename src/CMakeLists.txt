@@ -94,19 +94,20 @@ if(ANDROID OR EMSCRIPTEN)
 	set(ENABLE_GLES2 TRUE)
 	set(RENDERER "OpenGL ES 2+")
 
+	add_compile_definitions(_IRR_COMPILE_WITH_OGLES2_)
+
 	if(EMSCRIPTEN)
 		set(ENABLE_WEBGL1 TRUE)
 		set(RENDERER "WebGL 1")
+
+		add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
 	endif()
 
-endif()
-
-if(ENABLE_GLES2)
-	add_compile_definitions(_IRR_COMPILE_WITH_OGLES2_)
-endif()
-
-if(ENABLE_WEBGL1)
-	add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
+	if(DEVICE MATCHES "^(WINDOWS|X11|ANDROID)$" OR EMSCRIPTEN)
+		add_compile_definitions(_IRR_COMPILE_WITH_EGL_MANAGER_)
+	endif()
+else()
+	add_compile_definitions(_IRR_COMPILE_WITH_OPENGL3_)
 endif()
 
 # Misc
