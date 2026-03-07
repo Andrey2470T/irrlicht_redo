@@ -6,13 +6,17 @@
 
 #include "irrTypes.h"
 #include <string>
+#include <string_view>
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
-#include <codecvt>
-#include <locale>
+#include <cassert>
 
+/* HACK: import these string methods from MT's util/string.h */
+extern std::wstring utf8_to_wide(std::string_view input);
+extern std::string wide_to_utf8(std::wstring_view input);
+/* */
 
 namespace core
 {
@@ -59,6 +63,7 @@ static inline u32 locale_upper(u32 x)
 template <typename T>
 class string
 {
+	using stl_type = std::basic_string<T>;
 public:
 	typedef T char_type;
 
@@ -72,6 +77,10 @@ public:
 	{
 		*this = other;
 	}
+
+	string(const stl_type &str) : str(str) {}
+
+	string(stl_type &&str) : str(std::move(str)) {}
 
 	//! Constructor from other string types
 	template <class B>
@@ -163,13 +172,24 @@ public:
 			return *this;
 		}
 
-		// no longer allowed!
-		_IRR_DEBUG_BREAK_IF((void *)c == (void *)c_str());
+		if constexpr (sizeof(T) != sizeof(B)) {
+			assert(
+				(uintptr_t)c < (uintptr_t)(str.data()) ||
+				(uintptr_t)c >=  (uintptr_t)(str.data() + str.size()));
+		}
+
+		if ((void *)c == (void *)c_str())
+			return *this;
 
 		u32 len = calclen(c);
-		str.resize(len);
+		// In case `c` is a pointer to our own buffer, we may not resize first
+		// or it can become invalid.
+		if (len > str.size())
+			str.resize(len);
 		for (u32 l = 0; l < len; ++l)
-			str[l] = (T)c[l];
+			str[l] = static_cast<T>(c[l]);
+		if (len < str.size())
+			str.resize(len);
 
 		return *this;
 	}
@@ -808,13 +828,6 @@ public:
 	friend size_t wStringToUTF8(stringc &destination, const wchar_t *source);
 
 private:
-	typedef std::basic_string<T> stl_type;
-
-	//! Private constructor
-	string(stl_type &&str) :
-			str(str)
-	{
-	}
 
 	//! strlen wrapper
 	template <typename U>
@@ -904,8 +917,7 @@ inline size_t multibyteToWString(stringw &destination, const core::stringc &sour
 
 inline size_t utf8ToWString(stringw &destination, const char *source)
 {
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-	destination = conv.from_bytes(source);
+	destination = utf8_to_wide(source);
 	return destination.size();
 }
 
@@ -916,8 +928,7 @@ inline size_t utf8ToWString(stringw &destination, const stringc &source)
 
 inline size_t wStringToUTF8(stringc &destination, const wchar_t *source)
 {
-	std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-	destination = conv.to_bytes(source);
+	destination = wide_to_utf8(source);
 	return destination.size();
 }
 

@@ -56,7 +56,7 @@ CIrrDeviceAndroid::CIrrDeviceAndroid(const SIrrlichtCreationParameters &param) :
 	// Create EGL manager.
 	ContextManager = new video::CEGLManager();
 
-	os::Printer::log("Waiting for Android activity window to be created.", ELL_DEBUG);
+	g_irrlogger->log("Waiting for Android activity window to be created.", ELL_DEBUG);
 
 	do {
 		s32 Events = 0;
@@ -230,32 +230,32 @@ void CIrrDeviceAndroid::handleAndroidCommand(android_app *app, int32_t cmd)
 
 	switch (cmd) {
 	case APP_CMD_INPUT_CHANGED:
-		os::Printer::log("Android command APP_CMD_INPUT_CHANGED", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_INPUT_CHANGED", ELL_DEBUG);
 		break;
 	case APP_CMD_WINDOW_RESIZED:
-		os::Printer::log("Android command APP_CMD_WINDOW_RESIZED", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_WINDOW_RESIZED", ELL_DEBUG);
 		break;
 	case APP_CMD_WINDOW_REDRAW_NEEDED:
-		os::Printer::log("Android command APP_CMD_WINDOW_REDRAW_NEEDED", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_WINDOW_REDRAW_NEEDED", ELL_DEBUG);
 		break;
 	case APP_CMD_SAVE_STATE:
-		os::Printer::log("Android command APP_CMD_SAVE_STATE", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_SAVE_STATE", ELL_DEBUG);
 		break;
 	case APP_CMD_CONTENT_RECT_CHANGED:
-		os::Printer::log("Android command APP_CMD_CONTENT_RECT_CHANGED", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_CONTENT_RECT_CHANGED", ELL_DEBUG);
 		break;
 	case APP_CMD_CONFIG_CHANGED:
-		os::Printer::log("Android command APP_CMD_CONFIG_CHANGED", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_CONFIG_CHANGED", ELL_DEBUG);
 		break;
 	case APP_CMD_LOW_MEMORY:
-		os::Printer::log("Android command APP_CMD_LOW_MEMORY", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_LOW_MEMORY", ELL_DEBUG);
 		break;
 	case APP_CMD_START:
-		os::Printer::log("Android command APP_CMD_START", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_START", ELL_DEBUG);
 		device->Stopped = false;
 		break;
 	case APP_CMD_INIT_WINDOW:
-		os::Printer::log("Android command APP_CMD_INIT_WINDOW", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_INIT_WINDOW", ELL_DEBUG);
 		device->getExposedVideoData().OGLESAndroid.Window = app->window;
 
 		if (device->CreationParams.WindowSize.Width == 0 || device->CreationParams.WindowSize.Height == 0) {
@@ -282,19 +282,19 @@ void CIrrDeviceAndroid::handleAndroidCommand(android_app *app, int32_t cmd)
 		device->Initialized = true;
 		break;
 	case APP_CMD_TERM_WINDOW:
-		os::Printer::log("Android command APP_CMD_TERM_WINDOW", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_TERM_WINDOW", ELL_DEBUG);
 		device->getContextManager()->destroySurface();
 		break;
 	case APP_CMD_GAINED_FOCUS:
-		os::Printer::log("Android command APP_CMD_GAINED_FOCUS", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_GAINED_FOCUS", ELL_DEBUG);
 		device->Focused = true;
 		break;
 	case APP_CMD_LOST_FOCUS:
-		os::Printer::log("Android command APP_CMD_LOST_FOCUS", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_LOST_FOCUS", ELL_DEBUG);
 		device->Focused = false;
 		break;
 	case APP_CMD_DESTROY:
-		os::Printer::log("Android command APP_CMD_DESTROY", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_DESTROY", ELL_DEBUG);
 		if (device->JNIEnvAttachedToVM) {
 			device->JNIEnvAttachedToVM = 0;
 			device->Android->activity->vm->DetachCurrentThread();
@@ -302,15 +302,15 @@ void CIrrDeviceAndroid::handleAndroidCommand(android_app *app, int32_t cmd)
 		device->Initialized = false;
 		break;
 	case APP_CMD_PAUSE:
-		os::Printer::log("Android command APP_CMD_PAUSE", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_PAUSE", ELL_DEBUG);
 		device->Paused = true;
 		break;
 	case APP_CMD_STOP:
-		os::Printer::log("Android command APP_CMD_STOP", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_STOP", ELL_DEBUG);
 		device->Stopped = true;
 		break;
 	case APP_CMD_RESUME:
-		os::Printer::log("Android command APP_CMD_RESUME", ELL_DEBUG);
+		g_irrlogger->log("Android command APP_CMD_RESUME", ELL_DEBUG);
 		device->Paused = false;
 		break;
 	default:
@@ -335,11 +335,11 @@ s32 CIrrDeviceAndroid::handleInput(android_app *app, AInputEvent *androidEvent)
 			// Useful for debugging. We might have to pass some of those infos on at some point.
 			// but preferably device independent (so iphone can use same irrlicht flags).
 			int32_t flags = AMotionEvent_getFlags(androidEvent);
-			os::Printer::log("flags: ", core::stringc(flags).c_str(), ELL_DEBUG);
+			g_irrlogger->log("flags: ", core::stringc(flags).c_str(), ELL_DEBUG);
 			int32_t metaState = AMotionEvent_getMetaState(androidEvent);
-			os::Printer::log("metaState: ", core::stringc(metaState).c_str(), ELL_DEBUG);
+			g_irrlogger->log("metaState: ", core::stringc(metaState).c_str(), ELL_DEBUG);
 			int32_t edgeFlags = AMotionEvent_getEdgeFlags(androidEvent);
-			os::Printer::log("edgeFlags: ", core::stringc(flags).c_str(), ELL_DEBUG);
+			g_irrlogger->log("edgeFlags: ", core::stringc(flags).c_str(), ELL_DEBUG);
 #endif
 
 		bool touchReceived = true;
@@ -395,7 +395,7 @@ s32 CIrrDeviceAndroid::handleInput(android_app *app, AInputEvent *androidEvent)
 		event.EventType = EET_KEY_INPUT_EVENT;
 
 		int32_t keyCode = AKeyEvent_getKeyCode(androidEvent);
-		// os::Printer::log("keyCode: ", core::stringc(keyCode).c_str(), ELL_DEBUG);
+		// g_irrlogger->log("keyCode: ", core::stringc(keyCode).c_str(), ELL_DEBUG);
 
 		int32_t keyAction = AKeyEvent_getAction(androidEvent);
 		int32_t keyMetaState = AKeyEvent_getMetaState(androidEvent);
@@ -454,7 +454,7 @@ s32 CIrrDeviceAndroid::handleInput(android_app *app, AInputEvent *androidEvent)
 				// And we have to do that as someone else can have detached the thread in the meantime.
 				jint result = device->Android->activity->vm->AttachCurrentThread(&device->JNIEnvAttachedToVM, &attachArgs);
 				if (result == JNI_ERR) {
-					os::Printer::log("AttachCurrentThread for the JNI environment failed.", ELL_WARNING);
+					g_irrlogger->log("AttachCurrentThread for the JNI environment failed.", ELL_WARNING);
 					device->JNIEnvAttachedToVM = 0;
 				}
 
@@ -467,10 +467,10 @@ s32 CIrrDeviceAndroid::handleInput(android_app *app, AInputEvent *androidEvent)
 			if (event.KeyInput.Key == KEY_BACK) {
 				event.KeyInput.Char = 0x08; // same key-code as on other operating systems. Otherwise we have to handle too much system specific stuff in the editbox.
 			}
-			// os::Printer::log("char-code: ", core::stringc((int)event.KeyInput.Char).c_str(), ELL_DEBUG);
+			// g_irrlogger->log("char-code: ", core::stringc((int)event.KeyInput.Char).c_str(), ELL_DEBUG);
 
 		} else {
-			// os::Printer::log("keyCode: ", core::stringc(keyCode).c_str(), ELL_DEBUG);
+			// g_irrlogger->log("keyCode: ", core::stringc(keyCode).c_str(), ELL_DEBUG);
 			event.KeyInput.Char = 0;
 		}
 
@@ -490,24 +490,24 @@ void CIrrDeviceAndroid::createDriver()
 #ifdef _IRR_COMPILE_WITH_OGLES1_
 		VideoDriver = video::createOGLES1Driver(CreationParams, FileSystem, ContextManager);
 #else
-		os::Printer::log("No OpenGL ES 1.0 support compiled in.", ELL_ERROR);
+		g_irrlogger->log("No OpenGL ES 1.0 support compiled in.", ELL_ERROR);
 #endif
 		break;
 	case video::EDT_OGLES2:
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 		VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
 #else
-		os::Printer::log("No OpenGL ES 2.0 support compiled in.", ELL_ERROR);
+		g_irrlogger->log("No OpenGL ES 2.0 support compiled in.", ELL_ERROR);
 #endif
 		break;
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	case video::EDT_OPENGL:
-		os::Printer::log("This driver is not available in Android. Try OpenGL ES 1.0 or ES 2.0.", ELL_ERROR);
+		g_irrlogger->log("This driver is not available in Android. Try OpenGL ES 1.0 or ES 2.0.", ELL_ERROR);
 		break;
 	default:
-		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
+		g_irrlogger->log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
 	}
 }
@@ -757,7 +757,7 @@ bool CIrrDeviceAndroid::activateAccelerometer(float updateInterval)
 	ASensorEventQueue_enableSensor(SensorEventQueue, Accelerometer);
 	ASensorEventQueue_setEventRate(SensorEventQueue, Accelerometer, (int32_t)(updateInterval * 1000.f * 1000.f)); // in microseconds
 
-	os::Printer::log("Activated accelerometer", ELL_DEBUG);
+	g_irrlogger->log("Activated accelerometer", ELL_DEBUG);
 	return true;
 }
 
@@ -766,7 +766,7 @@ bool CIrrDeviceAndroid::deactivateAccelerometer()
 	if (Accelerometer) {
 		ASensorEventQueue_disableSensor(SensorEventQueue, Accelerometer);
 		Accelerometer = 0;
-		os::Printer::log("Deactivated accelerometer", ELL_DEBUG);
+		g_irrlogger->log("Deactivated accelerometer", ELL_DEBUG);
 		return true;
 	}
 
@@ -794,7 +794,7 @@ bool CIrrDeviceAndroid::activateGyroscope(float updateInterval)
 	ASensorEventQueue_enableSensor(SensorEventQueue, Gyroscope);
 	ASensorEventQueue_setEventRate(SensorEventQueue, Gyroscope, (int32_t)(updateInterval * 1000.f * 1000.f)); // in microseconds
 
-	os::Printer::log("Activated gyroscope", ELL_DEBUG);
+	g_irrlogger->log("Activated gyroscope", ELL_DEBUG);
 	return true;
 }
 
@@ -803,7 +803,7 @@ bool CIrrDeviceAndroid::deactivateGyroscope()
 	if (Gyroscope) {
 		ASensorEventQueue_disableSensor(SensorEventQueue, Gyroscope);
 		Gyroscope = 0;
-		os::Printer::log("Deactivated gyroscope", ELL_DEBUG);
+		g_irrlogger->log("Deactivated gyroscope", ELL_DEBUG);
 		return true;
 	}
 

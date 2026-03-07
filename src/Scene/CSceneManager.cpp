@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CSceneManager.h"
+#include "Device/CLogger.h"
 #include "IVideoDriver.h"
 #include "IFileSystem.h"
 #include "SAnimatedMesh.h"
@@ -148,9 +149,9 @@ IAnimatedMesh *CSceneManager::getUncachedMesh(io::IReadFile *file, const io::pat
 	}
 
 	if (!msh)
-		os::Printer::log("Could not load mesh, file format seems to be unsupported", filename, ELL_ERROR);
+		g_irrlogger->log("Could not load mesh, file format seems to be unsupported", filename, ELL_ERROR);
 	else
-		os::Printer::log("Loaded mesh", filename, ELL_DEBUG);
+		g_irrlogger->log("Loaded mesh", filename, ELL_DEBUG);
 
 	return msh;
 }

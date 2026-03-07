@@ -5,6 +5,7 @@
 #pragma once
 
 #include "IReferenceCounted.h"
+#include "irrString.h"
 
 
 
@@ -59,6 +60,10 @@ public:
 	independent on what level filter is set, use ELL_NONE. */
 	virtual void log(const c8 *text, ELOG_LEVEL ll = ELL_INFORMATION) = 0;
 
+	virtual void log(const core::stringc &text, ELOG_LEVEL ll = ELL_INFORMATION)
+	{
+		log(text.c_str(), ll);
+	}
 	//! Prints out a text into the log
 	/** \param text: Text to print out.
 	\param hint: Additional info. This string is added after a " :" to the
@@ -69,4 +74,9 @@ public:
 	filtered with these levels. If you want to be a text displayed,
 	independent on what level filter is set, use ELL_NONE. */
 	virtual void log(const c8 *text, const c8 *hint, ELOG_LEVEL ll = ELL_INFORMATION) = 0;
+
+	virtual void log(const core::stringc &text, const core::stringc &hint, ELOG_LEVEL ll = ELL_INFORMATION)
+	{
+		log(text.c_str(), hint.c_str(), ll);
+	}
 };

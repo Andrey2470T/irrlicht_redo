@@ -97,7 +97,7 @@ SJoystickWin32Control::SJoystickWin32Control(CIrrDeviceWin32 *dev) :
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_) && defined(_IRR_COMPILE_WITH_DIRECTINPUT_JOYSTICK_)
 	DirectInputDevice = 0;
 	if (DI_OK != (DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&DirectInputDevice, NULL))) {
-		os::Printer::log("Could not create DirectInput8 Object", ELL_WARNING);
+		g_irrlogger->log("Could not create DirectInput8 Object", ELL_WARNING);
 		return;
 	}
 #endif
@@ -136,34 +136,34 @@ void SJoystickWin32Control::directInputAddJoystick(LPCDIDEVICEINSTANCE lpddi)
 	activeJoystick.guid = guid;
 	activeJoystick.Name = lpddi->tszProductName;
 	if (FAILED(DirectInputDevice->CreateDevice(guid, &activeJoystick.lpdijoy, NULL))) {
-		os::Printer::log("Could not create DirectInput device", ELL_WARNING);
+		g_irrlogger->log("Could not create DirectInput device", ELL_WARNING);
 		return;
 	}
 
 	activeJoystick.devcaps.dwSize = sizeof(activeJoystick.devcaps);
 	if (FAILED(activeJoystick.lpdijoy->GetCapabilities(&activeJoystick.devcaps))) {
-		os::Printer::log("Could not create DirectInput device", ELL_WARNING);
+		g_irrlogger->log("Could not create DirectInput device", ELL_WARNING);
 		return;
 	}
 
 	if (FAILED(activeJoystick.lpdijoy->SetCooperativeLevel(Device->HWnd, DISCL_BACKGROUND | DISCL_EXCLUSIVE))) {
-		os::Printer::log("Could not set DirectInput device cooperative level", ELL_WARNING);
+		g_irrlogger->log("Could not set DirectInput device cooperative level", ELL_WARNING);
 		return;
 	}
 
 	if (FAILED(activeJoystick.lpdijoy->SetDataFormat(&c_dfDIJoystick2))) {
-		os::Printer::log("Could not set DirectInput device data format", ELL_WARNING);
+		g_irrlogger->log("Could not set DirectInput device data format", ELL_WARNING);
 		return;
 	}
 
 	if (FAILED(activeJoystick.lpdijoy->Acquire())) {
-		os::Printer::log("Could not set DirectInput cooperative level", ELL_WARNING);
+		g_irrlogger->log("Could not set DirectInput cooperative level", ELL_WARNING);
 		return;
 	}
 
 	DIJOYSTATE2 info;
 	if (FAILED(activeJoystick.lpdijoy->GetDeviceState(sizeof(info), &info))) {
-		os::Printer::log("Could not read DirectInput device state", ELL_WARNING);
+		g_irrlogger->log("Could not read DirectInput device state", ELL_WARNING);
 		return;
 	}
 
@@ -420,7 +420,7 @@ bool SJoystickWin32Control::activateJoysticks(core::array<SJoystickInfo> &joysti
 	ActiveJoysticks.clear();
 #ifdef _IRR_COMPILE_WITH_DIRECTINPUT_JOYSTICK_
 	if (!DirectInputDevice || (DirectInputDevice->EnumDevices(DI8DEVCLASS_GAMECTRL, SJoystickWin32Control::EnumJoysticks, this, DIEDFL_ATTACHEDONLY))) {
-		os::Printer::log("Could not enum DirectInput8 controllers", ELL_WARNING);
+		g_irrlogger->log("Could not enum DirectInput8 controllers", ELL_WARNING);
 		return false;
 	}
 
@@ -474,7 +474,7 @@ bool SJoystickWin32Control::activateJoysticks(core::array<SJoystickInfo> &joysti
 		snprintf_irr(logString, sizeof(logString), "Found joystick %d, %d axes, %d buttons '%s'",
 				joystick, joystickInfo[joystick].Axes,
 				joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
-		os::Printer::log(logString, ELL_INFORMATION);
+		g_irrlogger->log(logString, ELL_INFORMATION);
 	}
 
 	return true;
@@ -733,7 +733,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(const SIrrlichtCreationParameters &params) :
 	core::stringc winversion;
 	getWindowsVersion(winversion);
 	Operator = new COSOperator(winversion);
-	os::Printer::log(winversion.c_str(), ELL_INFORMATION);
+	g_irrlogger->log(winversion.c_str(), ELL_INFORMATION);
 
 	// get handle to exe file
 	HINSTANCE hInstance = GetModuleHandle(0);
@@ -790,7 +790,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(const SIrrlichtCreationParameters &params) :
 		HWnd = CreateWindowW(ClassName, L"", style, windowLeft, windowTop,
 				realWidth, realHeight, NULL, NULL, hInstance, NULL);
 		if (!HWnd) {
-			os::Printer::log("Window could not be created.", ELL_ERROR);
+			g_irrlogger->log("Window could not be created.", ELL_ERROR);
 		}
 
 		CreationParams.WindowId = HWnd;
@@ -882,9 +882,9 @@ void CIrrDeviceWin32::createDriver()
 		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, ContextManager);
 
 		if (!VideoDriver)
-			os::Printer::log("Could not create OpenGL driver.", ELL_ERROR);
+			g_irrlogger->log("Could not create OpenGL driver.", ELL_ERROR);
 #else
-		os::Printer::log("OpenGL driver was not compiled in.", ELL_ERROR);
+		g_irrlogger->log("OpenGL driver was not compiled in.", ELL_ERROR);
 #endif
 		break;
 	case video::EDT_OGLES1:
@@ -897,9 +897,9 @@ void CIrrDeviceWin32::createDriver()
 		VideoDriver = video::createOGLES1Driver(CreationParams, FileSystem, ContextManager);
 
 		if (!VideoDriver)
-			os::Printer::log("Could not create OpenGL-ES1 driver.", ELL_ERROR);
+			g_irrlogger->log("Could not create OpenGL-ES1 driver.", ELL_ERROR);
 #else
-		os::Printer::log("OpenGL-ES1 driver was not compiled in.", ELL_ERROR);
+		g_irrlogger->log("OpenGL-ES1 driver was not compiled in.", ELL_ERROR);
 #endif
 		break;
 	case video::EDT_OGLES2:
@@ -912,19 +912,19 @@ void CIrrDeviceWin32::createDriver()
 		VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
 
 		if (!VideoDriver)
-			os::Printer::log("Could not create OpenGL-ES2 driver.", ELL_ERROR);
+			g_irrlogger->log("Could not create OpenGL-ES2 driver.", ELL_ERROR);
 #else
-		os::Printer::log("OpenGL-ES2 driver was not compiled in.", ELL_ERROR);
+		g_irrlogger->log("OpenGL-ES2 driver was not compiled in.", ELL_ERROR);
 #endif
 		break;
 	case video::EDT_WEBGL1:
-		os::Printer::log("WebGL1 driver not supported on Win32 device.", ELL_ERROR);
+		g_irrlogger->log("WebGL1 driver not supported on Win32 device.", ELL_ERROR);
 		break;
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	default:
-		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
+		g_irrlogger->log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
 	}
 }
@@ -978,10 +978,10 @@ void CIrrDeviceWin32::resizeIfNecessary()
 
 	if (r.right < 2 || r.bottom < 2) {
 		snprintf_irr(tmp, sizeof(tmp), "Ignoring resize operation to (%ld %ld)", r.right, r.bottom);
-		os::Printer::log(tmp);
+		g_irrlogger->log(tmp);
 	} else {
 		snprintf_irr(tmp, sizeof(tmp), "Resizing window (%ld %ld)", r.right, r.bottom);
-		os::Printer::log(tmp);
+		g_irrlogger->log(tmp);
 
 		getVideoDriver()->OnResize(core::dimension2du((u32)r.right, (u32)r.bottom));
 		getWin32CursorControl()->OnResize(getVideoDriver()->getScreenSize());
@@ -1155,7 +1155,7 @@ void CIrrDeviceWin32::setResizable(bool resize)
 
 	LONG_PTR style = (LONG_PTR)getWindowStyle(false, resize);
 	if (!SetWindowLongPtr(HWnd, GWL_STYLE, style))
-		os::Printer::log("Could not change window style.");
+		g_irrlogger->log("Could not change window style.");
 
 	RECT clientSize;
 	clientSize.top = 0;
@@ -1220,7 +1220,7 @@ core::position2di CIrrDeviceWin32::getWindowPosition()
 				(int)wndpl.rcNormalPosition.top);
 	} else {
 		// No reason for this to happen
-		os::Printer::log("Failed to retrieve window location", ELL_ERROR);
+		g_irrlogger->log("Failed to retrieve window location", ELL_ERROR);
 		return core::position2di(-1, -1);
 	}
 }

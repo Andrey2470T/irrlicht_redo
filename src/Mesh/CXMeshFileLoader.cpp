@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CXMeshFileLoader.h"
+#include "Device/CLogger.h"
 #include "Device/os.h"
 
 #include "fast_atof.h"
@@ -71,7 +72,7 @@ IAnimatedMesh *CXMeshFileLoader::createMesh(io::IReadFile *file)
 	tmpString += " X file: ";
 	tmpString += time;
 	tmpString += "ms";
-	os::Printer::log(tmpString.c_str());
+	g_irrlogger->log(tmpString.c_str());
 #endif
 	// Clear up
 
@@ -212,7 +213,7 @@ bool CXMeshFileLoader::load(io::IReadFile *file)
 				u32 id = weight.vertex_id;
 
 				if (id >= verticesLinkIndex.size()) {
-					os::Printer::log("X loader: Weight id out of range", ELL_WARNING);
+					g_irrlogger->log("X loader: Weight id out of range", ELL_WARNING);
 					id = 0;
 					weight.strength = 0.f;
 				}
@@ -249,7 +250,7 @@ bool CXMeshFileLoader::load(io::IReadFile *file)
 				for (u32 id = i * 3 + 0; id <= i * 3 + 2; ++id) {
 					if ((verticesLinkBuffer[mesh->Indices[id]] != -1) && (verticesLinkBuffer[mesh->Indices[id]] != (s16)mesh->FaceMaterialIndices[i])) {
 						if (!warned) {
-							os::Printer::log("X loader", "Duplicated vertex, animation might be corrupted.", ELL_WARNING);
+							g_irrlogger->log("X loader", "Duplicated vertex, animation might be corrupted.", ELL_WARNING);
 							warned = true;
 						}
 						const u32 tmp = mesh->Vertices.size();
@@ -322,7 +323,7 @@ bool CXMeshFileLoader::load(io::IReadFile *file)
 				u32 id = weight.vertex_id;
 
 				if (id >= verticesLinkIndex.size()) {
-					os::Printer::log("X loader: Weight id out of range", ELL_WARNING);
+					g_irrlogger->log("X loader: Weight id out of range", ELL_WARNING);
 					id = 0;
 					weight.strength = 0.f;
 				}
@@ -342,7 +343,7 @@ bool CXMeshFileLoader::readFileIntoMemory(io::IReadFile *file)
 {
 	const long size = file->getSize();
 	if (size < 12) {
-		os::Printer::log("X File is too small.", ELL_WARNING);
+		g_irrlogger->log("X File is too small.", ELL_WARNING);
 		return false;
 	}
 
@@ -351,7 +352,7 @@ bool CXMeshFileLoader::readFileIntoMemory(io::IReadFile *file)
 
 	//! read all into memory
 	if (file->read(Buffer, size) != static_cast<size_t>(size)) {
-		os::Printer::log("Could not read from x file.", ELL_WARNING);
+		g_irrlogger->log("Could not read from x file.", ELL_WARNING);
 		return false;
 	}
 
@@ -360,7 +361,7 @@ bool CXMeshFileLoader::readFileIntoMemory(io::IReadFile *file)
 
 	//! check header "xof "
 	if (strncmp(Buffer, "xof ", 4) != 0) {
-		os::Printer::log("Not an x file, wrong header.", ELL_WARNING);
+		g_irrlogger->log("Not an x file, wrong header.", ELL_WARNING);
 		return false;
 	}
 
@@ -381,7 +382,7 @@ bool CXMeshFileLoader::readFileIntoMemory(io::IReadFile *file)
 	else if (strncmp(&Buffer[8], "bin ", 4) == 0)
 		BinaryFormat = true;
 	else {
-		os::Printer::log("Only uncompressed x files currently supported.", ELL_WARNING);
+		g_irrlogger->log("Only uncompressed x files currently supported.", ELL_WARNING);
 		return false;
 	}
 	BinaryNumCount = 0;
@@ -392,7 +393,7 @@ bool CXMeshFileLoader::readFileIntoMemory(io::IReadFile *file)
 	else if (strncmp(&Buffer[12], "0064", 4) == 0)
 		FloatSize = 8;
 	else {
-		os::Printer::log("Float size not supported.", ELL_WARNING);
+		g_irrlogger->log("Float size not supported.", ELL_WARNING);
 		return false;
 	}
 
@@ -423,7 +424,7 @@ bool CXMeshFileLoader::parseDataObject()
 
 		// parse specific object
 #ifdef _XREADER_DEBUG
-	os::Printer::log("debug DataObject", objectName.c_str(), ELL_DEBUG);
+	g_irrlogger->log("debug DataObject", objectName.c_str(), ELL_DEBUG);
 #endif
 
 	if (objectName == "template")
@@ -447,11 +448,11 @@ bool CXMeshFileLoader::parseDataObject()
 	} else if (objectName == "Material") {
 		return parseUnknownDataObject();
 	} else if (objectName == "}") {
-		os::Printer::log("} found in dataObject", ELL_WARNING);
+		g_irrlogger->log("} found in dataObject", ELL_WARNING);
 		return true;
 	}
 
-	os::Printer::log("Unknown data object in animation of .x file", objectName.c_str(), ELL_WARNING);
+	g_irrlogger->log("Unknown data object in animation of .x file", objectName.c_str(), ELL_WARNING);
 
 	return parseUnknownDataObject();
 }
@@ -459,16 +460,16 @@ bool CXMeshFileLoader::parseDataObject()
 bool CXMeshFileLoader::parseDataObjectTemplate()
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading template", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading template", ELL_DEBUG);
 #endif
 
 	// parse a template data object. Currently not stored.
 	core::stringc name;
 
 	if (!readHeadOfDataObject(&name)) {
-		os::Printer::log("Left delimiter in template data object missing.",
+		g_irrlogger->log("Left delimiter in template data object missing.",
 				name.c_str(), ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -492,7 +493,7 @@ bool CXMeshFileLoader::parseDataObjectTemplate()
 bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading frame", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading frame", ELL_DEBUG);
 #endif
 
 	// A coordinate frame, or "frame of reference." The Frame template
@@ -506,8 +507,8 @@ bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 	core::stringc name;
 
 	if (!readHeadOfDataObject(&name)) {
-		os::Printer::log("No opening brace in Frame found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Frame found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -523,14 +524,14 @@ bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 
 	if (!joint) {
 #ifdef _XREADER_DEBUG
-		os::Printer::log("creating joint ", name.c_str(), ELL_DEBUG);
+		g_irrlogger->log("creating joint ", name.c_str(), ELL_DEBUG);
 #endif
 		joint = AnimatedMesh->addJoint(Parent);
 		joint->Name = name.c_str();
 		JointID = AnimatedMesh->getAllJoints().size() - 1;
 	} else {
 #ifdef _XREADER_DEBUG
-		os::Printer::log("using joint ", name.c_str(), ELL_DEBUG);
+		g_irrlogger->log("using joint ", name.c_str(), ELL_DEBUG);
 #endif
 		if (Parent)
 			Parent->Children.push_back(joint);
@@ -543,12 +544,12 @@ bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 		core::stringc objectName = getNextToken();
 
 #ifdef _XREADER_DEBUG
-		os::Printer::log("debug DataObject in frame:", objectName.c_str(), ELL_DEBUG);
+		g_irrlogger->log("debug DataObject in frame:", objectName.c_str(), ELL_DEBUG);
 #endif
 
 		if (objectName.size() == 0) {
-			os::Printer::log("Unexpected ending found in Frame in x file.", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Unexpected ending found in Frame in x file.", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		} else if (objectName == "}") {
 			break; // frame finished
@@ -578,7 +579,7 @@ bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 			if (!parseDataObjectMesh(*mesh))
 				return false;
 		} else {
-			os::Printer::log("Unknown data object in frame in x file", objectName.c_str(), ELL_WARNING);
+			g_irrlogger->log("Unknown data object in frame in x file", objectName.c_str(), ELL_WARNING);
 			if (!parseUnknownDataObject())
 				return false;
 		}
@@ -590,25 +591,25 @@ bool CXMeshFileLoader::parseDataObjectFrame(CSkinnedMesh::SJoint *Parent)
 bool CXMeshFileLoader::parseDataObjectTransformationMatrix(core::matrix4 &mat)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading Transformation Matrix", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading Transformation Matrix", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Transformation Matrix found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Transformation Matrix found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	readMatrix(mat);
 
 	if (!checkForOneFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Transformation Matrix found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Transformation Matrix found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Transformation Matrix found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Transformation Matrix found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -621,15 +622,15 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 
 	if (!readHeadOfDataObject(&name)) {
 #ifdef _XREADER_DEBUG
-		os::Printer::log("CXFileReader: Reading mesh", ELL_DEBUG);
+		g_irrlogger->log("CXFileReader: Reading mesh", ELL_DEBUG);
 #endif
-		os::Printer::log("No opening brace in Mesh found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Mesh found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading mesh", name.c_str(), ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading mesh", name.c_str(), ELL_DEBUG);
 #endif
 
 	// read vertex count
@@ -644,8 +645,8 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 	}
 
 	if (!checkForTwoFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Vertex Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Vertex Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	// read faces
@@ -662,8 +663,8 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 
 		if (fcnt != 3) {
 			if (fcnt < 3) {
-				os::Printer::log("Invalid face count (<3) found in Mesh x file reader.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("Invalid face count (<3) found in Mesh x file reader.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 
@@ -693,14 +694,14 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 
 	for (u32 j = 0; j < mesh.Indices.size(); j++) {
 		if (mesh.Indices[j] >= mesh.Vertices.size()) {
-			os::Printer::log("Out of range index found in Mesh x file reader.", ELL_WARNING);
+			g_irrlogger->log("Out of range index found in Mesh x file reader.", ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		}
 	}
 
 	if (!checkForTwoFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Face Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Face Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	// here, other data objects may follow
@@ -709,15 +710,15 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 		core::stringc objectName = getNextToken();
 
 		if (objectName.size() == 0) {
-			os::Printer::log("Unexpected ending found in Mesh in x file.", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Unexpected ending found in Mesh in x file.", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		} else if (objectName == "}") {
 			break; // mesh finished
 		}
 
 #ifdef _XREADER_DEBUG
-		os::Printer::log("debug DataObject in mesh", objectName.c_str(), ELL_DEBUG);
+		g_irrlogger->log("debug DataObject in mesh", objectName.c_str(), ELL_DEBUG);
 #endif
 
 		if (objectName == "MeshNormals") {
@@ -739,8 +740,8 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 				return false;
 		} else if (objectName == "DeclData") {
 			if (!readHeadOfDataObject()) {
-				os::Printer::log("No starting brace in DeclData found.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No starting brace in DeclData found.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 			// arbitrary vertex attributes
@@ -857,12 +858,12 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 				data[j] = readInt();
 
 			if (!checkForOneFollowingSemicolons()) {
-				os::Printer::log("No finishing semicolon in DeclData found.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No finishing semicolon in DeclData found.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			}
 			if (!checkForClosingBrace()) {
-				os::Printer::log("No closing brace in DeclData.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No closing brace in DeclData.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				delete[] data;
 				SET_ERR_AND_RETURN();
 			}
@@ -881,8 +882,8 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 			delete[] data;
 		} else if (objectName == "FVFData") {
 			if (!readHeadOfDataObject()) {
-				os::Printer::log("No starting brace in FVFData found.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No starting brace in FVFData found.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 			const u32 dataformat = readInt();
@@ -901,12 +902,12 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 			}
 			delete[] data;
 			if (!checkForOneFollowingSemicolons()) {
-				os::Printer::log("No finishing semicolon in FVFData found.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No finishing semicolon in FVFData found.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			}
 			if (!checkForClosingBrace()) {
-				os::Printer::log("No closing brace in FVFData found in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No closing brace in FVFData found in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 		} else if (objectName == "XSkinMeshHeader") {
@@ -918,7 +919,7 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 			if (!parseDataObjectSkinWeights(mesh))
 				return false;
 		} else {
-			os::Printer::log("Unknown data object in mesh in x file", objectName.c_str(), ELL_WARNING);
+			g_irrlogger->log("Unknown data object in mesh in x file", objectName.c_str(), ELL_WARNING);
 			if (!parseUnknownDataObject())
 				return false;
 		}
@@ -930,20 +931,20 @@ bool CXMeshFileLoader::parseDataObjectMesh(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading mesh skin weights", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading mesh skin weights", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Skin Weights found in .x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Skin Weights found in .x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	core::stringc TransformNodeName;
 
 	if (!getNextTokenAsString(TransformNodeName)) {
-		os::Printer::log("Unknown syntax while reading transform node name string in .x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Unknown syntax while reading transform node name string in .x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -954,7 +955,7 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 
 	if (!joint) {
 #ifdef _XREADER_DEBUG
-		os::Printer::log("creating joint for skinning ", TransformNodeName.c_str(), ELL_DEBUG);
+		g_irrlogger->log("creating joint for skinning ", TransformNodeName.c_str(), ELL_DEBUG);
 #endif
 		n = AnimatedMesh->getAllJoints().size();
 		joint = AnimatedMesh->addJoint(0);
@@ -998,13 +999,13 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 	readMatrix(MatrixOffset);
 
 	if (!checkForOneFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Skin Weights found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Skin Weights found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Skin Weights found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Skin Weights found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1014,12 +1015,12 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectSkinMeshHeader(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading skin mesh header", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading skin mesh header", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Skin Mesh header found in .x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Skin Mesh header found in .x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1031,8 +1032,8 @@ bool CXMeshFileLoader::parseDataObjectSkinMeshHeader(SXMesh &mesh)
 		getNextToken(); // skip semicolon
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in skin mesh header in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in skin mesh header in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1042,12 +1043,12 @@ bool CXMeshFileLoader::parseDataObjectSkinMeshHeader(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading mesh normals", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading mesh normals", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Mesh Normals found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Mesh Normals found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1061,8 +1062,8 @@ bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 		readVector3(normals[i]);
 
 	if (!checkForTwoFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Normals Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Normals Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	core::array<u32> normalIndices;
@@ -1072,8 +1073,8 @@ bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 	const u32 nFNormals = readInt();
 	// if (nFNormals >= mesh.IndexCountPerFace.size())
 	if (0) { // this condition doesn't work for some reason
-		os::Printer::log("Too many face normals found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Too many face normals found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1085,8 +1086,8 @@ bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 		u32 indexcount = triangles * 3;
 
 		if (indexcount != mesh.IndexCountPerFace[k]) {
-			os::Printer::log("Not matching normal and face index count found in x file", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Not matching normal and face index count found in x file", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		}
 
@@ -1111,13 +1112,13 @@ bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 	}
 
 	if (!checkForTwoFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Face Normals Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Face Normals Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Mesh Normals found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Mesh Normals found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1127,20 +1128,20 @@ bool CXMeshFileLoader::parseDataObjectMeshNormals(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectMeshTextureCoords(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading mesh texture coordinates", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading mesh texture coordinates", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Mesh Texture Coordinates found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Mesh Texture Coordinates found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	const u32 nCoords = readInt();
 	// if (nCoords >= mesh.Vertices.size())
 	if (0) { // this condition doesn't work for some reason
-		os::Printer::log("Too many texture coords found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Too many texture coords found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1148,13 +1149,13 @@ bool CXMeshFileLoader::parseDataObjectMeshTextureCoords(SXMesh &mesh)
 		readVector2(mesh.Vertices[i].TCoords);
 
 	if (!checkForTwoFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1164,12 +1165,12 @@ bool CXMeshFileLoader::parseDataObjectMeshTextureCoords(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectMeshVertexColors(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading mesh vertex colors", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading mesh vertex colors", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace for Mesh Vertex Colors found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace for Mesh Vertex Colors found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1178,8 +1179,8 @@ bool CXMeshFileLoader::parseDataObjectMeshVertexColors(SXMesh &mesh)
 	for (u32 i = 0; i < nColors; ++i) {
 		const u32 Index = readInt();
 		if (Index >= mesh.Vertices.size()) {
-			os::Printer::log("index value in parseDataObjectMeshVertexColors out of bounds", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("index value in parseDataObjectMeshVertexColors out of bounds", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		}
 		readRGBA(mesh.Vertices[Index].Color);
@@ -1187,13 +1188,13 @@ bool CXMeshFileLoader::parseDataObjectMeshVertexColors(SXMesh &mesh)
 	}
 
 	if (!checkForOneFollowingSemicolons()) {
-		os::Printer::log("No finishing semicolon in Mesh Vertex Colors Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No finishing semicolon in Mesh Vertex Colors Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Mesh Texture Coordinates Array found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		return false;
 	}
 
@@ -1203,12 +1204,12 @@ bool CXMeshFileLoader::parseDataObjectMeshVertexColors(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading mesh material list", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading mesh material list", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Mesh Material List found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Mesh Material List found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1223,7 +1224,7 @@ bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 	// being represented as 1;1;0;; which means 1 material, 1 face with first material
 	// all the other faces have to obey then, so check is disabled
 	// if (nFaceIndices != mesh.IndexCountPerFace.size())
-	//	os::Printer::log("Index count per face not equal to face material index count in x file.", ELL_WARNING);
+	//	g_irrlogger->log("Index count per face not equal to face material index count in x file.", ELL_WARNING);
 
 	// read non triangulated face indices and create triangulated ones
 	mesh.FaceMaterialIndices.set_used(mesh.Indices.size() / 3);
@@ -1233,8 +1234,8 @@ bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 		if (tfi < nFaceIndices)
 			ind = readInt();
 		if (ind >= core::max_(nMaterials, 1U)) {
-			os::Printer::log("Out of range index found in x file", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Out of range index found in x file", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		}
 		const u32 fc = mesh.IndexCountPerFace[tfi] / 3;
@@ -1255,8 +1256,8 @@ bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 		core::stringc objectName = getNextToken();
 
 		if (objectName.size() == 0) {
-			os::Printer::log("Unexpected ending found in Mesh Material list in .x file.", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Unexpected ending found in Mesh Material list in .x file.", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		} else if (objectName == "}") {
 			break; // material list finished
@@ -1272,7 +1273,7 @@ bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 		} else if (objectName == ";") {
 			// ignore
 		} else {
-			os::Printer::log("Unknown data object in material list in x file", objectName.c_str(), ELL_WARNING);
+			g_irrlogger->log("Unknown data object in material list in x file", objectName.c_str(), ELL_WARNING);
 			if (!parseUnknownDataObject())
 				return false;
 		}
@@ -1283,24 +1284,24 @@ bool CXMeshFileLoader::parseDataObjectMeshMaterialList(SXMesh &mesh)
 bool CXMeshFileLoader::parseDataObjectAnimationSet()
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: Reading animation set", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: Reading animation set", ELL_DEBUG);
 #endif
 
 	core::stringc AnimationName;
 
 	if (!readHeadOfDataObject(&AnimationName)) {
-		os::Printer::log("No opening brace in Animation Set found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Animation Set found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
-	os::Printer::log("Reading animationset ", AnimationName, ELL_DEBUG);
+	g_irrlogger->log("Reading animationset ", AnimationName, ELL_DEBUG);
 
 	while (true) {
 		core::stringc objectName = getNextToken();
 
 		if (objectName.size() == 0) {
-			os::Printer::log("Unexpected ending found in Animation set in x file.", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Unexpected ending found in Animation set in x file.", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		} else if (objectName == "}") {
 			break; // animation set finished
@@ -1308,7 +1309,7 @@ bool CXMeshFileLoader::parseDataObjectAnimationSet()
 			if (!parseDataObjectAnimation())
 				return false;
 		} else {
-			os::Printer::log("Unknown data object in animation set in x file", objectName.c_str(), ELL_WARNING);
+			g_irrlogger->log("Unknown data object in animation set in x file", objectName.c_str(), ELL_WARNING);
 			if (!parseUnknownDataObject())
 				return false;
 		}
@@ -1319,26 +1320,26 @@ bool CXMeshFileLoader::parseDataObjectAnimationSet()
 bool CXMeshFileLoader::parseDataObjectAnimationTicksPerSecond()
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading AnimationTicksPerSecond", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading AnimationTicksPerSecond", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Animation found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Animation found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	const u32 ticks = readInt();
 
 	if (!checkForOneFollowingSemicolons()) {
-		os::Printer::log("No closing semicolon in AnimationTicksPerSecond in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing semicolon in AnimationTicksPerSecond in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in AnimationTicksPerSecond in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in AnimationTicksPerSecond in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1350,12 +1351,12 @@ bool CXMeshFileLoader::parseDataObjectAnimationTicksPerSecond()
 bool CXMeshFileLoader::parseDataObjectAnimation()
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading animation", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading animation", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Animation found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Animation found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1369,8 +1370,8 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 		core::stringc objectName = getNextToken();
 
 		if (objectName.size() == 0) {
-			os::Printer::log("Unexpected ending found in Animation in x file.", ELL_WARNING);
-			os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+			g_irrlogger->log("Unexpected ending found in Animation in x file.", ELL_WARNING);
+			g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			SET_ERR_AND_RETURN();
 		} else if (objectName == "}") {
 			break; // animation finished
@@ -1386,12 +1387,12 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 			FrameName = getNextToken();
 
 			if (!checkForClosingBrace()) {
-				os::Printer::log("Unexpected ending found in Animation in x file.", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("Unexpected ending found in Animation in x file.", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 		} else {
-			os::Printer::log("Unknown data object in animation in x file", objectName.c_str(), ELL_WARNING);
+			g_irrlogger->log("Unknown data object in animation in x file", objectName.c_str(), ELL_WARNING);
 			if (!parseUnknownDataObject())
 				SET_ERR_AND_RETURN();
 		}
@@ -1399,7 +1400,7 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 
 	if (FrameName.size() != 0) {
 #ifdef _XREADER_DEBUG
-		os::Printer::log("frame name", FrameName.c_str(), ELL_DEBUG);
+		g_irrlogger->log("frame name", FrameName.c_str(), ELL_DEBUG);
 #endif
 		auto n = AnimatedMesh->getJointNumber(FrameName.c_str());
 
@@ -1408,7 +1409,7 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 			joint = AnimatedMesh->getAllJoints()[*n];
 		} else {
 #ifdef _XREADER_DEBUG
-			os::Printer::log("creating joint for animation ", FrameName.c_str(), ELL_DEBUG);
+			g_irrlogger->log("creating joint for animation ", FrameName.c_str(), ELL_DEBUG);
 #endif
 			joint = AnimatedMesh->addJoint(0);
 			joint->Name = FrameName.c_str();
@@ -1429,7 +1430,7 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 			joint->RotationKeys.push_back(animationDump.RotationKeys[n]);
 		}
 	} else
-		os::Printer::log("joint name was never given", ELL_WARNING);
+		g_irrlogger->log("joint name was never given", ELL_WARNING);
 
 	return true;
 }
@@ -1437,12 +1438,12 @@ bool CXMeshFileLoader::parseDataObjectAnimation()
 bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading animation key", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading animation key", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Animation Key found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Animation Key found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1451,8 +1452,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 	const u32 keyType = readInt();
 
 	if (keyType > 4) {
-		os::Printer::log("Unknown key type found in Animation Key in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Unknown key type found in Animation Key in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1476,8 +1477,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 
 			// read count
 			if (readInt() != 4) {
-				os::Printer::log("Expected 4 numbers in animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("Expected 4 numbers in animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 
@@ -1487,8 +1488,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 			f32 Z = -readFloat();
 
 			if (!checkForTwoFollowingSemicolons()) {
-				os::Printer::log("No finishing semicolon after quaternion animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No finishing semicolon after quaternion animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			}
 
 			ISkinnedMesh::SRotationKey *key = AnimatedMesh->addRotationKey(joint);
@@ -1503,8 +1504,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 
 			// read count
 			if (readInt() != 3) {
-				os::Printer::log("Expected 3 numbers in animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("Expected 3 numbers in animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 
@@ -1512,8 +1513,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 			readVector3(vector);
 
 			if (!checkForTwoFollowingSemicolons()) {
-				os::Printer::log("No finishing semicolon after vector animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No finishing semicolon after vector animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			}
 
 			if (keyType == 2) {
@@ -1532,8 +1533,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 
 			// read count
 			if (readInt() != 16) {
-				os::Printer::log("Expected 16 numbers in animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("Expected 16 numbers in animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 				SET_ERR_AND_RETURN();
 			}
 
@@ -1544,8 +1545,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 			// mat=joint->LocalMatrix*mat;
 
 			if (!checkForOneFollowingSemicolons()) {
-				os::Printer::log("No finishing semicolon after matrix animation key in x file", ELL_WARNING);
-				os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+				g_irrlogger->log("No finishing semicolon after matrix animation key in x file", ELL_WARNING);
+				g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 			}
 
 			// core::vector3df rotation = mat.getRotationDegrees();
@@ -1582,8 +1583,8 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 		--P;
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in animation key in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in animation key in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
@@ -1593,24 +1594,24 @@ bool CXMeshFileLoader::parseDataObjectAnimationKey(ISkinnedMesh::SJoint *joint)
 bool CXMeshFileLoader::parseDataObjectTextureFilename(core::stringc &texturename)
 {
 #ifdef _XREADER_DEBUG
-	os::Printer::log("CXFileReader: reading texture filename", ELL_DEBUG);
+	g_irrlogger->log("CXFileReader: reading texture filename", ELL_DEBUG);
 #endif
 
 	if (!readHeadOfDataObject()) {
-		os::Printer::log("No opening brace in Texture filename found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No opening brace in Texture filename found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	if (!getNextTokenAsString(texturename)) {
-		os::Printer::log("Unknown syntax while reading texture filename string in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("Unknown syntax while reading texture filename string in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 
 	if (!checkForClosingBrace()) {
-		os::Printer::log("No closing brace in Texture filename found in x file", ELL_WARNING);
-		os::Printer::log("Line", core::stringc(Line).c_str(), ELL_WARNING);
+		g_irrlogger->log("No closing brace in Texture filename found in x file", ELL_WARNING);
+		g_irrlogger->log("Line", core::stringc(Line).c_str(), ELL_WARNING);
 		SET_ERR_AND_RETURN();
 	}
 

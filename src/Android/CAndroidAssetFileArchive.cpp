@@ -69,7 +69,7 @@ void CAndroidAssetFileArchive::addDirectoryToFileList(const io::path &dirname_)
 	if (lastChar == '/' || lastChar == '\\')
 		dirname.erase(dirname.size() - 1);
 
-	// os::Printer::log("addDirectoryToFileList:", dirname.c_str(), ELL_DEBUG);
+	// g_irrlogger->log("addDirectoryToFileList:", dirname.c_str(), ELL_DEBUG);
 	if (findFile(dirname, true) >= 0)
 		return; // was already added
 
@@ -90,7 +90,7 @@ void CAndroidAssetFileArchive::addDirectoryToFileList(const io::path &dirname_)
 		// reasons we set the file size to 0.
 		// TODO: Does this really cost so much performance that it's worth losing this information? Dirs are usually just added once at startup...
 		addItem(full_filename, /*offet*/ 0, /*size*/ 0, /*isDir*/ false, getFileCount());
-		// os::Printer::log("addItem:", full_filename.c_str(), ELL_DEBUG);
+		// g_irrlogger->log("addItem:", full_filename.c_str(), ELL_DEBUG);
 	}
 	AAssetDir_close(dir);
 }

@@ -298,7 +298,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 	sdlversion += ".";
 	sdlversion += Info.version.patch;
 
-	Operator = new COSOperator(sdlversion);
+	Operator = new COSOperator();
 	if (SDLDeviceInstances == 1) {
 		os::Printer::log(sdlversion.c_str(), ELL_INFORMATION);
 	}

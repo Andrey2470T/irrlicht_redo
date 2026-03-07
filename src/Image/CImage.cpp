@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImage.h"
+#include "Device/CLogger.h"
 #include "irrString.h"
 #include "CColorConverter.h"
 #include "CBlit.h"
@@ -72,7 +73,7 @@ void CImage::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 	} break;
 
 	case ECF_UNKNOWN:
-		os::Printer::log("IImage::setPixel unknown format.", ELL_WARNING);
+		g_irrlogger->log("IImage::setPixel unknown format.", ELL_WARNING);
 		return;
 
 	default:
@@ -99,7 +100,7 @@ SColor CImage::getPixel(u32 x, u32 y) const
 	}
 
 	case ECF_UNKNOWN:
-		os::Printer::log("IImage::getPixel unknown format.", ELL_WARNING);
+		g_irrlogger->log("IImage::getPixel unknown format.", ELL_WARNING);
 		break;
 
 	default:
@@ -113,7 +114,7 @@ SColor CImage::getPixel(u32 x, u32 y) const
 void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -129,7 +130,7 @@ void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
 void CImage::copyTo(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -140,7 +141,7 @@ void CImage::copyTo(IImage *target, const core::position2d<s32> &pos, const core
 void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const SColor &color, const core::rect<s32> *clipRect, bool combineAlpha)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyToWithAlpha method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyToWithAlpha method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -153,7 +154,7 @@ void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, c
 bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch) const
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyToNoScaling method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyToNoScaling method doesn't work with compressed images.", ELL_WARNING);
 		return false;
 	}
 
@@ -192,7 +193,7 @@ bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT 
 void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -249,7 +250,7 @@ void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT fo
 void CImage::copyToScaling(IImage *target)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -270,7 +271,7 @@ void CImage::copyToScaling(IImage *target)
 void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::copyToScalingBoxFilter method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::copyToScalingBoxFilter method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -300,7 +301,7 @@ void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
 void CImage::fill(const SColor &color)
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::fill method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::fill method doesn't work with compressed images.", ELL_WARNING);
 		return;
 	}
 
@@ -338,7 +339,7 @@ void CImage::fill(const SColor &color)
 inline SColor CImage::getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const
 {
 	if (IImage::isCompressedFormat(Format)) {
-		os::Printer::log("IImage::getPixelBox method doesn't work with compressed images.", ELL_WARNING);
+		g_irrlogger->log("IImage::getPixelBox method doesn't work with compressed images.", ELL_WARNING);
 		return SColor(0);
 	}
 

@@ -4,6 +4,7 @@
 
 #include "CZipReader.h"
 
+#include "Device/CLogger.h"
 #include "Device/os.h"
 
 #include "CFileList.h"
@@ -439,7 +440,7 @@ IReadFile *CZipReader::createAndOpenFile(u32 index)
 		c8 *pBuf = new c8[uncompressedSize];
 		if (!pBuf) {
 			snprintf_irr(buf, 64, "Not enough memory for decompressing %s", Files[index].FullName.c_str());
-			os::Printer::log(buf, ELL_ERROR);
+			g_irrlogger->log(buf, ELL_ERROR);
 			if (decrypted)
 				decrypted->drop();
 			return 0;
@@ -450,7 +451,7 @@ IReadFile *CZipReader::createAndOpenFile(u32 index)
 			pcData = new u8[decryptedSize];
 			if (!pcData) {
 				snprintf_irr(buf, 64, "Not enough memory for decompressing %s", Files[index].FullName.c_str());
-				os::Printer::log(buf, ELL_ERROR);
+				g_irrlogger->log(buf, ELL_ERROR);
 				delete[] pBuf;
 				return 0;
 			}
@@ -489,27 +490,27 @@ IReadFile *CZipReader::createAndOpenFile(u32 index)
 
 		if (err != Z_OK) {
 			snprintf_irr(buf, 64, "Error decompressing %s", Files[index].FullName.c_str());
-			os::Printer::log(buf, ELL_ERROR);
+			g_irrlogger->log(buf, ELL_ERROR);
 			delete[] pBuf;
 			return 0;
 		} else
 			return FileSystem->createMemoryReadFile(pBuf, uncompressedSize, Files[index].FullName, true);
 	}
 	case 12: {
-		os::Printer::log("bzip2 decompression not supported. File cannot be read.", ELL_ERROR);
+		g_irrlogger->log("bzip2 decompression not supported. File cannot be read.", ELL_ERROR);
 		return 0;
 	}
 	case 14: {
-		os::Printer::log("lzma decompression not supported. File cannot be read.", ELL_ERROR);
+		g_irrlogger->log("lzma decompression not supported. File cannot be read.", ELL_ERROR);
 		return 0;
 	}
 	case 99:
 		// If we come here with an encrypted file, decryption support is missing
-		os::Printer::log("Decryption support not enabled. File cannot be read.", ELL_ERROR);
+		g_irrlogger->log("Decryption support not enabled. File cannot be read.", ELL_ERROR);
 		return 0;
 	default:
 		snprintf_irr(buf, 64, "file has unsupported compression method. %s", Files[index].FullName.c_str());
-		os::Printer::log(buf, ELL_ERROR);
+		g_irrlogger->log(buf, ELL_ERROR);
 		return 0;
 	};
 }

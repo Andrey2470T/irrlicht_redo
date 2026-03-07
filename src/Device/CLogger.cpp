@@ -4,15 +4,15 @@
 
 #include "CLogger.h"
 
-
+#ifdef _IRR_USE_SDL3_
+    #include <SDL3/SDL_log.h>
+#else
+    #include <SDL_log.h>
+#endif
 
 CLogger::CLogger(IEventReceiver *r) :
 		LogLevel(ELL_INFORMATION), Receiver(r)
-{
-#ifdef _DEBUG
-	setDebugName("CLogger");
-#endif
-}
+{}
 
 //! Returns the current set log level.
 ELOG_LEVEL CLogger::getLogLevel() const
@@ -41,7 +41,20 @@ void CLogger::log(const c8 *text, ELOG_LEVEL ll)
 			return;
 	}
 
-	os::Printer::print(text);
+    switch (ll) {
+    case ELL_ERROR:
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, text);
+        break;
+    case ELL_WARNING:
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, text);
+        break;
+    case ELL_DEBUG:
+    case ELL_INFORMATION:
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, text);
+        break;
+    default:
+        break;
+    }
 }
 
 //! Prints out a text into the log
@@ -62,3 +75,4 @@ void CLogger::setReceiver(IEventReceiver *r)
 	Receiver = r;
 }
 
+ILogger *g_irrlogger = nullptr;

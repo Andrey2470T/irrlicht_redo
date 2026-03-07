@@ -19,7 +19,7 @@ CKeyEventWrapper::CKeyEventWrapper(JNIEnv *jniEnv, int action, int code) :
 	if (JniEnv) {
 		if (!Class_KeyEvent) {
 			// Find java classes & functions on first call
-			os::Printer::log("CKeyEventWrapper first initialize", ELL_DEBUG);
+			g_irrlogger->log("CKeyEventWrapper first initialize", ELL_DEBUG);
 			jclass localClass = JniEnv->FindClass("android/view/KeyEvent");
 			if (localClass) {
 				Class_KeyEvent = reinterpret_cast<jclass>(JniEnv->NewGlobalRef(localClass));
@@ -32,7 +32,7 @@ CKeyEventWrapper::CKeyEventWrapper(JNIEnv *jniEnv, int action, int code) :
 		if (Class_KeyEvent && Method_constructor) {
 			JniKeyEvent = JniEnv->NewObject(Class_KeyEvent, Method_constructor, action, code);
 		} else {
-			os::Printer::log("CKeyEventWrapper didn't find JNI classes/methods", ELL_WARNING);
+			g_irrlogger->log("CKeyEventWrapper didn't find JNI classes/methods", ELL_WARNING);
 		}
 	}
 }

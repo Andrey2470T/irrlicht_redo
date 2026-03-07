@@ -4,6 +4,7 @@
 
 #include "CSkinnedMesh.h"
 #include <optional>
+#include "Device/CLogger.h"
 #include "Scene/CBoneSceneNode.h"
 #include "IAnimatedMeshSceneNode.h"
 #include "Device/os.h"
@@ -818,10 +819,10 @@ void CSkinnedMesh::checkForAnimation()
 
 				// check for invalid ids
 				if (buffer_id >= LocalBuffers.size()) {
-					os::Printer::log("Skinned Mesh: Weight buffer id too large", ELL_WARNING);
+					g_irrlogger->log("Skinned Mesh: Weight buffer id too large", ELL_WARNING);
 					joint->Weights[j].buffer_id = joint->Weights[j].vertex_id = 0;
 				} else if (vertex_id >= LocalBuffers[buffer_id]->getVertexCount()) {
-					os::Printer::log("Skinned Mesh: Weight vertex id too large", ELL_WARNING);
+					g_irrlogger->log("Skinned Mesh: Weight vertex id too large", ELL_WARNING);
 					joint->Weights[j].buffer_id = joint->Weights[j].vertex_id = 0;
 				}
 			}
@@ -858,7 +859,7 @@ void CSkinnedMesh::checkForAnimation()
 //! called by loader after populating with mesh and bone data
 void CSkinnedMesh::finalize()
 {
-	os::Printer::log("Skinned Mesh - finalize", ELL_DEBUG);
+	g_irrlogger->log("Skinned Mesh - finalize", ELL_DEBUG);
 	u32 i;
 
 	// Make sure we recalc the next frame
@@ -982,22 +983,22 @@ void CSkinnedMesh::finalize()
 		}
 
 		if (redundantPosKeys > 0) {
-			os::Printer::log("Skinned Mesh - redundant position frames kicked", core::stringc(redundantPosKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - redundant position frames kicked", core::stringc(redundantPosKeys).c_str(), ELL_DEBUG);
 		}
 		if (unorderedPosKeys > 0) {
-			os::Printer::log("Skinned Mesh - unsorted position frames kicked", core::stringc(unorderedPosKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - unsorted position frames kicked", core::stringc(unorderedPosKeys).c_str(), ELL_DEBUG);
 		}
 		if (redundantScaleKeys > 0) {
-			os::Printer::log("Skinned Mesh - redundant scale frames kicked", core::stringc(redundantScaleKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - redundant scale frames kicked", core::stringc(redundantScaleKeys).c_str(), ELL_DEBUG);
 		}
 		if (unorderedScaleKeys > 0) {
-			os::Printer::log("Skinned Mesh - unsorted scale frames kicked", core::stringc(unorderedScaleKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - unsorted scale frames kicked", core::stringc(unorderedScaleKeys).c_str(), ELL_DEBUG);
 		}
 		if (redundantRotationKeys > 0) {
-			os::Printer::log("Skinned Mesh - redundant rotation frames kicked", core::stringc(redundantRotationKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - redundant rotation frames kicked", core::stringc(redundantRotationKeys).c_str(), ELL_DEBUG);
 		}
 		if (unorderedRotationKeys > 0) {
-			os::Printer::log("Skinned Mesh - unsorted rotation frames kicked", core::stringc(unorderedRotationKeys).c_str(), ELL_DEBUG);
+			g_irrlogger->log("Skinned Mesh - unsorted rotation frames kicked", core::stringc(unorderedRotationKeys).c_str(), ELL_DEBUG);
 		}
 	}
 

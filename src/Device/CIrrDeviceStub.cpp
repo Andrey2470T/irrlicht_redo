@@ -23,17 +23,17 @@ CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		CreationParams(params), Close(false)
 {
 	Timer = new CTimer();
-	if (os::Printer::Logger) {
-		os::Printer::Logger->grab();
-		Logger = (CLogger *)os::Printer::Logger;
+	if (g_irrlogger) {
+		g_irrlogger->grab();
+		Logger = (CLogger *)g_irrlogger;
 		Logger->setReceiver(UserReceiver);
 	} else {
 		Logger = new CLogger(UserReceiver);
-		os::Printer::Logger = Logger;
+		g_irrlogger = Logger;
 	}
 	Logger->setLogLevel(CreationParams.LoggingLevel);
 
-	os::Printer::Logger = Logger;
+	g_irrlogger = Logger;
 
 	FileSystem = io::createFileSystem();
 }
@@ -70,7 +70,7 @@ CIrrDeviceStub::~CIrrDeviceStub()
 		Timer->drop();
 
 	if (Logger->drop())
-		os::Printer::Logger = 0;
+		g_irrlogger = nullptr;
 }
 
 void CIrrDeviceStub::createGUIAndScene()

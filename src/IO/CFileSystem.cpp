@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CFileSystem.h"
+#include "Device/CLogger.h"
 #include "IReadFile.h"
 #include "IWriteFile.h"
 #include "CZipReader.h"
@@ -251,7 +252,7 @@ bool CFileSystem::addFileArchive(const io::path &filename, bool ignoreCase,
 			*retArchive = archive;
 		ret = true;
 	} else {
-		os::Printer::log("Could not create archive for", filename, ELL_ERROR);
+		g_irrlogger->log("Could not create archive for", filename, ELL_ERROR);
 	}
 
 	return ret;
@@ -314,7 +315,7 @@ bool CFileSystem::addFileArchive(IReadFile *file, bool ignoreCase,
 				*retArchive = archive;
 			return true;
 		} else {
-			os::Printer::log("Could not create archive for", file->getFileName(), ELL_ERROR);
+			g_irrlogger->log("Could not create archive for", file->getFileName(), ELL_ERROR);
 		}
 	}
 

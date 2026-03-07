@@ -4,6 +4,7 @@
 
 #include "CImageLoaderTGA.h"
 
+#include "Device/CLogger.h"
 #include "IReadFile.h"
 #include "Device/os.h"
 #include "CColorConverter.h"
@@ -46,7 +47,7 @@ u8 *CImageLoaderTGA::loadCompressedImage(io::IReadFile *file, const STGAHeader &
 				file->read(&data[currentByte], bytesToRead);
 				currentByte += bytesToRead;
 			} else {
-				os::Printer::log("Compressed TGA file RAW chunk tries writing beyond buffer", file->getFileName(), ELL_WARNING);
+				g_irrlogger->log("Compressed TGA file RAW chunk tries writing beyond buffer", file->getFileName(), ELL_WARNING);
 				break;
 			}
 		} else {
@@ -60,7 +61,7 @@ u8 *CImageLoaderTGA::loadCompressedImage(io::IReadFile *file, const STGAHeader &
 				file->read(&data[dataOffset], bytesPerPixel);
 				currentByte += bytesPerPixel;
 			} else {
-				os::Printer::log("Compressed TGA file RLE headertries writing beyond buffer", file->getFileName(), ELL_WARNING);
+				g_irrlogger->log("Compressed TGA file RLE headertries writing beyond buffer", file->getFileName(), ELL_WARNING);
 				break;
 			}
 
@@ -107,7 +108,7 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 #endif
 
 	if (!checkImageDimensions(header.ImageWidth, header.ImageHeight)) {
-		os::Printer::log("Image dimensions too large in file", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("Image dimensions too large in file", file->getFileName(), ELL_ERROR);
 		return 0;
 	}
 
@@ -162,7 +163,7 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 		// Runlength encoded RGB images
 		data = loadCompressedImage(file, header);
 	} else {
-		os::Printer::log("Unsupported TGA file type", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("Unsupported TGA file type", file->getFileName(), ELL_ERROR);
 		delete[] palette;
 		return 0;
 	}
@@ -225,7 +226,7 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 					(s32 *)image->getData(), header.ImageWidth, header.ImageHeight, 0, (header.ImageDescriptor & 0x20) == 0);
 		break;
 	default:
-		os::Printer::log("Unsupported TGA format", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("Unsupported TGA format", file->getFileName(), ELL_ERROR);
 		break;
 	}
 
