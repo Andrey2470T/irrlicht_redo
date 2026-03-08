@@ -20,9 +20,6 @@
 namespace video
 {
 
-//! creates a loader which is able to load windows bitmaps
-IImageLoader *createImageLoaderBMP();
-
 //! creates a loader which is able to load jpeg images
 IImageLoader *createImageLoaderJPG();
 
@@ -77,7 +74,6 @@ CNullDriver::CNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &scre
 	SurfaceLoader.push_back(video::createImageLoaderTGA());
 	SurfaceLoader.push_back(video::createImageLoaderPNG());
 	SurfaceLoader.push_back(video::createImageLoaderJPG());
-	SurfaceLoader.push_back(video::createImageLoaderBMP());
 
 	SurfaceWriter.push_back(video::createImageWriterJPG());
 	SurfaceWriter.push_back(video::createImageWriterPNG());
@@ -209,7 +205,6 @@ bool CNullDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u
 
 bool CNullDriver::endScene()
 {
-	FPSCounter.registerFrame(os::Timer::getRealTime(), PrimitivesDrawn);
 	updateAllHardwareBuffers();
 	updateAllOcclusionQueries();
 	return true;
@@ -710,20 +705,6 @@ const core::dimension2d<u32> &CNullDriver::getCurrentRenderTargetSize() const
 		return ScreenSize;
 	else
 		return CurrentRenderTargetSize;
-}
-
-// returns current frames per second value
-s32 CNullDriver::getFPS() const
-{
-	return FPSCounter.getFPS();
-}
-
-//! returns amount of primitives (mostly triangles) were drawn in the last frame.
-//! very useful method for statistics.
-u32 CNullDriver::getPrimitiveCountDrawn(u32 param) const
-{
-	return (0 == param) ? FPSCounter.getPrimitive() : (1 == param) ? FPSCounter.getPrimitiveAverage()
-																   : FPSCounter.getPrimitiveTotal();
 }
 
 //! Sets the dynamic ambient light color. The default color is

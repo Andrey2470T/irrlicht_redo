@@ -409,7 +409,6 @@ endif()
 set(IRRIMAGEOBJ
 	Image/CColorConverter.cpp
 	Image/CImage.cpp
-	Image/CImageLoaderBMP.cpp
 	Image/CImageLoaderJPG.cpp
 	Image/CImageLoaderPNG.cpp
 	Image/CImageLoaderTGA.cpp
@@ -418,7 +417,6 @@ set(IRRIMAGEOBJ
 )
 
 add_library(IRRVIDEOOBJ OBJECT
-	Video/CFPSCounter.cpp
 	${IRRDRVROBJ}
 	${IRRIMAGEOBJ}
 )
