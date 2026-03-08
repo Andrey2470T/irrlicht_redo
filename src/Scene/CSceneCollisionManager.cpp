@@ -6,7 +6,6 @@
 #include "ICameraSceneNode.h"
 #include "SViewFrustum.h"
 
-#include "Device/os.h"
 #include "irrMath.h"
 
 

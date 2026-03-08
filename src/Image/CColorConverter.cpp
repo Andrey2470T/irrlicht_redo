@@ -4,7 +4,6 @@
 
 #include "CColorConverter.h"
 #include "SColor.h"
-#include "Device/os.h"
 #include "irrString.h"
 
 

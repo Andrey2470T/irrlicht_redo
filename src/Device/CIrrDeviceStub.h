@@ -63,9 +63,6 @@ public:
 	//! return the context manager
 	video::IContextManager *getContextManager() override;
 
-	//! Returns a pointer to the ITimer object. With it the current Time can be received.
-	ITimer *getTimer() override;
-
 	//! Sets the window icon.
 	bool setWindowIcon(const video::IImage *img) override;
 
@@ -167,7 +164,6 @@ protected:
 	video::IVideoDriver *VideoDriver;
 	gui::IGUIEnvironment *GUIEnvironment;
 	scene::ISceneManager *SceneManager;
-	ITimer *Timer;
 	gui::ICursorControl *CursorControl;
 	IEventReceiver *UserReceiver;
 	CLogger *Logger;

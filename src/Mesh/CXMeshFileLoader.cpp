@@ -4,7 +4,7 @@
 
 #include "CXMeshFileLoader.h"
 #include "Device/CLogger.h"
-#include "Device/os.h"
+#include "Timer.h"
 
 #include "fast_atof.h"
 #include "coreutil.h"

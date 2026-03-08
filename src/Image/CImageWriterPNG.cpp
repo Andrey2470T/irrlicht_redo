@@ -9,7 +9,6 @@
 #include "Device/CLogger.h"
 #include "IWriteFile.h"
 #include "irrString.h"
-#include "Device/os.h" // for logging
 
 #include <png.h> // use system lib png
 

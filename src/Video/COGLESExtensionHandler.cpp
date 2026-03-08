@@ -36,9 +36,9 @@ void COGLES1ExtensionHandler::initExtensions()
 	getGLVersion();
 
 	if (Version >= 100)
-		os::Printer::log("OpenGL ES driver version is 1.1.", ELL_INFORMATION);
+		g_irrlogger->log("OpenGL ES driver version is 1.1.", ELL_INFORMATION);
 	else
-		os::Printer::log("OpenGL ES driver version is 1.0.", ELL_WARNING);
+		g_irrlogger->log("OpenGL ES driver version is 1.0.", ELL_WARNING);
 
 	getGLExtensions();
 

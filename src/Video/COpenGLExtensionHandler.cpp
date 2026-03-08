@@ -122,7 +122,7 @@ COpenGLExtensionHandler::COpenGLExtensionHandler() :
 void COpenGLExtensionHandler::dump(ELOG_LEVEL logLevel) const
 {
 	for (u32 i = 0; i < IRR_OpenGL_Feature_Count; ++i)
-		os::Printer::log(OpenGLFeatureStrings[i], FeatureAvailable[i] ? " true" : " false", logLevel);
+		g_irrlogger->log(OpenGLFeatureStrings[i], FeatureAvailable[i] ? " true" : " false", logLevel);
 }
 
 void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool stencilBuffer)
@@ -130,9 +130,9 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 	const f32 ogl_ver = core::fast_atof(reinterpret_cast<const c8 *>(glGetString(GL_VERSION)));
 	Version = static_cast<u16>(core::floor32(ogl_ver) * 100 + core::round32(core::fract(ogl_ver) * 10.0f));
 	if (Version >= 102)
-		os::Printer::log("OpenGL driver version is 1.2 or better.", ELL_INFORMATION);
+		g_irrlogger->log("OpenGL driver version is 1.2 or better.", ELL_INFORMATION);
 	else
-		os::Printer::log("OpenGL driver version is not 1.2 or better.", ELL_WARNING);
+		g_irrlogger->log("OpenGL driver version is not 1.2 or better.", ELL_WARNING);
 
 	{
 		const char *t = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
@@ -485,7 +485,7 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 
 	if (!pGlActiveTextureARB || !pGlClientActiveTextureARB) {
 		Feature.MaxTextureUnits = 1;
-		os::Printer::log("Failed to load OpenGL's multitexture extension, proceeding without.", ELL_WARNING);
+		g_irrlogger->log("Failed to load OpenGL's multitexture extension, proceeding without.", ELL_WARNING);
 	} else
 		Feature.MaxTextureUnits = core::min_(Feature.MaxTextureUnits, static_cast<u8>(MATERIAL_MAX_TEXTURES));
 
@@ -514,21 +514,21 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 		// undocumented flags, so use the RAW values
 		GLint val;
 		glGetIntegerv(0x9047, &val);
-		os::Printer::log("Dedicated video memory (kB)", core::stringc(val));
+		g_irrlogger->log("Dedicated video memory (kB)", core::stringc(val));
 		glGetIntegerv(0x9048, &val);
-		os::Printer::log("Total video memory (kB)", core::stringc(val));
+		g_irrlogger->log("Total video memory (kB)", core::stringc(val));
 		glGetIntegerv(0x9049, &val);
-		os::Printer::log("Available video memory (kB)", core::stringc(val));
+		g_irrlogger->log("Available video memory (kB)", core::stringc(val));
 	}
 #ifdef GL_ATI_meminfo
 	if (FeatureAvailable[IRR_ATI_meminfo]) {
 		GLint val[4];
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, val);
-		os::Printer::log("Free texture memory (kB)", core::stringc(val[0]));
+		g_irrlogger->log("Free texture memory (kB)", core::stringc(val[0]));
 		glGetIntegerv(GL_VBO_FREE_MEMORY_ATI, val);
-		os::Printer::log("Free VBO memory (kB)", core::stringc(val[0]));
+		g_irrlogger->log("Free VBO memory (kB)", core::stringc(val[0]));
 		glGetIntegerv(GL_RENDERBUFFER_FREE_MEMORY_ATI, val);
-		os::Printer::log("Free render buffer memory (kB)", core::stringc(val[0]));
+		g_irrlogger->log("Free render buffer memory (kB)", core::stringc(val[0]));
 	}
 #endif
 

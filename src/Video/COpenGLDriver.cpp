@@ -9,8 +9,6 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include "Device/os.h"
-
 #include "COpenGLCacheHandler.h"
 #include "COpenGLMaterialRenderer.h"
 #include "COpenGLSLMaterialRenderer.h"
@@ -94,7 +92,7 @@ bool COpenGLDriver::genericDriverInit()
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	const GLubyte *vendor = glGetString(GL_VENDOR);
 	if (renderer && vendor) {
-		os::Printer::log(reinterpret_cast<const c8 *>(renderer), reinterpret_cast<const c8 *>(vendor), ELL_INFORMATION);
+		g_irrlogger->log(reinterpret_cast<const c8 *>(renderer), reinterpret_cast<const c8 *>(vendor), ELL_INFORMATION);
 		VendorName = reinterpret_cast<const c8 *>(vendor);
 	}
 
@@ -111,9 +109,9 @@ bool COpenGLDriver::genericDriverInit()
 		char buf[32];
 		const u32 maj = ShaderLanguageVersion / 100;
 		snprintf_irr(buf, 32, "%u.%u", maj, ShaderLanguageVersion - maj * 100);
-		os::Printer::log("GLSL version", buf, ELL_INFORMATION);
+		g_irrlogger->log("GLSL version", buf, ELL_INFORMATION);
 	} else
-		os::Printer::log("GLSL not available.", ELL_INFORMATION);
+		g_irrlogger->log("GLSL not available.", ELL_INFORMATION);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
@@ -1630,29 +1628,29 @@ bool COpenGLDriver::testGLError(int code)
 	case GL_NO_ERROR:
 		return false;
 	case GL_INVALID_ENUM:
-		os::Printer::log("GL_INVALID_ENUM", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_ENUM", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_INVALID_VALUE:
-		os::Printer::log("GL_INVALID_VALUE", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_VALUE", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_INVALID_OPERATION:
-		os::Printer::log("GL_INVALID_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_STACK_OVERFLOW:
-		os::Printer::log("GL_STACK_OVERFLOW", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_STACK_OVERFLOW", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_STACK_UNDERFLOW:
-		os::Printer::log("GL_STACK_UNDERFLOW", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_STACK_UNDERFLOW", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_OUT_OF_MEMORY:
-		os::Printer::log("GL_OUT_OF_MEMORY", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_OUT_OF_MEMORY", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_TABLE_TOO_LARGE:
-		os::Printer::log("GL_TABLE_TOO_LARGE", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_TABLE_TOO_LARGE", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 #if defined(GL_EXT_framebuffer_object)
 	case GL_INVALID_FRAMEBUFFER_OPERATION_EXT:
-		os::Printer::log("GL_INVALID_FRAMEBUFFER_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_FRAMEBUFFER_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 #endif
 	};
@@ -2698,7 +2696,7 @@ s32 COpenGLDriver::getVertexShaderConstantID(const c8 *name)
 //! Get a pixel shader constant index.
 s32 COpenGLDriver::getPixelShaderConstantID(const c8 *name)
 {
-	os::Printer::log("Error: Please call services->getPixelShaderConstantID(), not VideoDriver->getPixelShaderConstantID().");
+	g_irrlogger->log("Error: Please call services->getPixelShaderConstantID(), not VideoDriver->getPixelShaderConstantID().");
 	return -1;
 }
 
@@ -2724,20 +2722,20 @@ bool COpenGLDriver::setVertexShaderConstant(s32 index, const u32 *ints, int coun
 //! Sets a constant for the pixel shader based on an index.
 bool COpenGLDriver::setPixelShaderConstant(s32 index, const f32 *floats, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 //! Int interface for the above.
 bool COpenGLDriver::setPixelShaderConstant(s32 index, const s32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 bool COpenGLDriver::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
@@ -2851,7 +2849,7 @@ u32 COpenGLDriver::getMaximalPrimitiveCount() const
 bool COpenGLDriver::setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
 	if (target && target->getDriverType() != EDT_OPENGL) {
-		os::Printer::log("Fatal Error: Tried to set a render target not owned by this driver.", ELL_ERROR);
+		g_irrlogger->log("Fatal Error: Tried to set a render target not owned by this driver.", ELL_ERROR);
 		return false;
 	}
 
@@ -3038,7 +3036,7 @@ IImage *COpenGLDriver::createScreenShot(video::ECOLOR_FORMAT format, video::E_RE
 
 	if (newImage) {
 		if (testGLError(__LINE__) || !pixels) {
-			os::Printer::log("createScreenShot failed", ELL_ERROR);
+			g_irrlogger->log("createScreenShot failed", ELL_ERROR);
 			newImage->drop();
 			return 0;
 		}

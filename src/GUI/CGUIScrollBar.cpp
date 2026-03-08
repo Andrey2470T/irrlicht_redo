@@ -10,7 +10,6 @@
 #include "CGUIButton.h"
 #include "IGUIFont.h"
 #include "IGUIFontBitmap.h"
-#include "Device/os.h"
 
 
 namespace gui

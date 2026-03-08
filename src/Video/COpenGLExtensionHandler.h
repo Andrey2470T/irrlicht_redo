@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include "Device/CLogger.h"
+#include "ILogger.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
-#include "Device/os.h"
 
 #include "COpenGLCommon.h"
 
@@ -1723,7 +1724,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix2x3fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix2x3fv)
 		pGlUniformMatrix2x3fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix2x3fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix2x3fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix2x4fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1731,7 +1732,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix2x4fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix2x4fv)
 		pGlUniformMatrix2x4fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix2x4fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix2x4fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix3x2fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1739,7 +1740,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix3x2fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix3x2fv)
 		pGlUniformMatrix3x2fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix3x2fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix3x2fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix3fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1753,7 +1754,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix3x4fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix3x4fv)
 		pGlUniformMatrix3x4fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix3x4fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix3x4fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4x2fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1761,7 +1762,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix4x2fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix4x2fv)
 		pGlUniformMatrix4x2fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix4x2fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix4x2fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4x3fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1769,7 +1770,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix4x3fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix4x3fv)
 		pGlUniformMatrix4x3fv(loc, count, transpose, v);
 	else
-		os::Printer::log("glUniformMatrix4x3fv not supported", ELL_ERROR);
+		g_irrlogger->log("glUniformMatrix4x3fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -2573,7 +2574,7 @@ inline void COpenGLExtensionHandler::extGlGenerateTextureMipmap(GLuint texture, 
 			break;
 #endif
 		default:
-			os::Printer::log("DevSH would like to ask you what are you doing!!??\n", ELL_ERROR);
+			g_irrlogger->log("DevSH would like to ask you what are you doing!!??\n", ELL_ERROR);
 			return;
 		}
 		glBindTexture(target, texture);

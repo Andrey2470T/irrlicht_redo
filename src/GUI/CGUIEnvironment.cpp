@@ -25,7 +25,7 @@
 
 #include "IWriteFile.h"
 #include "BuiltInFont.h"
-#include "Device/os.h"
+#include "Timer.h"
 
 
 namespace gui

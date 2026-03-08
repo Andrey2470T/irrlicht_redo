@@ -7,7 +7,6 @@
 #include "Device/CLogger.h"
 #include "Scene/CBoneSceneNode.h"
 #include "IAnimatedMeshSceneNode.h"
-#include "Device/os.h"
 
 namespace
 {

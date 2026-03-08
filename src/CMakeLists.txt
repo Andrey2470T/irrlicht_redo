@@ -443,7 +443,7 @@ add_library(IRRDEVICEOBJ OBJECT
 	Device/CLogger.cpp
 	Device/COSOperator.cpp
 	Device/Irrlicht.cpp
-	Device/os.cpp
+	Device/Timer.cpp
 )
 
 if(ENABLE_OPENGL3)

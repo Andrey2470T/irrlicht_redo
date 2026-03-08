@@ -9,7 +9,6 @@
 #include "IWriteFile.h"
 #include "CImage.h"
 #include "irrString.h"
-#include "Device/os.h"
 
 #include <cstdio> // required for jpeglib.h
 extern "C" {

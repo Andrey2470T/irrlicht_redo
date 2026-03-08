@@ -8,7 +8,7 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IGUIFont.h"
-#include "Device/os.h"
+#include "Timer.h"
 
 
 namespace gui

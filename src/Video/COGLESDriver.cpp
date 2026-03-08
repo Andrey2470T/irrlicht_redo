@@ -84,7 +84,7 @@ bool COGLES1Driver::genericDriverInit(const core::dimension2d<u32> &screenSize, 
 
 	// print renderer information
 	VendorName = glGetString(GL_VENDOR);
-	os::Printer::log(VendorName.c_str(), ELL_INFORMATION);
+	g_irrlogger->log(VendorName.c_str(), ELL_INFORMATION);
 
 	// load extensions
 	initExtensions();
@@ -1186,22 +1186,22 @@ bool COGLES1Driver::testGLError(int code)
 	case GL_NO_ERROR:
 		return false;
 	case GL_INVALID_ENUM:
-		os::Printer::log("GL_INVALID_ENUM", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_ENUM", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_INVALID_VALUE:
-		os::Printer::log("GL_INVALID_VALUE", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_VALUE", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_INVALID_OPERATION:
-		os::Printer::log("GL_INVALID_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_INVALID_OPERATION", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_STACK_OVERFLOW:
-		os::Printer::log("GL_STACK_OVERFLOW", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_STACK_OVERFLOW", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_STACK_UNDERFLOW:
-		os::Printer::log("GL_STACK_UNDERFLOW", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_STACK_UNDERFLOW", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	case GL_OUT_OF_MEMORY:
-		os::Printer::log("GL_OUT_OF_MEMORY", core::stringc(code).c_str(), ELL_ERROR);
+		g_irrlogger->log("GL_OUT_OF_MEMORY", core::stringc(code).c_str(), ELL_ERROR);
 		break;
 	};
 	//	_IRR_DEBUG_BREAK_IF(true);
@@ -1859,7 +1859,7 @@ s32 COGLES1Driver::getVertexShaderConstantID(const c8 *name)
 //! Get a pixel shader constant index.
 s32 COGLES1Driver::getPixelShaderConstantID(const c8 *name)
 {
-	os::Printer::log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->getPixelShaderConstantID().");
+	g_irrlogger->log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->getPixelShaderConstantID().");
 	return -1;
 }
 
@@ -1884,20 +1884,20 @@ bool COGLES1Driver::setVertexShaderConstant(s32 index, const u32 *ints, int coun
 //! Sets a constant for the pixel shader based on an index.
 bool COGLES1Driver::setPixelShaderConstant(s32 index, const f32 *floats, int count)
 {
-	os::Printer::log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 //! Int interface for the above.
 bool COGLES1Driver::setPixelShaderConstant(s32 index, const s32 *ints, int count)
 {
-	os::Printer::log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 bool COGLES1Driver::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
-	os::Printer::log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please use IMaterialRendererServices from IShaderConstantSetCallBack::OnSetConstants not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
@@ -1919,7 +1919,7 @@ s32 COGLES1Driver::addHighLevelShaderMaterial(
 		E_MATERIAL_TYPE baseMaterial,
 		s32 userData)
 {
-	os::Printer::log("No shader support.");
+	g_irrlogger->log("No shader support.");
 	return -1;
 }
 
@@ -1997,7 +1997,7 @@ u32 COGLES1Driver::getMaximalPrimitiveCount() const
 bool COGLES1Driver::setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
 	if (target && target->getDriverType() != EDT_OGLES1) {
-		os::Printer::log("Fatal Error: Tried to set a render target not owned by OpenGL driver.", ELL_ERROR);
+		g_irrlogger->log("Fatal Error: Tried to set a render target not owned by OpenGL driver.", ELL_ERROR);
 		return false;
 	}
 

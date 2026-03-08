@@ -7,7 +7,6 @@
 #include "SMesh.h"
 #include "CMeshBuffer.h"
 #include "SAnimatedMesh.h"
-#include "Device/os.h"
 
 
 namespace scene

@@ -5,7 +5,6 @@
 #include "CZipReader.h"
 
 #include "Device/CLogger.h"
-#include "Device/os.h"
 
 #include "CFileList.h"
 #include "CReadFile.h"

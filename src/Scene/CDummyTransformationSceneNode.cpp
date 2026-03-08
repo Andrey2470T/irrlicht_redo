@@ -4,7 +4,6 @@
 
 #include "CDummyTransformationSceneNode.h"
 #include "Device/CLogger.h"
-#include "Device/os.h"
 
 
 namespace scene

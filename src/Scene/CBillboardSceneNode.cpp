@@ -6,7 +6,6 @@
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 #include "ICameraSceneNode.h"
-#include "Device/os.h"
 
 
 namespace scene

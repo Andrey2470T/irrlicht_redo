@@ -6,11 +6,11 @@
 
 #pragma once
 
+#include <string>
 #include <unordered_set>
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
-#include "Device/os.h"
 
 #include "Common.h"
 
@@ -90,13 +90,13 @@ public:
 	inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
 			GLsizei imageSize, const void *data)
 	{
-		os::Printer::log("Compressed textures aren't supported", ELL_ERROR);
+		g_irrlogger->log("Compressed textures aren't supported", ELL_ERROR);
 	}
 
 	inline void irrGlCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
 			GLenum format, GLsizei imageSize, const void *data)
 	{
-		os::Printer::log("Compressed textures aren't supported", ELL_ERROR);
+		g_irrlogger->log("Compressed textures aren't supported", ELL_ERROR);
 	}
 
 	inline void irrGlUseProgram(GLuint prog)

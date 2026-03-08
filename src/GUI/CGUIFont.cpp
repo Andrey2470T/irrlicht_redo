@@ -5,7 +5,6 @@
 #include "CGUIFont.h"
 
 #include "Device/CLogger.h"
-#include "Device/os.h"
 #include "coreutil.h"
 #include "IGUIEnvironment.h"
 #include "IReadFile.h"

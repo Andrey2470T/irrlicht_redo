@@ -7,7 +7,6 @@
 #include "irrString.h"
 #include "CColorConverter.h"
 #include "CBlit.h"
-#include "Device/os.h"
 #include "SoftwareDriver2_helper.h"
 
 

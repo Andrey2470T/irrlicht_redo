@@ -9,7 +9,6 @@
 #include "CImage.h"
 #include "Device/CLogger.h"
 #include "IO/CReadFile.h"
-#include "Device/os.h"
 
 
 namespace video

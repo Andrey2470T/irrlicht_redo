@@ -7,7 +7,6 @@
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 #include "S3DVertex.h"
-#include "Device/os.h"
 #include "Mesh/CSkinnedMesh.h"
 #include "IDummyTransformationSceneNode.h"
 #include "IBoneSceneNode.h"

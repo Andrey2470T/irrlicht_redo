@@ -13,7 +13,7 @@
 #include "IReadFile.h"
 #include "IWriteFile.h"
 
-#include "Device/os.h"
+#include "Timer.h"
 
 #include "Mesh/CSkinnedMesh.h"
 #include "Mesh/CXMeshFileLoader.h"

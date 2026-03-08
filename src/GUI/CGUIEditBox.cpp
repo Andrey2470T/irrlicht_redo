@@ -9,8 +9,8 @@
 #include "IGUIFont.h"
 #include "IVideoDriver.h"
 #include "rect.h"
-#include "Device/os.h"
 #include "Keycodes.h"
+#include "Timer.h"
 
 /*
 	todo:

@@ -100,7 +100,6 @@
 #include "IShaderConstantSetCallBack.h"
 #include "ISkinnedMesh.h"
 #include "ITexture.h"
-#include "ITimer.h"
 #include "IVideoDriver.h"
 #include "IWriteFile.h"
 #include "Keycodes.h"

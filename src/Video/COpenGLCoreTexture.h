@@ -8,9 +8,9 @@
 #include "SMaterialLayer.h"
 #include "ITexture.h"
 #include "EDriverFeatures.h"
-#include "Device/os.h"
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
+#include "Device/CLogger.h"
 
 
 namespace video
@@ -74,7 +74,7 @@ public:
 						Images[i]->setMipMapsData(images[i]->getMipMapsData(), false);
 					} else {
 						// TODO: handle at least mipmap with changing color format
-						os::Printer::log("COpenGLCoreTexture: Can't handle format changes for mipmap data. Mipmap data dropped", ELL_WARNING);
+						g_irrlogger->log("COpenGLCoreTexture: Can't handle format changes for mipmap data. Mipmap data dropped", ELL_WARNING);
 					}
 				}
 			}
@@ -148,7 +148,7 @@ public:
 		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
 
 		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
-			os::Printer::log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			return;
 		}
 
@@ -188,7 +188,7 @@ public:
 		if (Driver->testGLError(__LINE__)) {
 			char msg[256];
 			snprintf_irr(msg, 256, "COpenGLCoreTexture: InternalFormat:0x%04x PixelFormat:0x%04x", (int)InternalFormat, (int)PixelFormat);
-			os::Printer::log(msg, ELL_ERROR);
+			g_irrlogger->log(msg, ELL_ERROR);
 		}
 	}
 
@@ -467,7 +467,7 @@ protected:
 		ColorFormat = getBestColorFormat(OriginalColorFormat);
 
 		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
-			os::Printer::log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			InternalFormat = 0;
 			return;
 		}
@@ -480,7 +480,7 @@ protected:
 		Size = OriginalSize;
 
 		if (Size.Width == 0 || Size.Height == 0) {
-			os::Printer::log("Invalid size of image for texture.", ELL_ERROR);
+			g_irrlogger->log("Invalid size of image for texture.", ELL_ERROR);
 			return;
 		}
 
@@ -575,7 +575,7 @@ protected:
 			return GL_TEXTURE_CUBE_MAP;
 		}
 
-		os::Printer::log("COpenGLCoreTexture::TextureTypeIrrToGL unknown texture type", ELL_WARNING);
+		g_irrlogger->log("COpenGLCoreTexture::TextureTypeIrrToGL unknown texture type", ELL_WARNING);
 		return GL_TEXTURE_2D;
 	}
 

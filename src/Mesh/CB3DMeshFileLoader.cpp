@@ -11,7 +11,6 @@
 #include "Device/CLogger.h"
 #include "IVideoDriver.h"
 #include "IFileSystem.h"
-#include "Device/os.h"
 
 #include <algorithm>
 

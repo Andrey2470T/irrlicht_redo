@@ -12,7 +12,6 @@
 #include "IGUIFont.h"
 #include "IGUIFontBitmap.h"
 #include "IFileList.h"
-#include "Device/os.h"
 
 
 namespace gui

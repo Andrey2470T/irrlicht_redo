@@ -6,7 +6,6 @@
 
 #include "Device/CLogger.h"
 #include "IReadFile.h"
-#include "Device/os.h"
 #include "CColorConverter.h"
 #include "CImage.h"
 #include "irrString.h"

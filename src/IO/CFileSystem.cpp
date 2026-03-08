@@ -9,7 +9,6 @@
 #include "CZipReader.h"
 #include "CFileList.h"
 #include "stdio.h"
-#include "Device/os.h"
 #include "CReadFile.h"
 #include "CMemoryFile.h"
 #include "CLimitReadFile.h"
