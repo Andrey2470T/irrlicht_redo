@@ -6,7 +6,8 @@
 
 #include "IReferenceCounted.h"
 
-
+namespace irr
+{
 namespace video
 {
 class IMaterialRendererServices;
@@ -75,3 +76,4 @@ public:
 };
 
 } // end namespace video
+} // end namespace irr

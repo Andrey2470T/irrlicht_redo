@@ -12,6 +12,7 @@
 #include "CIrrDeviceOSX.h"
 
 #include "IEventReceiver.h"
+#include "IVideoDriver.h"
 #include "os.h"
 #include "CTimer.h"
 #include "irrString.h"
@@ -19,7 +20,7 @@
 #include <stdio.h>
 #include <sys/utsname.h>
 #include "COSOperator.h"
-#include "CColorConverter.h"
+#include "Image/CColorConverter.h"
 #include "irrlicht.h"
 #include <algorithm>
 
@@ -432,12 +433,6 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void *key)
 	return value;
 }
 
-
-namespace video
-{
-IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &param, io::IFileSystem *io, IContextManager *contextManager);
-}
-
 static bool firstLaunch = true;
 
 @implementation CIrrDelegateOSX {
@@ -518,7 +513,8 @@ static bool firstLaunch = true;
 
 @end
 
-
+namespace irr
+{
 //! constructor
 CIrrDeviceMacOSX::CIrrDeviceMacOSX(const SIrrlichtCreationParameters &param) :
 		CIrrDeviceStub(param), Window(NULL), Display(NULL),
@@ -527,10 +523,6 @@ CIrrDeviceMacOSX::CIrrDeviceMacOSX(const SIrrlichtCreationParameters &param) :
 		IsActive(true), IsFullscreen(false), IsShiftDown(false), IsControlDown(false), IsResizable(false)
 {
 	struct utsname name;
-
-#ifdef _DEBUG
-	setDebugName("CIrrDeviceMacOSX");
-#endif
 
 	if (firstLaunch) {
 		firstLaunch = false;
@@ -717,9 +709,9 @@ void CIrrDeviceMacOSX::createDriver()
 #endif
 	break;
 
-	case video::EDT_OGLES1:
+	case video::EDT_OPENGL3:
 	case video::EDT_OGLES2:
-		os::Printer::log("This driver is not available in OSX. Try OpenGL or Software renderer.", ELL_ERROR);
+		os::Printer::log("This driver is not available on OSX.", ELL_ERROR);
 		break;
 
 	case video::EDT_NULL:
@@ -849,6 +841,7 @@ bool CIrrDeviceMacOSX::run()
 				ievent.MouseInput.Wheel *= 10.0f;
 			else
 				ievent.MouseInput.Wheel *= 5.0f;
+			ievent.MouseInput.ButtonStates = MouseButtonStates;
 			postMouseEvent(event, ievent);
 			break;
 
@@ -1045,6 +1038,7 @@ void CIrrDeviceMacOSX::storeMouseLocation()
 			ievent.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
 			ievent.MouseInput.X = x;
 			ievent.MouseInput.Y = y;
+			ievent.MouseInput.ButtonStates = MouseButtonStates;
 			postEventFromUser(ievent);
 		}
 	}

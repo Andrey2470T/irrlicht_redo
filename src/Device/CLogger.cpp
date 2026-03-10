@@ -4,11 +4,8 @@
 
 #include "CLogger.h"
 
-#ifdef _IRR_USE_SDL3_
-    #include <SDL3/SDL_log.h>
-#else
-    #include <SDL_log.h>
-#endif
+namespace irr
+{
 
 CLogger::CLogger(IEventReceiver *r) :
 		LogLevel(ELL_INFORMATION), Receiver(r)
@@ -41,20 +38,7 @@ void CLogger::log(const c8 *text, ELOG_LEVEL ll)
 			return;
 	}
 
-    switch (ll) {
-    case ELL_ERROR:
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, text);
-        break;
-    case ELL_WARNING:
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, text);
-        break;
-    case ELL_DEBUG:
-    case ELL_INFORMATION:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, text);
-        break;
-    default:
-        break;
-    }
+	os::Printer::print(text);
 }
 
 //! Prints out a text into the log
@@ -75,4 +59,4 @@ void CLogger::setReceiver(IEventReceiver *r)
 	Receiver = r;
 }
 
-ILogger *g_irrlogger = nullptr;
+} // end namespace irr

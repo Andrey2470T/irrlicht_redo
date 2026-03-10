@@ -5,7 +5,6 @@
 
 #include "CGUIEnvironment.h"
 
-#include "Device/CLogger.h"
 #include "IVideoDriver.h"
 
 #include "CGUISkin.h"
@@ -24,10 +23,13 @@
 #include "CGUIComboBox.h"
 
 #include "IWriteFile.h"
+#ifdef IRR_ENABLE_BUILTIN_FONT
 #include "BuiltInFont.h"
-#include "Timer.h"
+#endif
+#include "Device/os.h"
 
-
+namespace irr
+{
 namespace gui
 {
 
@@ -48,13 +50,9 @@ CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *drive
 	if (Operator)
 		Operator->grab();
 
-#ifdef _DEBUG
-	IGUIEnvironment::setDebugName("CGUIEnvironment");
-#endif
-
 	loadBuiltInFont();
 
-	IGUISkin *skin = createSkin(gui::EGST_WINDOWS_METALLIC);
+	IGUISkin *skin = createSkin();
 	setSkin(skin);
 	skin->drop();
 
@@ -130,12 +128,13 @@ CGUIEnvironment::~CGUIEnvironment()
 
 void CGUIEnvironment::loadBuiltInFont()
 {
+#ifdef IRR_ENABLE_BUILTIN_FONT
 	io::IReadFile *file = FileSystem->createMemoryReadFile(BuiltInFontData,
 			BuiltInFontDataSize, DefaultFontName, false);
 
 	CGUIFont *font = new CGUIFont(this, DefaultFontName);
 	if (!font->load(file)) {
-		g_irrlogger->log("Error: Could not load built-in Font.", ELL_ERROR);
+		os::Printer::log("Error: Could not load built-in Font.", ELL_ERROR);
 		font->drop();
 		file->drop();
 		return;
@@ -147,6 +146,7 @@ void CGUIEnvironment::loadBuiltInFont()
 	Fonts.push_back(f);
 
 	file->drop();
+#endif
 }
 
 //! draws all gui elements
@@ -584,13 +584,13 @@ void CGUIEnvironment::setSkin(IGUISkin *skin)
 		CurrentSkin->grab();
 }
 
-//! Creates a new GUI Skin based on a template.
+//! Creates a new GUI Skin.
 /** \return Returns a pointer to the created skin.
 If you no longer need the skin, you should call IGUISkin::drop().
 See IReferenceCounted::drop() for more information. */
-IGUISkin *CGUIEnvironment::createSkin(EGUI_SKIN_TYPE type)
+IGUISkin *CGUIEnvironment::createSkin()
 {
-	IGUISkin *skin = new CGUISkin(type, Driver);
+	IGUISkin *skin = new CGUISkin(Driver);
 
 	IGUIFont *builtinfont = getBuiltInFont();
 	IGUIFontBitmap *bitfont = 0;
@@ -791,7 +791,7 @@ IGUIFont *CGUIEnvironment::getFont(const io::path &filename)
 	// does the file exist?
 
 	if (!FileSystem->existFile(filename)) {
-		g_irrlogger->log("Could not load font because the file does not exist", f.NamedPath.getPath(), ELL_ERROR);
+		os::Printer::log("Could not load font because the file does not exist", f.NamedPath.getPath(), ELL_ERROR);
 		return 0;
 	}
 
@@ -884,7 +884,7 @@ IGUISpriteBank *CGUIEnvironment::getSpriteBank(const io::path &filename)
 	// we don't have this sprite bank, we should load it
 	if (!FileSystem->existFile(b.NamedPath.getPath())) {
 		if (filename != DefaultFontName) {
-			g_irrlogger->log("Could not load sprite bank because the file does not exist", b.NamedPath.getPath(), ELL_DEBUG);
+			os::Printer::log("Could not load sprite bank because the file does not exist", b.NamedPath.getPath(), ELL_DEBUG);
 		}
 		return 0;
 	}
@@ -948,7 +948,7 @@ IGUIElement *CGUIEnvironment::getNextElement(bool reverse, bool group)
 			// this element is not part of the tab cycle,
 			// but its parent might be...
 			IGUIElement *el = Focus;
-			while (el && el->getParent() && startOrder == -1) {
+			while (el->getParent() && startOrder == -1) {
 				el = el->getParent();
 				startOrder = el->getTabOrder();
 			}
@@ -992,3 +992,4 @@ IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
 }
 
 } // end namespace gui
+} // end namespace irr

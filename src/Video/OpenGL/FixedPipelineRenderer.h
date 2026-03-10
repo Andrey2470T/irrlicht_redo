@@ -8,7 +8,8 @@
 #include "IShaderConstantSetCallBack.h"
 #include "IMaterialRendererServices.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -25,7 +26,6 @@ protected:
 
 	s32 WVPMatrixID;
 	s32 WVMatrixID;
-	s32 NMatrixID;
 
 	s32 FogEnableID;
 	s32 FogTypeID;
@@ -36,22 +36,8 @@ protected:
 
 	s32 ThicknessID;
 
-	bool LightEnable;
-	SColorf GlobalAmbient;
-	SColorf MaterialAmbient;
-	SColorf MaterialDiffuse;
-	SColorf MaterialEmissive;
-	SColorf MaterialSpecular;
-	f32 MaterialShininess;
-
-	s32 FogEnable;
-	s32 FogType;
-	SColorf FogColor;
-	f32 FogStart;
-	f32 FogEnd;
-	f32 FogDensity;
-
 	f32 Thickness;
+	bool FogEnable;
 };
 
 class COpenGL3MaterialSolidCB : public COpenGL3MaterialBaseCB
@@ -96,4 +82,5 @@ protected:
 	s32 TextureUnit0;
 };
 
+}
 }

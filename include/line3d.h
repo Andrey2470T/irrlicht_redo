@@ -7,7 +7,8 @@
 #include "irrTypes.h"
 #include "vector3d.h"
 
-
+namespace irr
+{
 namespace core
 {
 
@@ -161,3 +162,4 @@ typedef line3d<f32> line3df;
 typedef line3d<s32> line3di;
 
 } // end namespace core
+} // end namespace irr

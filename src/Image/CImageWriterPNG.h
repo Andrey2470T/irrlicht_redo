@@ -6,7 +6,8 @@
 
 #include "IImageWriter.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -24,3 +25,4 @@ public:
 };
 
 } // namespace video
+} // namespace irr

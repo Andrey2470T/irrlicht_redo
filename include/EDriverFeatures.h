@@ -4,7 +4,8 @@
 
 #pragma once
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -128,8 +129,15 @@ enum E_VIDEO_DRIVER_FEATURE
 	//! Support for clamping vertices beyond far-plane to depth instead of capping them.
 	EVDF_DEPTH_CLAMP,
 
+	//! Support for multisample textures.
+	EVDF_TEXTURE_MULTISAMPLE,
+
+	//! Support for 2D array textures.
+	EVDF_TEXTURE_2D_ARRAY,
+
 	//! Only used for counting the elements of this enum
 	EVDF_COUNT
 };
 
 } // end namespace video
+} // end namespace irr

@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(IrrlichtRedo
-	VERSION 1.0.0
-	LANGUAGES CXX
-)
+project(IrrlichtRedo VERSION 1.0.0 LANGUAGES CXX)
 
-message(STATUS "*** Building IrrlichtRedo ${PROJECT_VERSION} ***")
+message(STATUS "*** Building IrrlichtMt ${PROJECT_VERSION} ***")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,5 +12,4 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 add_subdirectory(src)

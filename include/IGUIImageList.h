@@ -3,11 +3,12 @@
 
 #pragma once
 
-#include "IGUIElement.h"
+#include "IReferenceCounted.h"
 #include "rect.h"
 #include "irrTypes.h"
 
-
+namespace irr
+{
 namespace gui
 {
 
@@ -36,3 +37,4 @@ public:
 };
 
 } // end namespace gui
+} // end namespace irr

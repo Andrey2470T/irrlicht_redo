@@ -6,7 +6,8 @@
 
 #include "irrTypes.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -31,3 +32,4 @@ const c8 *const AutomaticCullingNames[] = {
 	};
 
 } // end namespace scene
+} // end namespace irr

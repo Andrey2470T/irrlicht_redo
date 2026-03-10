@@ -8,17 +8,14 @@
 #include "IVideoDriver.h"
 #include "ITexture.h"
 
-
+namespace irr
+{
 namespace gui
 {
 
 CGUISpriteBank::CGUISpriteBank(IGUIEnvironment *env) :
 		Environment(env), Driver(0)
 {
-#ifdef _DEBUG
-	setDebugName("CGUISpriteBank");
-#endif
-
 	if (Environment) {
 		Driver = Environment->getVideoDriver();
 		if (Driver)
@@ -191,7 +188,7 @@ void CGUISpriteBank::draw2DSpriteBatch(const core::array<u32> &indices,
 		u32 starttime, u32 currenttime,
 		bool loop, bool center)
 {
-	const u32 drawCount = core::min_<u32>(indices.size(), pos.size());
+	const irr::u32 drawCount = core::min_<u32>(indices.size(), pos.size());
 
 	if (!getTextureCount())
 		return;
@@ -242,3 +239,4 @@ void CGUISpriteBank::draw2DSpriteBatch(const core::array<u32> &indices,
 }
 
 } // namespace gui
+} // namespace irr

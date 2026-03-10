@@ -6,7 +6,8 @@
 
 #include "IGUIElement.h"
 
-
+namespace irr
+{
 namespace gui
 {
 
@@ -55,3 +56,4 @@ public:
 };
 
 } // end namespace gui
+} // end namespace irr

@@ -11,15 +11,16 @@
 #include "fast_atof.h"
 #include "IContextManager.h"
 
-
+namespace irr
+{
 namespace video
 {
 
 bool COpenGLExtensionHandler::needsDSAFramebufferHack = true;
 
 COpenGLExtensionHandler::COpenGLExtensionHandler() :
-		StencilBuffer(false), TextureCompressionExtension(false), MaxLights(1),
-		MaxAnisotropy(1), MaxUserClipPlanes(0), MaxAuxBuffers(0), MaxIndices(65535),
+		StencilBuffer(false), TextureCompressionExtension(false),
+		MaxAnisotropy(1), MaxAuxBuffers(0), MaxIndices(65535),
 		MaxTextureSize(1), MaxGeometryVerticesOut(0),
 		MaxTextureLODBias(0.f), Version(0), ShaderLanguageVersion(0),
 		OcclusionQuerySupport(false), IsAtiRadeonX(false), pGlActiveTexture(0), pGlActiveTextureARB(0), pGlClientActiveTextureARB(0),
@@ -122,17 +123,17 @@ COpenGLExtensionHandler::COpenGLExtensionHandler() :
 void COpenGLExtensionHandler::dump(ELOG_LEVEL logLevel) const
 {
 	for (u32 i = 0; i < IRR_OpenGL_Feature_Count; ++i)
-		g_irrlogger->log(OpenGLFeatureStrings[i], FeatureAvailable[i] ? " true" : " false", logLevel);
+		os::Printer::log(OpenGLFeatureStrings[i], FeatureAvailable[i] ? " true" : " false", logLevel);
 }
 
 void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool stencilBuffer)
 {
 	const f32 ogl_ver = core::fast_atof(reinterpret_cast<const c8 *>(glGetString(GL_VERSION)));
 	Version = static_cast<u16>(core::floor32(ogl_ver) * 100 + core::round32(core::fract(ogl_ver) * 10.0f));
-	if (Version >= 102)
-		g_irrlogger->log("OpenGL driver version is 1.2 or better.", ELL_INFORMATION);
+	if (Version >= 200)
+		os::Printer::log("OpenGL driver version is 2.0 or newer.", ELL_INFORMATION);
 	else
-		g_irrlogger->log("OpenGL driver version is not 1.2 or better.", ELL_WARNING);
+		os::Printer::log("OpenGL driver version is older than 2.0.", ELL_WARNING);
 
 	{
 		const char *t = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
@@ -398,8 +399,6 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 		Feature.MaxTextureUnits = core::max_(Feature.MaxTextureUnits, static_cast<u8>(num));
 	}
 #endif
-	glGetIntegerv(GL_MAX_LIGHTS, &num);
-	MaxLights = static_cast<u8>(num);
 #ifdef GL_EXT_texture_filter_anisotropic
 	if (FeatureAvailable[IRR_EXT_texture_filter_anisotropic]) {
 		glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &num);
@@ -427,8 +426,6 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 	if (FeatureAvailable[IRR_EXT_texture_lod_bias])
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &MaxTextureLODBias);
 #endif
-	glGetIntegerv(GL_MAX_CLIP_PLANES, &num);
-	MaxUserClipPlanes = static_cast<u8>(num);
 	glGetIntegerv(GL_AUX_BUFFERS, &num);
 	MaxAuxBuffers = static_cast<u8>(num);
 #ifdef GL_ARB_draw_buffers
@@ -485,7 +482,7 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 
 	if (!pGlActiveTextureARB || !pGlClientActiveTextureARB) {
 		Feature.MaxTextureUnits = 1;
-		g_irrlogger->log("Failed to load OpenGL's multitexture extension, proceeding without.", ELL_WARNING);
+		os::Printer::log("Failed to load OpenGL's multitexture extension, proceeding without.", ELL_WARNING);
 	} else
 		Feature.MaxTextureUnits = core::min_(Feature.MaxTextureUnits, static_cast<u8>(MATERIAL_MAX_TEXTURES));
 
@@ -514,21 +511,21 @@ void COpenGLExtensionHandler::initExtensions(video::IContextManager *cmgr, bool 
 		// undocumented flags, so use the RAW values
 		GLint val;
 		glGetIntegerv(0x9047, &val);
-		g_irrlogger->log("Dedicated video memory (kB)", core::stringc(val));
+		os::Printer::log("Dedicated video memory (kB)", core::stringc(val));
 		glGetIntegerv(0x9048, &val);
-		g_irrlogger->log("Total video memory (kB)", core::stringc(val));
+		os::Printer::log("Total video memory (kB)", core::stringc(val));
 		glGetIntegerv(0x9049, &val);
-		g_irrlogger->log("Available video memory (kB)", core::stringc(val));
+		os::Printer::log("Available video memory (kB)", core::stringc(val));
 	}
 #ifdef GL_ATI_meminfo
 	if (FeatureAvailable[IRR_ATI_meminfo]) {
 		GLint val[4];
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, val);
-		g_irrlogger->log("Free texture memory (kB)", core::stringc(val[0]));
+		os::Printer::log("Free texture memory (kB)", core::stringc(val[0]));
 		glGetIntegerv(GL_VBO_FREE_MEMORY_ATI, val);
-		g_irrlogger->log("Free VBO memory (kB)", core::stringc(val[0]));
+		os::Printer::log("Free VBO memory (kB)", core::stringc(val[0]));
 		glGetIntegerv(GL_RENDERBUFFER_FREE_MEMORY_ATI, val);
-		g_irrlogger->log("Free render buffer memory (kB)", core::stringc(val[0]));
+		os::Printer::log("Free render buffer memory (kB)", core::stringc(val[0]));
 	}
 #endif
 
@@ -613,12 +610,15 @@ bool COpenGLExtensionHandler::queryFeature(E_VIDEO_DRIVER_FEATURE feature) const
 		return FeatureAvailable[IRR_ARB_seamless_cube_map];
 	case EVDF_DEPTH_CLAMP:
 		return FeatureAvailable[IRR_NV_depth_clamp] || FeatureAvailable[IRR_ARB_depth_clamp];
+	case EVDF_TEXTURE_MULTISAMPLE:
+		return (Version >= 302) || FeatureAvailable[IRR_ARB_texture_multisample];
 
 	default:
 		return false;
 	};
 }
 
+}
 }
 
 #endif

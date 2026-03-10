@@ -4,7 +4,8 @@
 
 #pragma once
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -33,7 +34,8 @@ enum E_DEBUG_SCENE_TYPE
 	EDS_BBOX_ALL = EDS_BBOX | EDS_BBOX_BUFFERS,
 
 	//! Show all debug infos
-	EDS_FULL = 0xffffffff
+	EDS_FULL = 0xffff
 };
 
 } // end namespace scene
+} // end namespace irr

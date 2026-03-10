@@ -8,7 +8,8 @@
 #include "SIrrCreationParameters.h"
 #include "IContextManager.h"
 
-
+namespace irr
+{
 // lots of prototypes:
 class ILogger;
 class CLogger;
@@ -32,7 +33,15 @@ IFileSystem *createFileSystem();
 
 namespace video
 {
-IVideoDriver *createNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &screenSize);
+	IVideoDriver *createNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &screenSize);
+
+	IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
+
+	IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
+
+	IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
+
+	IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
 }
 
 //! Stub for an Irrlicht Device implementation
@@ -62,6 +71,9 @@ public:
 
 	//! return the context manager
 	video::IContextManager *getContextManager() override;
+
+	//! Returns a pointer to the ITimer object. With it the current Time can be received.
+	ITimer *getTimer() override;
 
 	//! Sets the window icon.
 	bool setWindowIcon(const video::IImage *img) override;
@@ -147,7 +159,7 @@ public:
 	float getDisplayDensity() const override;
 
 	//! Resize the render window.
-	void setWindowSize(const core::dimension2d<u32> &size) override {}
+	void setWindowSize(const irr::core::dimension2d<u32> &size) override {}
 
 protected:
 	void createGUIAndScene();
@@ -164,6 +176,7 @@ protected:
 	video::IVideoDriver *VideoDriver;
 	gui::IGUIEnvironment *GUIEnvironment;
 	scene::ISceneManager *SceneManager;
+	ITimer *Timer;
 	gui::ICursorControl *CursorControl;
 	IEventReceiver *UserReceiver;
 	CLogger *Logger;
@@ -190,3 +203,4 @@ protected:
 	bool Close;
 };
 
+} // end namespace irr

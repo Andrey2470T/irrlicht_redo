@@ -8,7 +8,8 @@
 #include "IReadFile.h"
 #include "irrString.h"
 
-
+namespace irr
+{
 
 namespace io
 {
@@ -16,7 +17,7 @@ namespace io
 /*!
 	Class for reading a real file from disk.
 */
-class CReadFile : public IReadFile
+class CReadFile final : public IReadFile
 {
 public:
 	CReadFile(const io::path &fileName);
@@ -63,3 +64,4 @@ private:
 };
 
 } // end namespace io
+} // end namespace irr

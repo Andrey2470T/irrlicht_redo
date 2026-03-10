@@ -15,17 +15,18 @@
 #include "ISceneManager.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
-#include "Device/os.h"
+#include "os.h"
 #include "CTimer.h"
 #include "irrString.h"
 #include "Keycodes.h"
 #include "COSOperator.h"
-#include "CColorConverter.h"
+#include "Image/CColorConverter.h"
 #include "SIrrCreationParameters.h"
 #include "SExposedVideoData.h"
 #include "IGUISpriteBank.h"
 #include "IImageLoader.h"
 #include "IFileSystem.h"
+#include "IVideoDriver.h"
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
 
@@ -33,11 +34,11 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
-#if defined(_IRR_COMPILE_WITH_OGLES1_) || defined(_IRR_COMPILE_WITH_OGLES2_)
+#if defined(_IRR_COMPILE_WITH_OGLES2_)
 #include "CEGLManager.h"
 #endif
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
+#if defined(_IRR_COMPILE_WITH_GLX_MANAGER_)
 #include "CGLXManager.h"
 #endif
 
@@ -45,16 +46,19 @@
 #include <X11/Xcursor/Xcursor.h>
 #endif
 
+#if defined(_IRR_COMPILE_WITH_X11_) || defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+#include <unistd.h>
+#endif
+
 #if defined _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
 #include <fcntl.h>
-#include <unistd.h>
 
 #ifdef __FreeBSD__
 #include <sys/joystick.h>
 #else
 
 // linux/joystick.h includes linux/input.h, which #defines values for various KEY_FOO keys.
-// These override the KEY_FOO equivalents, which stops key handling from working.
+// These override the irr::KEY_FOO equivalents, which stops key handling from working.
 // As a workaround, defining _INPUT_H stops linux/input.h from being included; it
 // doesn't actually seem to be necessary except to pull in sys/ioctl.h.
 #define _INPUT_H
@@ -64,26 +68,6 @@
 #endif
 
 #endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
-
-
-namespace video
-{
-#ifdef _IRR_COMPILE_WITH_OPENGL_
-IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-#endif
-
-#ifdef _IRR_COMPILE_WITH_OGLES1_
-IVideoDriver *createOGLES1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-#endif
-
-#ifdef _IRR_COMPILE_WITH_OGLES2_
-IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-#endif
-
-#ifdef _IRR_COMPILE_WITH_WEBGL1_
-IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-#endif
-}
 
 namespace
 {
@@ -104,7 +88,8 @@ int XI_EXTENSIONS_OPCODE;
 #endif
 }
 
-
+namespace irr
+{
 //! constructor
 CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters &param) :
 		CIrrDeviceStub(param),
@@ -120,10 +105,6 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters &param) :
 		WindowHasFocus(false), WindowMinimized(false), WindowMaximized(param.WindowMaximized),
 		ExternalWindow(false), AutorepeatSupport(0)
 {
-#ifdef _DEBUG
-	setDebugName("CIrrDeviceLinux");
-#endif
-
 	// print version, distribution etc.
 	// thx to LynxLuna for pointing me to the uname function
 	core::stringc linuxversion;
@@ -139,7 +120,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters &param) :
 	linuxversion += LinuxInfo.machine;
 
 	Operator = new COSOperator(linuxversion, this);
-	g_irrlogger->log(linuxversion.c_str(), ELL_INFORMATION);
+	os::Printer::log(linuxversion.c_str(), ELL_INFORMATION);
 
 	// create keymap
 	createKeyMap();
@@ -240,8 +221,8 @@ int IrrPrintXError(Display *display, XErrorEvent *event)
 	snprintf_irr(msg, 256, "%d", event->request_code);
 	XGetErrorDatabaseText(display, "XRequest", msg, "unknown", msg2, 256);
 	XGetErrorText(display, event->error_code, msg, 256);
-	g_irrlogger->log("X Error", msg, ELL_WARNING);
-	g_irrlogger->log("From call ", msg2, ELL_WARNING);
+	os::Printer::log("X Error", msg, ELL_WARNING);
+	os::Printer::log("From call ", msg2, ELL_WARNING);
 	return 0;
 }
 #endif
@@ -252,7 +233,7 @@ bool CIrrDeviceLinux::switchToFullscreen()
 		return true;
 
 	if (!HasNetWM) {
-		g_irrlogger->log("NetWM support is required to allow Irrlicht to switch "
+		os::Printer::log("NetWM support is required to allow Irrlicht to switch "
 						 "to fullscreen mode. Running in windowed mode instead.",
 				ELL_WARNING);
 		CreationParams.Fullscreen = false;
@@ -280,13 +261,13 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	if (CreationParams.DriverType == video::EDT_NULL)
 		return; // no display and window
 
-	g_irrlogger->log("Configuring X11-specific top level window properties", ELL_DEBUG);
+	os::Printer::log("Configuring X11-specific top level window properties", ELL_DEBUG);
 
 	// Set application name and class hints. For now name and class are the same.
-	// Note: SDL uses the executable name here (i.e. "minetest").
+	// Note: SDL uses the executable name here (i.e. "luanti").
 	XClassHint *classhint = XAllocClassHint();
-	classhint->res_name = const_cast<char *>("Minetest");
-	classhint->res_class = const_cast<char *>("Minetest");
+	classhint->res_name = const_cast<char *>("Luanti");
+	classhint->res_class = const_cast<char *>("Luanti");
 
 	XSetClassHint(XDisplay, XWindow, classhint);
 	XFree(classhint);
@@ -307,7 +288,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// more, using gtk/gdk as the model it would seem that not using a FQDN is
 	// not an issue for modern Xorg window managers.
 
-	g_irrlogger->log("Setting Xorg window manager Properties", ELL_DEBUG);
+	os::Printer::log("Setting Xorg window manager Properties", ELL_DEBUG);
 
 	XSetWMProperties(XDisplay, XWindow, NULL, NULL, NULL, 0, NULL, NULL, NULL);
 
@@ -316,7 +297,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// force a shutdown of an application if it doesn't respond to the destroy
 	// window message.
 
-	g_irrlogger->log("Setting Xorg _NET_WM_PID extended window manager property", ELL_DEBUG);
+	os::Printer::log("Setting Xorg _NET_WM_PID extended window manager property", ELL_DEBUG);
 
 	Atom NET_WM_PID = XInternAtom(XDisplay, "_NET_WM_PID", false);
 
@@ -329,7 +310,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// Set the WM_CLIENT_LEADER window property here. Minetest has only one
 	// window and that window will always be the leader.
 
-	g_irrlogger->log("Setting Xorg WM_CLIENT_LEADER property", ELL_DEBUG);
+	os::Printer::log("Setting Xorg WM_CLIENT_LEADER property", ELL_DEBUG);
 
 	Atom WM_CLIENT_LEADER = XInternAtom(XDisplay, "WM_CLIENT_LEADER", false);
 
@@ -343,25 +324,25 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 void IrrPrintXGrabError(int grabResult, const c8 *grabCommand)
 {
 	if (grabResult == GrabSuccess) {
-		//		g_irrlogger->log(grabCommand, "GrabSuccess", ELL_INFORMATION);
+		//		os::Printer::log(grabCommand, "GrabSuccess", ELL_INFORMATION);
 		return;
 	}
 
 	switch (grabResult) {
 	case AlreadyGrabbed:
-		g_irrlogger->log(grabCommand, "AlreadyGrabbed", ELL_WARNING);
+		os::Printer::log(grabCommand, "AlreadyGrabbed", ELL_WARNING);
 		break;
 	case GrabNotViewable:
-		g_irrlogger->log(grabCommand, "GrabNotViewable", ELL_WARNING);
+		os::Printer::log(grabCommand, "GrabNotViewable", ELL_WARNING);
 		break;
 	case GrabFrozen:
-		g_irrlogger->log(grabCommand, "GrabFrozen", ELL_WARNING);
+		os::Printer::log(grabCommand, "GrabFrozen", ELL_WARNING);
 		break;
 	case GrabInvalidTime:
-		g_irrlogger->log(grabCommand, "GrabInvalidTime", ELL_WARNING);
+		os::Printer::log(grabCommand, "GrabInvalidTime", ELL_WARNING);
 		break;
 	default:
-		g_irrlogger->log(grabCommand, "grab failed with unknown problem", ELL_WARNING);
+		os::Printer::log(grabCommand, "grab failed with unknown problem", ELL_WARNING);
 		break;
 	}
 }
@@ -371,17 +352,17 @@ bool CIrrDeviceLinux::createWindow()
 {
 #ifdef _IRR_COMPILE_WITH_X11_
 #ifdef _DEBUG
-	g_irrlogger->log("Creating X window...", ELL_INFORMATION);
+	os::Printer::log("Creating X window...", ELL_INFORMATION);
 	XSetErrorHandler(IrrPrintXError);
 #endif
 
 	XDisplay = XOpenDisplay(0);
 	if (!XDisplay) {
-		g_irrlogger->log("Error: Need running XServer to start Irrlicht Engine.", ELL_ERROR);
+		os::Printer::log("Error: Need running XServer to start Irrlicht Engine.", ELL_ERROR);
 		if (XDisplayName(0)[0])
-			g_irrlogger->log("Could not open display", XDisplayName(0), ELL_ERROR);
+			os::Printer::log("Could not open display", XDisplayName(0), ELL_ERROR);
 		else
-			g_irrlogger->log("Could not open display, set DISPLAY variable", ELL_ERROR);
+			os::Printer::log("Could not open display, set DISPLAY variable", ELL_ERROR);
 		return false;
 	}
 
@@ -394,10 +375,11 @@ bool CIrrDeviceLinux::createWindow()
 	if (WMCheck != None)
 		HasNetWM = true;
 
-#if defined(_IRR_COMPILE_WITH_OPENGL_)
+#if defined(_IRR_COMPILE_WITH_GLX_MANAGER_)
 	// don't use the XVisual with OpenGL, because it ignores all requested
 	// properties of the CreationParams
-	if (CreationParams.DriverType == video::EDT_OPENGL) {
+	if (CreationParams.DriverType == video::EDT_OPENGL
+			|| CreationParams.DriverType == video::EDT_OPENGL3) {
 		video::SExposedVideoData data;
 		data.OpenGLLinux.X11Display = XDisplay;
 		ContextManager = new video::CGLXManager(CreationParams, data, Screennr);
@@ -407,7 +389,7 @@ bool CIrrDeviceLinux::createWindow()
 
 	if (!VisualInfo) {
 		// create visual with standard X methods
-		g_irrlogger->log("Using plain X visual");
+		os::Printer::log("Using plain X visual");
 		XVisualInfo visTempl; // Template to hold requested values
 		int visNumber;        // Return value of available visuals
 
@@ -422,14 +404,14 @@ bool CIrrDeviceLinux::createWindow()
 	}
 
 	if (!VisualInfo) {
-		g_irrlogger->log("Fatal error, could not get visual.", ELL_ERROR);
+		os::Printer::log("Fatal error, could not get visual.", ELL_ERROR);
 		XCloseDisplay(XDisplay);
 		XDisplay = 0;
 		return false;
 	}
 #ifdef _DEBUG
 	else
-		g_irrlogger->log("Visual chosen", core::stringc(static_cast<u32>(VisualInfo->visualid)).c_str(), ELL_DEBUG);
+		os::Printer::log("Visual chosen", core::stringc(static_cast<u32>(VisualInfo->visualid)).c_str(), ELL_DEBUG);
 #endif
 
 	// create color map
@@ -536,80 +518,67 @@ void CIrrDeviceLinux::createDriver()
 	switch (CreationParams.DriverType) {
 #ifdef _IRR_COMPILE_WITH_X11_
 	case video::EDT_OPENGL:
-#ifdef _IRR_COMPILE_WITH_OPENGL_
 	{
+#ifdef _IRR_COMPILE_WITH_OPENGL_
 		video::SExposedVideoData data;
 		data.OpenGLLinux.X11Window = XWindow;
 		data.OpenGLLinux.X11Display = XDisplay;
 
 		ContextManager->initialize(CreationParams, data);
-
+#endif
 		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, ContextManager);
 	}
-#else
-		g_irrlogger->log("No OpenGL support compiled in.", ELL_ERROR);
-#endif
 	break;
-	case video::EDT_OGLES1:
-#ifdef _IRR_COMPILE_WITH_OGLES1_
+	case video::EDT_OPENGL3:
 	{
+#ifdef ENABLE_OPENGL3
 		video::SExposedVideoData data;
 		data.OpenGLLinux.X11Window = XWindow;
 		data.OpenGLLinux.X11Display = XDisplay;
 
-		ContextManager = new video::CEGLManager();
 		ContextManager->initialize(CreationParams, data);
-
-		VideoDriver = video::createOGLES1Driver(CreationParams, FileSystem, ContextManager);
-	}
-#else
-		g_irrlogger->log("No OpenGL-ES1 support compiled in.", ELL_ERROR);
 #endif
+		VideoDriver = video::createOpenGL3Driver(CreationParams, FileSystem, ContextManager);
+	}
 	break;
 	case video::EDT_OGLES2:
-#ifdef _IRR_COMPILE_WITH_OGLES2_
 	{
+#ifdef _IRR_COMPILE_WITH_OGLES2_
 		video::SExposedVideoData data;
 		data.OpenGLLinux.X11Window = XWindow;
 		data.OpenGLLinux.X11Display = XDisplay;
 
 		ContextManager = new video::CEGLManager();
 		ContextManager->initialize(CreationParams, data);
-
+#endif
 		VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
 	}
-#else
-		g_irrlogger->log("No OpenGL-ES2 support compiled in.", ELL_ERROR);
-#endif
 	break;
 	case video::EDT_WEBGL1:
-#ifdef _IRR_COMPILE_WITH_WEBGL1_
 	{
+#ifdef _IRR_COMPILE_WITH_WEBGL1_
 		video::SExposedVideoData data;
 		data.OpenGLLinux.X11Window = XWindow;
 		data.OpenGLLinux.X11Display = XDisplay;
 
 		ContextManager = new video::CEGLManager();
 		ContextManager->initialize(CreationParams, data);
-
+#endif
 		VideoDriver = video::createWebGL1Driver(CreationParams, FileSystem, ContextManager);
 	}
-#else
-		g_irrlogger->log("No WebGL1 support compiled in.", ELL_ERROR);
-#endif
 	break;
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	default:
-		g_irrlogger->log("Unable to create video driver of unknown type.", ELL_ERROR);
+		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
-#else
+#else // no X11
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	default:
-		g_irrlogger->log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
+		os::Printer::log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
 		break;
 #endif
 	}
@@ -626,7 +595,7 @@ bool CIrrDeviceLinux::createInputContext()
 	setlocale(LC_CTYPE, ""); // use environment locale
 
 	if (!XSupportsLocale()) {
-		g_irrlogger->log("Locale not supported. Falling back to non-i18n input.", ELL_WARNING);
+		os::Printer::log("Locale not supported. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -634,14 +603,14 @@ bool CIrrDeviceLinux::createInputContext()
 	// Load XMODIFIERS (e.g. for IMEs)
 	if (!XSetLocaleModifiers("")) {
 		setlocale(LC_CTYPE, oldLocale.c_str());
-		g_irrlogger->log("XSetLocaleModifiers failed. Falling back to non-i18n input.", ELL_WARNING);
+		os::Printer::log("XSetLocaleModifiers failed. Falling back to non-i18n input.", ELL_WARNING);
 		return false;
 	}
 
 	XInputMethod = XOpenIM(XDisplay, NULL, NULL, NULL);
 	if (!XInputMethod) {
 		setlocale(LC_CTYPE, oldLocale.c_str());
-		g_irrlogger->log("XOpenIM failed to create an input method. Falling back to non-i18n input.", ELL_WARNING);
+		os::Printer::log("XOpenIM failed to create an input method. Falling back to non-i18n input.", ELL_WARNING);
 		return false;
 	}
 
@@ -663,7 +632,7 @@ bool CIrrDeviceLinux::createInputContext()
 		XDestroyIC(XInputContext);
 		XInputContext = 0;
 
-		g_irrlogger->log("XInputMethod has no input style we can use. Falling back to non-i18n input.", ELL_WARNING);
+		os::Printer::log("XInputMethod has no input style we can use. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -673,7 +642,7 @@ bool CIrrDeviceLinux::createInputContext()
 			XNClientWindow, XWindow,
 			(char *)NULL);
 	if (!XInputContext) {
-		g_irrlogger->log("XInputContext failed to create an input context. Falling back to non-i18n input.", ELL_WARNING);
+		os::Printer::log("XInputContext failed to create an input context. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -708,11 +677,11 @@ EKEY_CODE CIrrDeviceLinux::getKeyCode(XEvent &event)
 	if (keyCode == 0) {
 		keyCode = KEY_UNKNOWN;
 		if (!mp.X11Key) {
-			g_irrlogger->log("No such X11Key, event keycode", core::stringc(event.xkey.keycode).c_str(), ELL_INFORMATION);
+			os::Printer::log("No such X11Key, event keycode", core::stringc(event.xkey.keycode).c_str(), ELL_INFORMATION);
 		} else if (idx == -1) {
-			g_irrlogger->log("EKEY_CODE not found, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
+			os::Printer::log("EKEY_CODE not found, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
 		} else {
-			g_irrlogger->log("EKEY_CODE is 0, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
+			os::Printer::log("EKEY_CODE is 0, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
 		}
 	}
 	return keyCode;
@@ -769,17 +738,17 @@ bool CIrrDeviceLinux::run()
 				break;
 
 			case MotionNotify:
-				irrevent.EventType = EET_MOUSE_INPUT_EVENT;
-				irrevent.MouseInput.Event = EMIE_MOUSE_MOVED;
+				irrevent.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				irrevent.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
 				irrevent.MouseInput.X = event.xbutton.x;
 				irrevent.MouseInput.Y = event.xbutton.y;
 				irrevent.MouseInput.Control = (event.xkey.state & ControlMask) != 0;
 				irrevent.MouseInput.Shift = (event.xkey.state & ShiftMask) != 0;
 
 				// mouse button states
-				irrevent.MouseInput.ButtonStates = (event.xbutton.state & Button1Mask) ? EMBSM_LEFT : 0;
-				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button3Mask) ? EMBSM_RIGHT : 0;
-				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button2Mask) ? EMBSM_MIDDLE : 0;
+				irrevent.MouseInput.ButtonStates = (event.xbutton.state & Button1Mask) ? irr::EMBSM_LEFT : 0;
+				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button3Mask) ? irr::EMBSM_RIGHT : 0;
+				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button2Mask) ? irr::EMBSM_MIDDLE : 0;
 
 				postEventFromUser(irrevent);
 				break;
@@ -787,7 +756,7 @@ bool CIrrDeviceLinux::run()
 			case ButtonPress:
 			case ButtonRelease:
 
-				irrevent.EventType = EET_MOUSE_INPUT_EVENT;
+				irrevent.EventType = irr::EET_MOUSE_INPUT_EVENT;
 				irrevent.MouseInput.X = event.xbutton.x;
 				irrevent.MouseInput.Y = event.xbutton.y;
 				irrevent.MouseInput.Control = (event.xkey.state & ControlMask) != 0;
@@ -797,29 +766,29 @@ bool CIrrDeviceLinux::run()
 				// This sets the state which the buttons had _prior_ to the event.
 				// So unlike on Windows the button which just got changed has still the old state here.
 				// We handle that below by flipping the corresponding bit later.
-				irrevent.MouseInput.ButtonStates = (event.xbutton.state & Button1Mask) ? EMBSM_LEFT : 0;
-				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button3Mask) ? EMBSM_RIGHT : 0;
-				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button2Mask) ? EMBSM_MIDDLE : 0;
+				irrevent.MouseInput.ButtonStates = (event.xbutton.state & Button1Mask) ? irr::EMBSM_LEFT : 0;
+				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button3Mask) ? irr::EMBSM_RIGHT : 0;
+				irrevent.MouseInput.ButtonStates |= (event.xbutton.state & Button2Mask) ? irr::EMBSM_MIDDLE : 0;
 
-				irrevent.MouseInput.Event = EMIE_COUNT;
+				irrevent.MouseInput.Event = irr::EMIE_COUNT;
 
 				switch (event.xbutton.button) {
 				case Button1:
 					irrevent.MouseInput.Event =
-							(event.type == ButtonPress) ? EMIE_LMOUSE_PRESSED_DOWN : EMIE_LMOUSE_LEFT_UP;
-					irrevent.MouseInput.ButtonStates ^= EMBSM_LEFT;
+							(event.type == ButtonPress) ? irr::EMIE_LMOUSE_PRESSED_DOWN : irr::EMIE_LMOUSE_LEFT_UP;
+					irrevent.MouseInput.ButtonStates ^= irr::EMBSM_LEFT;
 					break;
 
 				case Button3:
 					irrevent.MouseInput.Event =
-							(event.type == ButtonPress) ? EMIE_RMOUSE_PRESSED_DOWN : EMIE_RMOUSE_LEFT_UP;
-					irrevent.MouseInput.ButtonStates ^= EMBSM_RIGHT;
+							(event.type == ButtonPress) ? irr::EMIE_RMOUSE_PRESSED_DOWN : irr::EMIE_RMOUSE_LEFT_UP;
+					irrevent.MouseInput.ButtonStates ^= irr::EMBSM_RIGHT;
 					break;
 
 				case Button2:
 					irrevent.MouseInput.Event =
-							(event.type == ButtonPress) ? EMIE_MMOUSE_PRESSED_DOWN : EMIE_MMOUSE_LEFT_UP;
-					irrevent.MouseInput.ButtonStates ^= EMBSM_MIDDLE;
+							(event.type == ButtonPress) ? irr::EMIE_MMOUSE_PRESSED_DOWN : irr::EMIE_MMOUSE_LEFT_UP;
+					irrevent.MouseInput.ButtonStates ^= irr::EMBSM_MIDDLE;
 					break;
 
 				case Button4:
@@ -837,7 +806,7 @@ bool CIrrDeviceLinux::run()
 					break;
 				}
 
-				if (irrevent.MouseInput.Event != EMIE_COUNT) {
+				if (irrevent.MouseInput.Event != irr::EMIE_COUNT) {
 					postEventFromUser(irrevent);
 
 					if (irrevent.MouseInput.Event >= EMIE_LMOUSE_PRESSED_DOWN && irrevent.MouseInput.Event <= EMIE_MMOUSE_PRESSED_DOWN) {
@@ -873,7 +842,7 @@ bool CIrrDeviceLinux::run()
 					}
 				}
 
-				irrevent.EventType = EET_KEY_INPUT_EVENT;
+				irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
 				irrevent.KeyInput.PressedDown = false;
 				irrevent.KeyInput.Char = 0; // on release that's undefined
 				irrevent.KeyInput.Control = (event.xkey.state & ControlMask) != 0;
@@ -890,12 +859,12 @@ bool CIrrDeviceLinux::run()
 					Status status;
 					int strLen = XwcLookupString(XInputContext, &event.xkey, buf, sizeof(buf) / sizeof(wchar_t) - 1, &mp.X11Key, &status);
 					if (status == XBufferOverflow) {
-						g_irrlogger->log("XwcLookupString needs a larger buffer", ELL_INFORMATION);
+						os::Printer::log("XwcLookupString needs a larger buffer", ELL_INFORMATION);
 					}
 					if (strLen > 0 && (status == XLookupChars || status == XLookupBoth)) {
 						if (strLen > 1) {
 							// Multiple characters: send string event
-							irrevent.EventType = EET_STRING_INPUT_EVENT;
+							irrevent.EventType = irr::EET_STRING_INPUT_EVENT;
 							irrevent.StringInput.Str = new core::stringw(buf);
 							postEventFromUser(irrevent);
 							delete irrevent.StringInput.Str;
@@ -907,15 +876,15 @@ bool CIrrDeviceLinux::run()
 					} else {
 #if 0 // Most of those are fine - but useful to have the info when debugging Irrlicht itself.
 							if ( status == XLookupNone )
-								g_irrlogger->log("XLookupNone", ELL_INFORMATION);
+								os::Printer::log("XLookupNone", ELL_INFORMATION);
 							else if ( status ==  XLookupKeySym )
 								// Getting this also when user did not set setlocale(LC_ALL, ""); and using an unknown locale
 								// XSupportsLocale doesn't seem to catch that unfortunately - any other ideas to catch it are welcome.
-								g_irrlogger->log("XLookupKeySym", ELL_INFORMATION);
+								os::Printer::log("XLookupKeySym", ELL_INFORMATION);
 							else if ( status ==  XBufferOverflow )
-								g_irrlogger->log("XBufferOverflow", ELL_INFORMATION);
+								os::Printer::log("XBufferOverflow", ELL_INFORMATION);
 							else if ( strLen == 0 )
-								g_irrlogger->log("no string", ELL_INFORMATION);
+								os::Printer::log("no string", ELL_INFORMATION);
 #endif
 						irrevent.KeyInput.Char = 0;
 					}
@@ -930,7 +899,7 @@ bool CIrrDeviceLinux::run()
 					irrevent.KeyInput.Char = tmp.wbuf[0];
 				}
 
-				irrevent.EventType = EET_KEY_INPUT_EVENT;
+				irrevent.EventType = irr::EET_KEY_INPUT_EVENT;
 				irrevent.KeyInput.PressedDown = true;
 				irrevent.KeyInput.Control = (event.xkey.state & ControlMask) != 0;
 				irrevent.KeyInput.Shift = (event.xkey.state & ShiftMask) != 0;
@@ -940,11 +909,11 @@ bool CIrrDeviceLinux::run()
 
 			case ClientMessage: {
 				if (static_cast<Atom>(event.xclient.data.l[0]) == X_ATOM_WM_DELETE_WINDOW && X_ATOM_WM_DELETE_WINDOW != None) {
-					g_irrlogger->log("Quit message received.", ELL_INFORMATION);
+					os::Printer::log("Quit message received.", ELL_INFORMATION);
 					Close = true;
 				} else {
 					// we assume it's a user message
-					irrevent.EventType = EET_USER_EVENT;
+					irrevent.EventType = irr::EET_USER_EVENT;
 					irrevent.UserEvent.UserData1 = static_cast<size_t>(event.xclient.data.l[0]);
 					irrevent.UserEvent.UserData2 = static_cast<size_t>(event.xclient.data.l[1]);
 					postEventFromUser(irrevent);
@@ -1005,7 +974,7 @@ bool CIrrDeviceLinux::run()
 					// req is from obsolete client, use target as property name
 					// and X_ATOM_UTF8_STRING as type
 					// Note: this was not tested and might be incorrect
-					g_irrlogger->log("CIrrDeviceLinux::run: SelectionRequest from obsolete client",
+					os::Printer::log("CIrrDeviceLinux::run: SelectionRequest from obsolete client",
 							ELL_WARNING);
 					XChangeProperty(XDisplay,
 							req->requestor,
@@ -1173,7 +1142,7 @@ bool CIrrDeviceLinux::setWindowIcon(const video::IImage *img)
 	}
 
 	if (XDisplay == NULL) {
-		g_irrlogger->log("Could not find x11 display for setting its icon.", ELL_ERROR);
+		os::Printer::log("Could not find x11 display for setting its icon.", ELL_ERROR);
 		delete[] icon_buffer;
 		return false;
 	}
@@ -1218,6 +1187,17 @@ bool CIrrDeviceLinux::isWindowMaximized() const
 	return WindowMaximized;
 }
 
+//! Checks if the Irrlicht device supports touch events.
+bool CIrrDeviceLinux::supportsTouchEvents() const
+{
+#if defined(_IRR_LINUX_X11_XINPUT2_)
+	return true;
+#else
+	return false;
+#endif
+}
+
+
 //! returns color format of the window.
 video::ECOLOR_FORMAT CIrrDeviceLinux::getColorFormat() const
 {
@@ -1252,7 +1232,7 @@ void CIrrDeviceLinux::setResizable(bool resize)
 }
 
 //! Resize the render window.
-void CIrrDeviceLinux::setWindowSize(const core::dimension2d<u32> &size)
+void CIrrDeviceLinux::setWindowSize(const irr::core::dimension2d<u32> &size)
 {
 #ifdef _IRR_COMPILE_WITH_X11_
 	if (CreationParams.DriverType == video::EDT_NULL || CreationParams.Fullscreen)
@@ -1583,8 +1563,7 @@ bool CIrrDeviceLinux::activateJoysticks(core::array<SJoystickInfo> &joystickInfo
 		fcntl(info.fd, F_SETFL, O_NONBLOCK);
 #endif
 
-		(void)memset(&info.persistentData, 0, sizeof(info.persistentData));
-		info.persistentData.EventType = EET_JOYSTICK_INPUT_EVENT;
+		info.persistentData.EventType = irr::EET_JOYSTICK_INPUT_EVENT;
 		info.persistentData.JoystickEvent.Joystick = ActiveJoysticks.size();
 
 		// There's no obvious way to determine which (if any) axes represent a POV
@@ -1612,7 +1591,7 @@ bool CIrrDeviceLinux::activateJoysticks(core::array<SJoystickInfo> &joystickInfo
 		snprintf_irr(logString, sizeof(logString), "Found joystick %d, %d axes, %d buttons '%s'",
 				joystick, joystickInfo[joystick].Axes,
 				joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
-		g_irrlogger->log(logString, ELL_INFORMATION);
+		os::Printer::log(logString, ELL_INFORMATION);
 	}
 
 	return true;
@@ -1701,10 +1680,10 @@ const c8 *CIrrDeviceLinux::getTextFromSelection(Atom selection, core::stringc &t
 			},
 			(XPointer)&args);
 
-	_IRR_DEBUG_BREAK_IF(!(event_ret.type == SelectionNotify &&
+	assert(event_ret.type == SelectionNotify &&
 						  event_ret.xselection.requestor == XWindow &&
 						  event_ret.xselection.selection == selection &&
-						  event_ret.xselection.target == X_ATOM_UTF8_STRING));
+						  event_ret.xselection.target == X_ATOM_UTF8_STRING);
 
 	Atom property_set = event_ret.xselection.property;
 	if (event_ret.xselection.property == None) {
@@ -1742,7 +1721,7 @@ const c8 *CIrrDeviceLinux::getTextFromSelection(Atom selection, core::stringc &t
 	//~ }
 
 	if (type != X_ATOM_UTF8_STRING && type != X_ATOM_UTF8_MIME_TYPE) {
-		g_irrlogger->log("CIrrDeviceLinux::getTextFromSelection: did not get utf-8 string",
+		os::Printer::log("CIrrDeviceLinux::getTextFromSelection: did not get utf-8 string",
 				ELL_WARNING);
 		return text_buffer.c_str();
 	}
@@ -1753,7 +1732,7 @@ const c8 *CIrrDeviceLinux::getTextFromSelection(Atom selection, core::stringc &t
 				bytesLeft, 0, AnyPropertyType, &type, &format,
 				&numItems, &dummy, &data);
 		if (result == Success)
-			text_buffer = (c8 *)data;
+			text_buffer = (irr::c8 *)data;
 		XFree(data);
 	}
 
@@ -1804,7 +1783,7 @@ void CIrrDeviceLinux::copyToClipboard(const c8 *text) const
 	// Which btw. also means that on X you lose clipboard content when closing applications.
 	Clipboard = text;
 	if (!becomeSelectionOwner(X_ATOM_CLIPBOARD)) {
-		g_irrlogger->log("CIrrDeviceLinux::copyToClipboard: failed to set owner", ELL_WARNING);
+		os::Printer::log("CIrrDeviceLinux::copyToClipboard: failed to set owner", ELL_WARNING);
 	}
 #endif
 }
@@ -1815,7 +1794,7 @@ void CIrrDeviceLinux::copyToPrimarySelection(const c8 *text) const
 #if defined(_IRR_COMPILE_WITH_X11_)
 	PrimarySelection = text;
 	if (!becomeSelectionOwner(XA_PRIMARY)) {
-		g_irrlogger->log("CIrrDeviceLinux::copyToPrimarySelection: failed to set owner", ELL_WARNING);
+		os::Printer::log("CIrrDeviceLinux::copyToPrimarySelection: failed to set owner", ELL_WARNING);
 	}
 #endif
 }
@@ -1825,7 +1804,7 @@ void CIrrDeviceLinux::copyToPrimarySelection(const c8 *text) const
 Bool PredicateIsEventType(Display *display, XEvent *event, XPointer arg)
 {
 	if (event && event->type == *(int *)arg) {
-		//		g_irrlogger->log("remove event", core::stringc((int)arg).c_str(), ELL_INFORMATION);
+		//		os::Printer::log("remove event", core::stringc((int)arg).c_str(), ELL_INFORMATION);
 		return True;
 	}
 	return False;
@@ -1900,7 +1879,7 @@ void CIrrDeviceLinux::initXInput2()
 	int ev = 0;
 	int err = 0;
 	if (!XQueryExtension(XDisplay, "XInputExtension", &XI_EXTENSIONS_OPCODE, &ev, &err)) {
-		g_irrlogger->log("X Input extension not available.", ELL_WARNING);
+		os::Printer::log("X Input extension not available.", ELL_WARNING);
 		return;
 	}
 
@@ -1908,7 +1887,7 @@ void CIrrDeviceLinux::initXInput2()
 	int minor = 3;
 	int rc = XIQueryVersion(XDisplay, &major, &minor);
 	if (rc != Success) {
-		g_irrlogger->log("No XI2 support.", ELL_WARNING);
+		os::Printer::log("No XI2 support.", ELL_WARNING);
 		return;
 	}
 
@@ -1930,7 +1909,7 @@ void CIrrDeviceLinux::initXInput2()
 
 #ifdef _IRR_COMPILE_WITH_X11_
 
-Cursor CIrrDeviceLinux::TextureToMonochromeCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
+Cursor CIrrDeviceLinux::TextureToMonochromeCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
 {
 	XImage *sourceImage = XCreateImage(XDisplay, VisualInfo->visual,
 			1,       // depth,
@@ -1968,7 +1947,8 @@ Cursor CIrrDeviceLinux::TextureToMonochromeCursor(video::ITexture *tex, const co
 				XPutPixel(sourceImage, x, y, 0);
 			} else // color
 			{
-				if (pixelCol.getAverage() >= 127)
+				if ((pixelCol.getRed() + pixelCol.getGreen() +
+						pixelCol.getBlue()) / 3 >= 127)
 					XPutPixel(sourceImage, x, y, 1);
 				else
 					XPutPixel(sourceImage, x, y, 0);
@@ -2014,7 +1994,7 @@ Cursor CIrrDeviceLinux::TextureToMonochromeCursor(video::ITexture *tex, const co
 }
 
 #ifdef _IRR_LINUX_XCURSOR_
-Cursor CIrrDeviceLinux::TextureToARGBCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
+Cursor CIrrDeviceLinux::TextureToARGBCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
 {
 	XcursorImage *image = XcursorImageCreate(sourceRect.getWidth(), sourceRect.getHeight());
 	image->xhot = hotspot.X;
@@ -2050,7 +2030,7 @@ Cursor CIrrDeviceLinux::TextureToARGBCursor(video::ITexture *tex, const core::re
 }
 #endif // #ifdef _IRR_LINUX_XCURSOR_
 
-Cursor CIrrDeviceLinux::TextureToCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
+Cursor CIrrDeviceLinux::TextureToCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot)
 {
 #ifdef _IRR_LINUX_XCURSOR_
 	return TextureToARGBCursor(tex, sourceRect, hotspot);
@@ -2080,7 +2060,7 @@ CIrrDeviceLinux::CCursorControl::CCursorControl(CIrrDeviceLinux *dev, bool null)
 		// but behaves better in other cases so we can't just disable it outright.
 		// [1] https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
 		if (XScreenCount(Device->XDisplay) > 1) {
-			g_irrlogger->log("Detected classic multi-head setup, not using XIWarpPointer");
+			os::Printer::log("Detected classic multi-head setup, not using XIWarpPointer");
 		} else {
 			XIGetClientPointer(Device->XDisplay, Device->XWindow, &DeviceId);
 		}
@@ -2185,9 +2165,9 @@ gui::ECURSOR_ICON CIrrDeviceLinux::CCursorControl::addIcon(const gui::SCursorSpr
 		CursorX11 cX11;
 		cX11.FrameTime = icon.SpriteBank->getSprites()[icon.SpriteId].frameTime;
 		for (u32 i = 0; i < icon.SpriteBank->getSprites()[icon.SpriteId].Frames.size(); ++i) {
-			u32 texId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].textureNumber;
-			u32 rectId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].rectNumber;
-			core::rect<s32> rectIcon = icon.SpriteBank->getPositions()[rectId];
+			irr::u32 texId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].textureNumber;
+			irr::u32 rectId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].rectNumber;
+			irr::core::rect<s32> rectIcon = icon.SpriteBank->getPositions()[rectId];
 			Cursor cursor = Device->TextureToCursor(icon.SpriteBank->getTexture(texId), rectIcon, icon.HotSpot);
 			cX11.Frames.push_back(CursorFrameX11(cursor));
 		}
@@ -2214,9 +2194,9 @@ void CIrrDeviceLinux::CCursorControl::changeIcon(gui::ECURSOR_ICON iconId, const
 		CursorX11 cX11;
 		cX11.FrameTime = icon.SpriteBank->getSprites()[icon.SpriteId].frameTime;
 		for (u32 i = 0; i < icon.SpriteBank->getSprites()[icon.SpriteId].Frames.size(); ++i) {
-			u32 texId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].textureNumber;
-			u32 rectId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].rectNumber;
-			core::rect<s32> rectIcon = icon.SpriteBank->getPositions()[rectId];
+			irr::u32 texId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].textureNumber;
+			irr::u32 rectId = icon.SpriteBank->getSprites()[icon.SpriteId].Frames[i].rectNumber;
+			irr::core::rect<s32> rectIcon = icon.SpriteBank->getPositions()[rectId];
 			Cursor cursor = Device->TextureToCursor(icon.SpriteBank->getTexture(texId), rectIcon, icon.HotSpot);
 			cX11.Frames.push_back(CursorFrameX11(cursor));
 		}
@@ -2226,7 +2206,7 @@ void CIrrDeviceLinux::CCursorControl::changeIcon(gui::ECURSOR_ICON iconId, const
 #endif
 }
 
-core::dimension2di CIrrDeviceLinux::CCursorControl::getSupportedIconSize() const
+irr::core::dimension2di CIrrDeviceLinux::CCursorControl::getSupportedIconSize() const
 {
 	// this returns the closest match that is smaller or same size, so we just pass a value which should be large enough for cursors
 	unsigned int width = 0, height = 0;

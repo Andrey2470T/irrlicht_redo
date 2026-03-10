@@ -1,27 +1,13 @@
-if(NOT ANDROID AND NOT APPLE)
-	set(DEFAULT_SDL2 ON)
-endif()
+set(DEFAULT_SDL2 ON)
 
-option(BUILD_SHARED_LIBS "Build shared library" TRUE)
 option(USE_SDL2 "Use the SDL2 backend" ${DEFAULT_SDL2})
+
+option(USE_SDL2_STATIC "Link with SDL2 static libraries" FALSE)
 
 # Compiler flags
 
-add_definitions(-DIRRLICHT_EXPORTS)
-if(BUILD_SHARED_LIBS)
-	if(WIN32)
-		set(API_IMPORT "__declspec(dllimport)")
-		set(API_EXPORT "__declspec(dllexport)")
-	elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
-		set(API_EXPORT "__attribute__ ((visibility(\"default\")))") # only necessary if default visibility is set to hidden
-	endif()
-else()
-	add_definitions(-D_IRR_STATIC_LIB_)
-endif()
-add_definitions("-DIRRLICHT_API=${API_EXPORT}")
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-D_DEBUG)
+	add_compile_definitions(_DEBUG)
 endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
@@ -29,7 +15,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 	set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-	add_compile_options(-Wall -pipe -fno-exceptions)
+	add_compile_options(-Wall -pipe)
 
 	# Enable SSE for floating point math on 32-bit x86 by default
 	# reasoning see minetest issue #11810 and https://gcc.gnu.org/wiki/FloatingPointMath
@@ -45,21 +31,26 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 elseif(MSVC)
 	string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " msvcrt.lib") # ???? fuck off
 
-	add_compile_options(/GR- /Zl)
+	add_compile_definitions(
+		# Suppress some useless warnings
+		_CRT_SECURE_NO_DEPRECATE
+		# Get M_PI to work
+		_USE_MATH_DEFINES
+		# Don't define min/max macros in minwindef.h
+		NOMINMAX
+	)
+
+	add_compile_options(/Zl)
 
 	# Enable SSE for floating point math on 32-bit x86 by default
 	# reasoning see minetest issue #11810 and https://gcc.gnu.org/wiki/FloatingPointMath
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 		add_compile_options(/arch:SSE)
 	endif()
-
-	add_compile_options(/D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 endif()
 
 # Platform-independent configuration (hard-coded currently)
-add_definitions(
-	-DIRR_ENABLE_BUILTIN_FONT
-)
+add_compile_definitions(IRR_ENABLE_BUILTIN_FONT)
 
 # Platform-specific configuration
 
@@ -70,32 +61,35 @@ endif()
 # Device
 
 if(WIN32)
-	add_definitions(-D_IRR_WINDOWS_ -D_IRR_WINDOWS_API_)
+	add_compile_definitions(_IRR_WINDOWS_ _IRR_WINDOWS_API_)
 	set(DEVICE "WINDOWS")
 elseif(APPLE)
-	add_definitions(-D_IRR_OSX_PLATFORM_)
+	add_compile_definitions(_IRR_OSX_PLATFORM_)
 	set(DEVICE "OSX")
 elseif(ANDROID)
-	add_definitions(-D_IRR_ANDROID_PLATFORM_)
-	if(USE_SDL2)
-		message(FATAL_ERROR "SDL2 device is not (yet) supported on Android")
+	add_compile_definitions(_IRR_ANDROID_PLATFORM_)
+	if(NOT USE_SDL2)
+		message(FATAL_ERROR "The Android build requires SDL2")
 	endif()
-	set(DEVICE "ANDROID")
 elseif(EMSCRIPTEN)
-	add_definitions(-D_IRR_EMSCRIPTEN_PLATFORM_ -D_IRR_COMPILE_WITH_EGL_MANAGER_)
+	add_compile_definitions(_IRR_EMSCRIPTEN_PLATFORM_ _IRR_COMPILE_WITH_EGL_MANAGER_)
 	set(LINUX_PLATFORM TRUE)
 	set(DEVICE "SDL")
 elseif(SOLARIS)
-	add_definitions(-D_IRR_SOLARIS_PLATFORM_ -D_IRR_POSIX_API_)
+	add_compile_definitions(_IRR_SOLARIS_PLATFORM_ _IRR_POSIX_API_)
 	set(DEVICE "X11")
 else()
-	add_definitions(-D_IRR_POSIX_API_)
+	add_compile_definitions(_IRR_POSIX_API_)
 	set(LINUX_PLATFORM TRUE)
 	set(DEVICE "X11")
 endif()
 
 if(LINUX_PLATFORM)
-	add_definitions(-D_IRR_LINUX_PLATFORM_)
+	add_compile_definitions(_IRR_LINUX_PLATFORM_)
+endif()
+
+if(MSVC)
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif()
 
 if(USE_SDL2)
@@ -104,7 +98,7 @@ elseif(DEVICE STREQUAL "SDL")
 	message(FATAL_ERROR "SDL was used but not enabled?!")
 endif()
 
-add_definitions("-D_IRR_COMPILE_WITH_${DEVICE}_DEVICE_")
+add_compile_definitions("_IRR_COMPILE_WITH_${DEVICE}_DEVICE_")
 
 # X11
 
@@ -125,30 +119,24 @@ endif()
 # Joystick
 
 if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
-	add_definitions(-D_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+	add_compile_definitions(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 endif()
 
 # OpenGL
 
 if(USE_SDL2)
-	option(ENABLE_OPENGL3 "Enable OpenGL 3+" TRUE)
+	if(NOT ANDROID)
+		set(DEFAULT_OPENGL3 TRUE)
+	endif()
 else()
-	set(ENABLE_OPENGL3 FALSE)
+	set(DEFAULT_OPENGL3 FALSE)
 endif()
+option(ENABLE_OPENGL3 "Enable OpenGL 3+" ${DEFAULT_OPENGL3})
 
 if(ANDROID OR EMSCRIPTEN)
 	set(ENABLE_OPENGL FALSE)
 else()
 	option(ENABLE_OPENGL "Enable OpenGL" TRUE)
-endif()
-
-if(EMSCRIPTEN OR APPLE)
-	set(ENABLE_GLES1 FALSE)
-else()
-	if(ANDROID)
-		set(DEFAULT_GLES1 TRUE)
-	endif()
-	option(ENABLE_GLES1 "Enable OpenGL ES" ${DEFAULT_GLES1})
 endif()
 
 if(APPLE)
@@ -169,44 +157,39 @@ else()
 	endif()
 endif()
 
-if(ENABLE_OPENGL)
-	add_definitions(-D_IRR_COMPILE_WITH_OPENGL_)
-	set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
+if(ENABLE_OPENGL OR (ENABLE_OPENGL3 AND NOT USE_SDL2))
+	if(ENABLE_OPENGL)
+		add_compile_definitions(_IRR_COMPILE_WITH_OPENGL_)
+		set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
+	endif()
 	if(DEVICE STREQUAL "WINDOWS")
-		add_definitions(-D_IRR_COMPILE_WITH_WGL_MANAGER_)
+		add_compile_definitions(_IRR_COMPILE_WITH_WGL_MANAGER_)
 	elseif(DEVICE STREQUAL "X11")
-		add_definitions(-D_IRR_COMPILE_WITH_GLX_MANAGER_)
+		add_compile_definitions(_IRR_COMPILE_WITH_GLX_MANAGER_)
 	elseif(DEVICE STREQUAL "OSX")
-		add_definitions(-D_IRR_COMPILE_WITH_NSOGL_MANAGER_)
+		add_compile_definitions(_IRR_COMPILE_WITH_NSOGL_MANAGER_)
 	endif()
 endif()
 
 if(ENABLE_OPENGL3)
-	if (NOT USE_SDL2)
+	if(DEVICE STREQUAL "WINDOWS")
+		# supported
+	elseif(DEVICE STREQUAL "X11")
+		# supported
+	elseif (NOT USE_SDL2)
 		message(FATAL_ERROR "OpenGL 3 driver requires SDL2")
 	endif()
 endif()
 
-if(ENABLE_GLES1)
-	if (USE_SDL2)
-		message(FATAL_ERROR "OpenGL ES 1 is not supported with SDL2")
-	endif()
-	add_definitions(-D_IRR_COMPILE_WITH_OGLES1_)
-	set(OPENGLES_DIRECT_LINK TRUE)
-	if(DEVICE MATCHES "^(WINDOWS|X11|ANDROID)$")
-		add_definitions(-D_IRR_COMPILE_WITH_EGL_MANAGER_)
-	endif()
-endif()
-
 if(ENABLE_GLES2)
-	add_definitions(-D_IRR_COMPILE_WITH_OGLES2_)
-	if(DEVICE MATCHES "^(WINDOWS|X11|ANDROID)$" OR EMSCRIPTEN)
-		add_definitions(-D_IRR_COMPILE_WITH_EGL_MANAGER_)
+	add_compile_definitions(_IRR_COMPILE_WITH_OGLES2_)
+	if(DEVICE MATCHES "^(WINDOWS|X11)$" OR EMSCRIPTEN)
+		add_compile_definitions(_IRR_COMPILE_WITH_EGL_MANAGER_)
 	endif()
 endif()
 
 if(ENABLE_WEBGL1)
-	add_definitions(-D_IRR_COMPILE_WITH_WEBGL1_)
+	add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
 endif()
 
 # Misc
@@ -214,7 +197,7 @@ endif()
 include(TestBigEndian)
 TEST_BIG_ENDIAN(BIG_ENDIAN)
 if(BIG_ENDIAN)
-	add_definitions(-D__BIG_ENDIAN__)
+	add_compile_definitions(__BIG_ENDIAN__)
 endif()
 
 # Configuration report
@@ -222,7 +205,6 @@ endif()
 message(STATUS "Device: ${DEVICE}")
 message(STATUS "OpenGL: ${ENABLE_OPENGL}")
 message(STATUS "OpenGL 3: ${ENABLE_OPENGL3}")
-message(STATUS "OpenGL ES: ${ENABLE_GLES1}")
 if (ENABLE_GLES2)
 	message(STATUS "OpenGL ES 2: ON (unified)")
 else()
@@ -232,33 +214,33 @@ endif()
 
 # Required libs
 
-find_package(GLEW REQUIRED)
+include(CheckCXXSourceCompiles)
+
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
-
-if(ENABLE_GLES1)
-	# only tested on Android, probably works on Linux (is this needed anywhere else?)
-	find_library(OPENGLES_LIBRARY NAMES GLESv1_CM REQUIRED)
-	find_library(EGL_LIBRARY NAMES EGL REQUIRED)
-
-	message(STATUS "Found OpenGLES: ${OPENGLES_LIBRARY}")
-endif()
 if(ENABLE_GLES2)
 	find_package(OpenGLES2 REQUIRED)
 endif()
-if(ENABLE_OPENGL OR ENABLE_OPENGL3)
+if(ENABLE_OPENGL)
 	find_package(OpenGL REQUIRED)
 endif()
+set(USE_SDL2_SHARED FALSE)
 if(USE_SDL2)
-	find_package(SDL2 REQUIRED)
+	if(NOT USE_SDL2_STATIC)
+		set(USE_SDL2_SHARED TRUE)
+	endif()
+	if(NOT ANDROID)
+		find_package(SDL2 REQUIRED)
+	else()
+		# provided by AndroidLibs.cmake
+	endif()
 	message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
 
 	# unfortunately older SDL does not provide its version to cmake, so check header.
 	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
 	unset(CHECK_SDL_VERSION CACHE)
-	include(CheckCXXSourceCompiles)
 	check_cxx_source_compiles("#include <SDL_version.h>\n\
 #if !SDL_VERSION_ATLEAST(2, 0, 10)\n\
 #error\n\
@@ -290,7 +272,7 @@ if(ENABLE_OPENGL AND DEVICE STREQUAL "SDL")
 #endif\n\
 int main() {}" CHECK_GL_VERSION_4_5)
 	if(CHECK_GL_VERSION_4_5)
-		add_definitions(-DIRR_PREFER_SDL_GL_HEADER)
+		add_compile_definitions(IRR_PREFER_SDL_GL_HEADER)
 	endif()
 endif()
 
@@ -302,7 +284,7 @@ elseif(APPLE)
 	find_library(COCOA_LIB Cocoa REQUIRED)
 	find_library(IOKIT_LIB IOKit REQUIRED)
 
-	add_definitions(-DGL_SILENCE_DEPRECATION)
+	add_compile_definitions(GL_SILENCE_DEPRECATION)
 elseif(NOT USE_SDL2)
 	# Unix probably
 	find_package(X11 REQUIRED)
@@ -324,7 +306,6 @@ set(link_includes
 	${OPENGLES2_INCLUDE_DIR}
 	${EGL_INCLUDE_DIR}
 
-	"$<$<PLATFORM_ID:Android>:${ANDROID_NDK}/sources/android/native_app_glue>"
 	"$<$<BOOL:${USE_X11}>:${X11_INCLUDE_DIR}>"
 )
 
@@ -332,31 +313,28 @@ set(link_includes
 
 set(IRRMESHLOADER
 	Mesh/CB3DMeshFileLoader.cpp
+	Mesh/CGLTFMeshFileLoader.cpp
 	Mesh/COBJMeshFileLoader.cpp
 	Mesh/CXMeshFileLoader.cpp
 )
 
 add_library(IRRMESHOBJ OBJECT
-	Mesh/CSkinnedMesh.cpp
-	Mesh/CMeshCache.cpp
-	Mesh/CMeshManipulator.cpp
-	${IRRMESHLOADER}
-)
-
-add_library(IRRSCENEOBJ OBJECT
+	Mesh/SkinnedMesh.cpp
 	Scene/CBoneSceneNode.cpp
 	Scene/CMeshSceneNode.cpp
 	Scene/CAnimatedMeshSceneNode.cpp
-	Scene/CBillboardSceneNode.cpp
-	Scene/CCameraSceneNode.cpp
-	Scene/CDummyTransformationSceneNode.cpp
-	Scene/CEmptySceneNode.cpp
-	Scene/CSceneCollisionManager.cpp
-	Scene/CSceneManager.cpp
+	${IRRMESHLOADER}
 )
+
+target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
 
 set(IRRDRVROBJ
 	Video/CNullDriver.cpp
+	Device/CGLXManager.cpp
+	Device/CWGLManager.cpp
+	Device/CEGLManager.cpp
+	Device/CSDLManager.cpp
+	Video/mt_opengl_loader.cpp
 )
 
 # the two legacy drivers
@@ -371,14 +349,6 @@ if(ENABLE_OPENGL)
 	)
 endif()
 
-if(ENABLE_GLES1)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/COGLESDriver.cpp
-		Video/COGLESExtensionHandler.cpp
-	)
-endif()
-
 # the unified drivers
 
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)
@@ -389,20 +359,21 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 		Video/OpenGL/FixedPipelineRenderer.cpp
 		Video/OpenGL/MaterialRenderer.cpp
 		Video/OpenGL/Renderer2D.cpp
+		Video/OpenGL/VBO.cpp
 	)
 endif()
 
 if(ENABLE_OPENGL3)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		Video/OpenGL3/Driver.cpp
+		Video/OpenGL3/DriverGL3.cpp
 	)
 endif()
 
 if(ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		Video/OpenGLES2/Driver.cpp
+		Video/OpenGLES2/DriverGLES2.cpp
 	)
 endif()
 
@@ -417,6 +388,7 @@ set(IRRIMAGEOBJ
 )
 
 add_library(IRRVIDEOOBJ OBJECT
+	Video/CFPSCounter.cpp
 	${IRRDRVROBJ}
 	${IRRIMAGEOBJ}
 )
@@ -431,11 +403,7 @@ add_library(IRRIOOBJ OBJECT
 	IO/CZipReader.cpp
 )
 
-add_library(IRRDEVICEOBJ OBJECT
-	Device/CGLXManager.cpp
-	Device/CWGLManager.cpp
-	Device/CEGLManager.cpp
-	Device/CSDLManager.cpp
+add_library(IRROTHEROBJ OBJECT
 	Device/CIrrDeviceSDL.cpp
 	Device/CIrrDeviceLinux.cpp
 	Device/CIrrDeviceStub.cpp
@@ -443,39 +411,32 @@ add_library(IRRDEVICEOBJ OBJECT
 	Device/CLogger.cpp
 	Device/COSOperator.cpp
 	Device/Irrlicht.cpp
-	Device/Timer.cpp
+	Device/os.cpp
 )
 
 if(ENABLE_OPENGL3)
-	target_compile_definitions(IRRDEVICEOBJ PRIVATE ENABLE_OPENGL3)
+	target_compile_definitions(IRROTHEROBJ PRIVATE ENABLE_OPENGL3)
 endif()
 
-if(ANDROID)
-	target_sources(IRRDEVICEOBJ PRIVATE
-		Android/CIrrDeviceAndroid.cpp
-		Android/CAndroidAssetReader.cpp
-		Android/CAndroidAssetFileArchive.cpp
-		Android/CKeyEventWrapper.cpp
-	)
-elseif(APPLE)
+if(APPLE)
 	# Build all IRROTHEROBJ sources as objc++, including the .cpp's
-	set_target_properties(IRRDEVICEOBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
-	target_sources(IRRDEVICEOBJ PRIVATE
+	set_target_properties(IRROTHEROBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
+	target_sources(IRROTHEROBJ PRIVATE
 		Device/CIrrDeviceOSX.mm
 		Device/CNSOGLManager.mm
 	)
 endif()
 
 if(USE_X11)
-	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_COMPILE_WITH_X11_)
+	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_COMPILE_WITH_X11_)
 endif()
 
 if(USE_XINPUT2)
-	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
+	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
 endif()
 
 if(USE_XCURSOR)
-	target_compile_definitions(IRRDEVICEOBJ PRIVATE _IRR_LINUX_XCURSOR_)
+	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_XCURSOR_)
 endif()
 
 add_library(IRRGUIOBJ OBJECT
@@ -498,70 +459,77 @@ add_library(IRRGUIOBJ OBJECT
 
 # Library
 
-add_library(IrrlichtRedo)
+# There have to be some sources in IrrlichtRedo to workaround Cmake Xcode generator bug
+add_library(IrrlichtRedo STATIC
+	Scene/CBillboardSceneNode.cpp
+	Scene/CCameraSceneNode.cpp
+	Scene/CDummyTransformationSceneNode.cpp
+	Scene/CEmptySceneNode.cpp
+	Mesh/CMeshManipulator.cpp
+	Scene/CSceneCollisionManager.cpp
+	Scene/CSceneManager.cpp
+	Mesh/CMeshCache.cpp
+)
 foreach(object_lib
-	IRRMESHOBJ IRRSCENEOBJ IRRVIDEOOBJ
-	IRRIOOBJ IRRDEVICEOBJ IRRGUIOBJ)
+	IRRMESHOBJ IRRVIDEOOBJ
+	IRRIOOBJ IRROTHEROBJ IRRGUIOBJ)
 	# Set include directories for object library compilation
 	target_include_directories(${object_lib} PRIVATE ${link_includes})
-	# Add objects from object library to main library
-	target_sources(IrrlichtRedo PRIVATE $<TARGET_OBJECTS:${object_lib}>)
+	if(CMAKE_GENERATOR STREQUAL "Xcode")
+		# Workaround for Cmake Xcode project generator
+		target_link_libraries(IrrlichtRedo PRIVATE ${object_lib})
+	else()
+		# Add objects from object library to main library
+		target_sources(IrrlichtRedo PRIVATE $<TARGET_OBJECTS:${object_lib}>)
+	endif()
+
+	if(BUILD_WITH_TRACY)
+		target_link_libraries(${object_lib} PRIVATE Tracy::TracyClient)
+	endif()
 endforeach()
 
 # Alias target provides add_submodule compatibility
 add_library(IrrlichtRedo::IrrlichtRedo ALIAS IrrlichtRedo)
 
+set_target_properties(IrrlichtRedo PROPERTIES VERSION ${PROJECT_VERSION})
+
 target_include_directories(IrrlichtRedo
 	PUBLIC
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/IrrlichtRedo>"
 	PRIVATE
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 		${link_includes}
 )
 
 # this needs to be here and not in a variable (like link_includes) due to issues
 # with the generator expressions on at least CMake 3.22, but not 3.28 or later
 target_link_libraries(IrrlichtRedo PRIVATE
+	tiniergltf::tiniergltf
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
-	GLEW::GLEW
-	"$<$<BOOL:${USE_SDL2}>:SDL2::SDL2>"
+	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
+	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 
 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-	"$<$<BOOL:${OPENGLES_DIRECT_LINK}>:${OPENGLES_LIBRARY}>"
 	${EGL_LIBRARY}
 
-	"$<$<PLATFORM_ID:Android>:-landroid -llog>"
+	# incl. transitive SDL2 dependencies for static linking
+	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 	${COCOA_LIB}
 	${IOKIT_LIB}
 	"$<$<PLATFORM_ID:Windows>:gdi32>"
 	"$<$<PLATFORM_ID:Windows>:winmm>"
 	"$<$<BOOL:${USE_X11}>:${X11_X11_LIB}>"
 	"$<$<BOOL:${USE_X11}>:${X11_Xi_LIB}>"
-
-	${OPENGL_LIBRARIES}
 )
 
 if(WIN32)
-	target_compile_definitions(IrrlichtRedo INTERFACE _IRR_WINDOWS_API_) # used in _IRR_DEBUG_BREAK_IF definition in a public header
+	target_compile_definitions(IrrlichtRedo INTERFACE _IRR_WINDOWS_API_)
 endif()
-target_compile_definitions(IrrlichtRedo INTERFACE "IRRLICHT_API=${API_IMPORT}")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	target_compile_definitions(IrrlichtRedo INTERFACE _DEBUG)
+endif()
 if(APPLE OR ANDROID OR EMSCRIPTEN)
 	target_compile_definitions(IrrlichtRedo PUBLIC IRR_MOBILE_PATHS)
 endif()
-
-set_target_properties(IrrlichtRedo PROPERTIES
-	VERSION ${PROJECT_VERSION}
-)
-
-if(WIN32)
-	set_target_properties(IrrlichtRedo PROPERTIES PREFIX "") # for DLL name
-endif()
-
-# Installation of library
-install(TARGETS IrrlichtRedo
-	EXPORT IrrlichtRedo-export
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)

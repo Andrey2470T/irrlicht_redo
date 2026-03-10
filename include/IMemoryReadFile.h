@@ -6,7 +6,8 @@
 
 #include "IReadFile.h"
 
-
+namespace irr
+{
 namespace io
 {
 
@@ -23,3 +24,4 @@ public:
 	virtual const void *getBuffer() const = 0;
 };
 } // end namespace io
+} // end namespace irr

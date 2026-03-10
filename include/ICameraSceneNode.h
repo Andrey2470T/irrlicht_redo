@@ -7,7 +7,8 @@
 #include "ISceneNode.h"
 #include "IEventReceiver.h"
 
-
+namespace irr
+{
 namespace scene
 {
 struct SViewFrustum;
@@ -180,3 +181,4 @@ protected:
 };
 
 } // end namespace scene
+} // end namespace irr

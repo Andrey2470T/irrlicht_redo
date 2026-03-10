@@ -18,6 +18,7 @@
 #include "IShaderConstantSetCallBack.h"
 #include "IMaterialRendererServices.h"
 #include "IVideoDriver.h"
+#include "Device/os.h"
 
 #include "COpenGLDriver.h"
 #include "COpenGLCacheHandler.h"
@@ -25,21 +26,16 @@
 
 #include "COpenGLCoreFeature.h"
 
-
+namespace irr
+{
 namespace video
 {
 
 //! Constructor
 COpenGLSLMaterialRenderer::COpenGLSLMaterialRenderer(video::COpenGLDriver *driver,
 		s32 &outMaterialTypeNr, const c8 *vertexShaderProgram,
-		const c8 *vertexShaderEntryPointName,
-		E_VERTEX_SHADER_TYPE vsCompileTarget,
 		const c8 *pixelShaderProgram,
-		const c8 *pixelShaderEntryPointName,
-		E_PIXEL_SHADER_TYPE psCompileTarget,
 		const c8 *geometryShaderProgram,
-		const c8 *geometryShaderEntryPointName,
-		E_GEOMETRY_SHADER_TYPE gsCompileTarget,
 		scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
 		u32 verticesOut,
 		IShaderConstantSetCallBack *callback,
@@ -48,10 +44,6 @@ COpenGLSLMaterialRenderer::COpenGLSLMaterialRenderer(video::COpenGLDriver *drive
 		Driver(driver),
 		CallBack(callback), Alpha(false), Blending(false), AlphaTest(false), Program(0), Program2(0), UserData(userData)
 {
-#ifdef _DEBUG
-	setDebugName("COpenGLSLMaterialRenderer");
-#endif
-
 	switch (baseMaterial) {
 	case EMT_TRANSPARENT_VERTEX_ALPHA:
 	case EMT_TRANSPARENT_ALPHA_CHANNEL:
@@ -295,7 +287,7 @@ bool COpenGLSLMaterialRenderer::createShader(GLenum shaderType, const char *shad
 		if (status != GL_TRUE) {
 			core::stringc typeInfo("shaderType: ");
 			typeInfo += core::stringc((unsigned long)shaderType);
-			g_irrlogger->log("GLSL (> 2.x) shader failed to compile", typeInfo.c_str(), ELL_ERROR);
+			os::Printer::log("GLSL (> 2.x) shader failed to compile", typeInfo.c_str(), ELL_ERROR);
 			// check error message and log it
 			GLint maxLength = 0;
 			GLint length;
@@ -306,7 +298,7 @@ bool COpenGLSLMaterialRenderer::createShader(GLenum shaderType, const char *shad
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
 				Driver->extGlGetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -329,7 +321,7 @@ bool COpenGLSLMaterialRenderer::createShader(GLenum shaderType, const char *shad
 		if (!status) {
 			core::stringc typeInfo("shaderType: ");
 			typeInfo += core::stringc((unsigned long)shaderType);
-			g_irrlogger->log("GLSL shader failed to compile", typeInfo.c_str(), ELL_ERROR);
+			os::Printer::log("GLSL shader failed to compile", typeInfo.c_str(), ELL_ERROR);
 			// check error message and log it
 			GLint maxLength = 0;
 			GLsizei length;
@@ -340,7 +332,7 @@ bool COpenGLSLMaterialRenderer::createShader(GLenum shaderType, const char *shad
 			if (maxLength) {
 				GLcharARB *infoLog = new GLcharARB[maxLength];
 				Driver->extGlGetInfoLog(shaderHandle, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -364,7 +356,7 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 #endif
 
 		if (!status) {
-			g_irrlogger->log("GLSL (> 2.x) shader program failed to link", ELL_ERROR);
+			os::Printer::log("GLSL (> 2.x) shader program failed to link", ELL_ERROR);
 			// check error message and log it
 			GLint maxLength = 0;
 			GLsizei length;
@@ -374,7 +366,7 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
 				Driver->extGlGetProgramInfoLog(Program2, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -399,8 +391,10 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 #endif
 
 		if (maxlen == 0) {
-			g_irrlogger->log("GLSL (> 2.x): failed to retrieve uniform information", ELL_ERROR);
-			return false;
+			// Intel driver bug that seems to primarily happen on Win 8.1 or older:
+			// There are >0 uniforms yet the driver reports a max name length of 0.
+			os::Printer::log("GLSL (> 2.x): failed to retrieve uniform information", ELL_WARNING);
+			maxlen = 256; // hope that this is enough
 		}
 
 		// seems that some implementations use an extra null terminator
@@ -433,7 +427,7 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 #endif
 
 		if (!status) {
-			g_irrlogger->log("GLSL shader program failed to link", ELL_ERROR);
+			os::Printer::log("GLSL shader program failed to link", ELL_ERROR);
 			// check error message and log it
 			GLint maxLength = 0;
 			GLsizei length;
@@ -444,7 +438,7 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 			if (maxLength) {
 				GLcharARB *infoLog = new GLcharARB[maxLength];
 				Driver->extGlGetInfoLog(Program, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -469,8 +463,10 @@ bool COpenGLSLMaterialRenderer::linkProgram()
 #endif
 
 		if (maxlen == 0) {
-			g_irrlogger->log("GLSL: failed to retrieve uniform information", ELL_ERROR);
-			return false;
+			// Intel driver bug that seems to primarily happen on Win 8.1 or older:
+			// There are >0 uniforms yet the driver reports a max name length of 0.
+			os::Printer::log("GLSL: failed to retrieve uniform information", ELL_WARNING);
+			maxlen = 256; // hope that this is enough
 		}
 
 		// seems that some implementations use an extra null terminator
@@ -676,5 +672,6 @@ IVideoDriver *COpenGLSLMaterialRenderer::getVideoDriver()
 }
 
 } // end namespace video
+} // end namespace irr
 
 #endif

@@ -6,7 +6,8 @@
 
 #include "IGUISpriteBank.h"
 
-
+namespace irr
+{
 
 namespace video
 {
@@ -77,3 +78,4 @@ protected:
 };
 
 } // end namespace gui
+} // end namespace irr

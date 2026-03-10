@@ -6,7 +6,8 @@
 
 #include "ISceneNode.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -32,7 +33,8 @@ public:
 	ISceneNode *clone(ISceneNode *newParent = 0, ISceneManager *newManager = 0) override;
 
 private:
-	core::aabbox3d<f32> Box;
+	core::aabbox3d<f32> Box{{0, 0, 0}};
 };
 
 } // end namespace scene
+} // end namespace irr

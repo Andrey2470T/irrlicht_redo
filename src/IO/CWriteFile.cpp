@@ -5,17 +5,14 @@
 #include "CWriteFile.h"
 #include <cstdio>
 
-
+namespace irr
+{
 namespace io
 {
 
 CWriteFile::CWriteFile(const io::path &fileName, bool append) :
 		Filename(fileName), FileSize(0)
 {
-#ifdef _DEBUG
-	setDebugName("CWriteFile");
-#endif
-
 	openFile(append);
 }
 
@@ -102,3 +99,4 @@ IWriteFile *CWriteFile::createWriteFile(const io::path &fileName, bool append)
 }
 
 } // end namespace io
+} // end namespace irr

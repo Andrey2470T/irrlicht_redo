@@ -13,7 +13,8 @@
 
 #import <AppKit/NSOpenGL.h>
 
-
+namespace irr
+{
 namespace video
 {
 // NSOpenGL manager.

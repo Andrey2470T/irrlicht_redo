@@ -6,7 +6,8 @@
 #include "irrMath.h"
 #include "irrString.h"
 
-
+namespace irr
+{
 namespace io
 {
 
@@ -16,10 +17,6 @@ CLimitReadFile::CLimitReadFile(IReadFile *alreadyOpenedFile, long pos,
 		AreaStart(0), AreaEnd(0), Pos(0),
 		File(alreadyOpenedFile)
 {
-#ifdef _DEBUG
-	setDebugName("CLimitReadFile");
-#endif
-
 	if (File) {
 		File->grab();
 		AreaStart = pos;
@@ -111,3 +108,4 @@ IReadFile *createLimitReadFile(const io::path &fileName, IReadFile *alreadyOpene
 }
 
 } // end namespace io
+} // end namespace irr

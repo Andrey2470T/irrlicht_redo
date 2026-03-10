@@ -16,7 +16,8 @@
 // we can't include glx.h here, because gl.h has incompatible types with ogl es headers and it
 // cause redefinition errors, thats why we use ugly trick with void* types and casts.
 
-
+namespace irr
+{
 namespace video
 {
 // GLX manager.

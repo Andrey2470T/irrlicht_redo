@@ -6,7 +6,8 @@
 
 #include <optional>
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -17,9 +18,6 @@ CBoneSceneNode::CBoneSceneNode(ISceneNode *parent, ISceneManager *mgr, s32 id,
 		BoneIndex(boneIndex),
 		AnimationMode(EBAM_AUTOMATIC), SkinningSpace(EBSS_LOCAL)
 {
-#ifdef _DEBUG
-	setDebugName("CBoneSceneNode");
-#endif
 	setName(boneName);
 }
 
@@ -85,3 +83,4 @@ void CBoneSceneNode::updateAbsolutePositionOfAllChildren()
 }
 
 } // namespace scene
+} // namespace irr

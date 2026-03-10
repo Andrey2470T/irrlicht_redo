@@ -8,30 +8,70 @@
 #include "IFileSystem.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
+#include "IVideoDriver.h"
+#include "os.h"
+#include "CTimer.h"
 #include "CLogger.h"
 #include "irrString.h"
+
+namespace irr
+{
+namespace video
+{
+#ifndef _IRR_COMPILE_WITH_OPENGL_
+IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	os::Printer::log("No OpenGL support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+
+#ifndef ENABLE_OPENGL3
+IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	os::Printer::log("No OpenGL 3 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+
+#ifndef _IRR_COMPILE_WITH_OGLES2_
+IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	os::Printer::log("No OpenGL ES 2 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+
+#ifndef _IRR_COMPILE_WITH_WEBGL1_
+IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+{
+	os::Printer::log("No WebGL 1 support compiled in.", ELL_ERROR);
+	return nullptr;
+}
+#endif
+}
 
 
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0),
-		CursorControl(0), UserReceiver(params.EventReceiver),
+		Timer(0), CursorControl(0), UserReceiver(params.EventReceiver),
 		Logger(0), Operator(0), FileSystem(0),
 		InputReceivingSceneManager(0), ContextManager(0),
 		CreationParams(params), Close(false)
 {
-	os::Timer::initTimer();
-	if (g_irrlogger) {
-		g_irrlogger->grab();
-		Logger = (CLogger *)g_irrlogger;
+	Timer = new CTimer();
+	if (os::Printer::Logger) {
+		os::Printer::Logger->grab();
+		Logger = (CLogger *)os::Printer::Logger;
 		Logger->setReceiver(UserReceiver);
 	} else {
 		Logger = new CLogger(UserReceiver);
-		g_irrlogger = Logger;
+		os::Printer::Logger = Logger;
 	}
 	Logger->setLogLevel(CreationParams.LoggingLevel);
 
-	g_irrlogger = Logger;
+	os::Printer::Logger = Logger;
 
 	FileSystem = io::createFileSystem();
 }
@@ -64,8 +104,11 @@ CIrrDeviceStub::~CIrrDeviceStub()
 
 	CursorControl = 0;
 
+	if (Timer)
+		Timer->drop();
+
 	if (Logger->drop())
-		g_irrlogger = nullptr;
+		os::Printer::Logger = 0;
 }
 
 void CIrrDeviceStub::createGUIAndScene()
@@ -103,6 +146,13 @@ scene::ISceneManager *CIrrDeviceStub::getSceneManager()
 	return SceneManager;
 }
 
+//! \return Returns a pointer to the ITimer object. With it the
+//! current Time can be received.
+ITimer *CIrrDeviceStub::getTimer()
+{
+	return Timer;
+}
+
 //! Sets the window icon.
 bool CIrrDeviceStub::setWindowIcon(const video::IImage *img)
 {
@@ -126,7 +176,7 @@ u32 CIrrDeviceStub::checkSuccessiveClicks(s32 mouseX, s32 mouseY, EMOUSE_INPUT_E
 {
 	const s32 MAX_MOUSEMOVE = 3;
 
-	u32 clickTime = os::Timer::getRealTime();
+	irr::u32 clickTime = getTimer()->getRealTime();
 
 	if ((clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime && core::abs_(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE && core::abs_(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE && MouseMultiClicks.CountSuccessiveClicks < 3 && MouseMultiClicks.LastMouseInputEvent == inputEvent) {
 		++MouseMultiClicks.CountSuccessiveClicks;
@@ -329,3 +379,4 @@ bool CIrrDeviceStub::acceptsIME()
 	return elem && elem->acceptsIME();
 }
 
+} // end namespace irr

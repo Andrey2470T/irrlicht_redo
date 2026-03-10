@@ -11,7 +11,8 @@
 #include "SMaterial.h"
 #include "irrMath.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -67,3 +68,4 @@ struct SB3dMaterial
 };
 
 } // end namespace scene
+} // end namespace irr

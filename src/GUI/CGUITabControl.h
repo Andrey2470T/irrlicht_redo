@@ -8,7 +8,8 @@
 #include "irrArray.h"
 #include "IGUISkin.h"
 
-
+namespace irr
+{
 namespace gui
 {
 class CGUITabControl;
@@ -171,3 +172,4 @@ private:
 };
 
 } // end namespace gui
+} // end namespace irr

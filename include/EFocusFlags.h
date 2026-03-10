@@ -3,7 +3,8 @@
 
 #pragma once
 
-
+namespace irr
+{
 namespace gui
 {
 
@@ -30,3 +31,4 @@ enum EFOCUS_FLAG
 };
 
 } // namespace gui
+} // namespace irr

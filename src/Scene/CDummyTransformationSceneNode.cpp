@@ -3,9 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CDummyTransformationSceneNode.h"
-#include "Device/CLogger.h"
+#include "Device/os.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -14,10 +15,6 @@ CDummyTransformationSceneNode::CDummyTransformationSceneNode(
 		ISceneNode *parent, ISceneManager *mgr, s32 id) :
 		IDummyTransformationSceneNode(parent, mgr, id)
 {
-#ifdef _DEBUG
-	setDebugName("CDummyTransformationSceneNode");
-#endif
-
 	setAutomaticCulling(scene::EAC_OFF);
 }
 
@@ -63,38 +60,39 @@ ISceneNode *CDummyTransformationSceneNode::clone(ISceneNode *newParent, ISceneMa
 
 const core::vector3df &CDummyTransformationSceneNode::getScale() const
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::getScale() does not contain the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::getScale() does not contain the relative transformation.", ELL_DEBUG);
 	return RelativeScale;
 }
 
 void CDummyTransformationSceneNode::setScale(const core::vector3df &scale)
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::setScale() does not affect the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::setScale() does not affect the relative transformation.", ELL_DEBUG);
 	RelativeScale = scale;
 }
 
 const core::vector3df &CDummyTransformationSceneNode::getRotation() const
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::getRotation() does not contain the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::getRotation() does not contain the relative transformation.", ELL_DEBUG);
 	return RelativeRotation;
 }
 
 void CDummyTransformationSceneNode::setRotation(const core::vector3df &rotation)
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::setRotation() does not affect the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::setRotation() does not affect the relative transformation.", ELL_DEBUG);
 	RelativeRotation = rotation;
 }
 
 const core::vector3df &CDummyTransformationSceneNode::getPosition() const
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::getPosition() does not contain the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::getPosition() does not contain the relative transformation.", ELL_DEBUG);
 	return RelativeTranslation;
 }
 
 void CDummyTransformationSceneNode::setPosition(const core::vector3df &newpos)
 {
-	g_irrlogger->log("CDummyTransformationSceneNode::setPosition() does not affect the relative transformation.", ELL_DEBUG);
+	os::Printer::log("CDummyTransformationSceneNode::setPosition() does not affect the relative transformation.", ELL_DEBUG);
 	RelativeTranslation = newpos;
 }
 
 } // end namespace scene
+} // end namespace irr

@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COBJMeshFileLoader.h"
-#include "Device/CLogger.h"
 #include "IMeshManipulator.h"
 #include "IVideoDriver.h"
 #include "SMesh.h"
@@ -12,8 +11,10 @@
 #include "IReadFile.h"
 #include "fast_atof.h"
 #include "coreutil.h"
+#include "Device/os.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -24,11 +25,7 @@ namespace scene
 //! Constructor
 COBJMeshFileLoader::COBJMeshFileLoader(scene::ISceneManager *smgr) :
 		SceneManager(smgr)
-{
-#ifdef _DEBUG
-	setDebugName("COBJMeshFileLoader");
-#endif
-}
+{}
 
 //! destructor
 COBJMeshFileLoader::~COBJMeshFileLoader()
@@ -76,11 +73,11 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 	const c8 *bufPtr = buf;
 	core::stringc grpName, mtlName;
 	bool mtlChanged = false;
-	[[maybe_unused]] u32 lineNr = 1; // only counts non-empty lines, still useful in debugging to locate errors
+	[[maybe_unused]] irr::u32 lineNr = 1; // only counts non-empty lines, still useful in debugging to locate errors
 	core::array<int> faceCorners;
 	faceCorners.reallocate(32); // should be large enough
 	const core::stringc TAG_OFF = "off";
-	u32 degeneratedFaces = 0;
+	irr::u32 degeneratedFaces = 0;
 
 	while (bufPtr != bufEnd) {
 		switch (bufPtr[0]) {
@@ -117,7 +114,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			c8 grp[WORD_BUFFER_LENGTH];
 			bufPtr = goAndCopyNextWord(grp, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-			g_irrlogger->log("Loaded group start", grp, ELL_DEBUG);
+			os::Printer::log("Loaded group start", grp, ELL_DEBUG);
 #endif
 			grpName = ('\0' != grp[0]) ? grp : "default";
 			mtlChanged = true;
@@ -128,7 +125,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			c8 smooth[WORD_BUFFER_LENGTH];
 			bufPtr = goAndCopyNextWord(smooth, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-			g_irrlogger->log("Loaded smoothing group start", smooth, ELL_DEBUG);
+			os::Printer::log("Loaded smoothing group start", smooth, ELL_DEBUG);
 #endif
 			if (TAG_OFF == smooth)
 				smoothingGroup = 0;
@@ -144,7 +141,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				c8 matName[WORD_BUFFER_LENGTH];
 				bufPtr = goAndCopyNextWord(matName, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
 #ifdef _IRR_DEBUG_OBJ_LOADER_
-				g_irrlogger->log("Loaded material start", matName, ELL_DEBUG);
+				os::Printer::log("Loaded material start", matName, ELL_DEBUG);
 #endif
 				mtlName = matName;
 				mtlChanged = true;
@@ -165,7 +162,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				mtlChanged = false;
 			}
 			if (currMtl)
-				v.Color = currMtl->Meshbuffer->Material.DiffuseColor;
+				v.Color = video::SColorf(0.8f, 0.8f, 0.8f, 1.0f).toSColor();
 
 			// get all vertices data in this face (current line of obj file)
 			const core::stringc wordBuffer = copyLine(bufPtr, bufEnd);
@@ -175,6 +172,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			faceCorners.set_used(0); // fast clear
 
 			// read in all vertices
+			auto &Vertices = currMtl->Meshbuffer->Vertices->Data;
 			linePtr = goNextWord(linePtr, endPtr);
 			while (0 != linePtr[0]) {
 				// Array to communicate with retrieveVertexIndices()
@@ -187,19 +185,19 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				u32 wlength = copyWord(vertexWord, linePtr, WORD_BUFFER_LENGTH, endPtr);
 				// this function will also convert obj's 1-based index to c++'s 0-based index
 				retrieveVertexIndices(vertexWord, Idx, vertexWord + wlength + 1, vertexBuffer.size(), textureCoordBuffer.size(), normalsBuffer.size());
-				if (Idx[0] >= 0 && Idx[0] < (s32)vertexBuffer.size())
+				if (Idx[0] >= 0 && Idx[0] < (irr::s32)vertexBuffer.size())
 					v.Pos = vertexBuffer[Idx[0]];
 				else {
-					g_irrlogger->log("Invalid vertex index in this line", wordBuffer.c_str(), ELL_ERROR);
+					os::Printer::log("Invalid vertex index in this line", wordBuffer.c_str(), ELL_ERROR);
 					delete[] buf;
 					cleanUp();
 					return 0;
 				}
-				if (Idx[1] >= 0 && Idx[1] < (s32)textureCoordBuffer.size())
+				if (Idx[1] >= 0 && Idx[1] < (irr::s32)textureCoordBuffer.size())
 					v.TCoords = textureCoordBuffer[Idx[1]];
 				else
 					v.TCoords.set(0.0f, 0.0f);
-				if (Idx[2] >= 0 && Idx[2] < (s32)normalsBuffer.size())
+				if (Idx[2] >= 0 && Idx[2] < (irr::s32)normalsBuffer.size())
 					v.Normal = normalsBuffer[Idx[2]];
 				else {
 					v.Normal.set(0.0f, 0.0f, 0.0f);
@@ -211,8 +209,8 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 				if (n != currMtl->VertMap.end()) {
 					vertLocation = n->second;
 				} else {
-					currMtl->Meshbuffer->Vertices.push_back(v);
-					vertLocation = currMtl->Meshbuffer->Vertices.size() - 1;
+					Vertices.push_back(v);
+					vertLocation = Vertices.size() - 1;
 					currMtl->VertMap.emplace(v, vertLocation);
 				}
 
@@ -223,22 +221,23 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 			}
 
 			if (faceCorners.size() < 3) {
-				g_irrlogger->log("Too few vertices in this line", wordBuffer.c_str(), ELL_ERROR);
+				os::Printer::log("Too few vertices in this line", wordBuffer.c_str(), ELL_ERROR);
 				delete[] buf;
 				cleanUp();
 				return 0;
 			}
 
 			// triangulate the face
+			auto &Indices = currMtl->Meshbuffer->Indices->Data;
 			const int c = faceCorners[0];
 			for (u32 i = 1; i < faceCorners.size() - 1; ++i) {
 				// Add a triangle
 				const int a = faceCorners[i + 1];
 				const int b = faceCorners[i];
 				if (a != b && a != c && b != c) { // ignore degenerated faces. We can get them when we merge vertices above in the VertMap.
-					currMtl->Meshbuffer->Indices.push_back(a);
-					currMtl->Meshbuffer->Indices.push_back(b);
-					currMtl->Meshbuffer->Indices.push_back(c);
+					Indices.push_back(a);
+					Indices.push_back(b);
+					Indices.push_back(c);
 				} else {
 					++degeneratedFaces;
 				}
@@ -255,10 +254,10 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 	} // end while(bufPtr && (bufPtr-buf<filesize))
 
 	if (degeneratedFaces > 0) {
-		core::stringc log(degeneratedFaces);
+		irr::core::stringc log(degeneratedFaces);
 		log += " degenerated faces removed in ";
-		log += core::stringc(fullName);
-		g_irrlogger->log(log.c_str(), ELL_INFORMATION);
+		log += irr::core::stringc(fullName);
+		os::Printer::log(log.c_str(), ELL_INFORMATION);
 	}
 
 	SMesh *mesh = new SMesh();
@@ -529,3 +528,4 @@ void COBJMeshFileLoader::cleanUp()
 }
 
 } // end namespace scene
+} // end namespace irr

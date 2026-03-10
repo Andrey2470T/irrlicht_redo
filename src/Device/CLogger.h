@@ -5,8 +5,12 @@
 #pragma once
 
 #include "ILogger.h"
+#include "os.h"
 #include "irrString.h"
 #include "IEventReceiver.h"
+
+namespace irr
+{
 
 //! Class for logging messages, warnings and errors to stdout
 class CLogger : public ILogger
@@ -34,4 +38,4 @@ private:
 	IEventReceiver *Receiver;
 };
 
-extern ILogger *g_irrlogger;
+} // end namespace

@@ -8,7 +8,8 @@
 #include "irrArray.h"
 #include "IOSOperator.h"
 
-
+namespace irr
+{
 namespace gui
 {
 class CGUIEditBox : public IGUIEditBox
@@ -116,10 +117,10 @@ public:
 
 	//! Set the blinktime for the cursor. 2x blinktime is one full cycle.
 	//** \param timeMs Blinktime in milliseconds. When set to 0 the cursor is constantly on without blinking */
-	void setCursorBlinkTime(u32 timeMs) override;
+	void setCursorBlinkTime(irr::u32 timeMs) override;
 
 	//! Get the cursor blinktime
-	u32 getCursorBlinkTime() const override;
+	irr::u32 getCursorBlinkTime() const override;
 
 	//! Sets whether the edit box is a password box. Setting this to true will
 	/** disable MultiLine, WordWrap and the ability to copy with ctrl+c or ctrl+x
@@ -175,7 +176,7 @@ protected:
 	IOSOperator *Operator;
 
 	u32 BlinkStartTime;
-	u32 CursorBlinkTime;
+	irr::u32 CursorBlinkTime;
 	core::stringw CursorChar; // IGUIFont::draw needs stringw instead of wchar_t
 	s32 CursorPos;
 	s32 HScrollPos, VScrollPos; // scroll position in characters
@@ -192,3 +193,4 @@ protected:
 };
 
 } // end namespace gui
+} // end namespace irr

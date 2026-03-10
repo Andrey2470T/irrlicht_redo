@@ -8,7 +8,8 @@
 
 #include "IContextManager.h"
 
-
+namespace irr
+{
 class CIrrDeviceSDL;
 
 namespace video
@@ -42,6 +43,7 @@ private:
 	SExposedVideoData Data;
 	CIrrDeviceSDL *SDLDevice;
 };
+}
 }
 
 #endif

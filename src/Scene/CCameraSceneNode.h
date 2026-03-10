@@ -7,7 +7,8 @@
 #include "ICameraSceneNode.h"
 #include "SViewFrustum.h"
 
-
+namespace irr
+{
 namespace scene
 {
 
@@ -160,4 +161,5 @@ protected:
 	bool TargetAndRotationAreBound;
 };
 
+} // end namespace
 } // end namespace

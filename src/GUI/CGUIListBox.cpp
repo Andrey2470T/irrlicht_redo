@@ -11,9 +11,10 @@
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "CGUIScrollBar.h"
-#include "Timer.h"
+#include "Device/os.h"
 
-
+namespace irr
+{
 namespace gui
 {
 
@@ -28,10 +29,6 @@ CGUIListBox::CGUIListBox(IGUIEnvironment *environment, IGUIElement *parent,
 		ScrollBar(0), selectTime(0), LastKeyTime(0), Selecting(false), DrawBack(drawBack),
 		MoveOverSelect(moveOverSelect), AutoScroll(true), HighlightWhenNotFocused(true)
 {
-#ifdef _DEBUG
-	setDebugName("CGUIListBox");
-#endif
-
 	IGUISkin *skin = Environment->getSkin();
 
 	ScrollBar = new CGUIScrollBar(false, Environment, this, -1,
@@ -741,3 +738,4 @@ IGUIScrollBar *CGUIListBox::getVerticalScrollBar() const
 }
 
 } // end namespace gui
+} // end namespace irr

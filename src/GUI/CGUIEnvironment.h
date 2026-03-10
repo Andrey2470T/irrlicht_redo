@@ -10,7 +10,8 @@
 #include "IFileSystem.h"
 #include "IOSOperator.h"
 
-
+namespace irr
+{
 
 namespace gui
 {
@@ -55,11 +56,11 @@ public:
 	//! Sets a new GUI Skin
 	void setSkin(IGUISkin *skin) override;
 
-	//! Creates a new GUI Skin based on a template.
+	//! Creates a new GUI Skin.
 	/** \return Returns a pointer to the created skin.
 	If you no longer need the skin, you should call IGUISkin::drop().
 	See IReferenceCounted::drop() for more information. */
-	IGUISkin *createSkin(EGUI_SKIN_TYPE type) override;
+	IGUISkin *createSkin() override;
 
 	//! Creates the image list from the given texture.
 	virtual IGUIImageList *createImageList(video::ITexture *texture,
@@ -222,3 +223,4 @@ private:
 };
 
 } // end namespace gui
+} // end namespace irr

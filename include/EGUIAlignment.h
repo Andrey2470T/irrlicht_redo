@@ -6,7 +6,8 @@
 
 #include "irrTypes.h"
 
-
+namespace irr
+{
 namespace gui
 {
 enum EGUI_ALIGNMENT
@@ -31,3 +32,4 @@ const c8 *const GUIAlignmentNames[] = {
 	};
 
 } // namespace gui
+} // namespace irr

@@ -7,19 +7,15 @@
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 
 #include "CIrrDeviceSDL.h"
-#include "Video/COpenGLCommon.h"
 
-
+namespace irr
+{
 namespace video
 {
 
 CSDLManager::CSDLManager(CIrrDeviceSDL *device) :
 		IContextManager(), SDLDevice(device)
-{
-#ifdef _DEBUG
-	setDebugName("CSDLManager");
-#endif
-}
+{}
 
 bool CSDLManager::initialize(const SIrrlichtCreationParameters &params, const SExposedVideoData &data)
 {
@@ -48,6 +44,7 @@ bool CSDLManager::swapBuffers()
 	return true;
 }
 
+}
 }
 
 #endif

@@ -26,7 +26,8 @@
 #define KeySym s32
 #endif
 
-
+namespace irr
+{
 
 class CIrrDeviceLinux : public CIrrDeviceStub
 {
@@ -65,6 +66,9 @@ public:
 	//! returns last state from maximizeWindow() and restoreWindow()
 	bool isWindowMaximized() const override;
 
+	//! Checks if the Irrlicht device supports touch events.
+	bool supportsTouchEvents() const override;
+
 	//! returns color format of the window.
 	video::ECOLOR_FORMAT getColorFormat() const override;
 
@@ -75,7 +79,7 @@ public:
 	void setResizable(bool resize = false) override;
 
 	//! Resize the render window.
-	void setWindowSize(const core::dimension2d<u32> &size) override;
+	void setWindowSize(const irr::core::dimension2d<u32> &size) override;
 
 	//! Minimizes the window.
 	void minimizeWindow() override;
@@ -124,10 +128,10 @@ public:
 
 #ifdef _IRR_COMPILE_WITH_X11_
 	// convert an Irrlicht texture to a X11 cursor
-	Cursor TextureToCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
-	Cursor TextureToMonochromeCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
+	Cursor TextureToCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
+	Cursor TextureToMonochromeCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
 #ifdef _IRR_LINUX_XCURSOR_
-	Cursor TextureToARGBCursor(video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
+	Cursor TextureToARGBCursor(irr::video::ITexture *tex, const core::rect<s32> &sourceRect, const core::position2d<s32> &hotspot);
 #endif
 #endif
 
@@ -463,5 +467,6 @@ private:
 #endif
 };
 
+} // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_X11_DEVICE_

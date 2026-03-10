@@ -4,21 +4,21 @@
 
 #include "CImageLoaderJPG.h"
 
-#include "Device/CLogger.h"
 #include "IReadFile.h"
 #include "CImage.h"
+#include "coreutil.h"
+#include "Device/os.h"
 #include "irrString.h"
+#include <csetjmp>
 
-
+namespace irr
+{
 namespace video
 {
 
 //! constructor
 CImageLoaderJPG::CImageLoaderJPG()
 {
-#ifdef _DEBUG
-	setDebugName("CImageLoaderJPG");
-#endif
 }
 
 //! destructor
@@ -95,7 +95,7 @@ void CImageLoaderJPG::output_message(j_common_ptr cinfo)
 
 	irr_jpeg_error_mgr *myerr = (irr_jpeg_error_mgr *)cinfo->err;
 	errMsg += *myerr->filename;
-	g_irrlogger->log(errMsg.c_str(), temp1, ELL_ERROR);
+	os::Printer::log(errMsg.c_str(), temp1, ELL_ERROR);
 }
 
 //! returns true if the file maybe is able to be loaded by this class
@@ -259,3 +259,4 @@ IImageLoader *createImageLoaderJPG()
 }
 
 } // end namespace video
+} // end namespace irr

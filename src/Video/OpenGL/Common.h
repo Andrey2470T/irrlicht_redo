@@ -6,9 +6,6 @@
 #pragma once
 
 #include "irrTypes.h"
-
-#include <GL/glew.h>
-
 // even though we have mt_opengl.h our driver code still uses GL_* constants
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 #include <SDL_video.h>
@@ -17,7 +14,11 @@
 #include "vendor/gl.h"
 #endif
 
+// macro used with COpenGL3DriverBase
+#define TEST_GL_ERROR(cls) (cls)->testGLError(__FILE__, __LINE__)
 
+namespace irr
+{
 namespace video
 {
 
@@ -39,7 +40,9 @@ typedef COpenGLCoreTexture<COpenGL3DriverBase> COpenGL3Texture;
 typedef COpenGLCoreRenderTarget<COpenGL3DriverBase, COpenGL3Texture> COpenGL3RenderTarget;
 typedef COpenGLCoreCacheHandler<COpenGL3DriverBase, COpenGL3Texture> COpenGL3CacheHandler;
 
-enum class OpenGLSpec : u8
+class OpenGLVBO;
+
+enum OpenGLSpec : u8
 {
 	Core,
 	Compat,
@@ -55,4 +58,5 @@ struct OpenGLVersion
 	u8 Release;
 };
 
+}
 }

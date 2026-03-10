@@ -8,13 +8,15 @@
 #include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
 #include "IVideoDriver.h"
+#include "Device/os.h"
 
 #include "Driver.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -22,16 +24,13 @@ COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
 		s32 &outMaterialTypeNr,
 		const c8 *vertexShaderProgram,
 		const c8 *pixelShaderProgram,
+		const c8 *debugName,
 		IShaderConstantSetCallBack *callback,
 		E_MATERIAL_TYPE baseMaterial,
 		s32 userData) :
 		Driver(driver),
 		CallBack(callback), Alpha(false), Blending(false), Program(0), UserData(userData)
 {
-#ifdef _DEBUG
-	setDebugName("MaterialRenderer");
-#endif
-
 	switch (baseMaterial) {
 	case EMT_TRANSPARENT_VERTEX_ALPHA:
 	case EMT_TRANSPARENT_ALPHA_CHANNEL:
@@ -47,7 +46,7 @@ COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
 	if (CallBack)
 		CallBack->grab();
 
-	init(outMaterialTypeNr, vertexShaderProgram, pixelShaderProgram);
+	init(outMaterialTypeNr, vertexShaderProgram, pixelShaderProgram, debugName);
 }
 
 COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
@@ -80,12 +79,12 @@ COpenGL3MaterialRenderer::~COpenGL3MaterialRenderer()
 	if (Program) {
 		GLuint shaders[8];
 		GLint count;
-		glGetAttachedShaders(Program, 8, &count, shaders);
+		GL.GetAttachedShaders(Program, 8, &count, shaders);
 
 		count = core::min_(count, 8);
 		for (GLint i = 0; i < count; ++i)
-			glDeleteShader(shaders[i]);
-		glDeleteProgram(Program);
+			GL.DeleteShader(shaders[i]);
+		GL.DeleteProgram(Program);
 		Program = 0;
 	}
 
@@ -100,11 +99,12 @@ GLuint COpenGL3MaterialRenderer::getProgram() const
 void COpenGL3MaterialRenderer::init(s32 &outMaterialTypeNr,
 		const c8 *vertexShaderProgram,
 		const c8 *pixelShaderProgram,
+		const c8 *debugName,
 		bool addMaterial)
 {
 	outMaterialTypeNr = -1;
 
-	Program = glCreateProgram();
+	Program = GL.CreateProgram();
 
 	if (!Program)
 		return;
@@ -118,10 +118,13 @@ void COpenGL3MaterialRenderer::init(s32 &outMaterialTypeNr,
 			return;
 
 	for (size_t i = 0; i < EVA_COUNT; ++i)
-		glBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
+		GL.BindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
 
 	if (!linkProgram())
 		return;
+
+	if (debugName)
+		Driver->irrGlObjectLabel(GL_PROGRAM, Program, debugName);
 
 	if (addMaterial)
 		outMaterialTypeNr = Driver->addMaterialRenderer(this);
@@ -182,34 +185,34 @@ s32 COpenGL3MaterialRenderer::getRenderCapability() const
 bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shader)
 {
 	if (Program) {
-		GLuint shaderHandle = glCreateShader(shaderType);
-		glShaderSource(shaderHandle, 1, &shader, NULL);
-		glCompileShader(shaderHandle);
+		GLuint shaderHandle = GL.CreateShader(shaderType);
+		GL.ShaderSource(shaderHandle, 1, &shader, NULL);
+		GL.CompileShader(shaderHandle);
 
 		GLint status = 0;
 
-		glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
+		GL.GetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
 
 		if (status != GL_TRUE) {
-			g_irrlogger->log("GLSL shader failed to compile", ELL_ERROR);
+			os::Printer::log("GLSL shader failed to compile", ELL_ERROR);
 
 			GLint maxLength = 0;
 			GLint length;
 
-			glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH,
+			GL.GetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH,
 					&maxLength);
 
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
-				glGetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				GL.GetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
 			return false;
 		}
 
-		glAttachShader(Program, shaderHandle);
+		GL.AttachShader(Program, shaderHandle);
 	}
 
 	return true;
@@ -218,24 +221,24 @@ bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shade
 bool COpenGL3MaterialRenderer::linkProgram()
 {
 	if (Program) {
-		glLinkProgram(Program);
+		GL.LinkProgram(Program);
 
 		GLint status = 0;
 
-		glGetProgramiv(Program, GL_LINK_STATUS, &status);
+		GL.GetProgramiv(Program, GL_LINK_STATUS, &status);
 
 		if (!status) {
-			g_irrlogger->log("GLSL shader program failed to link", ELL_ERROR);
+			os::Printer::log("GLSL shader program failed to link", ELL_ERROR);
 
 			GLint maxLength = 0;
 			GLsizei length;
 
-			glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &maxLength);
+			GL.GetProgramiv(Program, GL_INFO_LOG_LENGTH, &maxLength);
 
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
-				glGetProgramInfoLog(Program, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				GL.GetProgramInfoLog(Program, maxLength, &length, infoLog);
+				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -244,51 +247,46 @@ bool COpenGL3MaterialRenderer::linkProgram()
 
 		GLint num = 0;
 
-		glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num);
+		GL.GetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num);
 
 		if (num == 0)
 			return true;
 
 		GLint maxlen = 0;
 
-		glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
+		GL.GetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
 		if (maxlen == 0) {
-			g_irrlogger->log("GLSL: failed to retrieve uniform information", ELL_ERROR);
+			os::Printer::log("GLSL: failed to retrieve uniform information", ELL_ERROR);
 			return false;
 		}
 
 		// seems that some implementations use an extra null terminator.
 		++maxlen;
-		c8 *buf = new c8[maxlen];
+		std::vector<c8> buf(maxlen);
 
 		UniformInfo.clear();
-		UniformInfo.reallocate(num);
+		UniformInfo.reserve(num);
 
 		for (GLint i = 0; i < num; ++i) {
 			SUniformInfo ui;
-			memset(buf, 0, maxlen);
+			memset(buf.data(), 0, buf.size());
 
 			GLint size;
-			glGetActiveUniform(Program, i, maxlen, 0, &size, &ui.type, reinterpret_cast<GLchar *>(buf));
-
-			core::stringc name = "";
+			GL.GetActiveUniform(Program, i, maxlen, 0, &size, &ui.type, reinterpret_cast<GLchar *>(buf.data()));
 
 			// array support, workaround for some bugged drivers.
 			for (s32 i = 0; i < maxlen; ++i) {
 				if (buf[i] == '[' || buf[i] == '\0')
 					break;
 
-				name += buf[i];
+				ui.name += buf[i];
 			}
 
-			ui.name = name;
-			ui.location = glGetUniformLocation(Program, buf);
+			ui.location = GL.GetUniformLocation(Program, buf.data());
 
-			UniformInfo.push_back(ui);
+			UniformInfo.push_back(std::move(ui));
 		}
-
-		delete[] buf;
 	}
 
 	return true;
@@ -340,31 +338,31 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const f32 *floa
 
 	switch (UniformInfo[index].type) {
 	case GL_FLOAT:
-		glUniform1fv(UniformInfo[index].location, count, floats);
+		GL.Uniform1fv(UniformInfo[index].location, count, floats);
 		break;
 	case GL_FLOAT_VEC2:
-		glUniform2fv(UniformInfo[index].location, count / 2, floats);
+		GL.Uniform2fv(UniformInfo[index].location, count / 2, floats);
 		break;
 	case GL_FLOAT_VEC3:
-		glUniform3fv(UniformInfo[index].location, count / 3, floats);
+		GL.Uniform3fv(UniformInfo[index].location, count / 3, floats);
 		break;
 	case GL_FLOAT_VEC4:
-		glUniform4fv(UniformInfo[index].location, count / 4, floats);
+		GL.Uniform4fv(UniformInfo[index].location, count / 4, floats);
 		break;
 	case GL_FLOAT_MAT2:
-		glUniformMatrix2fv(UniformInfo[index].location, count / 4, false, floats);
+		GL.UniformMatrix2fv(UniformInfo[index].location, count / 4, false, floats);
 		break;
 	case GL_FLOAT_MAT3:
-		glUniformMatrix3fv(UniformInfo[index].location, count / 9, false, floats);
+		GL.UniformMatrix3fv(UniformInfo[index].location, count / 9, false, floats);
 		break;
 	case GL_FLOAT_MAT4:
-		glUniformMatrix4fv(UniformInfo[index].location, count / 16, false, floats);
+		GL.UniformMatrix4fv(UniformInfo[index].location, count / 16, false, floats);
 		break;
 	case GL_SAMPLER_2D:
 	case GL_SAMPLER_CUBE: {
 		if (floats) {
 			const GLint id = (GLint)(*floats);
-			glUniform1iv(UniformInfo[index].location, 1, &id);
+			GL.Uniform1iv(UniformInfo[index].location, 1, &id);
 		} else
 			status = false;
 	} break;
@@ -386,23 +384,23 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints
 	switch (UniformInfo[index].type) {
 	case GL_INT:
 	case GL_BOOL:
-		glUniform1iv(UniformInfo[index].location, count, ints);
+		GL.Uniform1iv(UniformInfo[index].location, count, ints);
 		break;
 	case GL_INT_VEC2:
 	case GL_BOOL_VEC2:
-		glUniform2iv(UniformInfo[index].location, count / 2, ints);
+		GL.Uniform2iv(UniformInfo[index].location, count / 2, ints);
 		break;
 	case GL_INT_VEC3:
 	case GL_BOOL_VEC3:
-		glUniform3iv(UniformInfo[index].location, count / 3, ints);
+		GL.Uniform3iv(UniformInfo[index].location, count / 3, ints);
 		break;
 	case GL_INT_VEC4:
 	case GL_BOOL_VEC4:
-		glUniform4iv(UniformInfo[index].location, count / 4, ints);
+		GL.Uniform4iv(UniformInfo[index].location, count / 4, ints);
 		break;
 	case GL_SAMPLER_2D:
 	case GL_SAMPLER_CUBE:
-		glUniform1iv(UniformInfo[index].location, 1, ints);
+		GL.Uniform1iv(UniformInfo[index].location, 1, ints);
 		break;
 	default:
 		status = false;
@@ -414,7 +412,7 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints
 
 bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
-	g_irrlogger->log("Unsigned int support needs at least GLES 3.0", ELL_WARNING);
+	os::Printer::log("Unsigned int support is unimplemented", ELL_WARNING);
 	return false;
 }
 
@@ -423,4 +421,5 @@ IVideoDriver *COpenGL3MaterialRenderer::getVideoDriver()
 	return Driver;
 }
 
+}
 }

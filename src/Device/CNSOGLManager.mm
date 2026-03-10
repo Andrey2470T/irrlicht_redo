@@ -9,17 +9,14 @@
 #include <mach-o/dyld.h>
 #include "os.h"
 
-
+namespace irr
+{
 namespace video
 {
 
 CNSOGLManager::CNSOGLManager() :
 		PrimaryContext(SExposedVideoData(0)), PixelFormat(nil)
-{
-#ifdef _DEBUG
-	setDebugName("CNSOGLManager");
-#endif
-}
+{}
 
 CNSOGLManager::~CNSOGLManager()
 {

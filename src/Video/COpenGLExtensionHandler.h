@@ -4,18 +4,18 @@
 
 #pragma once
 
-#include "Device/CLogger.h"
-#include "ILogger.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
+#include "Device/os.h"
 
 #include "COpenGLCommon.h"
 
 #include "COpenGLCoreFeature.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -1015,12 +1015,8 @@ public:
 	bool TextureCompressionExtension;
 
 	// Some non-boolean properties
-	//! Maximum hardware lights supported
-	u8 MaxLights;
 	//! Maximal Anisotropy
 	u8 MaxAnisotropy;
-	//! Number of user clipplanes
-	u8 MaxUserClipPlanes;
 	//! Number of auxiliary buffers
 	u8 MaxAuxBuffers;
 	//! Optimal number of indices per meshbuffer
@@ -1069,6 +1065,10 @@ public:
 	void irrGlCompressedTexSubImage2D(GLenum target, GLint level,
 			GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
 			GLenum format, GLsizei imageSize, const void *data);
+	inline void irrGlObjectLabel(GLenum identifier, GLuint name, const char *label)
+	{
+		// unimplemented
+	}
 
 	// shader programming
 	void extGlGenPrograms(GLsizei n, GLuint *programs);
@@ -1724,7 +1724,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix2x3fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix2x3fv)
 		pGlUniformMatrix2x3fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix2x3fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix2x3fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix2x4fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1732,7 +1732,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix2x4fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix2x4fv)
 		pGlUniformMatrix2x4fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix2x4fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix2x4fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix3x2fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1740,7 +1740,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix3x2fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix3x2fv)
 		pGlUniformMatrix3x2fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix3x2fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix3x2fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix3fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1754,7 +1754,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix3x4fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix3x4fv)
 		pGlUniformMatrix3x4fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix3x4fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix3x4fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4x2fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1762,7 +1762,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix4x2fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix4x2fv)
 		pGlUniformMatrix4x2fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix4x2fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix4x2fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4x3fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -1770,7 +1770,7 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix4x3fv(GLint loc, GLsizei 
 	if (pGlUniformMatrix4x3fv)
 		pGlUniformMatrix4x3fv(loc, count, transpose, v);
 	else
-		g_irrlogger->log("glUniformMatrix4x3fv not supported", ELL_ERROR);
+		os::Printer::log("glUniformMatrix4x3fv not supported", ELL_ERROR);
 }
 
 inline void COpenGLExtensionHandler::extGlUniformMatrix4fv(GLint loc, GLsizei count, GLboolean transpose, const GLfloat *v)
@@ -2574,7 +2574,7 @@ inline void COpenGLExtensionHandler::extGlGenerateTextureMipmap(GLuint texture, 
 			break;
 #endif
 		default:
-			g_irrlogger->log("DevSH would like to ask you what are you doing!!??\n", ELL_ERROR);
+			os::Printer::log("DevSH would like to ask you what are you doing!!??\n", ELL_ERROR);
 			return;
 		}
 		glBindTexture(target, texture);
@@ -2610,6 +2610,7 @@ inline void COpenGLExtensionHandler::extGlSwapInterval(int interval)
 #endif
 }
 
+}
 }
 
 #endif

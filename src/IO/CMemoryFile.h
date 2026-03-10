@@ -8,7 +8,8 @@
 #include "IWriteFile.h"
 #include "irrString.h"
 
-
+namespace irr
+{
 
 namespace io
 {
@@ -16,7 +17,7 @@ namespace io
 /*!
 	Class for reading from memory.
 */
-class CMemoryReadFile : public IMemoryReadFile
+class CMemoryReadFile final : public IMemoryReadFile
 {
 public:
 	//! Constructor
@@ -95,3 +96,4 @@ private:
 };
 
 } // end namespace io
+} // end namespace irr

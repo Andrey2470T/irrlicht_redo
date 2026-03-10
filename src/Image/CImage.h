@@ -7,7 +7,8 @@
 #include "IImage.h"
 #include "rect.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -20,7 +21,7 @@ inline bool checkImageDimensions(u32 width, u32 height)
 
 //! IImage implementation with a lot of special image operations for
 //! 16 bit A1R5G5B5/32 Bit A8R8G8B8 images, which are used by the SoftwareDevice.
-class CImage : public IImage
+class CImage final : public IImage
 {
 public:
 	//! constructor from raw image data
@@ -70,3 +71,4 @@ private:
 };
 
 } // end namespace video
+} // end namespace irr

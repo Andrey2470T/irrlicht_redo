@@ -11,7 +11,8 @@
 #include "position2d.h"
 #include "path.h"
 
-
+namespace irr
+{
 class IEventReceiver;
 
 //! Structure for holding Irrlicht Device creation parameters.
@@ -44,10 +45,11 @@ struct SIrrlichtCreationParameters
 #endif
 			PrivateData(0),
 #ifdef IRR_MOBILE_PATHS
-			OGLES2ShaderPath("media/Shaders/")
+			OGLES2ShaderPath("media/Shaders/"),
 #else
-			OGLES2ShaderPath("../../media/Shaders/")
+			OGLES2ShaderPath("../../media/Shaders/"),
 #endif
+			DriverDebug(false)
 	{
 	}
 
@@ -222,6 +224,10 @@ struct SIrrlichtCreationParameters
 	//! Set the path where default-shaders to simulate the fixed-function pipeline can be found.
 	/** This is about the shaders which can be found in media/Shaders by default. It's only necessary
 	to set when using OGL-ES 2.0 */
-	io::path OGLES2ShaderPath;
+	irr::io::path OGLES2ShaderPath;
+
+	//! Enable debug and error checks in video driver.
+	bool DriverDebug;
 };
 
+} // end namespace irr

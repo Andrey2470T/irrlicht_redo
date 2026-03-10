@@ -15,7 +15,8 @@
 #include <windows.h>
 #include <libloaderapi.h>
 
-
+namespace irr
+{
 namespace video
 {
 // WGL manager.

@@ -6,8 +6,6 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include <GL/glew.h>
-
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_) && defined(IRR_PREFER_SDL_GL_HEADER)
 #include <SDL_video.h>
 #include <SDL_opengl.h>
@@ -21,7 +19,11 @@
 // To check if this header is in the current compile unit (different GL driver implementations use different "GLCommon" headers in Irrlicht)
 #define IRR_COMPILE_GL_COMMON
 
+// macro used with COpenGLDriver
+#define TEST_GL_ERROR(cls) (cls)->testGLError(__LINE__)
 
+namespace irr
+{
 namespace video
 {
 
@@ -43,6 +45,7 @@ typedef COpenGLCoreTexture<COpenGLDriver> COpenGLTexture;
 typedef COpenGLCoreRenderTarget<COpenGLDriver, COpenGLTexture> COpenGLRenderTarget;
 class COpenGLCacheHandler;
 
+}
 }
 
 #endif

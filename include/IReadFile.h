@@ -5,10 +5,11 @@
 #pragma once
 
 #include "IReferenceCounted.h"
-#include "coreutil.h"
 #include "EReadFileType.h"
+#include "path.h"
 
-
+namespace irr
+{
 namespace io
 {
 
@@ -53,3 +54,4 @@ public:
 IReadFile *createLimitReadFile(const io::path &fileName, IReadFile *alreadyOpenedFile, long pos, long areaSize);
 
 } // end namespace io
+} // end namespace irr

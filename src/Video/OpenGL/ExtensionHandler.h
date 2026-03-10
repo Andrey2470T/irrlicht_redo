@@ -6,17 +6,19 @@
 
 #pragma once
 
-#include <string>
 #include <unordered_set>
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
+#include "Device/os.h"
 
 #include "Common.h"
+#include <mt_opengl.h> // must be after Common.h
 
 #include "Video/COGLESCoreExtensionHandler.h"
 
-
+namespace irr
+{
 namespace video
 {
 
@@ -26,11 +28,13 @@ public:
 	COpenGL3ExtensionHandler() :
 			COGLESCoreExtensionHandler() {}
 
-	void initExtensionsOld();
-	void initExtensionsNew();
+	void initExtensions();
 
 	/// Checks whether a named extension is present
-	bool queryExtension(const std::string &name) const noexcept;
+	inline bool queryExtension(const std::string &name) const noexcept
+	{
+		return GL.IsExtensionPresent(name);
+	}
 
 	bool queryFeature(video::E_VIDEO_DRIVER_FEATURE feature) const
 	{
@@ -70,6 +74,10 @@ public:
 			return false;
 		case EVDF_STENCIL_BUFFER:
 			return StencilBuffer;
+		case EVDF_TEXTURE_MULTISAMPLE:
+			return TextureMultisampleSupported;
+		case EVDF_TEXTURE_2D_ARRAY:
+			return Texture2DArraySupported;
 		default:
 			return false;
 		};
@@ -78,90 +86,102 @@ public:
 	static GLint GetInteger(GLenum key)
 	{
 		GLint val = 0;
-		glGetIntegerv(key, &val);
+		GL.GetIntegerv(key, &val);
 		return val;
 	};
 
 	inline void irrGlActiveTexture(GLenum texture)
 	{
-		glActiveTexture(texture);
+		GL.ActiveTexture(texture);
 	}
 
 	inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
 			GLsizei imageSize, const void *data)
 	{
-		g_irrlogger->log("Compressed textures aren't supported", ELL_ERROR);
+		os::Printer::log("Compressed textures aren't supported", ELL_ERROR);
 	}
 
 	inline void irrGlCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
 			GLenum format, GLsizei imageSize, const void *data)
 	{
-		g_irrlogger->log("Compressed textures aren't supported", ELL_ERROR);
+		os::Printer::log("Compressed textures aren't supported", ELL_ERROR);
 	}
 
 	inline void irrGlUseProgram(GLuint prog)
 	{
-		glUseProgram(prog);
+		GL.UseProgram(prog);
 	}
 
 	inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
 	{
-		glBindFramebuffer(target, framebuffer);
+		GL.BindFramebuffer(target, framebuffer);
 	}
 
 	inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 	{
-		glDeleteFramebuffers(n, framebuffers);
+		GL.DeleteFramebuffers(n, framebuffers);
 	}
 
 	inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
 	{
-		glGenFramebuffers(n, framebuffers);
+		GL.GenFramebuffers(n, framebuffers);
 	}
 
 	inline GLenum irrGlCheckFramebufferStatus(GLenum target)
 	{
-		return glCheckFramebufferStatus(target);
+		return GL.CheckFramebufferStatus(target);
 	}
 
 	inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 	{
-		glFramebufferTexture2D(target, attachment, textarget, texture, level);
+		GL.FramebufferTexture2D(target, attachment, textarget, texture, level);
 	}
 
 	inline void irrGlGenerateMipmap(GLenum target)
 	{
-		glGenerateMipmap(target);
+		GL.GenerateMipmap(target);
 	}
 
 	inline void irrGlDrawBuffer(GLenum mode)
 	{
-		glDrawBuffer(mode);
+		// GLES only has DrawBuffers, so use that
+		GL.DrawBuffers(1, &mode);
 	}
 
 	inline void irrGlDrawBuffers(GLsizei n, const GLenum *bufs)
 	{
-		glDrawBuffers(n, bufs);
+		GL.DrawBuffers(n, bufs);
 	}
 
 	inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 	{
-		glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+		GL.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 	}
 
 	inline void irrGlBlendEquation(GLenum mode)
 	{
-		glBlendEquation(mode);
+		GL.BlendEquation(mode);
 	}
 
+	inline void irrGlObjectLabel(GLenum identifier, GLuint name, const char *label)
+	{
+		if (KHRDebugSupported) {
+			u32 len = static_cast<u32>(strlen(label));
+			// Since our texture strings can get quite long we also truncate
+			// to a hardcoded limit of 82
+			len = std::min(len, std::min(MaxLabelLength, 82U));
+			GL.ObjectLabel(identifier, name, len, label);
+		}
+	}
+
+	bool LODBiasSupported = false;
 	bool AnisotropicFilterSupported = false;
 	bool BlendMinMaxSupported = false;
-
-private:
-	void addExtension(std::string &&name);
-	void extensionsLoaded();
-
-	std::unordered_set<std::string> Extensions;
+	bool TextureMultisampleSupported = false;
+	bool Texture2DArraySupported = false;
+	bool KHRDebugSupported = false;
+	u32 MaxLabelLength = 0;
 };
 
+}
 }
