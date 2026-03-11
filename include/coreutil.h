@@ -6,8 +6,7 @@
 
 #include "path.h"
 
-namespace irr
-{
+
 namespace core
 {
 
@@ -189,4 +188,3 @@ inline bool isupper(s32 c)
 }
 
 } // end namespace core
-} // end namespace irr

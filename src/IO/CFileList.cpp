@@ -8,8 +8,7 @@
 
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -147,5 +146,4 @@ const io::path &CFileList::getPath() const
 	return Path;
 }
 
-} // end namespace irr
 } // end namespace io

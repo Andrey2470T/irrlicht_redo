@@ -7,8 +7,7 @@
 #include "IImage.h"
 #include "rect.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -71,4 +70,3 @@ private:
 };
 
 } // end namespace video
-} // end namespace irr

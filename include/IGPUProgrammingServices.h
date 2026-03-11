@@ -8,8 +8,7 @@
 #include "EPrimitiveTypes.h"
 #include "path.h"
 
-namespace irr
-{
+
 
 namespace io
 {
@@ -141,4 +140,3 @@ public:
 };
 
 } // end namespace video
-} // end namespace irr

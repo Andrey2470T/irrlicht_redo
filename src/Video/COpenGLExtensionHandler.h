@@ -14,8 +14,7 @@
 
 #include "COpenGLCoreFeature.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -2610,7 +2609,6 @@ inline void COpenGLExtensionHandler::extGlSwapInterval(int interval)
 #endif
 }
 
-}
 }
 
 #endif

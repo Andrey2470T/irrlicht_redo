@@ -6,8 +6,7 @@
 
 #include "IReferenceCounted.h"
 
-namespace irr
-{
+
 
 //! Possible log levels.
 //! When used has filter ELL_DEBUG means => log everything and ELL_NONE means => log (nearly) nothing.
@@ -71,5 +70,3 @@ public:
 	independent on what level filter is set, use ELL_NONE. */
 	virtual void log(const c8 *text, const c8 *hint, ELOG_LEVEL ll = ELL_INFORMATION) = 0;
 };
-
-} // end namespace

@@ -6,8 +6,7 @@
 
 #include "IOSOperator.h"
 
-namespace irr
-{
+
 
 class CIrrDeviceLinux;
 
@@ -70,5 +69,3 @@ private:
 	mutable char *PrimarySelectionText = nullptr;
 #endif
 };
-
-} // end namespace

@@ -15,8 +15,7 @@
 #include <GL/glext.h>
 #include <GL/glxext.h>
 
-namespace irr
-{
+
 namespace video
 {
 

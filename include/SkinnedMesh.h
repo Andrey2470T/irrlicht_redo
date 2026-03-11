@@ -14,8 +14,6 @@
 #include <optional>
 #include <string>
 
-namespace irr
-{
 namespace scene
 {
 
@@ -431,4 +429,4 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr
+

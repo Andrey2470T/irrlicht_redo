@@ -9,8 +9,6 @@
 #include "IMeshBuffer.h"
 #include "aabbox3d.h"
 
-namespace irr
-{
 namespace scene
 {
 //! Simple implementation of the IMesh interface.
@@ -137,4 +135,4 @@ struct SMesh final : public IMesh
 };
 
 } // end namespace scene
-} // end namespace irr
+

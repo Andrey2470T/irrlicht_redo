@@ -8,8 +8,7 @@
 #include "IBoneSceneNode.h"
 #include "IAnimatedMesh.h"
 
-namespace irr
-{
+
 namespace scene
 {
 enum E_JOINT_UPDATE_ON_RENDER
@@ -166,4 +165,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

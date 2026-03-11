@@ -5,8 +5,7 @@
 #pragma once
 #include <variant>
 
-namespace irr
-{
+
 
 enum EKEY_CODE
 {
@@ -209,4 +208,3 @@ public:
 	}
 };
 
-} // end namespace irr

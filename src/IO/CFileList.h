@@ -8,8 +8,7 @@
 #include "irrString.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -124,5 +123,4 @@ protected:
 	core::array<SFileListEntry> Files;
 };
 
-} // end namespace irr
 } // end namespace io

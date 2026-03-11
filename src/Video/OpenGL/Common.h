@@ -17,8 +17,7 @@
 // macro used with COpenGL3DriverBase
 #define TEST_GL_ERROR(cls) (cls)->testGLError(__FILE__, __LINE__)
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -58,5 +57,4 @@ struct OpenGLVersion
 	u8 Release;
 };
 
-}
 }

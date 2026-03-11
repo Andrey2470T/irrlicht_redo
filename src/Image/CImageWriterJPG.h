@@ -6,8 +6,7 @@
 
 #include "IImageWriter.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -24,5 +23,4 @@ public:
 	bool writeImage(io::IWriteFile *file, IImage *image, u32 param) const override;
 };
 
-}
 }

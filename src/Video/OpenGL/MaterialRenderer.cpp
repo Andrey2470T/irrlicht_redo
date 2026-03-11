@@ -15,8 +15,7 @@
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -421,5 +420,4 @@ IVideoDriver *COpenGL3MaterialRenderer::getVideoDriver()
 	return Driver;
 }
 
-}
 }

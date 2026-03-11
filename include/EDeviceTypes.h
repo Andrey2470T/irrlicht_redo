@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 
 //! An enum for the different device types supported by the Irrlicht Engine.
 enum E_DEVICE_TYPE
@@ -43,4 +42,3 @@ enum E_DEVICE_TYPE
 	EIDT_ANDROID,
 };
 
-} // end namespace irr

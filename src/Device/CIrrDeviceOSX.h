@@ -17,21 +17,19 @@
 
 #include <map>
 
-namespace irr
-{
+
 class CIrrDeviceMacOSX;
 }
 
 @interface CIrrDelegateOSX : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
-- (id)initWithDevice:(irr::CIrrDeviceMacOSX *)device;
+- (id)initWithDevice:(CIrrDeviceMacOSX *)device;
 - (void)terminate:(id)sender;
 - (BOOL)isQuit;
 
 @end
 
-namespace irr
-{
+
 class CIrrDeviceMacOSX : public CIrrDeviceStub
 {
 public:
@@ -214,8 +212,8 @@ private:
 	bool createWindow();
 	void initKeycodes();
 	void storeMouseLocation();
-	void postMouseEvent(void *event, irr::SEvent &ievent);
-	void postKeyEvent(void *event, irr::SEvent &ievent, bool pressed);
+	void postMouseEvent(void *event, SEvent &ievent);
+	void postKeyEvent(void *event, SEvent &ievent, bool pressed);
 	void pollJoysticks();
 
 	NSWindow *Window;
@@ -233,6 +231,5 @@ private:
 	bool IsResizable;
 };
 
-} // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_OSX_DEVICE_

@@ -11,8 +11,7 @@
 #include <GL/gl.h>
 #include <GL/wglext.h>
 
-namespace irr
-{
+
 namespace video
 {
 

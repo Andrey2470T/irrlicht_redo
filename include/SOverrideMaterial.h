@@ -7,8 +7,6 @@
 #include <vector>
 #include "SMaterial.h"
 
-namespace irr
-{
 namespace video
 {
 
@@ -177,4 +175,4 @@ struct SOverrideMaterial
 };
 
 } // end namespace video
-} // end namespace irr
+

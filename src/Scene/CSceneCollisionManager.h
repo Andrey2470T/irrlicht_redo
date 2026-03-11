@@ -8,8 +8,7 @@
 #include "ISceneManager.h"
 #include "IVideoDriver.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -32,4 +31,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

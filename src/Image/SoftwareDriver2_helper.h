@@ -20,8 +20,7 @@
 #endif
 #endif
 
-namespace irr
-{
+
 
 // ----------------------- Generic ----------------------------------
 //! align_next - align to next upper 2^n
@@ -276,4 +275,3 @@ inline bool intersect(AbsRectangle &dest, const AbsRectangle &a, const AbsRectan
 	return dest.x0 < dest.x1 && dest.y0 < dest.y1;
 }
 
-} // end namespace irr

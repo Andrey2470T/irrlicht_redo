@@ -13,8 +13,7 @@
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -85,5 +84,4 @@ bool COpenGL3Renderer2D::OnRender(IMaterialRendererServices *service, E_VERTEX_T
 	return true;
 }
 
-}
 }

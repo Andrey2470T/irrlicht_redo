@@ -18,8 +18,7 @@
 #include "quaternion.h"
 #include <algorithm>
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -741,4 +740,3 @@ ISceneNode *CAnimatedMeshSceneNode::clone(ISceneNode *newParent, ISceneManager *
 }
 
 } // end namespace scene
-} // end namespace irr

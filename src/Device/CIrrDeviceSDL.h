@@ -26,8 +26,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace irr
-{
+
 
 class CIrrDeviceSDL : public CIrrDeviceStub
 {
@@ -339,6 +338,5 @@ private:
 	bool IsInBackground;
 };
 
-} // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_SDL_DEVICE_

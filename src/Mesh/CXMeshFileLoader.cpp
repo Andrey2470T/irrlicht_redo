@@ -23,8 +23,7 @@
 		return false;        \
 	} while (0)
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -1338,7 +1337,7 @@ bool CXMeshFileLoader::parseDataObjectAnimationTicksPerSecond()
 		SET_ERR_AND_RETURN();
 	}
 
-	AnimatedMesh->setAnimationSpeed(static_cast<irr::f32>(ticks));
+	AnimatedMesh->setAnimationSpeed(static_cast<f32>(ticks));
 
 	return true;
 }
@@ -2006,4 +2005,3 @@ bool CXMeshFileLoader::readMatrix(core::matrix4 &mat)
 }
 
 } // end namespace scene
-} // end namespace irr

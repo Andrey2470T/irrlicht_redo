@@ -7,8 +7,7 @@
 #include "IReferenceCounted.h"
 #include "path.h"
 
-namespace irr
-{
+
 namespace io
 {
 class IWriteFile;
@@ -36,4 +35,4 @@ public:
 };
 
 } // namespace video
-} // namespace irr
+

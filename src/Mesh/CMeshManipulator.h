@@ -6,8 +6,7 @@
 
 #include "IMeshManipulator.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -43,4 +42,3 @@ public:
 };
 
 } // end namespace scene
-} // end namespace irr

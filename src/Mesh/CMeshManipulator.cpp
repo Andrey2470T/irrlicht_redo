@@ -11,8 +11,7 @@
 
 #include <cassert>
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -208,4 +207,3 @@ IAnimatedMesh *CMeshManipulator::createAnimatedMesh(scene::IMesh *mesh, scene::E
 }
 
 } // end namespace scene
-} // end namespace irr

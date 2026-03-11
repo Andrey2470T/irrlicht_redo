@@ -8,8 +8,7 @@
 #include "IWriteFile.h"
 #include "irrString.h"
 
-namespace irr
-{
+
 
 namespace io
 {
@@ -55,4 +54,3 @@ private:
 };
 
 } // end namespace io
-} // end namespace irr

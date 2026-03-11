@@ -6,8 +6,7 @@
 
 #include <optional>
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -83,4 +82,4 @@ void CBoneSceneNode::updateAbsolutePositionOfAllChildren()
 }
 
 } // namespace scene
-} // namespace irr
+

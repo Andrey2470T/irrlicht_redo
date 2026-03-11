@@ -7,8 +7,7 @@
 #include "IGUIElement.h"
 #include "SColor.h"
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -80,4 +79,3 @@ public:
 };
 
 } // end namespace gui
-} // end namespace irr

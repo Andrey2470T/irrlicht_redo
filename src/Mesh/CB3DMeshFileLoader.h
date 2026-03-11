@@ -14,8 +14,7 @@
 #include "SB3DStructs.h"
 #include "IReadFile.h"
 
-namespace irr
-{
+
 
 namespace scene
 {
@@ -76,4 +75,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

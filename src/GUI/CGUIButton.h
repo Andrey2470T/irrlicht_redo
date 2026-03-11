@@ -9,8 +9,7 @@
 #include "ITexture.h"
 #include "SColor.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -234,4 +233,3 @@ private:
 };
 
 } // end namespace gui
-} // end namespace irr

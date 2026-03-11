@@ -35,8 +35,7 @@
 #include <unistd.h>
 #endif
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -488,5 +487,4 @@ IFileSystem *createFileSystem()
 	return new CFileSystem();
 }
 
-} // end namespace irr
 } // end namespace io

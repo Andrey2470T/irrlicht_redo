@@ -7,8 +7,7 @@
 #include "IMeshSceneNode.h"
 #include "IMesh.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -84,4 +83,3 @@ protected:
 };
 
 } // end namespace scene
-} // end namespace irr

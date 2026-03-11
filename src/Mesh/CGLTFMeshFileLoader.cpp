@@ -30,8 +30,6 @@
 #include <variant>
 #include <vector>
 
-namespace irr {
-
 /* Notes on the coordinate system.
  *
  * glTF uses a right-handed coordinate system where +Z is the
@@ -927,4 +925,4 @@ tiniergltf::GlTF SelfType::parseGLTF(io::IReadFile* file)
 
 } // namespace scene
 
-} // namespace irr
+

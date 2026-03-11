@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -140,4 +139,3 @@ enum E_VIDEO_DRIVER_FEATURE
 };
 
 } // end namespace video
-} // end namespace irr

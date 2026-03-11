@@ -513,8 +513,7 @@ static bool firstLaunch = true;
 
 @end
 
-namespace irr
-{
+
 //! constructor
 CIrrDeviceMacOSX::CIrrDeviceMacOSX(const SIrrlichtCreationParameters &param) :
 		CIrrDeviceStub(param), Window(NULL), Display(NULL),

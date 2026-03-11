@@ -31,8 +31,7 @@
 
 #include "CSceneCollisionManager.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -772,4 +771,3 @@ ISceneManager *createSceneManager(video::IVideoDriver *driver, gui::ICursorContr
 }
 
 } // end namespace scene
-} // end namespace irr

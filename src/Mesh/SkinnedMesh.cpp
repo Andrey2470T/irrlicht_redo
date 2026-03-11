@@ -11,8 +11,7 @@
 #include <vector>
 #include <cassert>
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -559,7 +558,7 @@ SkinnedMesh *SkinnedMeshBuilder::finalize()
 	if (LocalBuffers.empty())
 		BoundingBox.reset(0, 0, 0);
 	else {
-		irr::core::aabbox3df bb(LocalBuffers[0]->BoundingBox);
+		core::aabbox3df bb(LocalBuffers[0]->BoundingBox);
 		LocalBuffers[0]->Transformation.transformBoxEx(bb);
 		BoundingBox.reset(bb);
 
@@ -838,4 +837,3 @@ void SkinnedMesh::calculateTangents(
 }
 
 } // end namespace scene
-} // end namespace irr

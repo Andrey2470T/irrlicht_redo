@@ -22,8 +22,7 @@
 // macro used with COpenGLDriver
 #define TEST_GL_ERROR(cls) (cls)->testGLError(__LINE__)
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -45,7 +44,6 @@ typedef COpenGLCoreTexture<COpenGLDriver> COpenGLTexture;
 typedef COpenGLCoreRenderTarget<COpenGLDriver, COpenGLTexture> COpenGLRenderTarget;
 class COpenGLCacheHandler;
 
-}
 }
 
 #endif

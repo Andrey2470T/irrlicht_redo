@@ -9,8 +9,7 @@
 #include <mach-o/dyld.h>
 #include "os.h"
 
-namespace irr
-{
+
 namespace video
 {
 

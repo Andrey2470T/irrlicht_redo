@@ -20,8 +20,7 @@
 #define _B3D_READER_DEBUG
 #endif
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -856,4 +855,3 @@ void CB3DMeshFileLoader::readFloats(f32 *vec, u32 count)
 }
 
 } // end namespace scene
-} // end namespace irr

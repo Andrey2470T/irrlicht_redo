@@ -1,7 +1,6 @@
 #pragma once
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -31,4 +30,3 @@ const char *const sBuiltInVertexAttributeNames[] = {
 	};
 
 } // end namespace video
-} // end namespace irr

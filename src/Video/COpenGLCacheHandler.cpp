@@ -8,8 +8,7 @@
 
 #include "COpenGLDriver.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -117,7 +116,6 @@ void COpenGLCacheHandler::setClientActiveTexture(GLenum texture)
 	}
 }
 
-} // end namespace
 } // end namespace
 
 #endif // _IRR_COMPILE_WITH_OPENGL_

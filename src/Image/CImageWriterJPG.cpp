@@ -14,8 +14,7 @@
 #include <jpeglib.h>
 #include <jerror.h>
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -156,10 +155,9 @@ static bool writeJPEGFile(io::IWriteFile *file, IImage *image, u32 quality)
 }
 
 } // namespace video
-} // namespace irr
 
-namespace irr
-{
+
+
 namespace video
 {
 
@@ -182,4 +180,4 @@ bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *image, u32 qualit
 }
 
 } // namespace video
-} // namespace irr
+

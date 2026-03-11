@@ -10,8 +10,7 @@
 #include "irrString.h"
 #include "SMeshBuffer.h"
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -102,4 +101,3 @@ private:
 };
 
 } // end namespace scene
-} // end namespace irr

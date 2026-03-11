@@ -4,8 +4,6 @@
 
 #pragma once
 
-namespace irr
-{
 namespace video
 {
 
@@ -79,4 +77,4 @@ struct SExposedVideoData
 };
 
 } // end namespace video
-} // end namespace irr
+

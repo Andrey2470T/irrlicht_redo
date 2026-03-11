@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -40,4 +39,3 @@ enum E_PRIMITIVE_TYPE
 };
 
 } // end namespace scene
-} // end namespace irr

@@ -9,8 +9,6 @@
 #include "IMesh.h"
 #include "aabbox3d.h"
 
-namespace irr
-{
 namespace scene
 {
 
@@ -164,4 +162,4 @@ struct SAnimatedMesh final : public IAnimatedMesh
 };
 
 } // end namespace scene
-} // end namespace irr
+

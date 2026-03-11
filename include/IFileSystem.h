@@ -7,8 +7,7 @@
 #include "IReferenceCounted.h"
 #include "IFileArchive.h"
 
-namespace irr
-{
+
 namespace video
 {
 class IVideoDriver;
@@ -154,4 +153,3 @@ public:
 };
 
 } // end namespace io
-} // end namespace irr

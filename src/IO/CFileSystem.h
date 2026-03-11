@@ -7,8 +7,7 @@
 #include <vector>
 #include "IFileSystem.h"
 
-namespace irr
-{
+
 namespace io
 {
 
@@ -98,5 +97,4 @@ private:
 	std::vector<IArchiveLoader *> ArchiveLoader;
 };
 
-} // end namespace irr
 } // end namespace io

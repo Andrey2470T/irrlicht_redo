@@ -8,8 +8,7 @@
 #include "EDriverTypes.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace video
 {
 class ITexture;
@@ -111,5 +110,4 @@ protected:
 	E_DRIVER_TYPE DriverType;
 };
 
-}
 }

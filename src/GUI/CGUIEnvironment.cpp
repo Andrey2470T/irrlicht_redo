@@ -28,8 +28,7 @@
 #endif
 #include "Device/os.h"
 
-namespace irr
-{
+
 namespace gui
 {
 
@@ -992,4 +991,3 @@ IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
 }
 
 } // end namespace gui
-} // end namespace irr

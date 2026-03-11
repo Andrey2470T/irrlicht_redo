@@ -16,8 +16,7 @@
 
 #include "mt_opengl.h"
 
-namespace irr
-{
+
 namespace video
 {
 
@@ -701,5 +700,4 @@ protected:
 	mutable SStatesCache StatesCache;
 };
 
-}
 }

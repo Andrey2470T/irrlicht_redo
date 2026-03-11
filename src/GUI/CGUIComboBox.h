@@ -9,8 +9,7 @@
 #include "irrString.h"
 #include "irrArray.h"
 
-namespace irr
-{
+
 namespace gui
 {
 class IGUIButton;
@@ -101,4 +100,3 @@ private:
 };
 
 } // end namespace gui
-} // end namespace irr

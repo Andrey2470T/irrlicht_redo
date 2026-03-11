@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace irr
-{
+
 namespace scene
 {
 
@@ -37,4 +36,3 @@ enum E_BUFFER_TYPE
 };
 
 } // end namespace scene
-} // end namespace irr
