@@ -300,7 +300,6 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
-	"${JSON_INCLUDE_DIR}"
 	"$<$<BOOL:${USE_SDL2}>:${SDL2_INCLUDE_DIRS}>"
 
 	${OPENGL_INCLUDE_DIR}
@@ -509,7 +508,6 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
-	${JSON_LIBRARY}
 	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 

@@ -8,6 +8,8 @@ project(tiniergltf
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Json 1.0.0 REQUIRED)
+
 add_library(tiniergltf OBJECT tiniergltf.hpp)
 add_library(tiniergltf::tiniergltf ALIAS tiniergltf)
 set_target_properties(tiniergltf PROPERTIES LINKER_LANGUAGE CXX)
