@@ -9,7 +9,7 @@
 #include "IGUIFont.h"
 #include "IVideoDriver.h"
 #include "rect.h"
-#include "Device/os.h"
+#include "Timer.h"
 #include "Keycodes.h"
 
 /*

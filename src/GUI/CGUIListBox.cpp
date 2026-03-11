@@ -11,7 +11,7 @@
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "CGUIScrollBar.h"
-#include "Device/os.h"
+#include "Timer.h"
 
 
 namespace gui

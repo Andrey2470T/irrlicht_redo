@@ -16,6 +16,7 @@
 #include "IWriteFile.h"
 
 #include "Device/os.h"
+#include "Timer.h"
 
 #include "SkinnedMesh.h"
 #include "Mesh/CXMeshFileLoader.h"

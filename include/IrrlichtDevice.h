@@ -10,7 +10,7 @@
 #include "EDeviceTypes.h"
 #include "IEventReceiver.h"
 #include "ICursorControl.h"
-#include "ITimer.h"
+#include "Timer.h"
 #include "IOSOperator.h"
 #include "irrArray.h"
 #include "position2d.h"
@@ -132,12 +132,6 @@ public:
 	or reading the operation system version.
 	\return Pointer to the OS operator. */
 	virtual IOSOperator *getOSOperator() = 0;
-
-	//! Provides access to the engine's timer.
-	/** The system time can be retrieved by it as
-	well as the virtual time, which also can be manipulated.
-	\return Pointer to the ITimer object. */
-	virtual ITimer *getTimer() = 0;
 
 	//! Sets the caption of the window.
 	/** \param text: New text of the window caption. */

@@ -17,6 +17,7 @@
 #include "Image/CColorConverter.h"
 #include "IReferenceCounted.h"
 #include "IRenderTarget.h"
+#include "Timer.h"
 
 #include <cassert>
 

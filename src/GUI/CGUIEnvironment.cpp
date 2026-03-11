@@ -27,6 +27,7 @@
 #include "BuiltInFont.h"
 #endif
 #include "Device/os.h"
+#include "Timer.h"
 
 
 namespace gui

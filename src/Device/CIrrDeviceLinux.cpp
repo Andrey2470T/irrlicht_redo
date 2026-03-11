@@ -16,7 +16,7 @@
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
 #include "os.h"
-#include "CTimer.h"
+#include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
 #include "COSOperator.h"
@@ -1081,19 +1081,19 @@ void CIrrDeviceLinux::yield()
 //! Pause execution and let other processes to run for a specified amount of time.
 void CIrrDeviceLinux::sleep(u32 timeMs, bool pauseTimer = false)
 {
-	const bool wasStopped = Timer ? Timer->isStopped() : true;
+	const bool wasStopped = os::Timer::isStopped();
 
 	struct timespec ts;
 	ts.tv_sec = (time_t)(timeMs / 1000);
 	ts.tv_nsec = (long)(timeMs % 1000) * 1000000;
 
 	if (pauseTimer && !wasStopped)
-		Timer->stop();
+		os::Timer::stop();
 
 	nanosleep(&ts, NULL);
 
 	if (pauseTimer && !wasStopped)
-		Timer->start();
+		os::Timer::start();
 }
 
 //! sets the caption of the window
@@ -2134,7 +2134,7 @@ void CIrrDeviceLinux::CCursorControl::update()
 {
 	if ((u32)ActiveIcon < Cursors.size() && !Cursors[ActiveIcon].Frames.empty() && Cursors[ActiveIcon].FrameTime) {
 		// update animated cursors. This could also be done by X11 in case someone wants to figure that out (this way was just easier to implement)
-		u32 now = Device->getTimer()->getRealTime();
+		u32 now = os::Timer::getRealTime();
 		u32 frame = ((now - ActiveIconStartTime) / Cursors[ActiveIcon].FrameTime) % Cursors[ActiveIcon].Frames.size();
 		XDefineCursor(Device->XDisplay, Device->XWindow, Cursors[ActiveIcon].Frames[frame].IconHW);
 	}
@@ -2151,7 +2151,7 @@ void CIrrDeviceLinux::CCursorControl::setActiveIcon(gui::ECURSOR_ICON iconId)
 	if (Cursors[iconId].Frames.size())
 		XDefineCursor(Device->XDisplay, Device->XWindow, Cursors[iconId].Frames[0].IconHW);
 
-	ActiveIconStartTime = Device->getTimer()->getRealTime();
+	ActiveIconStartTime = os::Timer::getRealTime();
 	ActiveIcon = iconId;
 #endif
 }

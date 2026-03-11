@@ -12,7 +12,7 @@
 #include "IFileSystem.h"
 #include "IVideoDriver.h"
 #include "os.h"
-#include "CTimer.h"
+#include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
 #include "COSOperator.h"
@@ -1174,14 +1174,14 @@ void CIrrDeviceSDL::yield()
 //! pause execution for a specified time
 void CIrrDeviceSDL::sleep(u32 timeMs, bool pauseTimer)
 {
-	const bool wasStopped = Timer ? Timer->isStopped() : true;
+	const bool wasStopped = os::Timer::isStopped();
 	if (pauseTimer && !wasStopped)
-		Timer->stop();
+		os::Timer::stop();
 
 	SDL_Delay(timeMs);
 
 	if (pauseTimer && !wasStopped)
-		Timer->start();
+		os::Timer::start();
 }
 
 //! sets the caption of the window

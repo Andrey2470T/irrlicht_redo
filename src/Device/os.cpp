@@ -81,7 +81,6 @@ f32 Byteswap::byteswap(f32 num)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <ctime>
 
 
 namespace os
@@ -93,28 +92,6 @@ void Printer::print(const c8 *message, ELOG_LEVEL ll)
 	tmp += "\n";
 	OutputDebugStringA(tmp.c_str());
 	printf("%s", tmp.c_str());
-}
-
-static LARGE_INTEGER HighPerformanceFreq;
-static BOOL HighPerformanceTimerSupport = FALSE;
-
-void Timer::initTimer()
-{
-	HighPerformanceTimerSupport = QueryPerformanceFrequency(&HighPerformanceFreq);
-	initVirtualTimer();
-}
-
-u32 Timer::getRealTime()
-{
-	if (HighPerformanceTimerSupport) {
-		LARGE_INTEGER nTime;
-		BOOL queriedOK = QueryPerformanceCounter(&nTime);
-
-		if (queriedOK)
-			return u32((nTime.QuadPart) * 1000 / HighPerformanceFreq.QuadPart);
-	}
-
-	return GetTickCount();
 }
 
 } // end namespace os
@@ -167,17 +144,6 @@ void Printer::print(const c8 *message, ELOG_LEVEL ll)
 	__android_log_print(LogLevel, "Irrlicht", "%s\n", &message[start]);
 }
 
-void Timer::initTimer()
-{
-	initVirtualTimer();
-}
-
-u32 Timer::getRealTime()
-{
-	timeval tv;
-	gettimeofday(&tv, 0);
-	return (u32)(tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-}
 } // end namespace os
 
 #elif defined(_IRR_EMSCRIPTEN_PLATFORM_)
@@ -187,8 +153,6 @@ u32 Timer::getRealTime()
 // ----------------------------------------------------------------
 
 #include <emscripten.h>
-#include <ctime>
-#include <sys/time.h>
 
 
 namespace os
@@ -218,16 +182,6 @@ void Printer::print(const c8 *message, ELOG_LEVEL ll)
 	emscripten_log(log_level, "%s", message); // Note: not adding \n as emscripten_log seems to do that already.
 }
 
-void Timer::initTimer()
-{
-	initVirtualTimer();
-}
-
-u32 Timer::getRealTime()
-{
-	double time = emscripten_get_now();
-	return (u32)(time);
-}
 } // end namespace os
 
 #else
@@ -237,8 +191,6 @@ u32 Timer::getRealTime()
 // ----------------------------------------------------------------
 
 #include <cstdio>
-#include <ctime>
-#include <sys/time.h>
 
 
 namespace os
@@ -250,17 +202,6 @@ void Printer::print(const c8 *message, ELOG_LEVEL ll)
 	printf("%s\n", message);
 }
 
-void Timer::initTimer()
-{
-	initVirtualTimer();
-}
-
-u32 Timer::getRealTime()
-{
-	timeval tv;
-	gettimeofday(&tv, 0);
-	return (u32)(tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-}
 } // end namespace os
 
 #endif // end linux / emscripten / android / windows
@@ -286,88 +227,6 @@ void Printer::log(const c8 *message, const io::path &hint, ELOG_LEVEL ll)
 {
 	if (Logger)
 		Logger->log(message, hint.c_str(), ll);
-}
-
-// ------------------------------------------------------
-// virtual timer implementation
-
-f32 Timer::VirtualTimerSpeed = 1.0f;
-s32 Timer::VirtualTimerStopCounter = 0;
-u32 Timer::LastVirtualTime = 0;
-u32 Timer::StartRealTime = 0;
-u32 Timer::StaticTime = 0;
-
-//! returns current virtual time
-u32 Timer::getTime()
-{
-	if (isStopped())
-		return LastVirtualTime;
-
-	return LastVirtualTime + (u32)((StaticTime - StartRealTime) * VirtualTimerSpeed);
-}
-
-//! ticks, advances the virtual timer
-void Timer::tick()
-{
-	StaticTime = getRealTime();
-}
-
-//! sets the current virtual time
-void Timer::setTime(u32 time)
-{
-	StaticTime = getRealTime();
-	LastVirtualTime = time;
-	StartRealTime = StaticTime;
-}
-
-//! stops the virtual timer
-void Timer::stopTimer()
-{
-	if (!isStopped()) {
-		// stop the virtual timer
-		LastVirtualTime = getTime();
-	}
-
-	--VirtualTimerStopCounter;
-}
-
-//! starts the virtual timer
-void Timer::startTimer()
-{
-	++VirtualTimerStopCounter;
-
-	if (!isStopped()) {
-		// restart virtual timer
-		setTime(LastVirtualTime);
-	}
-}
-
-//! sets the speed of the virtual timer
-void Timer::setSpeed(f32 speed)
-{
-	setTime(getTime());
-
-	VirtualTimerSpeed = speed;
-	if (VirtualTimerSpeed < 0.0f)
-		VirtualTimerSpeed = 0.0f;
-}
-
-//! gets the speed of the virtual timer
-f32 Timer::getSpeed()
-{
-	return VirtualTimerSpeed;
-}
-
-//! returns if the timer currently is stopped
-bool Timer::isStopped()
-{
-	return VirtualTimerStopCounter < 0;
-}
-
-void Timer::initVirtualTimer()
-{
-	StaticTime = getRealTime();
-	StartRealTime = StaticTime;
 }
 
 } // end namespace os

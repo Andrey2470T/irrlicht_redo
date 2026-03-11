@@ -412,6 +412,7 @@ add_library(IRROTHEROBJ OBJECT
 	Device/COSOperator.cpp
 	Device/Irrlicht.cpp
 	Device/os.cpp
+	Device/Timer.cpp
 )
 
 if(ENABLE_OPENGL3)

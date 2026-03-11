@@ -12,7 +12,7 @@
 #include "IEventReceiver.h"
 #include "os.h"
 
-#include "CTimer.h"
+#include "Timer.h"
 #include "irrString.h"
 #include "COSOperator.h"
 #include "dimension2d.h"
@@ -928,14 +928,14 @@ void CIrrDeviceWin32::yield()
 //! Pause execution and let other processes to run for a specified amount of time.
 void CIrrDeviceWin32::sleep(u32 timeMs, bool pauseTimer)
 {
-	const bool wasStopped = Timer ? Timer->isStopped() : true;
+	const bool wasStopped = os::Timer::isStopped();
 	if (pauseTimer && !wasStopped)
-		Timer->stop();
+		os::Timer::stop();
 
 	Sleep(timeMs);
 
 	if (pauseTimer && !wasStopped)
-		Timer->start();
+		os::Timer::start();
 }
 
 void CIrrDeviceWin32::resizeIfNecessary()
@@ -1360,7 +1360,7 @@ void CIrrDeviceWin32::CCursorControl::update()
 {
 	if (!Cursors[ActiveIcon].Frames.empty() && Cursors[ActiveIcon].FrameTime) {
 		// update animated cursors. This could also be done by X11 in case someone wants to figure that out (this way was just easier to implement)
-		u32 now = Device->getTimer()->getRealTime();
+		u32 now = os::Timer::getRealTime();
 		u32 frame = ((now - ActiveIconStartTime) / Cursors[ActiveIcon].FrameTime) % Cursors[ActiveIcon].Frames.size();
 		SetCursor(Cursors[ActiveIcon].Frames[frame].IconHW);
 	}
@@ -1373,7 +1373,7 @@ void CIrrDeviceWin32::CCursorControl::setActiveIcon(gui::ECURSOR_ICON iconId)
 		return;
 
 	ActiveIcon = iconId;
-	ActiveIconStartTime = Device->getTimer()->getRealTime();
+	ActiveIconStartTime = os::Timer::getRealTime();
 	if (Cursors[ActiveIcon].Frames.size())
 		SetCursor(Cursors[ActiveIcon].Frames[0].IconHW);
 }

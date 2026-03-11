@@ -10,7 +10,7 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "os.h"
-#include "CTimer.h"
+#include "Timer.h"
 #include "CLogger.h"
 #include "irrString.h"
 
@@ -54,12 +54,12 @@ IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0),
-		Timer(0), CursorControl(0), UserReceiver(params.EventReceiver),
+		CursorControl(0), UserReceiver(params.EventReceiver),
 		Logger(0), Operator(0), FileSystem(0),
 		InputReceivingSceneManager(0), ContextManager(0),
 		CreationParams(params), Close(false)
 {
-	Timer = new CTimer();
+	os::Timer::init();
 	if (os::Printer::Logger) {
 		os::Printer::Logger->grab();
 		Logger = (CLogger *)os::Printer::Logger;
@@ -103,9 +103,6 @@ CIrrDeviceStub::~CIrrDeviceStub()
 
 	CursorControl = 0;
 
-	if (Timer)
-		Timer->drop();
-
 	if (Logger->drop())
 		os::Printer::Logger = 0;
 }
@@ -145,13 +142,6 @@ scene::ISceneManager *CIrrDeviceStub::getSceneManager()
 	return SceneManager;
 }
 
-//! \return Returns a pointer to the ITimer object. With it the
-//! current Time can be received.
-ITimer *CIrrDeviceStub::getTimer()
-{
-	return Timer;
-}
-
 //! Sets the window icon.
 bool CIrrDeviceStub::setWindowIcon(const video::IImage *img)
 {
@@ -175,7 +165,7 @@ u32 CIrrDeviceStub::checkSuccessiveClicks(s32 mouseX, s32 mouseY, EMOUSE_INPUT_E
 {
 	const s32 MAX_MOUSEMOVE = 3;
 
-	u32 clickTime = getTimer()->getRealTime();
+	u32 clickTime = os::Timer::getRealTime();
 
 	if ((clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime && core::abs_(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE && core::abs_(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE && MouseMultiClicks.CountSuccessiveClicks < 3 && MouseMultiClicks.LastMouseInputEvent == inputEvent) {
 		++MouseMultiClicks.CountSuccessiveClicks;

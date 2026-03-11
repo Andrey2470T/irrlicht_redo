@@ -14,7 +14,7 @@
 #include "IEventReceiver.h"
 #include "IVideoDriver.h"
 #include "os.h"
-#include "CTimer.h"
+#include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
 #include <stdio.h>
@@ -867,19 +867,19 @@ void CIrrDeviceMacOSX::yield()
 //! Pause execution and let other processes to run for a specified amount of time.
 void CIrrDeviceMacOSX::sleep(u32 timeMs, bool pauseTimer = false)
 {
-	bool wasStopped = Timer ? Timer->isStopped() : true;
+	bool wasStopped = os::Timer::isStopped();
 
 	struct timespec ts;
 	ts.tv_sec = (time_t)(timeMs / 1000);
 	ts.tv_nsec = (long)(timeMs % 1000) * 1000000;
 
 	if (pauseTimer && !wasStopped)
-		Timer->stop();
+		os::Timer::stop();
 
 	nanosleep(&ts, NULL);
 
 	if (pauseTimer && !wasStopped)
-		Timer->start();
+		os::Timer::start();
 }
 
 void CIrrDeviceMacOSX::setWindowCaption(const wchar_t *text)
