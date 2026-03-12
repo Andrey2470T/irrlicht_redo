@@ -7,6 +7,7 @@
 #include "IReadFile.h"
 #include "coreutil.h"
 #include "Device/os.h"
+#include "Device/byteswap.h"
 #include "CColorConverter.h"
 #include "CImage.h"
 

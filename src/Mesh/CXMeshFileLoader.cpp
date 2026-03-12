@@ -5,6 +5,7 @@
 #include "CXMeshFileLoader.h"
 #include "SkinnedMesh.h"
 #include "Device/os.h"
+#include "Device/byteswap.h"
 #include "Timer.h"
 
 #include "fast_atof.h"

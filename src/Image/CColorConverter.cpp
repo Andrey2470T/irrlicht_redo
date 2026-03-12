@@ -4,7 +4,7 @@
 
 #include "CColorConverter.h"
 #include "SColor.h"
-#include "Device/os.h"
+#include "Device/byteswap.h"
 #include "irrString.h"
 
 // Warning: The naming of Irrlicht color formats

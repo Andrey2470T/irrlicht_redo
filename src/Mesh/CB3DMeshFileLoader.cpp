@@ -13,6 +13,7 @@
 #include "SkinnedMesh.h"
 #include "coreutil.h"
 #include "Device/os.h"
+#include "Device/byteswap.h"
 
 #include <algorithm>
 

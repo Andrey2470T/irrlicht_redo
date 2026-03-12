@@ -404,6 +404,7 @@ add_library(IRRIOOBJ OBJECT
 )
 
 add_library(IRROTHEROBJ OBJECT
+	Device/byteswap.cpp
 	Device/CIrrDeviceSDL.cpp
 	Device/CIrrDeviceLinux.cpp
 	Device/CIrrDeviceStub.cpp
