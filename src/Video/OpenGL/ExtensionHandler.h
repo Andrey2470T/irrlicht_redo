@@ -13,7 +13,6 @@
 #include "Logger.h"
 
 #include "Common.h"
-#include <mt_opengl.h> // must be after Common.h
 
 #include "Video/COGLESCoreExtensionHandler.h"
 
@@ -24,15 +23,16 @@ namespace video
 class COpenGL3ExtensionHandler : public COGLESCoreExtensionHandler
 {
 public:
-	COpenGL3ExtensionHandler() :
-			COGLESCoreExtensionHandler() {}
+	COpenGL3ExtensionHandler()
+		: COGLESCoreExtensionHandler()
+	{}
 
 	void initExtensions();
 
 	/// Checks whether a named extension is present
-	inline bool queryExtension(const std::string &name) const noexcept
+	inline bool isExtensionPresent(const std::string &name) const noexcept
 	{
-		return GL.IsExtensionPresent(name);
+		return extensions.count(name) > 0;;
 	}
 
 	bool queryFeature(video::E_VIDEO_DRIVER_FEATURE feature) const
@@ -85,13 +85,13 @@ public:
 	static GLint GetInteger(GLenum key)
 	{
 		GLint val = 0;
-		GL.GetIntegerv(key, &val);
+		glGetIntegerv(key, &val);
 		return val;
 	};
 
 	inline void irrGlActiveTexture(GLenum texture)
 	{
-		GL.ActiveTexture(texture);
+		glActiveTexture(texture);
 	}
 
 	inline void irrGlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border,
@@ -108,58 +108,58 @@ public:
 
 	inline void irrGlUseProgram(GLuint prog)
 	{
-		GL.UseProgram(prog);
+		glUseProgram(prog);
 	}
 
 	inline void irrGlBindFramebuffer(GLenum target, GLuint framebuffer)
 	{
-		GL.BindFramebuffer(target, framebuffer);
+		glBindFramebuffer(target, framebuffer);
 	}
 
 	inline void irrGlDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 	{
-		GL.DeleteFramebuffers(n, framebuffers);
+		glDeleteFramebuffers(n, framebuffers);
 	}
 
 	inline void irrGlGenFramebuffers(GLsizei n, GLuint *framebuffers)
 	{
-		GL.GenFramebuffers(n, framebuffers);
+		glGenFramebuffers(n, framebuffers);
 	}
 
 	inline GLenum irrGlCheckFramebufferStatus(GLenum target)
 	{
-		return GL.CheckFramebufferStatus(target);
+		return glCheckFramebufferStatus(target);
 	}
 
 	inline void irrGlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 	{
-		GL.FramebufferTexture2D(target, attachment, textarget, texture, level);
+		glFramebufferTexture2D(target, attachment, textarget, texture, level);
 	}
 
 	inline void irrGlGenerateMipmap(GLenum target)
 	{
-		GL.GenerateMipmap(target);
+		glGenerateMipmap(target);
 	}
 
 	inline void irrGlDrawBuffer(GLenum mode)
 	{
 		// GLES only has DrawBuffers, so use that
-		GL.DrawBuffers(1, &mode);
+		glDrawBuffers(1, &mode);
 	}
 
 	inline void irrGlDrawBuffers(GLsizei n, const GLenum *bufs)
 	{
-		GL.DrawBuffers(n, bufs);
+		glDrawBuffers(n, bufs);
 	}
 
 	inline void irrGlBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 	{
-		GL.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+		glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 	}
 
 	inline void irrGlBlendEquation(GLenum mode)
 	{
-		GL.BlendEquation(mode);
+		glBlendEquation(mode);
 	}
 
 	inline void irrGlObjectLabel(GLenum identifier, GLuint name, const char *label)
@@ -169,7 +169,7 @@ public:
 			// Since our texture strings can get quite long we also truncate
 			// to a hardcoded limit of 82
 			len = std::min(len, std::min(MaxLabelLength, 82U));
-			GL.ObjectLabel(identifier, name, len, label);
+			glObjectLabel(identifier, name, len, label);
 		}
 	}
 
@@ -180,6 +180,8 @@ public:
 	bool Texture2DArraySupported = false;
 	bool KHRDebugSupported = false;
 	u32 MaxLabelLength = 0;
+
+	std::unordered_set<std::string> extensions;
 };
 
 }

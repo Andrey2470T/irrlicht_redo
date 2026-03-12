@@ -17,6 +17,7 @@
 #include "Keycodes.h"
 #include "Clipboard.h"
 #include "SIrrCreationParameters.h"
+#include "Video/OpenGL/Common.h"
 #include <SDL_video.h>
 
 #include <cstdio>
@@ -650,6 +651,13 @@ bool CIrrDeviceSDL::createWindowWithContext()
 		// Re-center, otherwise large, non-maximized windows go offscreen.
 		SDL_SetWindowPosition(Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		updateSizeAndScale();
+	}
+
+	GLenum glewStatus = glewInit();
+	if (glewStatus != GLEW_OK) {
+		g_irrlogger->log("Could not initialize GLEW: ", glewGetErrorString(glewStatus), ELL_ERROR);
+		Close = true;
+		return false;
 	}
 
 	return true;

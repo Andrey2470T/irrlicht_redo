@@ -5,7 +5,6 @@
 #include "DriverGLES2.h"
 #include <stdexcept>
 #include <cassert>
-#include "mt_opengl.h"
 #include "CColorConverter.h"
 
 

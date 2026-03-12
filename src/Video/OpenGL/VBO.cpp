@@ -5,7 +5,6 @@
 #include "VBO.h"
 
 #include <cassert>
-#include <mt_opengl.h>
 
 
 namespace video
@@ -17,7 +16,7 @@ void OpenGLVBO::upload(const void *data, size_t size, size_t offset,
 	bool newBuffer = false;
 	assert(!(mustShrink && offset > 0)); // forbidden usage
 	if (!m_name) {
-		GL.GenBuffers(1, &m_name);
+		glGenBuffers(1, &m_name);
 		if (!m_name)
 			return;
 		newBuffer = true;
@@ -25,23 +24,23 @@ void OpenGLVBO::upload(const void *data, size_t size, size_t offset,
 		newBuffer = size != m_size;
 	}
 
-	GL.BindBuffer(GL_ARRAY_BUFFER, m_name);
+	glBindBuffer(GL_ARRAY_BUFFER, m_name);
 
 	if (newBuffer) {
 		assert(offset == 0);
-		GL.BufferData(GL_ARRAY_BUFFER, size, data, usage);
+		glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 		m_size = size;
 	} else {
-		GL.BufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 	}
 
-	GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void OpenGLVBO::destroy()
 {
 	if (m_name)
-		GL.DeleteBuffers(1, &m_name);
+		glDeleteBuffers(1, &m_name);
 	m_name = 0;
 	m_size = 0;
 }

@@ -179,6 +179,7 @@ message(STATUS "Renderer: ${RENDERER}")
 
 include(CheckCXXSourceCompiles)
 
+find_package(GLEW REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
@@ -279,7 +280,6 @@ set(IRRDRVROBJ
 	Device/CWGLManager.cpp
 	Device/CEGLManager.cpp
 	Device/CSDLManager.cpp
-	Video/mt_opengl_loader.cpp
 )
 
 # the unified drivers
@@ -441,6 +441,7 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
+	GLEW::GLEW
 	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 

@@ -14,8 +14,6 @@
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
 
-#include "mt_opengl.h"
-
 
 namespace video
 {
@@ -88,7 +86,7 @@ public:
 			tmpImages = &Images;
 		}
 
-		GL.GenTextures(1, &TextureName);
+		glGenTextures(1, &TextureName);
 		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
@@ -98,16 +96,16 @@ public:
 		const COpenGLCoreTexture *prevTexture = Driver->getCacheHandler()->getTextureCache().get(0);
 		Driver->getCacheHandler()->getTextureCache().set(0, this);
 
-		GL.TexParameteri(TextureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		GL.TexParameteri(TextureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(TextureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(TextureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		if (HasMipMaps) {
 			if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_SPEED))
-				GL.Hint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+				glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
 			else if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_QUALITY))
-				GL.Hint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+				glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 			else
-				GL.Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
+				glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
 		}
 		TEST_GL_ERROR(Driver);
 
@@ -183,7 +181,7 @@ public:
 		);
 		g_irrlogger->log(lbuf, ELL_DEBUG);
 
-		GL.GenTextures(1, &TextureName);
+		glGenTextures(1, &TextureName);
 		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
@@ -198,11 +196,11 @@ public:
 		// sampler state from table 23.18.
 		// ~ https://registry.khronos.org/OpenGL/specs/gl/glspec46.core.pdf
 		if (Type != ETT_2D_MS) {
-			GL.TexParameteri(TextureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			GL.TexParameteri(TextureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			GL.TexParameteri(TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			GL.TexParameteri(TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			GL.TexParameteri(TextureType, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+			glTexParameteri(TextureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(TextureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(TextureType, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 			StatesCache.WrapU = ETC_CLAMP_TO_EDGE;
 			StatesCache.WrapV = ETC_CLAMP_TO_EDGE;
@@ -221,7 +219,7 @@ public:
 	virtual ~COpenGLCoreTexture()
 	{
 		if (TextureName)
-			GL.DeleteTextures(1, &TextureName);
+			glDeleteTextures(1, &TextureName);
 
 		if (LockImage)
 			LockImage->drop();
@@ -287,7 +285,7 @@ public:
 
 				GLenum tmpTextureType = getTextureTarget(layer);
 
-				GL.GetTexImage(tmpTextureType, MipLevelStored, PixelFormat, PixelType, tmpImage->getData());
+				glGetTexImage(tmpTextureType, MipLevelStored, PixelFormat, PixelType, tmpImage->getData());
 				TEST_GL_ERROR(Driver);
 
 				if (IsRenderTarget && lockFlags == ETLF_FLIP_Y_UP_RTT)
@@ -310,7 +308,7 @@ public:
 				TEST_GL_ERROR(Driver);
 
 				IImage *tmpImage = Driver->createImage(ECF_A8R8G8B8, lockImageSize);
-				GL.ReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
+				glReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
 					GL_RGBA, GL_UNSIGNED_BYTE, tmpImage->getData());
 
 				Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER,
@@ -535,17 +533,17 @@ protected:
 		switch (Type) {
 		case ETT_2D:
 			if (use_tex_storage) {
-				GL.TexStorage2D(TextureType, levels, InternalFormat,
+				glTexStorage2D(TextureType, levels, InternalFormat,
 					Size.Width, Size.Height);
 			} else {
-				GL.TexImage2D(TextureType, 0, InternalFormat,
+				glTexImage2D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 			}
 			TEST_GL_ERROR(Driver);
 			break;
 		case ETT_2D_MS: {
 			GLint max_samples = 0;
-			GL.GetIntegerv(GL_MAX_SAMPLES, &max_samples);
+			glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 			MSAA = core::min_(MSAA, (u8)max_samples);
 
 			// glTexImage2DMultisample is supported by OpenGL 3.2+
@@ -558,9 +556,9 @@ protected:
 #endif
 
 			if (use_gl_impl)
-				GL.TexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
 			else
-				GL.TexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
+				glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
 			TEST_GL_ERROR(Driver);
 			break;
 		}
@@ -568,10 +566,10 @@ protected:
 			for (u32 i = 0; i < 6; i++) {
 				GLenum target = getTextureTarget(i);
 				if (use_tex_storage) {
-					GL.TexStorage2D(target, levels, InternalFormat,
+					glTexStorage2D(target, levels, InternalFormat,
 						Size.Width, Size.Height);
 				} else {
-					GL.TexImage2D(target, 0, InternalFormat,
+					glTexImage2D(target, 0, InternalFormat,
 						Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 				}
 				TEST_GL_ERROR(Driver);
@@ -579,10 +577,10 @@ protected:
 			break;
 		case ETT_2D_ARRAY:
 			if (use_tex_storage) {
-				GL.TexStorage3D(TextureType, levels, InternalFormat,
+				glTexStorage3D(TextureType, levels, InternalFormat,
 					Size.Width, Size.Height, layers);
 			} else {
-				GL.TexImage3D(TextureType, 0, InternalFormat,
+				glTexImage3D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, layers, 0, PixelFormat, PixelType, 0);
 			}
 			TEST_GL_ERROR(Driver);
@@ -623,10 +621,10 @@ protected:
 			switch (TextureType) {
 			case GL_TEXTURE_2D:
 			case GL_TEXTURE_CUBE_MAP:
-				GL.TexSubImage2D(tmpTextureType, level, 0, 0, width, height, PixelFormat, PixelType, tmpData);
+				glTexSubImage2D(tmpTextureType, level, 0, 0, width, height, PixelFormat, PixelType, tmpData);
 				break;
 			case GL_TEXTURE_2D_ARRAY:
-				GL.TexSubImage3D(tmpTextureType, level, 0, 0, layer, width, height, 1, PixelFormat, PixelType, tmpData);
+				glTexSubImage3D(tmpTextureType, level, 0, 0, layer, width, height, 1, PixelFormat, PixelType, tmpData);
 				break;
 			default:
 				assert(false);
