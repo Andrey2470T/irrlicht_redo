@@ -6,7 +6,7 @@
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 #include "S3DVertex.h"
-#include "Device/os.h"
+#include "Logger.h"
 #include "SkinnedMesh.h"
 #include "IDummyTransformationSceneNode.h"
 #include "IBoneSceneNode.h"
@@ -222,7 +222,7 @@ void CAnimatedMeshSceneNode::render()
 		Box = m->getBoundingBox();
 	} else {
 #ifdef _DEBUG
-		os::Printer::log("Animated Mesh returned no mesh to render.", ELL_WARNING);
+		g_irrlogger->log("Animated Mesh returned no mesh to render.", ELL_WARNING);
 #endif
 		return;
 	}
@@ -391,7 +391,7 @@ u32 CAnimatedMeshSceneNode::getMaterialCount() const
 IBoneSceneNode *CAnimatedMeshSceneNode::getJointNode(const c8 *jointName)
 {
 	if (!Mesh || Mesh->getMeshType() != EAMT_SKINNED) {
-		os::Printer::log("No mesh, or mesh not of skinned mesh type", ELL_WARNING);
+		g_irrlogger->log("No mesh, or mesh not of skinned mesh type", ELL_WARNING);
 		return 0;
 	}
 
@@ -402,12 +402,12 @@ IBoneSceneNode *CAnimatedMeshSceneNode::getJointNode(const c8 *jointName)
 	const std::optional<u32> number = skinnedMesh->getJointNumber(jointName);
 
 	if (!number.has_value()) {
-		os::Printer::log("Joint with specified name not found in skinned mesh", jointName, ELL_DEBUG);
+		g_irrlogger->log("Joint with specified name not found in skinned mesh", jointName, ELL_DEBUG);
 		return 0;
 	}
 
 	if (JointChildSceneNodes.size() <= *number) {
-		os::Printer::log("Joint was found in mesh, but is not loaded into node", jointName, ELL_WARNING);
+		g_irrlogger->log("Joint was found in mesh, but is not loaded into node", jointName, ELL_WARNING);
 		return 0;
 	}
 
@@ -419,14 +419,14 @@ IBoneSceneNode *CAnimatedMeshSceneNode::getJointNode(const c8 *jointName)
 IBoneSceneNode *CAnimatedMeshSceneNode::getJointNode(u32 jointID)
 {
 	if (!Mesh || Mesh->getMeshType() != EAMT_SKINNED) {
-		os::Printer::log("No mesh, or mesh not of skinned mesh type", ELL_WARNING);
+		g_irrlogger->log("No mesh, or mesh not of skinned mesh type", ELL_WARNING);
 		return 0;
 	}
 
 	checkJoints();
 
 	if (JointChildSceneNodes.size() <= jointID) {
-		os::Printer::log("Joint not loaded into node", ELL_WARNING);
+		g_irrlogger->log("Joint not loaded into node", ELL_WARNING);
 		return 0;
 	}
 

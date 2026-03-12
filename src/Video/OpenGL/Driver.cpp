@@ -19,7 +19,7 @@
 
 #include "EVertexAttributes.h"
 #include "Image/CImage.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #include "mt_opengl.h"
 
@@ -142,7 +142,7 @@ void COpenGL3DriverBase::debugCb(GLenum source, GLenum type, GLuint id, GLenum s
 		ll = ELL_WARNING;
 	char buf[300];
 	snprintf_irr(buf, sizeof(buf), "%04x %04x %.*s", source, type, length, message);
-	os::Printer::log("GL", buf, ll);
+	g_irrlogger->log("GL", buf, ll);
 }
 
 COpenGL3DriverBase::COpenGL3DriverBase(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager) :
@@ -220,7 +220,7 @@ void COpenGL3DriverBase::initVersion()
 
 	// print renderer information
 	VendorName = GL.GetString(GL_RENDERER);
-	os::Printer::log("Renderer", VendorName.c_str(), ELL_INFORMATION);
+	g_irrlogger->log("Renderer", VendorName.c_str(), ELL_INFORMATION);
 
 	Version = getVersionFromOpenGL();
 }
@@ -245,7 +245,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 			GL.Enable(GL_DEBUG_OUTPUT);
 			GL.DebugMessageCallback(debugCb, this);
 		} else {
-			os::Printer::log("GL debug extension not available");
+			g_irrlogger->log("GL debug extension not available");
 		}
 	} else {
 		// don't do debug things if they are not wanted (even if supported)
@@ -303,7 +303,7 @@ void COpenGL3DriverBase::printTextureFormats()
 					ColorFormatNames[i], info.InternalFormat, info.PixelFormat,
 					info.PixelType, info.Converter ? " (c)" : "");
 		}
-		os::Printer::log(buf, ELL_DEBUG);
+		g_irrlogger->log(buf, ELL_DEBUG);
 	}
 }
 
@@ -323,7 +323,7 @@ void COpenGL3DriverBase::loadShaderData(const io::path &vertexShaderName, const 
 		std::string warning("Warning: Missing shader files needed to simulate fixed function materials:\n");
 		warning.append(vsPath.c_str()).append("\n");
 		warning += "Shaderpath can be changed in SIrrCreationParamters::OGLES2ShaderPath";
-		os::Printer::log(warning.c_str(), ELL_WARNING);
+		g_irrlogger->log(warning.c_str(), ELL_WARNING);
 		return;
 	}
 
@@ -332,7 +332,7 @@ void COpenGL3DriverBase::loadShaderData(const io::path &vertexShaderName, const 
 		std::string warning("Warning: Missing shader files needed to simulate fixed function materials:\n");
 		warning.append(fsPath.c_str()).append("\n");
 		warning += "Shaderpath can be changed in SIrrCreationParamters::OGLES2ShaderPath";
-		os::Printer::log(warning.c_str(), ELL_WARNING);
+		g_irrlogger->log(warning.c_str(), ELL_WARNING);
 		return;
 	}
 
@@ -344,7 +344,7 @@ void COpenGL3DriverBase::loadShaderData(const io::path &vertexShaderName, const 
 	}
 	{
 		auto tmp = std::string("Loaded ") + std::to_string(size) + " bytes for vertex shader " + vertexShaderName.c_str();
-		os::Printer::log(tmp.c_str(), ELL_INFORMATION);
+		g_irrlogger->log(tmp.c_str(), ELL_INFORMATION);
 	}
 
 	size = fsFile->getSize();
@@ -359,7 +359,7 @@ void COpenGL3DriverBase::loadShaderData(const io::path &vertexShaderName, const 
 	}
 	{
 		auto tmp = std::string("Loaded ") + std::to_string(size) + " bytes for fragment shader " + fragmentShaderName.c_str();
-		os::Printer::log(tmp.c_str(), ELL_INFORMATION);
+		g_irrlogger->log(tmp.c_str(), ELL_INFORMATION);
 	}
 
 	vsFile->drop();
@@ -649,7 +649,7 @@ IRenderTarget *COpenGL3DriverBase::addRenderTarget()
 void COpenGL3DriverBase::blitRenderTarget(IRenderTarget *from, IRenderTarget *to)
 {
 	if (Version.Spec == OpenGLSpec::ES && Version.Major < 3) {
-		os::Printer::log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
+		g_irrlogger->log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
 		return;
 	}
 
@@ -1147,7 +1147,7 @@ bool COpenGL3DriverBase::testGLError(const char *file, int line)
 	char buf[80];
 	snprintf_irr(buf, sizeof(buf), "%s %s:%d%s",
 		err, file, line, multiple ? " (older errors exist)" : "");
-	os::Printer::log(buf, ELL_ERROR);
+	g_irrlogger->log(buf, ELL_ERROR);
 	return true;
 }
 
@@ -1279,13 +1279,13 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 			if (BlendMinMaxSupported)
 				CacheHandler->setBlendEquation(GL_MIN);
 			else
-				os::Printer::log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
+				g_irrlogger->log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
 			break;
 		case EBO_MAX:
 			if (BlendMinMaxSupported)
 				CacheHandler->setBlendEquation(GL_MAX);
 			else
-				os::Printer::log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
+				g_irrlogger->log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
 			break;
 		default:
 			break;
@@ -1578,47 +1578,47 @@ s32 COpenGL3DriverBase::getVertexShaderConstantID(const c8 *name)
 //! Get a pixel shader constant index.
 s32 COpenGL3DriverBase::getPixelShaderConstantID(const c8 *name)
 {
-	os::Printer::log("Error: Please call services->getPixelShaderConstantID(), not VideoDriver->getPixelShaderConstantID().");
+	g_irrlogger->log("Error: Please call services->getPixelShaderConstantID(), not VideoDriver->getPixelShaderConstantID().");
 	return -1;
 }
 
 //! Sets a constant for the vertex shader based on an index.
 bool COpenGL3DriverBase::setVertexShaderConstant(s32 index, const f32 *floats, int count)
 {
-	os::Printer::log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
 	return false;
 }
 
 //! Int interface for the above.
 bool COpenGL3DriverBase::setVertexShaderConstant(s32 index, const s32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
 	return false;
 }
 
 bool COpenGL3DriverBase::setVertexShaderConstant(s32 index, const u32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setVertexShaderConstant(), not VideoDriver->setVertexShaderConstant().");
 	return false;
 }
 
 //! Sets a constant for the pixel shader based on an index.
 bool COpenGL3DriverBase::setPixelShaderConstant(s32 index, const f32 *floats, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 //! Int interface for the above.
 bool COpenGL3DriverBase::setPixelShaderConstant(s32 index, const s32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
 bool COpenGL3DriverBase::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
-	os::Printer::log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
+	g_irrlogger->log("Error: Please call services->setPixelShaderConstant(), not VideoDriver->setPixelShaderConstant().");
 	return false;
 }
 
@@ -1716,7 +1716,7 @@ u32 COpenGL3DriverBase::getMaximalPrimitiveCount() const
 bool COpenGL3DriverBase::setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
 	if (target && target->getDriverType() != getDriverType()) {
-		os::Printer::log("Fatal Error: Tried to set a render target not owned by OpenGL 3 driver.", ELL_ERROR);
+		g_irrlogger->log("Fatal Error: Tried to set a render target not owned by OpenGL 3 driver.", ELL_ERROR);
 		return false;
 	}
 

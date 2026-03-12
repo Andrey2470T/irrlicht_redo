@@ -15,7 +15,7 @@
 #include "quaternion.h"
 #include "vector2d.h"
 #include "vector3d.h"
-#include "Device/os.h"
+#include "Logger.h"
 #include "Device/byteswap.h"
 
 #include <array>
@@ -352,14 +352,14 @@ IAnimatedMesh* SelfType::createMesh(io::IReadFile* file)
 		try {
 			extractor.load();
 			for (const auto &warning : extractor.getWarnings()) {
-				os::Printer::log(filename, warning.c_str(), ELL_WARNING);
+				g_irrlogger->log(filename, warning.c_str(), ELL_WARNING);
 			}
 			return mesh.release()->finalize();
 		} catch (const std::runtime_error &e) {
-			os::Printer::log("error converting gltf to irrlicht mesh", e.what(), ELL_ERROR);
+			g_irrlogger->log("error converting gltf to irrlicht mesh", e.what(), ELL_ERROR);
 		}
 	} catch (const std::runtime_error &e) {
-		os::Printer::log("error parsing gltf", e.what(), ELL_ERROR);
+		g_irrlogger->log("error parsing gltf", e.what(), ELL_ERROR);
 	}
 	return nullptr;
 }

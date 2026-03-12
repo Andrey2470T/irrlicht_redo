@@ -119,7 +119,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(const SIrrlichtCreationParameters &param) :
 	linuxversion += LinuxInfo.machine;
 
 	Operator = new COSOperator(linuxversion, this);
-	os::Printer::log(linuxversion.c_str(), ELL_INFORMATION);
+	g_irrlogger->log(linuxversion.c_str(), ELL_INFORMATION);
 
 	// create keymap
 	createKeyMap();
@@ -220,8 +220,8 @@ int IrrPrintXError(Display *display, XErrorEvent *event)
 	snprintf_irr(msg, 256, "%d", event->request_code);
 	XGetErrorDatabaseText(display, "XRequest", msg, "unknown", msg2, 256);
 	XGetErrorText(display, event->error_code, msg, 256);
-	os::Printer::log("X Error", msg, ELL_WARNING);
-	os::Printer::log("From call ", msg2, ELL_WARNING);
+	g_irrlogger->log("X Error", msg, ELL_WARNING);
+	g_irrlogger->log("From call ", msg2, ELL_WARNING);
 	return 0;
 }
 #endif
@@ -232,7 +232,7 @@ bool CIrrDeviceLinux::switchToFullscreen()
 		return true;
 
 	if (!HasNetWM) {
-		os::Printer::log("NetWM support is required to allow Irrlicht to switch "
+		g_irrlogger->log("NetWM support is required to allow Irrlicht to switch "
 						 "to fullscreen mode. Running in windowed mode instead.",
 				ELL_WARNING);
 		CreationParams.Fullscreen = false;
@@ -260,7 +260,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	if (CreationParams.DriverType == video::EDT_NULL)
 		return; // no display and window
 
-	os::Printer::log("Configuring X11-specific top level window properties", ELL_DEBUG);
+	g_irrlogger->log("Configuring X11-specific top level window properties", ELL_DEBUG);
 
 	// Set application name and class hints. For now name and class are the same.
 	// Note: SDL uses the executable name here (i.e. "luanti").
@@ -287,7 +287,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// more, using gtk/gdk as the model it would seem that not using a FQDN is
 	// not an issue for modern Xorg window managers.
 
-	os::Printer::log("Setting Xorg window manager Properties", ELL_DEBUG);
+	g_irrlogger->log("Setting Xorg window manager Properties", ELL_DEBUG);
 
 	XSetWMProperties(XDisplay, XWindow, NULL, NULL, NULL, 0, NULL, NULL, NULL);
 
@@ -296,7 +296,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// force a shutdown of an application if it doesn't respond to the destroy
 	// window message.
 
-	os::Printer::log("Setting Xorg _NET_WM_PID extended window manager property", ELL_DEBUG);
+	g_irrlogger->log("Setting Xorg _NET_WM_PID extended window manager property", ELL_DEBUG);
 
 	Atom NET_WM_PID = XInternAtom(XDisplay, "_NET_WM_PID", false);
 
@@ -309,7 +309,7 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 	// Set the WM_CLIENT_LEADER window property here. Minetest has only one
 	// window and that window will always be the leader.
 
-	os::Printer::log("Setting Xorg WM_CLIENT_LEADER property", ELL_DEBUG);
+	g_irrlogger->log("Setting Xorg WM_CLIENT_LEADER property", ELL_DEBUG);
 
 	Atom WM_CLIENT_LEADER = XInternAtom(XDisplay, "WM_CLIENT_LEADER", false);
 
@@ -323,25 +323,25 @@ void CIrrDeviceLinux::setupTopLevelXorgWindow()
 void IrrPrintXGrabError(int grabResult, const c8 *grabCommand)
 {
 	if (grabResult == GrabSuccess) {
-		//		os::Printer::log(grabCommand, "GrabSuccess", ELL_INFORMATION);
+		//		g_irrlogger->log(grabCommand, "GrabSuccess", ELL_INFORMATION);
 		return;
 	}
 
 	switch (grabResult) {
 	case AlreadyGrabbed:
-		os::Printer::log(grabCommand, "AlreadyGrabbed", ELL_WARNING);
+		g_irrlogger->log(grabCommand, "AlreadyGrabbed", ELL_WARNING);
 		break;
 	case GrabNotViewable:
-		os::Printer::log(grabCommand, "GrabNotViewable", ELL_WARNING);
+		g_irrlogger->log(grabCommand, "GrabNotViewable", ELL_WARNING);
 		break;
 	case GrabFrozen:
-		os::Printer::log(grabCommand, "GrabFrozen", ELL_WARNING);
+		g_irrlogger->log(grabCommand, "GrabFrozen", ELL_WARNING);
 		break;
 	case GrabInvalidTime:
-		os::Printer::log(grabCommand, "GrabInvalidTime", ELL_WARNING);
+		g_irrlogger->log(grabCommand, "GrabInvalidTime", ELL_WARNING);
 		break;
 	default:
-		os::Printer::log(grabCommand, "grab failed with unknown problem", ELL_WARNING);
+		g_irrlogger->log(grabCommand, "grab failed with unknown problem", ELL_WARNING);
 		break;
 	}
 }
@@ -351,17 +351,17 @@ bool CIrrDeviceLinux::createWindow()
 {
 #ifdef _IRR_COMPILE_WITH_X11_
 #ifdef _DEBUG
-	os::Printer::log("Creating X window...", ELL_INFORMATION);
+	g_irrlogger->log("Creating X window...", ELL_INFORMATION);
 	XSetErrorHandler(IrrPrintXError);
 #endif
 
 	XDisplay = XOpenDisplay(0);
 	if (!XDisplay) {
-		os::Printer::log("Error: Need running XServer to start Irrlicht Engine.", ELL_ERROR);
+		g_irrlogger->log("Error: Need running XServer to start Irrlicht Engine.", ELL_ERROR);
 		if (XDisplayName(0)[0])
-			os::Printer::log("Could not open display", XDisplayName(0), ELL_ERROR);
+			g_irrlogger->log("Could not open display", XDisplayName(0), ELL_ERROR);
 		else
-			os::Printer::log("Could not open display, set DISPLAY variable", ELL_ERROR);
+			g_irrlogger->log("Could not open display, set DISPLAY variable", ELL_ERROR);
 		return false;
 	}
 
@@ -388,7 +388,7 @@ bool CIrrDeviceLinux::createWindow()
 
 	if (!VisualInfo) {
 		// create visual with standard X methods
-		os::Printer::log("Using plain X visual");
+		g_irrlogger->log("Using plain X visual");
 		XVisualInfo visTempl; // Template to hold requested values
 		int visNumber;        // Return value of available visuals
 
@@ -403,14 +403,14 @@ bool CIrrDeviceLinux::createWindow()
 	}
 
 	if (!VisualInfo) {
-		os::Printer::log("Fatal error, could not get visual.", ELL_ERROR);
+		g_irrlogger->log("Fatal error, could not get visual.", ELL_ERROR);
 		XCloseDisplay(XDisplay);
 		XDisplay = 0;
 		return false;
 	}
 #ifdef _DEBUG
 	else
-		os::Printer::log("Visual chosen", core::stringc(static_cast<u32>(VisualInfo->visualid)).c_str(), ELL_DEBUG);
+		g_irrlogger->log("Visual chosen", core::stringc(static_cast<u32>(VisualInfo->visualid)).c_str(), ELL_DEBUG);
 #endif
 
 	// create color map
@@ -570,14 +570,14 @@ void CIrrDeviceLinux::createDriver()
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	default:
-		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
+		g_irrlogger->log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
 #else // no X11
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
 		break;
 	default:
-		os::Printer::log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
+		g_irrlogger->log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
 		break;
 #endif
 	}
@@ -594,7 +594,7 @@ bool CIrrDeviceLinux::createInputContext()
 	setlocale(LC_CTYPE, ""); // use environment locale
 
 	if (!XSupportsLocale()) {
-		os::Printer::log("Locale not supported. Falling back to non-i18n input.", ELL_WARNING);
+		g_irrlogger->log("Locale not supported. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -602,14 +602,14 @@ bool CIrrDeviceLinux::createInputContext()
 	// Load XMODIFIERS (e.g. for IMEs)
 	if (!XSetLocaleModifiers("")) {
 		setlocale(LC_CTYPE, oldLocale.c_str());
-		os::Printer::log("XSetLocaleModifiers failed. Falling back to non-i18n input.", ELL_WARNING);
+		g_irrlogger->log("XSetLocaleModifiers failed. Falling back to non-i18n input.", ELL_WARNING);
 		return false;
 	}
 
 	XInputMethod = XOpenIM(XDisplay, NULL, NULL, NULL);
 	if (!XInputMethod) {
 		setlocale(LC_CTYPE, oldLocale.c_str());
-		os::Printer::log("XOpenIM failed to create an input method. Falling back to non-i18n input.", ELL_WARNING);
+		g_irrlogger->log("XOpenIM failed to create an input method. Falling back to non-i18n input.", ELL_WARNING);
 		return false;
 	}
 
@@ -631,7 +631,7 @@ bool CIrrDeviceLinux::createInputContext()
 		XDestroyIC(XInputContext);
 		XInputContext = 0;
 
-		os::Printer::log("XInputMethod has no input style we can use. Falling back to non-i18n input.", ELL_WARNING);
+		g_irrlogger->log("XInputMethod has no input style we can use. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -641,7 +641,7 @@ bool CIrrDeviceLinux::createInputContext()
 			XNClientWindow, XWindow,
 			(char *)NULL);
 	if (!XInputContext) {
-		os::Printer::log("XInputContext failed to create an input context. Falling back to non-i18n input.", ELL_WARNING);
+		g_irrlogger->log("XInputContext failed to create an input context. Falling back to non-i18n input.", ELL_WARNING);
 		setlocale(LC_CTYPE, oldLocale.c_str());
 		return false;
 	}
@@ -676,11 +676,11 @@ EKEY_CODE CIrrDeviceLinux::getKeyCode(XEvent &event)
 	if (keyCode == 0) {
 		keyCode = KEY_UNKNOWN;
 		if (!mp.X11Key) {
-			os::Printer::log("No such X11Key, event keycode", core::stringc(event.xkey.keycode).c_str(), ELL_INFORMATION);
+			g_irrlogger->log("No such X11Key, event keycode", core::stringc(event.xkey.keycode).c_str(), ELL_INFORMATION);
 		} else if (idx == -1) {
-			os::Printer::log("EKEY_CODE not found, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
+			g_irrlogger->log("EKEY_CODE not found, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
 		} else {
-			os::Printer::log("EKEY_CODE is 0, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
+			g_irrlogger->log("EKEY_CODE is 0, X11 keycode", core::stringc(mp.X11Key).c_str(), ELL_INFORMATION);
 		}
 	}
 	return keyCode;
@@ -858,7 +858,7 @@ bool CIrrDeviceLinux::run()
 					Status status;
 					int strLen = XwcLookupString(XInputContext, &event.xkey, buf, sizeof(buf) / sizeof(wchar_t) - 1, &mp.X11Key, &status);
 					if (status == XBufferOverflow) {
-						os::Printer::log("XwcLookupString needs a larger buffer", ELL_INFORMATION);
+						g_irrlogger->log("XwcLookupString needs a larger buffer", ELL_INFORMATION);
 					}
 					if (strLen > 0 && (status == XLookupChars || status == XLookupBoth)) {
 						if (strLen > 1) {
@@ -875,15 +875,15 @@ bool CIrrDeviceLinux::run()
 					} else {
 #if 0 // Most of those are fine - but useful to have the info when debugging Irrlicht itself.
 							if ( status == XLookupNone )
-								os::Printer::log("XLookupNone", ELL_INFORMATION);
+								g_irrlogger->log("XLookupNone", ELL_INFORMATION);
 							else if ( status ==  XLookupKeySym )
 								// Getting this also when user did not set setlocale(LC_ALL, ""); and using an unknown locale
 								// XSupportsLocale doesn't seem to catch that unfortunately - any other ideas to catch it are welcome.
-								os::Printer::log("XLookupKeySym", ELL_INFORMATION);
+								g_irrlogger->log("XLookupKeySym", ELL_INFORMATION);
 							else if ( status ==  XBufferOverflow )
-								os::Printer::log("XBufferOverflow", ELL_INFORMATION);
+								g_irrlogger->log("XBufferOverflow", ELL_INFORMATION);
 							else if ( strLen == 0 )
-								os::Printer::log("no string", ELL_INFORMATION);
+								g_irrlogger->log("no string", ELL_INFORMATION);
 #endif
 						irrevent.KeyInput.Char = 0;
 					}
@@ -908,7 +908,7 @@ bool CIrrDeviceLinux::run()
 
 			case ClientMessage: {
 				if (static_cast<Atom>(event.xclient.data.l[0]) == X_ATOM_WM_DELETE_WINDOW && X_ATOM_WM_DELETE_WINDOW != None) {
-					os::Printer::log("Quit message received.", ELL_INFORMATION);
+					g_irrlogger->log("Quit message received.", ELL_INFORMATION);
 					Close = true;
 				} else {
 					// we assume it's a user message
@@ -973,7 +973,7 @@ bool CIrrDeviceLinux::run()
 					// req is from obsolete client, use target as property name
 					// and X_ATOM_UTF8_STRING as type
 					// Note: this was not tested and might be incorrect
-					os::Printer::log("CIrrDeviceLinux::run: SelectionRequest from obsolete client",
+					g_irrlogger->log("CIrrDeviceLinux::run: SelectionRequest from obsolete client",
 							ELL_WARNING);
 					XChangeProperty(XDisplay,
 							req->requestor,
@@ -1141,7 +1141,7 @@ bool CIrrDeviceLinux::setWindowIcon(const video::IImage *img)
 	}
 
 	if (XDisplay == NULL) {
-		os::Printer::log("Could not find x11 display for setting its icon.", ELL_ERROR);
+		g_irrlogger->log("Could not find x11 display for setting its icon.", ELL_ERROR);
 		delete[] icon_buffer;
 		return false;
 	}
@@ -1590,7 +1590,7 @@ bool CIrrDeviceLinux::activateJoysticks(core::array<SJoystickInfo> &joystickInfo
 		snprintf_irr(logString, sizeof(logString), "Found joystick %d, %d axes, %d buttons '%s'",
 				joystick, joystickInfo[joystick].Axes,
 				joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
-		os::Printer::log(logString, ELL_INFORMATION);
+		g_irrlogger->log(logString, ELL_INFORMATION);
 	}
 
 	return true;
@@ -1720,7 +1720,7 @@ const c8 *CIrrDeviceLinux::getTextFromSelection(Atom selection, core::stringc &t
 	//~ }
 
 	if (type != X_ATOM_UTF8_STRING && type != X_ATOM_UTF8_MIME_TYPE) {
-		os::Printer::log("CIrrDeviceLinux::getTextFromSelection: did not get utf-8 string",
+		g_irrlogger->log("CIrrDeviceLinux::getTextFromSelection: did not get utf-8 string",
 				ELL_WARNING);
 		return text_buffer.c_str();
 	}
@@ -1782,7 +1782,7 @@ void CIrrDeviceLinux::copyToClipboard(const c8 *text) const
 	// Which btw. also means that on X you lose clipboard content when closing applications.
 	Clipboard = text;
 	if (!becomeSelectionOwner(X_ATOM_CLIPBOARD)) {
-		os::Printer::log("CIrrDeviceLinux::copyToClipboard: failed to set owner", ELL_WARNING);
+		g_irrlogger->log("CIrrDeviceLinux::copyToClipboard: failed to set owner", ELL_WARNING);
 	}
 #endif
 }
@@ -1793,7 +1793,7 @@ void CIrrDeviceLinux::copyToPrimarySelection(const c8 *text) const
 #if defined(_IRR_COMPILE_WITH_X11_)
 	PrimarySelection = text;
 	if (!becomeSelectionOwner(XA_PRIMARY)) {
-		os::Printer::log("CIrrDeviceLinux::copyToPrimarySelection: failed to set owner", ELL_WARNING);
+		g_irrlogger->log("CIrrDeviceLinux::copyToPrimarySelection: failed to set owner", ELL_WARNING);
 	}
 #endif
 }
@@ -1803,7 +1803,7 @@ void CIrrDeviceLinux::copyToPrimarySelection(const c8 *text) const
 Bool PredicateIsEventType(Display *display, XEvent *event, XPointer arg)
 {
 	if (event && event->type == *(int *)arg) {
-		//		os::Printer::log("remove event", core::stringc((int)arg).c_str(), ELL_INFORMATION);
+		//		g_irrlogger->log("remove event", core::stringc((int)arg).c_str(), ELL_INFORMATION);
 		return True;
 	}
 	return False;
@@ -1878,7 +1878,7 @@ void CIrrDeviceLinux::initXInput2()
 	int ev = 0;
 	int err = 0;
 	if (!XQueryExtension(XDisplay, "XInputExtension", &XI_EXTENSIONS_OPCODE, &ev, &err)) {
-		os::Printer::log("X Input extension not available.", ELL_WARNING);
+		g_irrlogger->log("X Input extension not available.", ELL_WARNING);
 		return;
 	}
 
@@ -1886,7 +1886,7 @@ void CIrrDeviceLinux::initXInput2()
 	int minor = 3;
 	int rc = XIQueryVersion(XDisplay, &major, &minor);
 	if (rc != Success) {
-		os::Printer::log("No XI2 support.", ELL_WARNING);
+		g_irrlogger->log("No XI2 support.", ELL_WARNING);
 		return;
 	}
 
@@ -2059,7 +2059,7 @@ CIrrDeviceLinux::CCursorControl::CCursorControl(CIrrDeviceLinux *dev, bool null)
 		// but behaves better in other cases so we can't just disable it outright.
 		// [1] https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
 		if (XScreenCount(Device->XDisplay) > 1) {
-			os::Printer::log("Detected classic multi-head setup, not using XIWarpPointer");
+			g_irrlogger->log("Detected classic multi-head setup, not using XIWarpPointer");
 		} else {
 			XIGetClientPointer(Device->XDisplay, Device->XWindow, &DeviceId);
 		}

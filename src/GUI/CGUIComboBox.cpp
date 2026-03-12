@@ -11,7 +11,7 @@
 #include "IGUIFont.h"
 #include "IGUIButton.h"
 #include "CGUIListBox.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 
 namespace gui

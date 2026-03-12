@@ -7,7 +7,7 @@
 #include "CColorConverter.h"
 #include "IWriteFile.h"
 #include "coreutil.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #include <cstdio> // IWYU pragma: keep (required for jpeglib.h)
 #include <memory>
@@ -101,7 +101,7 @@ static bool writeJPEGFile(io::IWriteFile *file, IImage *image, u32 quality)
 		format = CColorConverter::convert_R5G6B5toR8G8B8;
 		break;
 	default:
-		os::Printer::log("writeJPEGFile does not support image format", ColorFormatNames[image->getColorFormat()], ELL_WARNING);
+		g_irrlogger->log("writeJPEGFile does not support image format", ColorFormatNames[image->getColorFormat()], ELL_WARNING);
 		break;
 	}
 

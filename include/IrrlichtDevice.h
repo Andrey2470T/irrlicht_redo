@@ -19,8 +19,12 @@
 #include <variant>
 
 
-class ILogger;
 class IEventReceiver;
+
+namespace os
+{
+class Logger;
+}
 
 namespace io
 {
@@ -120,7 +124,7 @@ public:
 
 	//! Provides access to the message logger.
 	/** \return Pointer to the logger. */
-	virtual ILogger *getLogger() = 0;
+	virtual os::Logger *getLogger() = 0;
 
 	//! Get context manager
 	virtual video::IContextManager *getContextManager() = 0;

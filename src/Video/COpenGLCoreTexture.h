@@ -10,7 +10,7 @@
 #include "SMaterialLayer.h"
 #include "ITexture.h"
 #include "EDriverFeatures.h"
-#include "Device/os.h"
+#include "Logger.h"
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
 
@@ -69,7 +69,7 @@ public:
 			HasMipMaps ? " +Mip" : "",
 			InternalFormat, PixelFormat, PixelType, Converter ? " (c)" : ""
 		);
-		os::Printer::log(lbuf, ELL_DEBUG);
+		g_irrlogger->log(lbuf, ELL_DEBUG);
 
 		const auto *tmpImages = &srcImages;
 
@@ -91,7 +91,7 @@ public:
 		GL.GenTextures(1, &TextureName);
 		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
-			os::Printer::log("COpenGLCoreTexture: texture not created", ELL_ERROR);
+			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
 		}
 
@@ -161,7 +161,7 @@ public:
 		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
 
 		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
-			os::Printer::log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			return;
 		}
 
@@ -181,12 +181,12 @@ public:
 			(int)Type, Size.Width, Size.Height, (int)ColorFormat,
 			InternalFormat, PixelFormat, PixelType, Converter ? " (c)" : ""
 		);
-		os::Printer::log(lbuf, ELL_DEBUG);
+		g_irrlogger->log(lbuf, ELL_DEBUG);
 
 		GL.GenTextures(1, &TextureName);
 		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
-			os::Printer::log("COpenGLCoreTexture: texture not created", ELL_ERROR);
+			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
 		}
 
@@ -275,7 +275,7 @@ public:
 				// or some trickery with glTextureView() [4.3].
 				// Also neither of those will work on GLES.
 
-				os::Printer::log("lock: read or read/write unimplemented for ETT_2D_ARRAY", ELL_WARNING);
+				g_irrlogger->log("lock: read or read/write unimplemented for ETT_2D_ARRAY", ELL_WARNING);
 				passed = false;
 
 				} else if (use_gl_impl) {
@@ -459,7 +459,7 @@ protected:
 		ColorFormat = getBestColorFormat(OriginalColorFormat);
 
 		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
-			os::Printer::log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			InternalFormat = 0;
 			return;
 		}
@@ -472,7 +472,7 @@ protected:
 		Size = OriginalSize;
 
 		if (Size.Width == 0 || Size.Height == 0) {
-			os::Printer::log("Invalid size of image for texture.", ELL_ERROR);
+			g_irrlogger->log("Invalid size of image for texture.", ELL_ERROR);
 			return;
 		}
 
@@ -664,7 +664,7 @@ protected:
 			return GL_TEXTURE_2D_ARRAY;
 		}
 
-		os::Printer::log("COpenGLCoreTexture::TextureTypeIrrToGL unknown texture type", ELL_WARNING);
+		g_irrlogger->log("COpenGLCoreTexture::TextureTypeIrrToGL unknown texture type", ELL_WARNING);
 		return GL_TEXTURE_2D;
 	}
 

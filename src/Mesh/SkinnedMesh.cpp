@@ -7,7 +7,7 @@
 #include "Scene/CBoneSceneNode.h"
 #include "IAnimatedMeshSceneNode.h"
 #include "SSkinMeshBuffer.h"
-#include "Device/os.h"
+#include "Logger.h"
 #include <vector>
 #include <cassert>
 
@@ -456,10 +456,10 @@ void SkinnedMesh::checkForAnimation()
 
 				// check for invalid ids
 				if (buffer_id >= LocalBuffers.size()) {
-					os::Printer::log("Skinned Mesh: Weight buffer id too large", ELL_WARNING);
+					g_irrlogger->log("Skinned Mesh: Weight buffer id too large", ELL_WARNING);
 					weight.buffer_id = weight.vertex_id = 0;
 				} else if (vertex_id >= LocalBuffers[buffer_id]->getVertexCount()) {
-					os::Printer::log("Skinned Mesh: Weight vertex id too large", ELL_WARNING);
+					g_irrlogger->log("Skinned Mesh: Weight vertex id too large", ELL_WARNING);
 					weight.buffer_id = weight.vertex_id = 0;
 				}
 			}
@@ -495,7 +495,7 @@ void SkinnedMesh::checkForAnimation()
 //! called by loader after populating with mesh and bone data
 SkinnedMesh *SkinnedMeshBuilder::finalize()
 {
-	os::Printer::log("Skinned Mesh - finalize", ELL_DEBUG);
+	g_irrlogger->log("Skinned Mesh - finalize", ELL_DEBUG);
 
 	// Make sure we recalc the next frame
 	LastAnimatedFrame = -1;

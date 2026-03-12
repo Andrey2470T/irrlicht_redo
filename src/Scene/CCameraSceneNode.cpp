@@ -5,7 +5,7 @@
 #include "CCameraSceneNode.h"
 #include "ISceneManager.h"
 #include "IVideoDriver.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 
 namespace scene

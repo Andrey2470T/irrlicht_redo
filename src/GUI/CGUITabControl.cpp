@@ -10,7 +10,7 @@
 #include "IGUIFont.h"
 #include "IVideoDriver.h"
 #include "rect.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 
 namespace gui

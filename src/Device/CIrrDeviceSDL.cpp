@@ -11,7 +11,7 @@
 #include "IImageLoader.h"
 #include "IFileSystem.h"
 #include "IVideoDriver.h"
-#include "os.h"
+#include "Logger.h"
 #include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
@@ -351,7 +351,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 		flags |= SDL_INIT_JOYSTICK;
 #endif
 		if (SDL_Init(flags) < 0) {
-			os::Printer::log("Unable to initialize SDL", SDL_GetError(), ELL_ERROR);
+			g_irrlogger->log("Unable to initialize SDL", SDL_GetError(), ELL_ERROR);
 			Close = true;
 		}
 	}
@@ -387,7 +387,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 
 	Operator = new COSOperator(sdlver);
 	if (SDLDeviceInstances == 1) {
-		os::Printer::log(sdlver.c_str(), ELL_INFORMATION);
+		g_irrlogger->log(sdlver.c_str(), ELL_INFORMATION);
 	}
 
 	// create cursor control
@@ -420,7 +420,7 @@ CIrrDeviceSDL::~CIrrDeviceSDL()
 
 	if (--SDLDeviceInstances == 0) {
 		SDL_Quit();
-		os::Printer::log("Quit SDL", ELL_INFORMATION);
+		g_irrlogger->log("Quit SDL", ELL_INFORMATION);
 	}
 }
 
@@ -448,7 +448,7 @@ void CIrrDeviceSDL::logAttributes()
 	if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value) == 0)
 		sdl_attr += core::stringc(" aa-samples:") + core::stringc(value);
 
-	os::Printer::log(sdl_attr.c_str());
+	g_irrlogger->log(sdl_attr.c_str());
 }
 
 bool CIrrDeviceSDL::createWindow()
@@ -462,7 +462,7 @@ bool CIrrDeviceSDL::createWindow()
 	if (CreationParams.DriverDebug) {
 		CreationParams.DriverDebug = false;
 		if (createWindowWithContext()) {
-			os::Printer::log("DriverDebug reduced due to lack of support!");
+			g_irrlogger->log("DriverDebug reduced due to lack of support!");
 			// Turn it back on because the GL driver can maybe still do something useful.
 			CreationParams.DriverDebug = true;
 			return true;
@@ -472,7 +472,7 @@ bool CIrrDeviceSDL::createWindow()
 	while (CreationParams.AntiAlias > 0) {
 		CreationParams.AntiAlias--;
 		if (createWindowWithContext()) {
-			os::Printer::log("AntiAlias reduced/disabled due to lack of support!");
+			g_irrlogger->log("AntiAlias reduced/disabled due to lack of support!");
 			return true;
 		}
 	}
@@ -480,7 +480,7 @@ bool CIrrDeviceSDL::createWindow()
 	if (CreationParams.WithAlphaChannel) {
 		CreationParams.WithAlphaChannel = false;
 		if (createWindowWithContext()) {
-			os::Printer::log("WithAlphaChannel disabled due to lack of support!");
+			g_irrlogger->log("WithAlphaChannel disabled due to lack of support!");
 			return true;
 		}
 	}
@@ -488,7 +488,7 @@ bool CIrrDeviceSDL::createWindow()
 	if (CreationParams.Stencilbuffer) {
 		CreationParams.Stencilbuffer = false;
 		if (createWindowWithContext()) {
-			os::Printer::log("Stencilbuffer disabled due to lack of support!");
+			g_irrlogger->log("Stencilbuffer disabled due to lack of support!");
 			return true;
 		}
 	}
@@ -496,7 +496,7 @@ bool CIrrDeviceSDL::createWindow()
 	while (CreationParams.ZBufferBits > 16) {
 		CreationParams.ZBufferBits -= 8;
 		if (createWindowWithContext()) {
-			os::Printer::log("ZBufferBits reduced due to lack of support!");
+			g_irrlogger->log("ZBufferBits reduced due to lack of support!");
 			return true;
 		}
 	}
@@ -504,7 +504,7 @@ bool CIrrDeviceSDL::createWindow()
 	while (CreationParams.Bits > 16) {
 		CreationParams.Bits -= 8;
 		if (createWindowWithContext()) {
-			os::Printer::log("Bits reduced due to lack of support!");
+			g_irrlogger->log("Bits reduced due to lack of support!");
 			return true;
 		}
 	}
@@ -512,7 +512,7 @@ bool CIrrDeviceSDL::createWindow()
 	if (CreationParams.Stereobuffer) {
 		CreationParams.Stereobuffer = false;
 		if (createWindowWithContext()) {
-			os::Printer::log("Stereobuffer disabled due to lack of support!");
+			g_irrlogger->log("Stereobuffer disabled due to lack of support!");
 			return true;
 		}
 	}
@@ -521,12 +521,12 @@ bool CIrrDeviceSDL::createWindow()
 		// Try single buffer
 		CreationParams.Doublebuffer = false;
 		if (createWindowWithContext()) {
-			os::Printer::log("Doublebuffer disabled due to lack of support!");
+			g_irrlogger->log("Doublebuffer disabled due to lack of support!");
 			return true;
 		}
 	}
 
-	os::Printer::log("Could not create window and context!", ELL_ERROR);
+	g_irrlogger->log("Could not create window and context!", ELL_ERROR);
 	return false;
 }
 
@@ -632,13 +632,13 @@ bool CIrrDeviceSDL::createWindowWithContext()
 
 	Window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Width, Height, SDL_Flags);
 	if (!Window) {
-		os::Printer::log("Could not create window", SDL_GetError(), ELL_WARNING);
+		g_irrlogger->log("Could not create window", SDL_GetError(), ELL_WARNING);
 		return false;
 	}
 
 	Context = SDL_GL_CreateContext(Window);
 	if (!Context) {
-		os::Printer::log("Could not create context", SDL_GetError(), ELL_WARNING);
+		g_irrlogger->log("Could not create context", SDL_GetError(), ELL_WARNING);
 		SDL_DestroyWindow(Window);
 		Window = nullptr;
 		return false;
@@ -685,7 +685,7 @@ void CIrrDeviceSDL::createDriver()
 	default:;
 	}
 	if (!VideoDriver)
-		os::Printer::log("Could not create video driver", ELL_ERROR);
+		g_irrlogger->log("Could not create video driver", ELL_ERROR);
 }
 
 static int wrap_PollEvent(SDL_Event *ev)
@@ -696,7 +696,7 @@ static int wrap_PollEvent(SDL_Event *ev)
 	if (d >= 5) {
 		auto msg = std::string("SDL_PollEvent took too long: ") + std::to_string(d) + "ms";
 		// 50ms delay => more than three missed frames (at 60fps)
-		os::Printer::log(msg.c_str(), d >= 50 ? ELL_WARNING : ELL_INFORMATION);
+		g_irrlogger->log(msg.c_str(), d >= 50 ? ELL_WARNING : ELL_INFORMATION);
 	}
 	return ret;
 }
@@ -710,7 +710,7 @@ bool CIrrDeviceSDL::run()
 	SDL_Event SDL_event;
 
 	while (!Close && wrap_PollEvent(&SDL_event)) {
-		// os::Printer::log("event: ", core::stringc((int)SDL_event.type).c_str(),   ELL_INFORMATION);	// just for debugging
+		// g_irrlogger->log("event: ", core::stringc((int)SDL_event.type).c_str(),   ELL_INFORMATION);	// just for debugging
 		irrevent = {};
 
 		switch (SDL_event.type) {
@@ -899,7 +899,7 @@ bool CIrrDeviceSDL::run()
 			auto key = entry == KeyMap.end() ? KEY_UNKNOWN : entry->second;
 
 			if (!Keycode::isValid(key))
-				os::Printer::log("keycode not mapped", core::stringc(keysym), ELL_DEBUG);
+				g_irrlogger->log("keycode not mapped", core::stringc(keysym), ELL_DEBUG);
 
 			// Make sure to only input special characters if something is in focus, as SDL_TEXTINPUT handles normal unicode already
 			if (SDL_IsTextInputActive() && !keyIsKnownSpecial(key) && (SDL_event.key.keysym.mod & KMOD_CTRL) == 0)
@@ -1006,11 +1006,11 @@ bool CIrrDeviceSDL::run()
 			break;
 
 		case SDL_RENDER_TARGETS_RESET:
-			os::Printer::log("Received SDL_RENDER_TARGETS_RESET. Rendering is probably broken.", ELL_ERROR);
+			g_irrlogger->log("Received SDL_RENDER_TARGETS_RESET. Rendering is probably broken.", ELL_ERROR);
 			break;
 
 		case SDL_RENDER_DEVICE_RESET:
-			os::Printer::log("Received SDL_RENDER_DEVICE_RESET. Rendering is probably broken.", ELL_ERROR);
+			g_irrlogger->log("Received SDL_RENDER_DEVICE_RESET. Rendering is probably broken.", ELL_ERROR);
 			break;
 
 		default:
@@ -1128,7 +1128,7 @@ bool CIrrDeviceSDL::activateJoysticks(core::array<SJoystickInfo> &joystickInfo)
 		snprintf_irr(logString, sizeof(logString), "Found joystick %d, %d axes, %d buttons '%s'",
 				joystick, joystickInfo[joystick].Axes,
 				joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
-		os::Printer::log(logString, ELL_INFORMATION);
+		g_irrlogger->log(logString, ELL_INFORMATION);
 	}
 
 	return true;
@@ -1205,7 +1205,7 @@ bool CIrrDeviceSDL::setWindowIcon(const video::IImage *img)
 			0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 
 	if (!surface) {
-		os::Printer::log("Failed to create SDL suface", ELL_ERROR);
+		g_irrlogger->log("Failed to create SDL suface", ELL_ERROR);
 		return false;
 	}
 
@@ -1214,7 +1214,7 @@ bool CIrrDeviceSDL::setWindowIcon(const video::IImage *img)
 	SDL_UnlockSurface(surface);
 
 	if (!succ) {
-		os::Printer::log("Could not copy icon image. Is the format not ECF_A8R8G8B8?", ELL_ERROR);
+		g_irrlogger->log("Could not copy icon image. Is the format not ECF_A8R8G8B8?", ELL_ERROR);
 		SDL_FreeSurface(surface);
 		return false;
 	}
@@ -1236,7 +1236,7 @@ void CIrrDeviceSDL::closeDevice()
 void CIrrDeviceSDL::setResizable(bool resize)
 {
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
-	os::Printer::log("Resizable not available on the web.", ELL_WARNING);
+	g_irrlogger->log("Resizable not available on the web.", ELL_WARNING);
 	return;
 #else  // !_IRR_EMSCRIPTEN_PLATFORM_
 	if (resize != Resizable) {
@@ -1309,7 +1309,7 @@ bool CIrrDeviceSDL::setFullscreen(bool fullscreen)
 	// relevant to us.
 	bool success = SDL_SetWindowFullscreen(Window, getFullscreenFlag(fullscreen)) == 0;
 	if (!success)
-		os::Printer::log("SDL_SetWindowFullscreen failed", SDL_GetError(), ELL_ERROR);
+		g_irrlogger->log("SDL_SetWindowFullscreen failed", SDL_GetError(), ELL_ERROR);
 	return success;
 }
 

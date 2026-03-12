@@ -107,9 +107,9 @@ class COpenGLCoreCacheHandler
 						} else {
 							texture = 0;
 
-							os::Printer::log("Fatal Error: Tried to set a texture not owned by this driver.", ELL_ERROR);
-							os::Printer::log("Texture type", core::stringc((int)type), ELL_ERROR);
-							os::Printer::log("Driver (or cache handler) type", core::stringc((int)DriverType), ELL_ERROR);
+							g_irrlogger->log("Fatal Error: Tried to set a texture not owned by this driver.", ELL_ERROR);
+							g_irrlogger->log("Texture type", core::stringc((int)type), ELL_ERROR);
+							g_irrlogger->log("Driver (or cache handler) type", core::stringc((int)DriverType), ELL_ERROR);
 						}
 					}
 

@@ -8,7 +8,7 @@
 #include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
 #include "IVideoDriver.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #include "Driver.h"
 
@@ -193,7 +193,7 @@ bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shade
 		GL.GetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
 
 		if (status != GL_TRUE) {
-			os::Printer::log("GLSL shader failed to compile", ELL_ERROR);
+			g_irrlogger->log("GLSL shader failed to compile", ELL_ERROR);
 
 			GLint maxLength = 0;
 			GLint length;
@@ -204,7 +204,7 @@ bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shade
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
 				GL.GetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
-				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -227,7 +227,7 @@ bool COpenGL3MaterialRenderer::linkProgram()
 		GL.GetProgramiv(Program, GL_LINK_STATUS, &status);
 
 		if (!status) {
-			os::Printer::log("GLSL shader program failed to link", ELL_ERROR);
+			g_irrlogger->log("GLSL shader program failed to link", ELL_ERROR);
 
 			GLint maxLength = 0;
 			GLsizei length;
@@ -237,7 +237,7 @@ bool COpenGL3MaterialRenderer::linkProgram()
 			if (maxLength) {
 				GLchar *infoLog = new GLchar[maxLength];
 				GL.GetProgramInfoLog(Program, maxLength, &length, infoLog);
-				os::Printer::log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
+				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
 				delete[] infoLog;
 			}
 
@@ -256,7 +256,7 @@ bool COpenGL3MaterialRenderer::linkProgram()
 		GL.GetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
 
 		if (maxlen == 0) {
-			os::Printer::log("GLSL: failed to retrieve uniform information", ELL_ERROR);
+			g_irrlogger->log("GLSL: failed to retrieve uniform information", ELL_ERROR);
 			return false;
 		}
 
@@ -411,7 +411,7 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints
 
 bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
-	os::Printer::log("Unsigned int support is unimplemented", ELL_WARNING);
+	g_irrlogger->log("Unsigned int support is unimplemented", ELL_WARNING);
 	return false;
 }
 

@@ -5,7 +5,7 @@
 #include "Renderer2D.h"
 
 #include "IGPUProgrammingServices.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #include "Driver.h"
 

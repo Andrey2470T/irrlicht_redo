@@ -9,9 +9,8 @@
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
-#include "os.h"
+#include "Logger.h"
 #include "Timer.h"
-#include "CLogger.h"
 #include "irrString.h"
 
 
@@ -20,7 +19,7 @@ namespace video
 #ifndef _IRR_COMPILE_WITH_OPENGL_
 IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
 {
-	os::Printer::log("No OpenGL support compiled in.", ELL_ERROR);
+	g_irrlogger->log("No OpenGL support compiled in.", ELL_ERROR);
 	return nullptr;
 }
 #endif
@@ -28,7 +27,7 @@ IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::
 #ifndef ENABLE_OPENGL3
 IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
 {
-	os::Printer::log("No OpenGL 3 support compiled in.", ELL_ERROR);
+	g_irrlogger->log("No OpenGL 3 support compiled in.", ELL_ERROR);
 	return nullptr;
 }
 #endif
@@ -36,7 +35,7 @@ IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io:
 #ifndef _IRR_COMPILE_WITH_OGLES2_
 IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
 {
-	os::Printer::log("No OpenGL ES 2 support compiled in.", ELL_ERROR);
+	g_irrlogger->log("No OpenGL ES 2 support compiled in.", ELL_ERROR);
 	return nullptr;
 }
 #endif
@@ -44,7 +43,7 @@ IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::
 #ifndef _IRR_COMPILE_WITH_WEBGL1_
 IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
 {
-	os::Printer::log("No WebGL 1 support compiled in.", ELL_ERROR);
+	g_irrlogger->log("No WebGL 1 support compiled in.", ELL_ERROR);
 	return nullptr;
 }
 #endif
@@ -60,17 +59,17 @@ CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		CreationParams(params), Close(false)
 {
 	os::Timer::init();
-	if (os::Printer::Logger) {
-		os::Printer::Logger->grab();
-		Logger = (CLogger *)os::Printer::Logger;
+	if (g_irrlogger) {
+		g_irrlogger->grab();
+		Logger = g_irrlogger;
 		Logger->setReceiver(UserReceiver);
 	} else {
-		Logger = new CLogger(UserReceiver);
-		os::Printer::Logger = Logger;
+		Logger = new os::Logger(UserReceiver);
+		g_irrlogger = Logger;
 	}
 	Logger->setLogLevel(CreationParams.LoggingLevel);
 
-	os::Printer::Logger = Logger;
+	g_irrlogger = Logger;
 
 	FileSystem = io::createFileSystem();
 }
@@ -104,7 +103,7 @@ CIrrDeviceStub::~CIrrDeviceStub()
 	CursorControl = 0;
 
 	if (Logger->drop())
-		os::Printer::Logger = 0;
+		g_irrlogger = nullptr;
 }
 
 void CIrrDeviceStub::createGUIAndScene()
@@ -218,7 +217,7 @@ IEventReceiver *CIrrDeviceStub::getEventReceiver()
 }
 
 //! \return Returns a pointer to the logger.
-ILogger *CIrrDeviceStub::getLogger()
+os::Logger *CIrrDeviceStub::getLogger()
 {
 	return Logger;
 }

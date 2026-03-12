@@ -15,7 +15,7 @@
 #include "IReadFile.h"
 #include "IWriteFile.h"
 
-#include "Device/os.h"
+#include "Logger.h"
 #include "Timer.h"
 
 #include "SkinnedMesh.h"
@@ -142,13 +142,13 @@ IAnimatedMesh *CSceneManager::getUncachedMesh(io::IReadFile *file, const io::pat
 			if (msh) {
 				MeshCache->addMesh(cachename, msh);
 				msh->drop();
-				os::Printer::log("Loaded mesh", filename, ELL_DEBUG);
+				g_irrlogger->log("Loaded mesh", filename, ELL_DEBUG);
 				return msh;
 			}
 		}
 	}
 
-	os::Printer::log(unsupported
+	g_irrlogger->log(unsupported
 			? "Could not load mesh, file format seems to be unsupported"
 			: "Attempt to load mesh failed",
 			filename, ELL_ERROR);

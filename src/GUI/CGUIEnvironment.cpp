@@ -26,7 +26,7 @@
 #ifdef IRR_ENABLE_BUILTIN_FONT
 #include "BuiltInFont.h"
 #endif
-#include "Device/os.h"
+#include "Logger.h"
 #include "Timer.h"
 
 
@@ -134,7 +134,7 @@ void CGUIEnvironment::loadBuiltInFont()
 
 	CGUIFont *font = new CGUIFont(this, DefaultFontName);
 	if (!font->load(file)) {
-		os::Printer::log("Error: Could not load built-in Font.", ELL_ERROR);
+		g_irrlogger->log("Error: Could not load built-in Font.", ELL_ERROR);
 		font->drop();
 		file->drop();
 		return;
@@ -791,7 +791,7 @@ IGUIFont *CGUIEnvironment::getFont(const io::path &filename)
 	// does the file exist?
 
 	if (!FileSystem->existFile(filename)) {
-		os::Printer::log("Could not load font because the file does not exist", f.NamedPath.getPath(), ELL_ERROR);
+		g_irrlogger->log("Could not load font because the file does not exist", f.NamedPath.getPath(), ELL_ERROR);
 		return 0;
 	}
 
@@ -884,7 +884,7 @@ IGUISpriteBank *CGUIEnvironment::getSpriteBank(const io::path &filename)
 	// we don't have this sprite bank, we should load it
 	if (!FileSystem->existFile(b.NamedPath.getPath())) {
 		if (filename != DefaultFontName) {
-			os::Printer::log("Could not load sprite bank because the file does not exist", b.NamedPath.getPath(), ELL_DEBUG);
+			g_irrlogger->log("Could not load sprite bank because the file does not exist", b.NamedPath.getPath(), ELL_DEBUG);
 		}
 		return 0;
 	}

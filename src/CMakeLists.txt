@@ -409,10 +409,9 @@ add_library(IRROTHEROBJ OBJECT
 	Device/CIrrDeviceLinux.cpp
 	Device/CIrrDeviceStub.cpp
 	Device/CIrrDeviceWin32.cpp
-	Device/CLogger.cpp
 	Device/COSOperator.cpp
 	Device/Irrlicht.cpp
-	Device/os.cpp
+	Device/Logger.cpp
 	Device/Timer.cpp
 )
 

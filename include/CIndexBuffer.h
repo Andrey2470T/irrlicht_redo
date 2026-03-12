@@ -63,7 +63,7 @@ public:
 		if (MappingHint == EHM_STATIC && HWBuffer) {
 			char buf[100];
 			snprintf_irr(buf, sizeof(buf), "CIndexBuffer @ %p modified, but it has a static hint", this);
-			os::Printer::log(buf, ELL_WARNING);
+			g_irrlogger->log(buf, ELL_WARNING);
 		}
 #endif
 	}

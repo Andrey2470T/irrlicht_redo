@@ -38,7 +38,7 @@ public:
 			TEST_GL_ERROR(Driver);
 			Driver->irrGlGenFramebuffers(1, &BufferID);
 			if (!BufferID) {
-				os::Printer::log("COpenGLCoreRenderTarget: framebuffer not created", ELL_ERROR);
+				g_irrlogger->log("COpenGLCoreRenderTarget: framebuffer not created", ELL_ERROR);
 				return;
 			}
 		}
@@ -78,7 +78,7 @@ public:
 				message += static_cast<u32>(ColorAttachment);
 				message += " textures per render target.";
 
-				os::Printer::log(message.c_str(), ELL_WARNING);
+				g_irrlogger->log(message.c_str(), ELL_WARNING);
 			}
 
 			Textures.set_used(core::min_(numTextures, static_cast<u32>(ColorAttachment)));
@@ -132,10 +132,10 @@ public:
 						DepthStencil = depthStencil;
 						DepthStencil->grab();
 					} else {
-						os::Printer::log("Ignoring depth/stencil texture without depth color format.", ELL_WARNING);
+						g_irrlogger->log("Ignoring depth/stencil texture without depth color format.", ELL_WARNING);
 					}
 				} else {
-					os::Printer::log("This driver doesn't support depth/stencil to cubemaps.", ELL_WARNING);
+					g_irrlogger->log("This driver doesn't support depth/stencil to cubemaps.", ELL_WARNING);
 				}
 			}
 
@@ -194,7 +194,7 @@ public:
 						AssignedTextures[i] = GL_NONE;
 						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], GL_TEXTURE_2D, 0, 0);
 
-						os::Printer::log("Error: Could not set render target.", ELL_ERROR);
+						g_irrlogger->log("Error: Could not set render target.", ELL_ERROR);
 					}
 				}
 
@@ -327,28 +327,28 @@ protected:
 		case GL_FRAMEBUFFER_COMPLETE:
 			return true;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			os::Printer::log("FBO has invalid read buffer", ELL_ERROR);
+			g_irrlogger->log("FBO has invalid read buffer", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			os::Printer::log("FBO has invalid draw buffer", ELL_ERROR);
+			g_irrlogger->log("FBO has invalid draw buffer", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			os::Printer::log("FBO has one or several incomplete image attachments", ELL_ERROR);
+			g_irrlogger->log("FBO has one or several incomplete image attachments", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-			os::Printer::log("FBO has one or several image attachments with different internal formats", ELL_ERROR);
+			g_irrlogger->log("FBO has one or several image attachments with different internal formats", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-			os::Printer::log("FBO has one or several image attachments with different dimensions", ELL_ERROR);
+			g_irrlogger->log("FBO has one or several image attachments with different dimensions", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			os::Printer::log("FBO missing an image attachment", ELL_ERROR);
+			g_irrlogger->log("FBO missing an image attachment", ELL_ERROR);
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			os::Printer::log("FBO format unsupported", ELL_ERROR);
+			g_irrlogger->log("FBO format unsupported", ELL_ERROR);
 			break;
 		default:
-			os::Printer::log("FBO error", ELL_ERROR);
+			g_irrlogger->log("FBO error", ELL_ERROR);
 			break;
 		}
 

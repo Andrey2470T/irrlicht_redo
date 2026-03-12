@@ -7,7 +7,7 @@
 #include "EDriverTypes.h"
 #include "EDeviceTypes.h"
 #include "dimension2d.h"
-#include "ILogger.h"
+#include "Logger.h"
 #include "position2d.h"
 #include "path.h"
 

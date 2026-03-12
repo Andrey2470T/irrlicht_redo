@@ -34,7 +34,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 
 		PFNGLXCHOOSEFBCONFIGPROC glxChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)glXGetProcAddress(reinterpret_cast<const GLubyte *>("glXChooseFBConfig"));
 		if (major == 1 && minor > 2 && glxChooseFBConfig) {
-			os::Printer::log("GLX >= 1.3", ELL_DEBUG);
+			g_irrlogger->log("GLX >= 1.3", ELL_DEBUG);
 			// attribute array for the draw buffer
 			int visualAttrBuffer[] = {
 					GLX_RENDER_TYPE,
@@ -93,7 +93,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 						visualAttrBuffer[19] = 0;
 						configList = glxChooseFBConfig(display, screennr, visualAttrBuffer, &nitems);
 						if (configList) {
-							os::Printer::log("No FSAA available.", ELL_WARNING);
+							g_irrlogger->log("No FSAA available.", ELL_WARNING);
 							Params.AntiAlias = 0;
 						} else {
 							// reenable multisampling
@@ -109,7 +109,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 			// only have depth buffer combined with stencil buffer
 			if (!configList) {
 				if (Params.Stencilbuffer)
-					os::Printer::log("No stencilbuffer available, disabling stencil shadows.", ELL_WARNING);
+					g_irrlogger->log("No stencilbuffer available, disabling stencil shadows.", ELL_WARNING);
 				Params.Stencilbuffer = !Params.Stencilbuffer;
 				visualAttrBuffer[15] = Params.Stencilbuffer ? 1 : 0;
 
@@ -124,7 +124,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 						visualAttrBuffer[19] = 0;
 						configList = glxChooseFBConfig(display, screennr, visualAttrBuffer, &nitems);
 						if (configList) {
-							os::Printer::log("No FSAA available.", ELL_WARNING);
+							g_irrlogger->log("No FSAA available.", ELL_WARNING);
 							Params.AntiAlias = 0;
 						} else {
 							// reenable multisampling
@@ -136,7 +136,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 			}
 			// Next try without double buffer
 			if (!configList && Params.Doublebuffer) {
-				os::Printer::log("No doublebuffering available.", ELL_WARNING);
+				g_irrlogger->log("No doublebuffering available.", ELL_WARNING);
 				Params.Doublebuffer = false;
 				visualAttrBuffer[13] = GLX_DONT_CARE;
 				Params.Stencilbuffer = false;
@@ -152,7 +152,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 						visualAttrBuffer[19] = 0;
 						configList = glxChooseFBConfig(display, screennr, visualAttrBuffer, &nitems);
 						if (configList) {
-							os::Printer::log("No FSAA available.", ELL_WARNING);
+							g_irrlogger->log("No FSAA available.", ELL_WARNING);
 							Params.AntiAlias = 0;
 						} else {
 							// reenable multisampling
@@ -193,13 +193,13 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 			VisualInfo = glXChooseVisual(display, screennr, visualAttrBuffer);
 			if (!VisualInfo) {
 				if (Params.Stencilbuffer)
-					os::Printer::log("No stencilbuffer available, disabling.", ELL_WARNING);
+					g_irrlogger->log("No stencilbuffer available, disabling.", ELL_WARNING);
 				Params.Stencilbuffer = !Params.Stencilbuffer;
 				visualAttrBuffer[13] = Params.Stencilbuffer ? 1 : 0;
 
 				VisualInfo = glXChooseVisual(display, screennr, visualAttrBuffer);
 				if (!VisualInfo && Params.Doublebuffer) {
-					os::Printer::log("No doublebuffering available.", ELL_WARNING);
+					g_irrlogger->log("No doublebuffering available.", ELL_WARNING);
 					Params.Doublebuffer = false;
 					visualAttrBuffer[14] = GLX_USE_GL;
 					VisualInfo = glXChooseVisual(display, screennr, visualAttrBuffer);
@@ -207,7 +207,7 @@ CGLXManager::CGLXManager(const SIrrlichtCreationParameters &params, const SExpos
 			}
 		}
 	} else
-		os::Printer::log("No GLX support available. OpenGL driver will not work.", ELL_WARNING);
+		g_irrlogger->log("No GLX support available. OpenGL driver will not work.", ELL_WARNING);
 }
 
 CGLXManager::~CGLXManager()
@@ -241,7 +241,7 @@ bool CGLXManager::generateSurface()
 	if (glxFBConfig) {
 		GlxWin = glXCreateWindow((Display *)CurrentContext.OpenGLLinux.X11Display, (GLXFBConfig)glxFBConfig, CurrentContext.OpenGLLinux.X11Window, NULL);
 		if (!GlxWin) {
-			os::Printer::log("Could not create GLX window.", ELL_WARNING);
+			g_irrlogger->log("Could not create GLX window.", ELL_WARNING);
 			return false;
 		}
 
@@ -263,7 +263,7 @@ static int IrrIgnoreError(Display *display, XErrorEvent *event)
 {
 	char msg[256];
 	XGetErrorText(display, event->error_code, msg, 256);
-	os::Printer::log("Ignoring an X error", msg, ELL_DEBUG);
+	g_irrlogger->log("Ignoring an X error", msg, ELL_DEBUG);
 	return 0;
 }
 #endif
@@ -279,7 +279,7 @@ bool CGLXManager::generateContext()
 			PFNGLXCREATECONTEXTATTRIBSARBPROC glxCreateContextAttribsARB = (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress(reinterpret_cast<const GLubyte *>("glXCreateContextAttribsARB"));
 
 			if (glxCreateContextAttribsARB) {
-				os::Printer::log("GLX with GLX_ARB_create_context", ELL_DEBUG);
+				g_irrlogger->log("GLX with GLX_ARB_create_context", ELL_DEBUG);
 				int contextAttrBuffer[] = {
 						GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 						GLX_CONTEXT_MINOR_VERSION_ARB, 0,
@@ -296,18 +296,18 @@ bool CGLXManager::generateContext()
 				// create glx context
 				context = glXCreateNewContext((Display *)CurrentContext.OpenGLLinux.X11Display, (GLXFBConfig)glxFBConfig, GLX_RGBA_TYPE, NULL, True);
 				if (!context) {
-					os::Printer::log("Could not create GLX rendering context.", ELL_WARNING);
+					g_irrlogger->log("Could not create GLX rendering context.", ELL_WARNING);
 					return false;
 				}
 			}
 		} else {
-			os::Printer::log("GLX window was not properly created.", ELL_WARNING);
+			g_irrlogger->log("GLX window was not properly created.", ELL_WARNING);
 			return false;
 		}
 	} else {
 		context = glXCreateContext((Display *)CurrentContext.OpenGLLinux.X11Display, VisualInfo, NULL, True);
 		if (!context) {
-			os::Printer::log("Could not create GLX rendering context.", ELL_WARNING);
+			g_irrlogger->log("Could not create GLX rendering context.", ELL_WARNING);
 			return false;
 		}
 	}
@@ -327,7 +327,7 @@ bool CGLXManager::activateContext(const SExposedVideoData &videoData, bool resto
 	if (videoData.OpenGLLinux.X11Window) {
 		if (videoData.OpenGLLinux.X11Display && videoData.OpenGLLinux.X11Context) {
 			if (!glXMakeCurrent((Display *)videoData.OpenGLLinux.X11Display, videoData.OpenGLLinux.GLXWindow, (GLXContext)videoData.OpenGLLinux.X11Context)) {
-				os::Printer::log("Context activation failed.");
+				g_irrlogger->log("Context activation failed.");
 				return false;
 			} else {
 				CurrentContext.OpenGLLinux.GLXWindow = videoData.OpenGLLinux.GLXWindow;
@@ -337,7 +337,7 @@ bool CGLXManager::activateContext(const SExposedVideoData &videoData, bool resto
 		} else {
 			// in case we only got a window ID, try with the existing values for display and context
 			if (!glXMakeCurrent((Display *)PrimaryContext.OpenGLLinux.X11Display, videoData.OpenGLLinux.GLXWindow, (GLXContext)PrimaryContext.OpenGLLinux.X11Context)) {
-				os::Printer::log("Context activation failed.");
+				g_irrlogger->log("Context activation failed.");
 				return false;
 			} else {
 				CurrentContext.OpenGLLinux.GLXWindow = videoData.OpenGLLinux.GLXWindow;
@@ -347,7 +347,7 @@ bool CGLXManager::activateContext(const SExposedVideoData &videoData, bool resto
 		}
 	} else if (!restorePrimaryOnZero && !videoData.OpenGLLinux.X11Window && !videoData.OpenGLLinux.X11Display) {
 		if (!glXMakeCurrent((Display *)PrimaryContext.OpenGLLinux.X11Display, None, NULL)) {
-			os::Printer::log("Render Context reset failed.");
+			g_irrlogger->log("Render Context reset failed.");
 			return false;
 		}
 		CurrentContext.OpenGLLinux.X11Window = 0;
@@ -356,7 +356,7 @@ bool CGLXManager::activateContext(const SExposedVideoData &videoData, bool resto
 	// set back to main context
 	else if (CurrentContext.OpenGLLinux.X11Display != PrimaryContext.OpenGLLinux.X11Display) {
 		if (!glXMakeCurrent((Display *)PrimaryContext.OpenGLLinux.X11Display, PrimaryContext.OpenGLLinux.X11Window, (GLXContext)PrimaryContext.OpenGLLinux.X11Context)) {
-			os::Printer::log("Context activation failed.");
+			g_irrlogger->log("Context activation failed.");
 			return false;
 		} else {
 			CurrentContext = PrimaryContext;
@@ -370,10 +370,10 @@ void CGLXManager::destroyContext()
 	if (CurrentContext.OpenGLLinux.X11Context) {
 		if (GlxWin) {
 			if (!glXMakeContextCurrent((Display *)CurrentContext.OpenGLLinux.X11Display, None, None, NULL))
-				os::Printer::log("Could not release glx context.", ELL_WARNING);
+				g_irrlogger->log("Could not release glx context.", ELL_WARNING);
 		} else {
 			if (!glXMakeCurrent((Display *)CurrentContext.OpenGLLinux.X11Display, None, NULL))
-				os::Printer::log("Could not release glx context.", ELL_WARNING);
+				g_irrlogger->log("Could not release glx context.", ELL_WARNING);
 		}
 		glXDestroyContext((Display *)CurrentContext.OpenGLLinux.X11Display, (GLXContext)CurrentContext.OpenGLLinux.X11Context);
 	}

@@ -60,7 +60,7 @@ public:
 	void dump() const
 	{
 		for (u32 i = 0; i < IRR_OGLES_Feature_Count; ++i)
-			os::Printer::log(getFeatureString(i), FeatureAvailable[i] ? " true" : " false");
+			g_irrlogger->log(getFeatureString(i), FeatureAvailable[i] ? " true" : " false");
 	}
 
 protected:

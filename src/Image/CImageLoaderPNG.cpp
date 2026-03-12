@@ -9,7 +9,7 @@
 #include "CImage.h"
 #include "IReadFile.h"
 #include "coreutil.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 
 namespace video
@@ -21,7 +21,7 @@ static void png_cpexcept_error(png_structp png_ptr, png_const_charp msg)
 	io::IReadFile *file = reinterpret_cast<io::IReadFile *>(png_get_error_ptr(png_ptr));
 	std::string logmsg = std::string("PNG fatal error for ")
 			+ file->getFileName().c_str() + ": " + msg;
-	os::Printer::log(logmsg.c_str(), ELL_ERROR);
+	g_irrlogger->log(logmsg.c_str(), ELL_ERROR);
 	longjmp(png_jmpbuf(png_ptr), 1);
 }
 
@@ -31,7 +31,7 @@ static void png_cpexcept_warn(png_structp png_ptr, png_const_charp msg)
 	io::IReadFile *file = reinterpret_cast<io::IReadFile *>(png_get_error_ptr(png_ptr));
 	std::string logmsg = std::string("PNG warning for ")
 			+ file->getFileName().c_str() + ": " + msg;
-	os::Printer::log(logmsg.c_str(), ELL_WARNING);
+	g_irrlogger->log(logmsg.c_str(), ELL_WARNING);
 }
 
 // PNG function for file reading
@@ -82,13 +82,13 @@ IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	png_byte buffer[8];
 	// Read the first few bytes of the PNG file
 	if (file->read(buffer, 8) != 8) {
-		os::Printer::log("LOAD PNG: can't read file (filesize < 8)", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: can't read file (filesize < 8)", file->getFileName(), ELL_ERROR);
 		return 0;
 	}
 
 	// Check if it really is a PNG file
 	if (png_sig_cmp(buffer, 0, 8)) {
-		os::Printer::log("LOAD PNG: not really a png (wrong signature)", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: not really a png (wrong signature)", file->getFileName(), ELL_ERROR);
 		return 0;
 	}
 
@@ -96,14 +96,14 @@ IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
 			file, (png_error_ptr)png_cpexcept_error, (png_error_ptr)png_cpexcept_warn);
 	if (!png_ptr) {
-		os::Printer::log("LOAD PNG: Internal PNG create read struct failure", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: Internal PNG create read struct failure", file->getFileName(), ELL_ERROR);
 		return 0;
 	}
 
 	// Allocate the png info struct
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
-		os::Printer::log("LOAD PNG: Internal PNG create info struct failure", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: Internal PNG create info struct failure", file->getFileName(), ELL_ERROR);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		return 0;
 	}
@@ -206,7 +206,7 @@ IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	else
 		image = new CImage(ECF_R8G8B8, core::dimension2d<u32>(Width, Height));
 	if (!image) {
-		os::Printer::log("LOAD PNG: Internal PNG create image struct failure", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: Internal PNG create image struct failure", file->getFileName(), ELL_ERROR);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		return 0;
 	}
@@ -214,7 +214,7 @@ IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	// Create array of pointers to rows in image data
 	RowPointers = new png_bytep[Height];
 	if (!RowPointers) {
-		os::Printer::log("LOAD PNG: Internal PNG create row pointers failure", file->getFileName(), ELL_ERROR);
+		g_irrlogger->log("LOAD PNG: Internal PNG create row pointers failure", file->getFileName(), ELL_ERROR);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		delete image;
 		return 0;

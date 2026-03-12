@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ILogger.h"
+#include "Logger.h"
 #include "Keycodes.h"
 #include "irrString.h"
 

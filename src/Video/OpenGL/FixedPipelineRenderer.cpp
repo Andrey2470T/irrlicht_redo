@@ -4,7 +4,7 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "FixedPipelineRenderer.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #include "IVideoDriver.h"
 

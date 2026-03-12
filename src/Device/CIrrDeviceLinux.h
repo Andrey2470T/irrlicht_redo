@@ -9,7 +9,7 @@
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
 #include "ICursorControl.h"
-#include "Device/os.h"
+#include "Logger.h"
 
 #ifdef _IRR_COMPILE_WITH_X11_
 

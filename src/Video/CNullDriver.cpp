@@ -5,7 +5,7 @@
 #include "CNullDriver.h"
 #include "IVideoDriver.h"
 #include "SMaterial.h"
-#include "Device/os.h"
+#include "Logger.h"
 #include "Image/CImage.h"
 #include "IReadFile.h"
 #include "IWriteFile.h"
@@ -283,7 +283,7 @@ ITexture *CNullDriver::addTexture(const core::dimension2d<u32> &size, const io::
 ITexture *CNullDriver::addTexture(const io::path &name, IImage *image)
 {
 	if (0 == name.size()) {
-		os::Printer::log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
 		return 0;
 	}
 
@@ -308,7 +308,7 @@ ITexture *CNullDriver::addTexture(const io::path &name, IImage *image)
 ITexture *CNullDriver::addArrayTexture(const io::path &name, IImage **images, u32 count)
 {
 	if (0 == name.size()) {
-		os::Printer::log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
 		return 0;
 	}
 
@@ -360,7 +360,7 @@ ITexture *CNullDriver::addTextureCubemap(const u32 sideLen, const io::path &name
 		return 0;
 
 	if (0 == name.size()) {
-		os::Printer::log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
 		return 0;
 	}
 
@@ -422,10 +422,10 @@ ITexture *CNullDriver::getTexture(const io::path &filename)
 			addTexture(texture);
 			texture->drop(); // drop it because we created it, one grab too much
 		} else
-			os::Printer::log("Could not load texture", filename, ELL_ERROR);
+			g_irrlogger->log("Could not load texture", filename, ELL_ERROR);
 		return texture;
 	} else {
-		os::Printer::log("Could not open file of texture", filename, ELL_WARNING);
+		g_irrlogger->log("Could not open file of texture", filename, ELL_WARNING);
 		return 0;
 	}
 }
@@ -449,7 +449,7 @@ ITexture *CNullDriver::getTexture(io::IReadFile *file)
 		}
 
 		if (!texture)
-			os::Printer::log("Could not load texture", file->getFileName(), ELL_WARNING);
+			g_irrlogger->log("Could not load texture", file->getFileName(), ELL_WARNING);
 	}
 
 	return texture;
@@ -468,7 +468,7 @@ video::ITexture *CNullDriver::loadTextureFromFile(io::IReadFile *file, const io:
 		std::vector tmp { image };
 		texture = createDeviceDependentTexture(hashName.size() ? hashName : file->getFileName(), ETT_2D, tmp);
 		if (texture)
-			os::Printer::log("Loaded texture", file->getFileName(), ELL_DEBUG);
+			g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
 	}
 
 	image->drop();
@@ -568,7 +568,7 @@ const core::rect<s32> &CNullDriver::getViewPort() const
 void CNullDriver::drawVertexPrimitiveList(const void *vertices, u32 vertexCount, const void *indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	if ((iType == EIT_16BIT) && (vertexCount > 65536))
-		os::Printer::log("Too many vertices for 16bit index type, render artifacts may occur.");
+		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
 	FrameStats.Drawcalls++;
 	FrameStats.PrimitivesDrawn += primitiveCount;
 }
@@ -577,7 +577,7 @@ void CNullDriver::drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 void CNullDriver::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount, const void *indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	if ((iType == EIT_16BIT) && (vertexCount > 65536))
-		os::Printer::log("Too many vertices for 16bit index type, render artifacts may occur.");
+		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
 	FrameStats.Drawcalls++;
 	FrameStats.PrimitivesDrawn += primitiveCount;
 }
@@ -728,7 +728,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 
 	if (texture->getColorFormat() != ECF_A1R5G5B5 &&
 			texture->getColorFormat() != ECF_A8R8G8B8) {
-		os::Printer::log("Error: Unsupported texture color format for making color key channel.", ELL_ERROR);
+		g_irrlogger->log("Error: Unsupported texture color format for making color key channel.", ELL_ERROR);
 		return;
 	}
 
@@ -736,7 +736,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 		u16 *p = (u16 *)texture->lock();
 
 		if (!p) {
-			os::Printer::log("Could not lock texture for making color key channel.", ELL_ERROR);
+			g_irrlogger->log("Could not lock texture for making color key channel.", ELL_ERROR);
 			return;
 		}
 
@@ -762,7 +762,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 		u32 *p = (u32 *)texture->lock();
 
 		if (!p) {
-			os::Printer::log("Could not lock texture for making color key channel.", ELL_ERROR);
+			g_irrlogger->log("Could not lock texture for making color key channel.", ELL_ERROR);
 			return;
 		}
 
@@ -796,7 +796,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 
 	if (texture->getColorFormat() != ECF_A1R5G5B5 &&
 			texture->getColorFormat() != ECF_A8R8G8B8) {
-		os::Printer::log("Error: Unsupported texture color format for making color key channel.", ELL_ERROR);
+		g_irrlogger->log("Error: Unsupported texture color format for making color key channel.", ELL_ERROR);
 		return;
 	}
 
@@ -806,7 +806,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 		u16 *p = (u16 *)texture->lock(ETLM_READ_ONLY);
 
 		if (!p) {
-			os::Printer::log("Could not lock texture for making color key channel.", ELL_ERROR);
+			g_irrlogger->log("Could not lock texture for making color key channel.", ELL_ERROR);
 			return;
 		}
 
@@ -819,7 +819,7 @@ void CNullDriver::makeColorKeyTexture(video::ITexture *texture,
 		u32 *p = (u32 *)texture->lock(ETLM_READ_ONLY);
 
 		if (!p) {
-			os::Printer::log("Could not lock texture for making color key channel.", ELL_ERROR);
+			g_irrlogger->log("Could not lock texture for making color key channel.", ELL_ERROR);
 			return;
 		}
 
@@ -847,7 +847,7 @@ bool CNullDriver::checkPrimitiveCount(u32 prmCount) const
 	if (prmCount > m) {
 		char tmp[128];
 		snprintf_irr(tmp, sizeof(tmp), "Could not draw triangles, too many primitives(%u), maximum is %u.", prmCount, m);
-		os::Printer::log(tmp, ELL_ERROR);
+		g_irrlogger->log(tmp, ELL_ERROR);
 		return false;
 	}
 
@@ -913,7 +913,7 @@ IImage *CNullDriver::createImageFromFile(const io::path &filename)
 
 	io::IReadFile *file = FileSystem->createAndOpenFile(filename);
 	if (!file) {
-		os::Printer::log("Could not open file of image", filename, ELL_WARNING);
+		g_irrlogger->log("Could not open file of image", filename, ELL_WARNING);
 		return nullptr;
 	}
 
@@ -1504,7 +1504,7 @@ s32 CNullDriver::addHighLevelShaderMaterial(
 		E_MATERIAL_TYPE baseMaterial,
 		s32 userData)
 {
-	os::Printer::log("Shader materials not available in this driver", ELL_ERROR);
+	g_irrlogger->log("Shader materials not available in this driver", ELL_ERROR);
 	return -1;
 }
 
@@ -1526,7 +1526,7 @@ s32 CNullDriver::addHighLevelShaderMaterialFromFiles(
 	if (vertexShaderProgramFileName.size()) {
 		vsfile = FileSystem->createAndOpenFile(vertexShaderProgramFileName);
 		if (!vsfile) {
-			os::Printer::log("Could not open vertex shader program file",
+			g_irrlogger->log("Could not open vertex shader program file",
 					vertexShaderProgramFileName, ELL_WARNING);
 		}
 	}
@@ -1534,7 +1534,7 @@ s32 CNullDriver::addHighLevelShaderMaterialFromFiles(
 	if (pixelShaderProgramFileName.size()) {
 		psfile = FileSystem->createAndOpenFile(pixelShaderProgramFileName);
 		if (!psfile) {
-			os::Printer::log("Could not open pixel shader program file",
+			g_irrlogger->log("Could not open pixel shader program file",
 					pixelShaderProgramFileName, ELL_WARNING);
 		}
 	}
@@ -1542,7 +1542,7 @@ s32 CNullDriver::addHighLevelShaderMaterialFromFiles(
 	if (geometryShaderProgramFileName.size()) {
 		gsfile = FileSystem->createAndOpenFile(geometryShaderProgramFileName);
 		if (!gsfile) {
-			os::Printer::log("Could not open geometry shader program file",
+			g_irrlogger->log("Could not open geometry shader program file",
 					geometryShaderProgramFileName, ELL_WARNING);
 		}
 	}
@@ -1686,7 +1686,7 @@ void CNullDriver::printVersion()
 {
 	core::stringc namePrint = "Using renderer: ";
 	namePrint += getName();
-	os::Printer::log(namePrint.c_str(), ELL_INFORMATION);
+	g_irrlogger->log(namePrint.c_str(), ELL_INFORMATION);
 }
 
 //! creates a video driver

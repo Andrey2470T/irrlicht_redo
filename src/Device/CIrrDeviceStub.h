@@ -8,10 +8,10 @@
 #include "SIrrCreationParameters.h"
 #include "IContextManager.h"
 
-
-// lots of prototypes:
-class ILogger;
-class CLogger;
+namespace os
+{
+class Logger;
+}
 
 namespace gui
 {
@@ -88,7 +88,7 @@ public:
 	void setInputReceivingSceneManager(scene::ISceneManager *sceneManager) override;
 
 	//! Returns a pointer to the logger.
-	ILogger *getLogger() override;
+	os::Logger *getLogger() override;
 
 	//! Returns the operation system opertator object.
 	IOSOperator *getOSOperator() override;
@@ -174,7 +174,7 @@ protected:
 	scene::ISceneManager *SceneManager;
 	gui::ICursorControl *CursorControl;
 	IEventReceiver *UserReceiver;
-	CLogger *Logger;
+	os::Logger *Logger;
 	IOSOperator *Operator;
 	io::IFileSystem *FileSystem;
 	scene::ISceneManager *InputReceivingSceneManager;
