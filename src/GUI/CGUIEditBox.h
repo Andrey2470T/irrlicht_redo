@@ -6,7 +6,7 @@
 
 #include "IGUIEditBox.h"
 #include "irrArray.h"
-#include "IOSOperator.h"
+#include "Clipboard.h"
 
 
 namespace gui
@@ -172,7 +172,7 @@ protected:
 
 	video::SColor OverrideColor;
 	gui::IGUIFont *OverrideFont, *LastBreakFont;
-	IOSOperator *Operator;
+	os::Clipboard *ClipBoard;
 
 	u32 BlinkStartTime;
 	u32 CursorBlinkTime;

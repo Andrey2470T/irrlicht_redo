@@ -11,8 +11,10 @@
 #include "IEventReceiver.h"
 #include "path.h"
 
-
-class IOSOperator;
+namespace os
+{
+class Clipboard;
+}
 class IEventReceiver;
 
 namespace io
@@ -103,9 +105,9 @@ public:
 	/** \return Pointer to the file system. */
 	virtual io::IFileSystem *getFileSystem() const = 0;
 
-	//! returns a pointer to the OS operator
-	/** \return Pointer to the OS operator. */
-	virtual IOSOperator *getOSOperator() const = 0;
+	//! returns a pointer to the SDL Clipboard
+	/** \return Pointer to the SDL Clipboard. */
+	virtual os::Clipboard *getClipboard() const = 0;
 
 	//! Removes all elements from the environment.
 	virtual void clear() = 0;

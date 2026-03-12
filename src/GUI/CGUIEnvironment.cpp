@@ -36,10 +36,10 @@ namespace gui
 const io::path CGUIEnvironment::DefaultFontName = "#DefaultFont";
 
 //! constructor
-CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, IOSOperator *op) :
+CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, os::Clipboard *op) :
 		IGUIElement(EGUIET_ROOT, 0, 0, 0, core::rect<s32>(driver ? core::dimension2d<s32>(driver->getScreenSize()) : core::dimension2d<s32>(0, 0))),
 		Driver(driver), Hovered(0), HoveredNoSubelement(0), Focus(0), LastHoveredMousePos(0, 0), CurrentSkin(0),
-		FileSystem(fs), UserReceiver(0), Operator(op), FocusFlags(EFF_SET_ON_LMOUSE_DOWN | EFF_SET_ON_TAB)
+		FileSystem(fs), UserReceiver(0), ClipBoard(op), FocusFlags(EFF_SET_ON_LMOUSE_DOWN | EFF_SET_ON_TAB)
 {
 	if (Driver)
 		Driver->grab();
@@ -47,8 +47,8 @@ CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *drive
 	if (FileSystem)
 		FileSystem->grab();
 
-	if (Operator)
-		Operator->grab();
+	if (ClipBoard)
+		ClipBoard->grab();
 
 	loadBuiltInFont();
 
@@ -110,9 +110,9 @@ CGUIEnvironment::~CGUIEnvironment()
 	for (i = 0; i < Fonts.size(); ++i)
 		Fonts[i].Font->drop();
 
-	if (Operator) {
-		Operator->drop();
-		Operator = 0;
+	if (ClipBoard) {
+		ClipBoard->drop();
+		ClipBoard = 0;
 	}
 
 	if (FileSystem) {
@@ -303,9 +303,9 @@ io::IFileSystem *CGUIEnvironment::getFileSystem() const
 }
 
 //! returns a pointer to the OS operator
-IOSOperator *CGUIEnvironment::getOSOperator() const
+os::Clipboard *CGUIEnvironment::getClipboard() const
 {
-	return Operator;
+	return ClipBoard;
 }
 
 //! clear all GUI elements
@@ -986,7 +986,7 @@ u32 CGUIEnvironment::getFocusBehavior() const
 //! creates an GUI Environment
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
 		video::IVideoDriver *Driver,
-		IOSOperator *op)
+		os::Clipboard *op)
 {
 	return new CGUIEnvironment(fs, Driver, op);
 }

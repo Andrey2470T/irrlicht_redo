@@ -8,7 +8,7 @@
 #include "IGUIElement.h"
 #include "irrArray.h"
 #include "IFileSystem.h"
-#include "IOSOperator.h"
+#include "Clipboard.h"
 
 
 
@@ -19,7 +19,7 @@ class CGUIEnvironment : public IGUIEnvironment, public IGUIElement
 {
 public:
 	//! constructor
-	CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, IOSOperator *op);
+	CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, os::Clipboard *op);
 
 	//! destructor
 	virtual ~CGUIEnvironment();
@@ -34,7 +34,7 @@ public:
 	io::IFileSystem *getFileSystem() const override;
 
 	//! returns a pointer to the OS operator
-	IOSOperator *getOSOperator() const override;
+	os::Clipboard *getClipboard() const override;
 
 	//! posts an input event to the environment
 	bool postEventFromUser(const SEvent &event) override;
@@ -214,7 +214,7 @@ private:
 	IGUISkin *CurrentSkin;
 	io::IFileSystem *FileSystem;
 	IEventReceiver *UserReceiver;
-	IOSOperator *Operator;
+	os::Clipboard *ClipBoard;
 	u32 FocusFlags;
 	core::array<IGUIElement *> DeletionQueue;
 

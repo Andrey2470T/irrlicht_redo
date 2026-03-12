@@ -11,7 +11,7 @@
 #include "IEventReceiver.h"
 #include "ICursorControl.h"
 #include "Timer.h"
-#include "IOSOperator.h"
+#include "Clipboard.h"
 #include "irrArray.h"
 #include "position2d.h"
 #include "SColor.h" // video::ECOLOR_FORMAT
@@ -135,7 +135,7 @@ public:
 	specific operations, such as exchanging data with the clipboard
 	or reading the operation system version.
 	\return Pointer to the OS operator. */
-	virtual IOSOperator *getOSOperator() = 0;
+	virtual os::Clipboard *getOSOperator() = 0;
 
 	//! Sets the caption of the window.
 	/** \param text: New text of the window caption. */

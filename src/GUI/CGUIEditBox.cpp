@@ -33,7 +33,7 @@ CGUIEditBox::CGUIEditBox(const wchar_t *text, bool border,
 		OverwriteMode(false), MouseMarking(false),
 		Border(border), Background(true), OverrideColorEnabled(false), MarkBegin(0), MarkEnd(0),
 		OverrideColor(video::SColor(101, 255, 255, 255)), OverrideFont(0), LastBreakFont(0),
-		Operator(0), BlinkStartTime(0), CursorBlinkTime(350), CursorChar(L"_"), CursorPos(0), HScrollPos(0), VScrollPos(0), Max(0),
+		ClipBoard(0), BlinkStartTime(0), CursorBlinkTime(350), CursorChar(L"_"), CursorPos(0), HScrollPos(0), VScrollPos(0), Max(0),
 		WordWrap(false), MultiLine(false), AutoScroll(true), PasswordBox(false),
 		PasswordChar(L'*'), HAlign(EGUIA_UPPERLEFT), VAlign(EGUIA_CENTER),
 		CurrentTextRect(0, 0, 1, 1), FrameRect(rectangle)
@@ -41,10 +41,10 @@ CGUIEditBox::CGUIEditBox(const wchar_t *text, bool border,
 	Text = text;
 
 	if (Environment)
-		Operator = Environment->getOSOperator();
+		ClipBoard = Environment->getClipboard();
 
-	if (Operator)
-		Operator->grab();
+	if (ClipBoard)
+		ClipBoard->grab();
 
 	// this element can be tabbed to
 	setTabStop(true);
@@ -62,8 +62,8 @@ CGUIEditBox::~CGUIEditBox()
 	if (OverrideFont)
 		OverrideFont->drop();
 
-	if (Operator)
-		Operator->drop();
+	if (ClipBoard)
+		ClipBoard->drop();
 }
 
 //! Sets another skin independent font.
@@ -267,25 +267,25 @@ bool CGUIEditBox::processKey(const SEvent &event)
 			break;
 		case KEY_KEY_C:
 			// copy to clipboard
-			if (!PasswordBox && Operator && MarkBegin != MarkEnd) {
+			if (!PasswordBox && ClipBoard && MarkBegin != MarkEnd) {
 				const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
 
 				core::stringc s;
 				wStringToUTF8(s, Text.subString(realmbgn, realmend - realmbgn));
-				Operator->copyToClipboard(s.c_str());
+				ClipBoard->copyToClipboard(s.c_str());
 			}
 			break;
 		case KEY_KEY_X:
 			// cut to the clipboard
-			if (!PasswordBox && Operator && MarkBegin != MarkEnd) {
+			if (!PasswordBox && ClipBoard && MarkBegin != MarkEnd) {
 				const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
 
 				// copy
 				core::stringc sc;
 				wStringToUTF8(sc, Text.subString(realmbgn, realmend - realmbgn));
-				Operator->copyToClipboard(sc.c_str());
+				ClipBoard->copyToClipboard(sc.c_str());
 
 				if (isEnabled()) {
 					// delete
@@ -306,12 +306,12 @@ bool CGUIEditBox::processKey(const SEvent &event)
 				break;
 
 			// paste from the clipboard
-			if (Operator) {
+			if (ClipBoard) {
 				const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
 
 				// add the string
-				const c8 *p = Operator->getTextFromClipboard();
+				const c8 *p = ClipBoard->getTextFromClipboard();
 				if (p) {
 					core::stringw widep;
 					core::utf8ToWString(widep, p);
@@ -1011,9 +1011,9 @@ bool CGUIEditBox::processMouse(const SEvent &event)
 		// paste from the primary selection
 		inputString([&] {
 			core::stringw inserted_text;
-			if (!Operator)
+			if (!ClipBoard)
 				return inserted_text;
-			const c8 *inserted_text_utf8 = Operator->getTextFromPrimarySelection();
+			const c8 *inserted_text_utf8 = ClipBoard->getTextFromPrimarySelection();
 			if (!inserted_text_utf8)
 				return inserted_text;
 			core::utf8ToWString(inserted_text, inserted_text_utf8);
@@ -1453,14 +1453,14 @@ void CGUIEditBox::setTextMarkers(s32 begin, s32 end)
 		MarkBegin = begin;
 		MarkEnd = end;
 
-		if (!PasswordBox && Operator && MarkBegin != MarkEnd) {
+		if (!PasswordBox && ClipBoard && MarkBegin != MarkEnd) {
 			// copy to primary selection
 			const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
 			const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
 
 			core::stringc s;
 			wStringToUTF8(s, Text.subString(realmbgn, realmend - realmbgn));
-			Operator->copyToPrimarySelection(s.c_str());
+			ClipBoard->copyToPrimarySelection(s.c_str());
 		}
 
 		sendGuiEvent(EGET_EDITBOX_MARKING_CHANGED);

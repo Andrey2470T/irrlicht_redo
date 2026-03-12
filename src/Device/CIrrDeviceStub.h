@@ -17,7 +17,7 @@ namespace gui
 {
 class IGUIEnvironment;
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
-		video::IVideoDriver *Driver, IOSOperator *op);
+		video::IVideoDriver *Driver, os::Clipboard *op);
 }
 
 namespace scene
@@ -91,7 +91,7 @@ public:
 	os::Logger *getLogger() override;
 
 	//! Returns the operation system opertator object.
-	IOSOperator *getOSOperator() override;
+	os::Clipboard *getOSOperator() override;
 
 	//! Checks if the window is maximized.
 	bool isWindowMaximized() const override;
@@ -175,7 +175,7 @@ protected:
 	gui::ICursorControl *CursorControl;
 	IEventReceiver *UserReceiver;
 	os::Logger *Logger;
-	IOSOperator *Operator;
+	os::Clipboard *ClipBoard;
 	io::IFileSystem *FileSystem;
 	scene::ISceneManager *InputReceivingSceneManager;
 

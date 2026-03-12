@@ -54,7 +54,7 @@ IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0),
 		CursorControl(0), UserReceiver(params.EventReceiver),
-		Logger(0), Operator(0), FileSystem(0),
+		Logger(0), ClipBoard(0), FileSystem(0),
 		InputReceivingSceneManager(0), ContextManager(0),
 		CreationParams(params), Close(false)
 {
@@ -97,8 +97,8 @@ CIrrDeviceStub::~CIrrDeviceStub()
 	if (CursorControl)
 		CursorControl->drop();
 
-	if (Operator)
-		Operator->drop();
+	if (ClipBoard)
+		ClipBoard->drop();
 
 	CursorControl = 0;
 
@@ -109,7 +109,7 @@ CIrrDeviceStub::~CIrrDeviceStub()
 void CIrrDeviceStub::createGUIAndScene()
 {
 	// create gui environment
-	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDriver, Operator);
+	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDriver, ClipBoard);
 
 	// create Scene manager
 	SceneManager = scene::createSceneManager(VideoDriver, CursorControl);
@@ -223,9 +223,9 @@ os::Logger *CIrrDeviceStub::getLogger()
 }
 
 //! Returns the operation system opertator object.
-IOSOperator *CIrrDeviceStub::getOSOperator()
+os::Clipboard *CIrrDeviceStub::getOSOperator()
 {
-	return Operator;
+	return ClipBoard;
 }
 
 //! Sets the input receiving scene manager.

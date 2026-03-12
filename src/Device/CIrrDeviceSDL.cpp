@@ -15,7 +15,7 @@
 #include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
-#include "COSOperator.h"
+#include "Clipboard.h"
 #include "SIrrCreationParameters.h"
 #include <SDL_video.h>
 
@@ -385,7 +385,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 		sdlver += SDL_GetPlatform();
 	}
 
-	Operator = new COSOperator(sdlver);
+	ClipBoard = new os::Clipboard();
 	if (SDLDeviceInstances == 1) {
 		g_irrlogger->log(sdlver.c_str(), ELL_INFORMATION);
 	}
