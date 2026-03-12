@@ -584,10 +584,6 @@ bool CIrrDeviceSDL::createWindowWithContext()
 	return true;
 #else // !_IRR_EMSCRIPTEN_PLATFORM_
 	switch (CreationParams.DriverType) {
-	case video::EDT_OPENGL:
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-		break;
 	case video::EDT_OPENGL3:
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -670,9 +666,6 @@ void CIrrDeviceSDL::createDriver()
 
 	ContextManager = new video::CSDLManager(this);
 	switch (CreationParams.DriverType) {
-	case video::EDT_OPENGL:
-		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem, ContextManager);
-		break;
 	case video::EDT_OPENGL3:
 		VideoDriver = video::createOpenGL3Driver(CreationParams, FileSystem, ContextManager);
 		break;

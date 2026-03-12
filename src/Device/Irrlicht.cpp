@@ -98,10 +98,6 @@ extern "C" bool isDriverSupported(E_DRIVER_TYPE driver)
 	case EDT_OPENGL3:
 		return true;
 #endif
-#ifdef _IRR_COMPILE_WITH_OPENGL_
-	case EDT_OPENGL:
-		return true;
-#endif
 #ifdef _IRR_COMPILE_WITH_OGLES2_
 	case EDT_OGLES2:
 		return true;

@@ -16,14 +16,6 @@
 
 namespace video
 {
-#ifndef _IRR_COMPILE_WITH_OPENGL_
-IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
-{
-	g_irrlogger->log("No OpenGL support compiled in.", ELL_ERROR);
-	return nullptr;
-}
-#endif
-
 #ifndef ENABLE_OPENGL3
 IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
 {

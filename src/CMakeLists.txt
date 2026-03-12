@@ -122,75 +122,45 @@ if(NOT (BSD OR SOLARIS OR EMSCRIPTEN))
 	add_compile_definitions(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 endif()
 
-# OpenGL
+# OpenGL (Desktop, ES and Web)
 
-if(USE_SDL2)
-	if(NOT ANDROID)
-		set(DEFAULT_OPENGL3 TRUE)
-	endif()
-else()
-	set(DEFAULT_OPENGL3 FALSE)
-endif()
-option(ENABLE_OPENGL3 "Enable OpenGL 3+" ${DEFAULT_OPENGL3})
+option(ENABLE_OPENGL3 "Enable OpenGL 3+" TRUE)
+option(ENABLE_GLES2 "Enable OpenGL ES 2+" FALSE)
+set(ENABLE_WEBGL1 FALSE)
+set(RENDERER "OpenGL 3+")
 
 if(ANDROID OR EMSCRIPTEN)
-	set(ENABLE_OPENGL FALSE)
-else()
-	option(ENABLE_OPENGL "Enable OpenGL" TRUE)
-endif()
+	set(ENABLE_OPENGL3 FALSE)
+	set(ENABLE_GLES2 TRUE)
+	set(RENDERER "OpenGL ES 2+")
 
-if(APPLE)
-	set(ENABLE_GLES2 FALSE)
-	set(ENABLE_WEBGL1 FALSE)
-else()
-	if(ANDROID OR EMSCRIPTEN)
-		set(DEFAULT_GLES2 TRUE)
-	endif()
-	if(EMSCRIPTEN)
-		set(DEFAULT_WEBGL1 TRUE)
-	endif()
-	option(ENABLE_GLES2 "Enable OpenGL ES 2+" ${DEFAULT_GLES2})
-	#option(ENABLE_WEBGL1 "Enable WebGL (requires GLES2)" ${DEFAULT_WEBGL1})
-	set(ENABLE_WEBGL1 FALSE) # not working currently
-	if(ENABLE_WEBGL1)
-		set(ENABLE_GLES2 TRUE)
-	endif()
-endif()
-
-if(ENABLE_OPENGL OR (ENABLE_OPENGL3 AND NOT USE_SDL2))
-	if(ENABLE_OPENGL)
-		add_compile_definitions(_IRR_COMPILE_WITH_OPENGL_)
-		set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
-	endif()
-	if(DEVICE STREQUAL "WINDOWS")
-		add_compile_definitions(_IRR_COMPILE_WITH_WGL_MANAGER_)
-	elseif(DEVICE STREQUAL "X11")
-		add_compile_definitions(_IRR_COMPILE_WITH_GLX_MANAGER_)
-	elseif(DEVICE STREQUAL "OSX")
-		add_compile_definitions(_IRR_COMPILE_WITH_NSOGL_MANAGER_)
-	endif()
-endif()
-
-if(ENABLE_OPENGL3)
-	if(DEVICE STREQUAL "WINDOWS")
-		# supported
-	elseif(DEVICE STREQUAL "X11")
-		# supported
-	elseif (NOT USE_SDL2)
-		message(FATAL_ERROR "OpenGL 3 driver requires SDL2")
-	endif()
-endif()
-
-if(ENABLE_GLES2)
 	add_compile_definitions(_IRR_COMPILE_WITH_OGLES2_)
+
+	if(EMSCRIPTEN)
+		set(ENABLE_WEBGL1 TRUE)
+		set(RENDERER "WebGL 1")
+
+		add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
+	endif()
+
 	if(DEVICE MATCHES "^(WINDOWS|X11)$" OR EMSCRIPTEN)
 		add_compile_definitions(_IRR_COMPILE_WITH_EGL_MANAGER_)
 	endif()
+else()
+	add_compile_definitions(_IRR_COMPILE_WITH_OPENGL3_)
+	set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
+
+	if(NOT USE_SDL2)
+		if(DEVICE STREQUAL "WINDOWS")
+			add_compile_definitions(_IRR_COMPILE_WITH_WGL_MANAGER_)
+		elseif(DEVICE STREQUAL "X11")
+			add_compile_definitions(_IRR_COMPILE_WITH_GLX_MANAGER_)
+		elseif(DEVICE STREQUAL "OSX")
+			add_compile_definitions(_IRR_COMPILE_WITH_NSOGL_MANAGER_)
+		endif()
+	endif()
 endif()
 
-if(ENABLE_WEBGL1)
-	add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
-endif()
 
 # Misc
 
@@ -203,14 +173,7 @@ endif()
 # Configuration report
 
 message(STATUS "Device: ${DEVICE}")
-message(STATUS "OpenGL: ${ENABLE_OPENGL}")
-message(STATUS "OpenGL 3: ${ENABLE_OPENGL3}")
-if (ENABLE_GLES2)
-	message(STATUS "OpenGL ES 2: ON (unified)")
-else()
-	message(STATUS "OpenGL ES 2: OFF")
-endif()
-#message(STATUS "WebGL: ${ENABLE_WEBGL1}")
+message(STATUS "Renderer: ${RENDERER}")
 
 # Required libs
 
@@ -220,12 +183,12 @@ find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
-if(ENABLE_GLES2)
+if(ENABLE_OPENGL3)
+	find_package(OpenGL REQUIRED)
+else()
 	find_package(OpenGLES2 REQUIRED)
 endif()
-if(ENABLE_OPENGL)
-	find_package(OpenGL REQUIRED)
-endif()
+
 set(USE_SDL2_SHARED FALSE)
 if(USE_SDL2)
 	if(NOT USE_SDL2_STATIC)
@@ -255,24 +218,6 @@ int main() {}" CHECK_SDL_VERSION)
 		add_library(SDL2::SDL2 SHARED IMPORTED)
 		set_target_properties(SDL2::SDL2 PROPERTIES
 			IMPORTED_LOCATION "${SDL2_LIBRARIES}")
-	endif()
-endif()
-
-# More special config
-
-if(ENABLE_OPENGL AND DEVICE STREQUAL "SDL")
-	# The legacy GL driver requires some symbols from GL 4.5 to compile,
-	# which SDL only provides since 2.26.0 (Nov 2022).
-	# We have a fallback in case this isn't satisfied so test for it.
-	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
-	unset(CHECK_GL_VERSION_4_5 CACHE)
-	check_cxx_source_compiles("#include <SDL_opengl.h>\n\
-#ifndef GL_VERSION_4_5\n\
-#error\n\
-#endif\n\
-int main() {}" CHECK_GL_VERSION_4_5)
-	if(CHECK_GL_VERSION_4_5)
-		add_compile_definitions(IRR_PREFER_SDL_GL_HEADER)
 	endif()
 endif()
 
@@ -336,18 +281,6 @@ set(IRRDRVROBJ
 	Device/CSDLManager.cpp
 	Video/mt_opengl_loader.cpp
 )
-
-# the two legacy drivers
-
-if(ENABLE_OPENGL)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/COpenGLCacheHandler.cpp
-		Video/COpenGLDriver.cpp
-		Video/COpenGLSLMaterialRenderer.cpp
-		Video/COpenGLExtensionHandler.cpp
-	)
-endif()
 
 # the unified drivers
 
