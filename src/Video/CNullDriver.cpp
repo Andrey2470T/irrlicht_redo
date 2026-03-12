@@ -202,7 +202,6 @@ bool CNullDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u
 
 bool CNullDriver::endScene()
 {
-	FPSCounter.registerFrame(os::Timer::getRealTime());
 	expireHardwareBuffers();
 	updateAllOcclusionQueries();
 	return true;
@@ -698,12 +697,6 @@ const core::dimension2d<u32> &CNullDriver::getCurrentRenderTargetSize() const
 		return ScreenSize;
 	else
 		return CurrentRenderTargetSize;
-}
-
-// returns current frames per second value
-s32 CNullDriver::getFPS() const
-{
-	return FPSCounter.getFPS();
 }
 
 SFrameStats CNullDriver::getFrameStats() const

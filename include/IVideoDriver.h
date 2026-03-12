@@ -819,14 +819,6 @@ public:
 	\return Size of render target or screen/window */
 	virtual const core::dimension2d<u32> &getCurrentRenderTargetSize() const = 0;
 
-	//! Returns current frames per second value.
-	/** This value is updated approximately every 1.5 seconds and
-	is only intended to provide a rough guide to the average frame
-	rate. It is not suitable for use in performing timing
-	calculations or framerate independent movement.
-	\return Approximate amount of frames per second drawn. */
-	virtual s32 getFPS() const = 0;
-
 	//! Return some statistics about the last frame
 	virtual SFrameStats getFrameStats() const = 0;
 

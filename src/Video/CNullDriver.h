@@ -12,7 +12,6 @@
 #include "IMesh.h"
 #include "IMeshBuffer.h"
 #include "IMeshSceneNode.h"
-#include "CFPSCounter.h"
 #include "S3DVertex.h"
 #include "SVertexIndex.h"
 #include "SExposedVideoData.h"
@@ -187,9 +186,6 @@ public:
 
 	//! get render target size
 	const core::dimension2d<u32> &getCurrentRenderTargetSize() const override;
-
-	// get current frames per second value
-	s32 getFPS() const override;
 
 	SFrameStats getFrameStats() const override;
 
@@ -699,7 +695,6 @@ protected:
 	core::dimension2d<u32> ScreenSize;
 	core::matrix4 TransformationMatrix;
 
-	CFPSCounter FPSCounter;
 	SFrameStats FrameStats;
 
 	u32 MinVertexCountForVBO;
