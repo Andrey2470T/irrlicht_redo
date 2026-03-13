@@ -34,8 +34,6 @@ namespace video
 {
 	IVideoDriver *createNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &screenSize);
 
-	IVideoDriver *createOpenGLDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-
 	IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
 
 	IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
@@ -98,9 +96,6 @@ public:
 
 	//! Checks if the window is running in fullscreen mode.
 	bool isFullscreen() const override;
-
-	//! get color format of the current window
-	video::ECOLOR_FORMAT getColorFormat() const override;
 
 	//! Activate any joysticks, and generate events for them.
 	bool activateJoysticks(core::array<SJoystickInfo> &joystickInfo) override;

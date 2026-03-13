@@ -4,8 +4,14 @@
 
 #include "Clipboard.h"
 
-#include <SDL_clipboard.h>
-#include <SDL_version.h>
+// "SDL_version.h" for SDL_VERSION_ATLEAST
+#ifdef _IRR_USE_SDL3_
+	#include <SDL3/SDL_clipboard.h>
+	#include <SDL3/SDL_version.h>
+#else
+	#include <SDL_clipboard.h>
+	#include <SDL_version.h>
+#endif
 
 namespace os {
 

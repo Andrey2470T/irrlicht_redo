@@ -1,7 +1,12 @@
+set(DEFAULT_SDL3 OFF)
+
 include(CheckCXXSourceCompiles)
 include(CheckCXXCompilerFlag)
 
 option(USE_SDL2_STATIC "Link with SDL2 static libraries" FALSE)
+
+option(USE_SDL3 "Use the SDL3 backend instead of SDL3" ${DEFAULT_SDL3})
+option(USE_SDL3_STATIC "Link with SDL3 static libraries" FALSE)
 
 # Compiler flags
 
@@ -137,36 +142,51 @@ endif()
 
 set(USE_SDL2_SHARED FALSE)
 
-if(NOT USE_SDL2_STATIC)
-	set(USE_SDL2_SHARED TRUE)
-endif()
-if(NOT ANDROID)
-	find_package(SDL2 REQUIRED)
+if(USE_SDL3)
+	set(USE_SDL2_STATIC FALSE) # do not attempt to link against SDL2
+
+	# https://wiki.libsdl.org/SDL3/README-cmake#a-system-sdl-library
+	if(USE_SDL3_STATIC)
+		set(SDL3_SUFFIX "static")
+	else()
+		set(SDL3_SUFFIX "shared")
+	endif()
+	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-${SDL3_SUFFIX})
+	message(STATUS "Found SDL3: ${SDL3_VERSION} (${SDL3_SUFFIX} library)")
 else()
-	# provided by AndroidLibs.cmake
-endif()
-message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
+	# Fall back to SDL2
 
-# unfortunately older SDL does not provide its version to cmake, so check header.
-set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
+	if(NOT USE_SDL2_STATIC)
+		set(USE_SDL2_SHARED TRUE)
+	endif()
+	if(NOT ANDROID)
+		find_package(SDL2 REQUIRED)
+	else()
+		# provided by AndroidLibs.cmake
+	endif()
+	message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
 
-if(NOT DISABLE_CHECK_SDL_VERSION)
-	unset(CHECK_SDL_VERSION CACHE)
-	check_cxx_source_compiles("#include <SDL_version.h>\n\
+	# unfortunately older SDL does not provide its version to cmake, so check header.
+	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
+
+	if(NOT DISABLE_CHECK_SDL_VERSION)
+		unset(CHECK_SDL_VERSION CACHE)
+		check_cxx_source_compiles("#include <SDL_version.h>\n\
 #if !SDL_VERSION_ATLEAST(2, 0, 10)\n\
 #error\n\
 #endif\n\
 int main() {}" CHECK_SDL_VERSION)
-	if(NOT CHECK_SDL_VERSION)
-		message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
+		if(NOT CHECK_SDL_VERSION)
+			message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
+		endif()
 	endif()
-endif()
 
-# ...no target either.
-if(NOT TARGET SDL2::SDL2)
-	add_library(SDL2::SDL2 SHARED IMPORTED)
-	set_target_properties(SDL2::SDL2 PROPERTIES
-		IMPORTED_LOCATION "${SDL2_LIBRARIES}")
+	# ...no target either.
+	if(NOT TARGET SDL2::SDL2)
+		add_library(SDL2::SDL2 SHARED IMPORTED)
+		set_target_properties(SDL2::SDL2 PROPERTIES
+			IMPORTED_LOCATION "${SDL2_LIBRARIES}")
+	endif()
 endif()
 
 if(APPLE)
@@ -180,7 +200,7 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
-	"${SDL2_INCLUDE_DIRS}"
+	"$<$<NOT:$<BOOL:${USE_SDL3}>>:${SDL2_INCLUDE_DIRS}>"
 
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
@@ -282,6 +302,12 @@ if(APPLE)
 	set_target_properties(IRRDEVICEOBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
 endif()
 
+if(USE_SDL3)
+	include_directories(IRROTHEROBJ $<TARGET_PROPERTY:SDL3::Headers,INTERFACE_INCLUDE_DIRECTORIES>)
+	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_USE_SDL3_)
+	target_compile_definitions(IRRVIDEOOBJ PRIVATE _IRR_USE_SDL3_) # OpenGL/Common.h
+endif()
+
 add_library(IRRGUIOBJ OBJECT
 	GUI/CGUIButton.cpp
 	GUI/CGUICheckBox.cpp
@@ -355,6 +381,8 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	GLEW::GLEW
 	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
+
+	"$<$<BOOL:${USE_SDL3}>:SDL3::SDL3-${SDL3_SUFFIX}>"
 
 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
 

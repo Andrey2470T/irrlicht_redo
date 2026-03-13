@@ -1,13 +1,12 @@
 IrrlichtRedo version 1.0.0
 ==========================
 
-Notice
 My fork of the IrrlichtMt [Minetest](https://github.com/minetest/irrlicht). Represents the much modified version of the 3D engine which aiming to be more modern and readable.
 
 Features
 -----
 
-* Support of OpenGL 3.1+ and ES 2.0+ with using their new features.
+* Support of OpenGL 3.2+ and ES 2.0+ with using their new features.
 * Low-level graphics API representing the abstraction wrappers over OpenGL.
 * Much more flexible and readable comparing to the original, free from the the messed and invent-biked code.
 
@@ -21,41 +20,20 @@ The following libraries are required to be installed:
 * OpenGL
   * or on mobile: OpenGL ES (can be optionally enabled on desktop too)
 * on Unix: X11
-* SDL2 (see below)
+* SDL2 or SDL3 (see below)
 
 Aside from standard search options (`ZLIB_INCLUDE_DIR`, `ZLIB_LIBRARY`, ...) the following options are available:
-* `BUILD_SHARED_LIBS` (default: `ON`) - Build IrrlichtMt as a shared library
-* `BUILD_EXAMPLES` (default: `OFF`) - Build example applications
-* `ENABLE_OPENGL` - Enable OpenGL driver
-* `ENABLE_OPENGL3` (default: `OFF`) - Enable OpenGL 3+ driver
-* `ENABLE_GLES1` - Enable OpenGL ES driver, legacy
+* `ENABLE_OPENGL3` (default: `ON`) - Enable OpenGL 3+ driver
 * `ENABLE_GLES2` - Enable OpenGL ES 2+ driver
 * `USE_SDL2` (default: platform-dependent, usually `ON`) - Use SDL2 instead of older native device code
+* `USE_SDL3` (default: `OFF`) - Use the SDL3 device instead of SDL2 (**experimental**)
 
 e.g. on a Linux system you might want to build for local use like this:
 
-	git clone https://github.com/minetest/irrlicht
-	cd irrlicht
-	cmake . -DBUILD_SHARED_LIBS=OFF
-	make -j$(nproc)
+	git clone https://github.com/Andrey2470T/irrlicht_redo
+	cd irrlicht_redo
+	cmake --build . --parallel $(nproc)
 
-This will put an IrrlichtMtTargets.cmake file into the cmake directory in the current build directory, and it can then be imported from another project by pointing `find_package()` to the build directory, or by setting the `CMAKE_PREFIX_PATH` variable to that same path.
-
-on Windows system:
-
-It is highly recommended to use vcpkg as package manager.
-
-After you successfully built vcpkg you can easily install the required libraries:
-
-	vcpkg install zlib libjpeg-turbo libpng sdl2 --triplet x64-windows
-	
-Run the following script in PowerShell:
-
-	git clone https://github.com/minetest/irrlicht
-	cd irrlicht
-	cmake -B build -G "Visual Studio 17 2022" -A "Win64" -DCMAKE_TOOLCHAIN_FILE=[vcpkg-root]/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=OFF
-	cmake --build build --config Release
-	
 Platforms
 ---------
 
@@ -66,6 +44,23 @@ We aim to support these platforms:
 * Android
 
 This doesn't mean other platforms don't work or won't be supported, if you find something that doesn't work contributions are welcome.
+
+Compatibility matrix
+--------------------
+
+Driver (rows) vs Device (columns)
+
+|                           | SDL2 [1] | SDL3 [2] |
+|---------------------------|----------|----------|
+| OpenGL 3.2+               | Works    | Works    |
+| OpenGL ES 2.x             | Works    | Testing  |
+| WebGL 1                   | ?        | ?        |
+| Null (no graphics output) | Works    | Works    |
+
+Notes:
+
+ * [1] `CIrrDeviceSDL` with `USE_SDL3=0`: supports [many platforms](https://wiki.libsdl.org/SDL3/README-platforms)
+ * [2] `CIrrDeviceSDL` with `USE_SDL3=1`
 
 License
 -------

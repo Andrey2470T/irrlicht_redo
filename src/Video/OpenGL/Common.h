@@ -8,8 +8,13 @@
 #include "irrTypes.h"
 
 #include <GL/glew.h>
-#include <SDL_video.h>
-#include <SDL_opengl.h>
+
+#ifdef _IRR_USE_SDL3_
+	#include <SDL3/SDL_opengl.h>
+#else
+	#include <SDL_video.h>
+	#include <SDL_opengl.h>
+#endif
 
 
 // macro used with COpenGL3DriverBase
