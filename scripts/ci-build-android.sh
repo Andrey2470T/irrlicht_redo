@@ -5,37 +5,271 @@
 
 png_ver=1.6.40
 jpeg_ver=3.0.1
+sdl2_ver=2.32.10
+glew_ver=2.2.0
+jsoncpp_ver=1.0.0
 
 download () {
 	get_tar_archive libpng "https://download.sourceforge.net/libpng/libpng-${png_ver}.tar.gz"
 	get_tar_archive libjpeg "https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${jpeg_ver}.tar.gz"
+	get_tar_archive libsdl2 "https://github.com/libsdl-org/SDL/releases/download/release-${sdl2_ver}/SDL2-${sdl2_ver}.tar.gz"
+	get_tar_archive libglew "https://github.com/nigels-com/glew/releases/download/glew-${glew_ver}/glew-${glew_ver}.tgz"
+	get_tar_archive jsoncpp "https://github.com/open-source-parsers/jsoncpp/archive/${jsoncpp_ver}.tar.gz"
 }
 
-build () {
-	# Build libjpg and libpng first because Irrlicht needs them
+build_png () {
 	mkdir -p libpng
 	pushd libpng
 	$srcdir/libpng/configure --host=$CROSS_PREFIX
 	make && make DESTDIR=$PWD install
 	popd
+}
 
+build_jpeg () {
 	mkdir -p libjpeg
 	pushd libjpeg
 	cmake $srcdir/libjpeg "${CMAKE_FLAGS[@]}" -DENABLE_SHARED=OFF
 	make && make DESTDIR=$PWD install
 	popd
+}
+
+build_sdl2 () {
+	mkdir -p libsdl2
+    pushd libsdl2
+	cmake $srcdir/libsdl2 "${CMAKE_FLAGS[@]}" \
+        -DSDL_STATIC=ON \
+        -DSDL_SHARED=OFF \
+		-DSDL_TEST=OFF \
+		-DSDL2_DISABLE_SDL2MAIN=ON \
+		-DCMAKE_INSTALL_PREFIX=$PWD/install
+    make && make install
+    popd
+    
+    echo "=== SDL2 installation structure ==="
+    find $PWD/libsdl2/install -type f -name "*.h" | head -10
+    echo "==================================="
+}
+
+# GLEW build function for Android
+# GLEW build function for Android - ИСПРАВЛЕННАЯ (только статическая)
+build_glew () {
+	echo "Building GLEW $glew_ver for Android ($TARGET_ABI)..."
+	
+	mkdir -p libglew
+	pushd libglew
+	
+	# Copy source to build directory
+	cp -r $srcdir/libglew/* .
+	
+	# IMPORTANT: Clean any previous builds
+	make clean || true
+	
+	# Создаем директорию для статической библиотеки
+	mkdir -p lib
+	
+	# Компилируем объектный файл для статической библиотеки
+	echo "Compiling GLEW static library..."
+	${CC} -DGLEW_NO_GLU -DGLEW_STATIC ${CFLAGS} -fPIC -Iinclude -c src/glew.c -o glew.o
+	
+	# Создаем статическую библиотеку
+	${AR} rcs lib/libGLEW.a glew.o
+	
+	# Create installation directories
+	mkdir -p install/lib install/include/GL
+	
+	# Copy built files
+	if [ -f lib/libGLEW.a ]; then
+		cp lib/libGLEW.a install/lib/
+		cp include/GL/glew.h install/include/GL/
+		echo "GLEW build completed successfully"
+	else
+		echo "ERROR: GLEW build failed - libGLEW.a not found"
+		exit 1
+	fi
+	
+	popd
+}
+
+build_jsoncpp () {
+	echo "Building JsonCpp $jsoncpp_ver for Android ($TARGET_ABI)..."
+	
+	mkdir -p jsoncpp
+	pushd jsoncpp
+
+	cp -r $srcdir/jsoncpp/* .
+	
+	mkdir -p build install
+	cd build
+	
+	cmake .. \
+		-DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+		-DANDROID_ABI="$TARGET_ABI" \
+		-DANDROID_NATIVE_API_LEVEL=$API \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_LIBS=ON \
+		-DJSONCPP_WITH_TESTS=OFF \
+		-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+		-DCMAKE_INSTALL_PREFIX=$PWD/../install
+		
+	make -j$(nproc)
+	make install
+	
+	popd
+	
+	if [ -f "jsoncpp/install/lib/libjsoncpp.a" ]; then
+		echo "JsonCpp build completed successfully"
+	else
+		echo "ERROR: JsonCpp build failed - libjsoncpp.a not found"
+		exit 1
+	fi
+}
+
+build () {
+	# Build libraries
+	build_png
+	build_jpeg
+	build_sdl2
+	build_glew
+	build_jsoncpp
 
 	local libpng=$PWD/libpng/usr/local/lib/libpng.a
 	local libjpeg=$(echo $PWD/libjpeg/opt/libjpeg-turbo/lib*/libjpeg.a)
+	local libsdl2=$PWD/libsdl2/install/lib/libSDL2.a
+	local libsdl2_include=$PWD/libsdl2/install/include/SDL2
+	local libglew=$PWD/libglew/install/lib/libGLEW.a
+	local libglew_include=$PWD/libglew/install/include
+	local libjsoncpp=$PWD/jsoncpp/install/lib/libjsoncpp.a
+	local libjsoncpp_include=$PWD/jsoncpp/install/include
+
+	# Создаем директорию для конфигурационных файлов GLEW
+	mkdir -p $PWD/cmake/Modules
+
+	# Создаем FindGLEW.cmake для Android
+	cat > $PWD/cmake/Modules/FindGLEW.cmake << 'EOF'
+	# Кастомный FindGLEW.cmake для Android
+	# Всегда использует заранее определенные пути
+
+	if(GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
+		set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
+		set(GLEW_LIBRARIES ${GLEW_LIBRARY})
+		set(GLEW_FOUND TRUE)
+    
+		if(NOT TARGET GLEW::GLEW)
+			add_library(GLEW::GLEW UNKNOWN IMPORTED)
+			set_target_properties(GLEW::GLEW PROPERTIES
+				IMPORTED_LOCATION "${GLEW_LIBRARY}"
+				INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
+			)
+		endif()
+    
+		message(STATUS "Found GLEW (custom): ${GLEW_LIBRARY}")
+		return()
+	endif()
+
+	# Если переменные не заданы, ищем стандартным способом
+	find_path(GLEW_INCLUDE_DIR GL/glew.h)
+	find_library(GLEW_LIBRARY NAMES GLEW glew32 libGLEW)
+
+	if(GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
+		set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
+		set(GLEW_LIBRARIES ${GLEW_LIBRARY})
+		set(GLEW_FOUND TRUE)
+    
+		if(NOT TARGET GLEW::GLEW)
+			add_library(GLEW::GLEW UNKNOWN IMPORTED)
+			set_target_properties(GLEW::GLEW PROPERTIES
+				IMPORTED_LOCATION "${GLEW_LIBRARY}"
+				INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
+			)
+		endif()
+	endif()
+EOF
+
+# Создаем FindJsonCpp.cmake для Android
+	cat > $PWD/cmake/Modules/FindJsonCpp.cmake << 'EOF'
+	# Кастомный FindJsonCpp.cmake для Android
+	# Всегда использует заранее определенные пути
+
+	if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
+		set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
+		set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
+		set(JsonCpp_FOUND TRUE)
+    
+		if(NOT TARGET JsonCpp::JsonCpp)
+			add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
+			set_target_properties(JsonCpp::JsonCpp PROPERTIES
+				IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
+				INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
+			)
+		endif()
+    
+		message(STATUS "Found JsonCpp (custom): ${JsonCpp_LIBRARY}")
+		return()
+	endif()
+	
+	# Если переменные не заданы, ищем стандартным способом
+	find_path(JsonCpp_INCLUDE_DIR json/json.h PATH_SUFFIXES jsoncpp)
+	find_library(JsonCpp_LIBRARY NAMES jsoncpp)
+
+	if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
+		set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
+		set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
+		set(JsonCpp_FOUND TRUE)
+    
+		if(NOT TARGET JsonCpp::JsonCpp)
+			add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
+			set_target_properties(JsonCpp::JsonCpp PROPERTIES
+				IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
+				INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
+			)
+		endif()
+	endif()
+EOF
+
+	# Добавляем нашу директорию с модулями в путь поиска CMake
+	CMAKE_FLAGS+=(-DCMAKE_MODULE_PATH="$PWD/cmake/Modules")
+
+	# В вызове cmake добавляем явную передачу переменных GLEW
 	cmake $srcdir/irrlicht "${CMAKE_FLAGS[@]}" \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DPNG_LIBRARY=$libpng \
 		-DPNG_PNG_INCLUDE_DIR=$(dirname "$libpng")/../include \
 		-DJPEG_LIBRARY=$libjpeg \
-		-DJPEG_INCLUDE_DIR=$(dirname "$libjpeg")/../include
+		-DJPEG_INCLUDE_DIR=$(dirname "$libjpeg")/../include \
+		-DSDL2_LIBRARIES=$libsdl2 \
+		-DSDL2_INCLUDE_DIRS=$libsdl2_include \
+		-DSDL2_LIBRARY=$libsdl2 \
+		-DSDL2_INCLUDE_DIR=$libsdl2_include \
+		-DGLEW_LIBRARY=$libglew \
+		-DGLEW_INCLUDE_DIR=$libglew_include \
+		-DGLEW_LIBRARIES=$libglew \
+		-DGLEW_INCLUDE_DIRS=$libglew_include \
+		-DJsonCpp_LIBRARY=$libjsoncpp \
+		-DJsonCpp_INCLUDE_DIR=$libjsoncpp_include \
+		-DJsonCpp_LIBRARIES=$libjsoncpp \
+		-DJsonCpp_INCLUDE_DIRS=$libjsoncpp_include \
+		-DCMAKE_CXX_FLAGS="-I${libglew_include} -I${libjsoncpp_include} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS} -Wno-error -Wno-format-security" \
+		-DCMAKE_C_FLAGS="-I${libglew_include} -I${libjsoncpp_include} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security"
+		
 	make
+	
+	echo "Looking for libIrrlichtRedo.a..."
+	find . -name "libIrrlichtRedo.a" -type f
 
-	cp -p lib/Android/libIrrlichtMt.a $libpng $libjpeg $pkgdir/
+	if [ -f "lib/Android/libIrrlichtRedo.a" ]; then
+		cp -p lib/Android/libIrrlichtRedo.a $pkgdir/
+	elif [ -f "lib/libIrrlichtRedo.a" ]; then
+		cp -p lib/libIrrlichtRedo.a $pkgdir/
+	elif [ -f "src/libIrrlichtRedo.a" ]; then
+		cp -p src/libIrrlichtRedo.a $pkgdir/
+	else
+		echo "ERROR: Cannot find libIrrlichtRedo.a"
+		find . -name "*.a" -type f | head -20
+		exit 1
+	fi
+
+	cp -p $libpng $libjpeg $libsdl2 $libglew $libjsoncpp $pkgdir/
 	cp -a $srcdir/irrlicht/include $pkgdir/include
 	cp -a $srcdir/irrlicht/media/Shaders $pkgdir/Shaders
 }

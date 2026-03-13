@@ -7,32 +7,7 @@ on:
   - workflow_dispatch
 
 jobs:
-
-  linux-gl:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install g++ cmake libsdl2-dev libxi-dev libgl1-mesa-dev libpng-dev libjpeg-dev zlib1g-dev -qyy
-
-      - name: Build
-        run: |
-          cmake . -DUSE_SDL2=OFF
-          make VERBOSE=1 -j2
-
-      - name: Package
-        run: |
-          make DESTDIR=$PWD/_install install
-          tar -c -I "gzip -9" -f irrlicht-linux.tar.gz -C ./_install/usr/local .
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: irrlicht-linux
-          path: ./irrlicht-linux.tar.gz
-
-  linux-gles:
+  linux-gl3:
     # Xvfb test is broken on 20.04 for unknown reasons (not our bug)
     runs-on: ubuntu-22.04
     steps:
@@ -40,55 +15,26 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libsdl2-dev libxi-dev libgles2-mesa-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
+          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libjsoncpp-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
 
       - name: Build
         run: |
-          cmake . -DBUILD_EXAMPLES=1 -DUSE_SDL2=OFF -DENABLE_OPENGL=OFF -DENABLE_GLES2=ON
-          make -j2
+          cmake . -DENABLE_OPENGL3=ON
+          make -j$(nproc)
 
-  linux-sdl:
+  linux-gles2:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev -qyy
+          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libjsoncpp-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
 
       - name: Build
         run: |
-          cmake . -DBUILD_EXAMPLES=1 -DUSE_SDL2=ON -DCMAKE_BUILD_TYPE=Debug
-          make -j2
-
-  linux-sdl-gl3:
-    # Xvfb test is broken on 20.04 for unknown reasons (not our bug)
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
-
-      - name: Build
-        run: |
-          cmake . -DBUILD_EXAMPLES=1 -DUSE_SDL2=ON -DENABLE_OPENGL=OFF -DENABLE_OPENGL3=ON
-          make -j2
-
-  linux-sdl-gles2:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install g++ cmake libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
-
-      - name: Build
-        run: |
-          cmake . -DBUILD_EXAMPLES=1 -DUSE_SDL2=ON -DENABLE_OPENGL=OFF -DENABLE_GLES2=ON
-          make -j2
+          cmake . -DENABLE_GLES2=ON
+          make -j$(nproc)
 
   mingw:
     name: "MinGW ${{matrix.config.variant}}${{matrix.config.extras}}"
@@ -128,32 +74,15 @@ jobs:
       - name: Install deps
         run: |
           brew update --auto-update
-          brew install cmake libpng jpeg sdl2
+          brew install cmake glew libpng jpeg sdl2 jsoncpp
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
 
       - name: Build
         run: |
-          cmake . -DCMAKE_FIND_FRAMEWORK=LAST -DBUILD_EXAMPLES=1
-          make -j3
-
-  macos-sdl:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install deps
-        run: |
-          brew update --auto-update
-          brew install cmake libpng jpeg sdl2
-        env:
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
-
-      - name: Build
-        run: |
-          cmake . -DCMAKE_FIND_FRAMEWORK=LAST -DBUILD_EXAMPLES=1 -DUSE_SDL2=1
-          make -j3
+          cmake . -DCMAKE_FIND_FRAMEWORK=LAST
+          make -j$(nproc)
 
   android:
     name: Android ${{ matrix.arch }}
@@ -170,9 +99,9 @@ jobs:
 
       - name: Install deps
         run: |
-          sudo rm /var/lib/man-db/auto-update
+          sudo rm -f /var/lib/man-db/auto-update
           sudo apt-get update
-          sudo apt-get install -qyy wget unzip zip gcc-multilib make cmake sdl2
+          sudo apt-get install -qyy wget unzip zip gcc-multilib make cmake
 
       - name: Cache NDK
         id: cache-ndk
