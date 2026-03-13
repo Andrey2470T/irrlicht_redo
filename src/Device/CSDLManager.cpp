@@ -3,9 +3,6 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "CSDLManager.h"
-
-#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
-
 #include "CIrrDeviceSDL.h"
 
 
@@ -44,5 +41,3 @@ bool CSDLManager::swapBuffers()
 }
 
 }
-
-#endif

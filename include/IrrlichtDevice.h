@@ -7,7 +7,6 @@
 #include "IReferenceCounted.h"
 #include "dimension2d.h"
 #include "EDriverTypes.h"
-#include "EDeviceTypes.h"
 #include "IEventReceiver.h"
 #include "ICursorControl.h"
 #include "Timer.h"
@@ -323,11 +322,6 @@ public:
 	The function is still somewhat experimental, as the kind of messages we clear is based on just a few use-cases.
 	If you think further messages should be cleared, or some messages should not be cleared here, then please tell us. */
 	virtual void clearSystemMessages() = 0;
-
-	//! Get the type of the device.
-	/** This allows the user to check which windowing system is currently being
-	used. */
-	virtual E_DEVICE_TYPE getType() const = 0;
 
 	//! Get the version string of the underlying system (e.g. SDL)
 	virtual std::string getVersionString() const

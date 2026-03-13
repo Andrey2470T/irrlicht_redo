@@ -1,6 +1,5 @@
-set(DEFAULT_SDL2 ON)
-
-option(USE_SDL2 "Use the SDL2 backend" ${DEFAULT_SDL2})
+include(CheckCXXSourceCompiles)
+include(CheckCXXCompilerFlag)
 
 option(USE_SDL2_STATIC "Link with SDL2 static libraries" FALSE)
 
@@ -20,7 +19,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
 	# Enable SSE for floating point math on 32-bit x86 by default
 	# reasoning see minetest issue #11810 and https://gcc.gnu.org/wiki/FloatingPointMath
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-		include(CheckCXXSourceCompiles)
 		check_cxx_source_compiles("#ifndef __i686__\n#error\n#endif\nint main(){}" IS_I686)
 		if(IS_I686)
 			message(STATUS "Detected Intel x86: using SSE instead of x87 FPU")
@@ -34,6 +32,7 @@ elseif(MSVC)
 	add_compile_definitions(
 		# Suppress some useless warnings
 		_CRT_SECURE_NO_DEPRECATE
+		_CRT_SECURE_NO_WARNINGS
 		# Get M_PI to work
 		_USE_MATH_DEFINES
 		# Don't define min/max macros in minwindef.h
@@ -49,71 +48,32 @@ elseif(MSVC)
 	endif()
 endif()
 
-# Platform-independent configuration (hard-coded currently)
-add_compile_definitions(IRR_ENABLE_BUILTIN_FONT)
-
 # Platform-specific configuration
 
 if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 	set(SOLARIS TRUE)
 endif()
 
-# Device
+# Platform (necessary for CFileSystem at least)
 
 if(WIN32)
 	add_compile_definitions(_IRR_WINDOWS_ _IRR_WINDOWS_API_)
-	set(DEVICE "WINDOWS")
 elseif(APPLE)
 	add_compile_definitions(_IRR_OSX_PLATFORM_)
-	set(DEVICE "OSX")
 elseif(ANDROID)
 	add_compile_definitions(_IRR_ANDROID_PLATFORM_)
-	if(NOT USE_SDL2)
-		message(FATAL_ERROR "The Android build requires SDL2")
-	endif()
 elseif(EMSCRIPTEN)
-	add_compile_definitions(_IRR_EMSCRIPTEN_PLATFORM_ _IRR_COMPILE_WITH_EGL_MANAGER_)
+	add_compile_definitions(_IRR_EMSCRIPTEN_PLATFORM_)
 	set(LINUX_PLATFORM TRUE)
-	set(DEVICE "SDL")
 elseif(SOLARIS)
 	add_compile_definitions(_IRR_SOLARIS_PLATFORM_ _IRR_POSIX_API_)
-	set(DEVICE "X11")
 else()
 	add_compile_definitions(_IRR_POSIX_API_)
 	set(LINUX_PLATFORM TRUE)
-	set(DEVICE "X11")
 endif()
 
 if(LINUX_PLATFORM)
 	add_compile_definitions(_IRR_LINUX_PLATFORM_)
-endif()
-
-if(MSVC)
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-endif()
-
-if(USE_SDL2)
-	set(DEVICE "SDL")
-elseif(DEVICE STREQUAL "SDL")
-	message(FATAL_ERROR "SDL was used but not enabled?!")
-endif()
-
-add_compile_definitions("_IRR_COMPILE_WITH_${DEVICE}_DEVICE_")
-
-# X11
-
-if(DEVICE STREQUAL "X11")
-	option(USE_X11 "Use X11" TRUE)
-else()
-	set(USE_X11 FALSE)
-endif()
-
-if(LINUX_PLATFORM AND USE_X11)
-	option(USE_XINPUT2 "Use XInput2" TRUE)
-	option(USE_XCURSOR "Use XCursor" FALSE)
-else()
-	set(USE_XINPUT2 FALSE)
-	set(USE_XCURSOR FALSE)
 endif()
 
 # Joystick
@@ -142,23 +102,9 @@ if(ANDROID OR EMSCRIPTEN)
 
 		add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
 	endif()
-
-	if(DEVICE MATCHES "^(WINDOWS|X11)$" OR EMSCRIPTEN)
-		add_compile_definitions(_IRR_COMPILE_WITH_EGL_MANAGER_)
-	endif()
 else()
 	add_compile_definitions(_IRR_COMPILE_WITH_OPENGL3_)
 	set(OPENGL_DIRECT_LINK TRUE) # driver relies on this
-
-	if(NOT USE_SDL2)
-		if(DEVICE STREQUAL "WINDOWS")
-			add_compile_definitions(_IRR_COMPILE_WITH_WGL_MANAGER_)
-		elseif(DEVICE STREQUAL "X11")
-			add_compile_definitions(_IRR_COMPILE_WITH_GLX_MANAGER_)
-		elseif(DEVICE STREQUAL "OSX")
-			add_compile_definitions(_IRR_COMPILE_WITH_NSOGL_MANAGER_)
-		endif()
-	endif()
 endif()
 
 
@@ -172,7 +118,6 @@ endif()
 
 # Configuration report
 
-message(STATUS "Device: ${DEVICE}")
 message(STATUS "Renderer: ${RENDERER}")
 
 # Required libs
@@ -191,19 +136,21 @@ else()
 endif()
 
 set(USE_SDL2_SHARED FALSE)
-if(USE_SDL2)
-	if(NOT USE_SDL2_STATIC)
-		set(USE_SDL2_SHARED TRUE)
-	endif()
-	if(NOT ANDROID)
-		find_package(SDL2 REQUIRED)
-	else()
-		# provided by AndroidLibs.cmake
-	endif()
-	message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
 
-	# unfortunately older SDL does not provide its version to cmake, so check header.
-	set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
+if(NOT USE_SDL2_STATIC)
+	set(USE_SDL2_SHARED TRUE)
+endif()
+if(NOT ANDROID)
+	find_package(SDL2 REQUIRED)
+else()
+	# provided by AndroidLibs.cmake
+endif()
+message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
+
+# unfortunately older SDL does not provide its version to cmake, so check header.
+set(CMAKE_REQUIRED_INCLUDES ${SDL2_INCLUDE_DIRS})
+
+if(NOT DISABLE_CHECK_SDL_VERSION)
 	unset(CHECK_SDL_VERSION CACHE)
 	check_cxx_source_compiles("#include <SDL_version.h>\n\
 #if !SDL_VERSION_ATLEAST(2, 0, 10)\n\
@@ -213,30 +160,17 @@ int main() {}" CHECK_SDL_VERSION)
 	if(NOT CHECK_SDL_VERSION)
 		message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
 	endif()
-
-	# ...no target either.
-	if(NOT TARGET SDL2::SDL2)
-		add_library(SDL2::SDL2 SHARED IMPORTED)
-		set_target_properties(SDL2::SDL2 PROPERTIES
-			IMPORTED_LOCATION "${SDL2_LIBRARIES}")
-	endif()
 endif()
 
-# Platform-specific libs
+# ...no target either.
+if(NOT TARGET SDL2::SDL2)
+	add_library(SDL2::SDL2 SHARED IMPORTED)
+	set_target_properties(SDL2::SDL2 PROPERTIES
+		IMPORTED_LOCATION "${SDL2_LIBRARIES}")
+endif()
 
-if(ANDROID)
-	enable_language(C)
-elseif(APPLE)
-	find_library(COCOA_LIB Cocoa REQUIRED)
-	find_library(IOKIT_LIB IOKit REQUIRED)
-
+if(APPLE)
 	add_compile_definitions(GL_SILENCE_DEPRECATION)
-elseif(NOT USE_SDL2)
-	# Unix probably
-	find_package(X11 REQUIRED)
-	if(USE_XINPUT2 AND NOT X11_Xi_FOUND)
-		message(FATAL_ERROR "XInput not found")
-	endif()
 endif()
 
 set(link_includes
@@ -246,13 +180,10 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
-	"$<$<BOOL:${USE_SDL2}>:${SDL2_INCLUDE_DIRS}>"
+	"${SDL2_INCLUDE_DIRS}"
 
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
-	${EGL_INCLUDE_DIR}
-
-	"$<$<BOOL:${USE_X11}>:${X11_INCLUDE_DIR}>"
 )
 
 # Source files
@@ -276,9 +207,6 @@ target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
 
 set(IRRDRVROBJ
 	Video/CNullDriver.cpp
-	Device/CGLXManager.cpp
-	Device/CWGLManager.cpp
-	Device/CEGLManager.cpp
 	Device/CSDLManager.cpp
 )
 
@@ -335,12 +263,10 @@ add_library(IRRIOOBJ OBJECT
 	IO/CZipReader.cpp
 )
 
-add_library(IRROTHEROBJ OBJECT
+add_library(IRRDEVICEOBJ OBJECT
 	Device/byteswap.cpp
 	Device/CIrrDeviceSDL.cpp
-	Device/CIrrDeviceLinux.cpp
 	Device/CIrrDeviceStub.cpp
-	Device/CIrrDeviceWin32.cpp
 	Device/Clipboard.cpp
 	Device/Irrlicht.cpp
 	Device/Logger.cpp
@@ -348,28 +274,12 @@ add_library(IRROTHEROBJ OBJECT
 )
 
 if(ENABLE_OPENGL3)
-	target_compile_definitions(IRROTHEROBJ PRIVATE ENABLE_OPENGL3)
+	target_compile_definitions(IRRDEVICEOBJ PRIVATE ENABLE_OPENGL3)
 endif()
 
 if(APPLE)
-	# Build all IRROTHEROBJ sources as objc++, including the .cpp's
-	set_target_properties(IRROTHEROBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
-	target_sources(IRROTHEROBJ PRIVATE
-		Device/CIrrDeviceOSX.mm
-		Device/CNSOGLManager.mm
-	)
-endif()
-
-if(USE_X11)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_COMPILE_WITH_X11_)
-endif()
-
-if(USE_XINPUT2)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_X11_XINPUT2_)
-endif()
-
-if(USE_XCURSOR)
-	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_LINUX_XCURSOR_)
+	# Build all IRRDEVICEOBJ sources as objc++, including the .cpp's
+	set_target_properties(IRRDEVICEOBJ PROPERTIES COMPILE_OPTIONS "-xobjective-c++")
 endif()
 
 add_library(IRRGUIOBJ OBJECT
@@ -403,9 +313,10 @@ add_library(IrrlichtRedo STATIC
 	Scene/CSceneManager.cpp
 	Mesh/CMeshCache.cpp
 )
+
 foreach(object_lib
 	IRRMESHOBJ IRRVIDEOOBJ
-	IRRIOOBJ IRROTHEROBJ IRRGUIOBJ)
+	IRRIOOBJ IRRDEVICEOBJ IRRGUIOBJ)
 	# Set include directories for object library compilation
 	target_include_directories(${object_lib} PRIVATE ${link_includes})
 	if(CMAKE_GENERATOR STREQUAL "Xcode")
@@ -446,16 +357,9 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 
 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-	${EGL_LIBRARY}
 
 	# incl. transitive SDL2 dependencies for static linking
 	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
-	${COCOA_LIB}
-	${IOKIT_LIB}
-	"$<$<PLATFORM_ID:Windows>:gdi32>"
-	"$<$<PLATFORM_ID:Windows>:winmm>"
-	"$<$<BOOL:${USE_X11}>:${X11_X11_LIB}>"
-	"$<$<BOOL:${USE_X11}>:${X11_Xi_LIB}>"
 )
 
 if(WIN32)
@@ -465,5 +369,5 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(IrrlichtRedo INTERFACE _DEBUG)
 endif()
 if(APPLE OR ANDROID OR EMSCRIPTEN)
-	target_compile_definitions(IrrlichtRedo PUBLIC IRR_MOBILE_PATHS)
+	target_compile_definitions(IrrlichtMt PUBLIC IRR_MOBILE_PATHS)
 endif()

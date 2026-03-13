@@ -4,8 +4,6 @@
 
 #pragma once
 
-#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
-
 #include "IContextManager.h"
 
 
@@ -43,5 +41,3 @@ private:
 	CIrrDeviceSDL *SDLDevice;
 };
 }
-
-#endif

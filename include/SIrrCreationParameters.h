@@ -5,7 +5,6 @@
 #pragma once
 
 #include "EDriverTypes.h"
-#include "EDeviceTypes.h"
 #include "dimension2d.h"
 #include "Logger.h"
 #include "position2d.h"
@@ -19,7 +18,6 @@ struct SIrrlichtCreationParameters
 {
 	//! Constructs a SIrrlichtCreationParameters structure with default values.
 	SIrrlichtCreationParameters() :
-			DeviceType(EIDT_BEST),
 			DriverType(video::EDT_OPENGL3),
 			WindowSize(core::dimension2d<u32>(800, 600)),
 			WindowPosition(core::position2di(-1, -1)),
@@ -50,17 +48,6 @@ struct SIrrlichtCreationParameters
 			DriverDebug(false)
 	{
 	}
-
-	//! Type of the device.
-	/** This setting decides the windowing system used by the device, most device types are native
-	to a specific operating system and so may not be available.
-	EIDT_WIN32 is only available on Windows desktops,
-	EIDT_COCOA is only available on Mac OSX,
-	EIDT_X11 is available on Linux, Solaris, BSD and other operating systems which use X11,
-	EIDT_SDL is available on most systems if compiled in,
-	EIDT_BEST will select the best available device for your operating system.
-	Default: EIDT_BEST. */
-	E_DEVICE_TYPE DeviceType;
 
 	//! Type of video driver used to render graphics.
 	video::E_DRIVER_TYPE DriverType;

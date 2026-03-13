@@ -6,8 +6,6 @@
 
 #pragma once
 
-#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
-
 #include "IrrlichtDevice.h"
 #include "CIrrDeviceStub.h"
 #include "ICursorControl.h"
@@ -101,12 +99,6 @@ public:
 
 	//! Activate any joysticks, and generate events for them.
 	bool activateJoysticks(core::array<SJoystickInfo> &joystickInfo) override;
-
-	//! Get the device type
-	E_DEVICE_TYPE getType() const override
-	{
-		return EIDT_SDL;
-	}
 
 	//! Get the SDL version
 	std::string getVersionString() const override
@@ -337,6 +329,3 @@ private:
 	s32 CurrentTouchCount;
 	bool IsInBackground;
 };
-
-
-#endif // _IRR_COMPILE_WITH_SDL_DEVICE_

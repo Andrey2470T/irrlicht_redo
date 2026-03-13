@@ -2,8 +2,6 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
-
 #include "CIrrDeviceSDL.h"
 #include "IEventReceiver.h"
 #include "IGUIElement.h"
@@ -1528,6 +1526,3 @@ void CIrrDeviceSDL::CCursorControl::initCursors()
 	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE));    // ECI_SIZEWE
 	Cursors.emplace_back(nullptr);                                             // ECI_UP
 }
-
-
-#endif // _IRR_COMPILE_WITH_SDL_DEVICE_
