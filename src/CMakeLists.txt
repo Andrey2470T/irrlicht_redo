@@ -210,7 +210,6 @@ set(link_includes
 
 set(IRRMESHLOADER
 	Mesh/CB3DMeshFileLoader.cpp
-	Mesh/CGLTFMeshFileLoader.cpp
 	Mesh/COBJMeshFileLoader.cpp
 	Mesh/CXMeshFileLoader.cpp
 )
@@ -222,8 +221,6 @@ add_library(IRRMESHOBJ OBJECT
 	Scene/CAnimatedMeshSceneNode.cpp
 	${IRRMESHLOADER}
 )
-
-target_link_libraries(IRRMESHOBJ PUBLIC tiniergltf::tiniergltf)
 
 set(IRRDRVROBJ
 	Video/CNullDriver.cpp
@@ -374,7 +371,6 @@ target_include_directories(IrrlichtRedo
 # this needs to be here and not in a variable (like link_includes) due to issues
 # with the generator expressions on at least CMake 3.22, but not 3.28 or later
 target_link_libraries(IrrlichtRedo PRIVATE
-	tiniergltf::tiniergltf
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
@@ -397,5 +393,5 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(IrrlichtRedo INTERFACE _DEBUG)
 endif()
 if(APPLE OR ANDROID OR EMSCRIPTEN)
-	target_compile_definitions(IrrlichtMt PUBLIC IRR_MOBILE_PATHS)
+	target_compile_definitions(IrrlichtRedo PUBLIC IRR_MOBILE_PATHS)
 endif()

@@ -10,7 +10,6 @@ libpng_version=1.6.40
 sdl2_version=2.28.5
 zlib_version=1.3.1
 glew_version=2.2.0
-jsoncpp_version=1.0.0
 
 download () {
 	local url=$1
@@ -67,54 +66,6 @@ download_glew () {
 	echo "GLEW download completed"
 }
 
-download_jsoncpp () {
-	echo "Downloading JsonCpp $jsoncpp_version for $variant..."
-
-	jsoncpp_url="https://github.com/open-source-parsers/jsoncpp/archive/${jsoncpp_version}.tar.gz"
-	jsoncpp_tar="jsoncpp-${jsoncpp_version}.tar.gz"
-	
-	if [ ! -f "$jsoncpp_tar" ]; then
-		wget "$jsoncpp_url" -O "$jsoncpp_tar"
-	fi
-
-	if grep -q "$jsoncpp_tar" "$topdir/sha256sums.txt" 2>/dev/null; then
-		sha256sum -w -c <(grep -F "$jsoncpp_tar" "$topdir/sha256sums.txt")
-	fi
-	
-	rm -rf jsoncpp-src
-	mkdir -p jsoncpp-src
-	tar -xzf "$jsoncpp_tar" -C jsoncpp-src --strip-components=1
-
-	echo "Building JsonCpp from source for $variant..."
-	mkdir -p jsoncpp-src/build
-	pushd jsoncpp-src/build
-	
-	cmake .. \
-		-DCMAKE_SYSTEM_NAME=Windows \
-		-DCMAKE_C_COMPILER="$CC" \
-		-DCMAKE_CXX_COMPILER="$CXX" \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DBUILD_SHARED_LIBS=OFF \
-		-DBUILD_STATIC_LIBS=ON \
-		-DJSONCPP_WITH_TESTS=OFF \
-		-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
-		-DCMAKE_INSTALL_PREFIX=$PWD/../../jsoncpp
-	
-	make -j$(nproc)
-	make install
-	
-	popd
-
-	if [ -f "jsoncpp/lib/libjsoncpp.a" ]; then
-		echo "JsonCpp build completed successfully"
-	else
-		echo "ERROR: JsonCpp build failed - libjsoncpp.a not found"
-		exit 1
-	fi
-	
-	rm -rf jsoncpp-src
-}
-
 libs=$PWD/libs
 mkdir -p libs
 pushd libs
@@ -128,8 +79,6 @@ download "$libhost/llvm/zlib-$zlib_version-$variant.zip"
 download_glew
 
 popd
-
-download_jsoncpp
 
 glew_include_dir="$libs/glew/include"
 
@@ -145,26 +94,6 @@ else
 fi
 
 glew_dll=$(find $libs/glew/bin -name "*.dll" 2>/dev/null | head -1)
-
-jsoncpp_include_dir="$PWD/jsoncpp/include"
-jsoncpp_library="$PWD/jsoncpp/lib/libjsoncpp.a"
-
-if [ ! -f "$jsoncpp_library" ]; then
-	echo "ERROR: JsonCpp library not found at $jsoncpp_library"
-	exit 1
-fi
-
-if [ ! -f "$jsoncpp_include_dir/json/json.h" ]; then
-	echo "ERROR: JsonCpp header not found at $jsoncpp_include_dir/json/json.h"
-
-	if [ -f "$jsoncpp_include_dir/jsoncpp/json/json.h" ]; then
-		jsoncpp_include_dir="$jsoncpp_include_dir/jsoncpp"
-		echo "Found JsonCpp headers at $jsoncpp_include_dir"
-	else
-		exit 1
-	fi
-fi
-
 # ============================================================
 
 tmp=(
@@ -179,10 +108,6 @@ tmp=(
 	-DGLEW_LIBRARIES="$glew_library" \
 	-DGLEW_INCLUDE_DIR="$glew_include_dir" \
 	-DGLEW_INCLUDE_DIRS="$glew_include_dir" \
-	-DJsonCpp_LIBRARY="$jsoncpp_library" \
-	-DJsonCpp_INCLUDE_DIR="$jsoncpp_include_dir" \
-	-DJsonCpp_LIBRARIES="$jsoncpp_library" \
-	-DJsonCpp_INCLUDE_DIRS="$jsoncpp_include_dir" \ 
 	-DCMAKE_PREFIX_PATH="$libs/sdl2/lib/cmake" \
 	-DSDL2_LIBRARIES="$libs/sdl2/lib/libSDL2.dll.a" \
 	-DSDL2_INCLUDE_DIRS="$libs/sdl2/include/SDL2" \
@@ -200,10 +125,6 @@ echo "GLEW header exists: $(ls -la "$glew_include_dir/GL/glew.h" 2>/dev/null || 
 if [ -n "$glew_dll" ]; then
 	echo "GLEW DLL exists: $(ls -la "$glew_dll" 2>/dev/null || echo 'NOT FOUND')"
 fi
-echo "Using JsonCpp library: $jsoncpp_library"
-echo "Using JsonCpp include: $jsoncpp_include_dir"
-echo "JsonCpp library exists: $(ls -la "$jsoncpp_library" 2>/dev/null || echo 'NOT FOUND')"
-echo "JsonCpp header exists: $(ls -la "$jsoncpp_include_dir/json/json.h" 2>/dev/null || echo 'NOT FOUND')"
 echo "=========================="
 
 if [ ! -f "$glew_library" ]; then
@@ -213,16 +134,6 @@ fi
 
 if [ ! -f "$glew_include_dir/GL/glew.h" ]; then
 	echo "ERROR: GLEW header not found at $glew_include_dir/GL/glew.h"
-	exit 1
-fi
-
-if [ ! -f "$jsoncpp_library" ]; then
-	echo "ERROR: JsonCpp library not found at $jsoncpp_library"
-	exit 1
-fi
-
-if [ ! -f "$jsoncpp_include_dir/json/json.h" ]; then
-	echo "ERROR: JsonCpp header not found at $jsoncpp_include_dir/json/json.h"
 	exit 1
 fi
 
@@ -272,46 +183,6 @@ if(GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
 endif()
 EOF
 
-cat > $PWD/cmake/Modules/FindJsonCpp.cmake << 'EOF'
-# Кастомный FindJsonCpp.cmake для MinGW
-# Всегда использует заранее определенные пути
-
-if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
-    set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
-    set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
-    set(JsonCpp_FOUND TRUE)
-    
-    if(NOT TARGET JsonCpp::JsonCpp)
-        add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
-        set_target_properties(JsonCpp::JsonCpp PROPERTIES
-            IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
-        )
-    endif()
-    
-    message(STATUS "Found JsonCpp (custom): ${JsonCpp_LIBRARY}")
-    return()
-endif()
-
-# Если переменные не заданы, ищем стандартным способом
-find_path(JsonCpp_INCLUDE_DIR json/json.h PATH_SUFFIXES jsoncpp)
-find_library(JsonCpp_LIBRARY NAMES jsoncpp)
-
-if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
-    set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
-    set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
-    set(JsonCpp_FOUND TRUE)
-    
-    if(NOT TARGET JsonCpp::JsonCpp)
-        add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
-        set_target_properties(JsonCpp::JsonCpp PROPERTIES
-            IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
-        )
-    endif()
-endif()
-EOF
-
 # Добавляем нашу директорию с модулями в путь поиска CMake
 tmp+=(-DCMAKE_MODULE_PATH="$PWD/cmake/Modules")
 
@@ -320,11 +191,8 @@ cmake . "${tmp[@]}" \
     -DGLEW_LIBRARY="${glew_library}" \
     -DGLEW_INCLUDE_DIR="${glew_include_dir}" \
     -DGLEW_INCLUDE_DIRS="${glew_include_dir}" \
-    -DJsonCpp_LIBRARY="${jsoncpp_library}" \
-    -DJsonCpp_INCLUDE_DIR="${jsoncpp_include_dir}" \
-    -DJsonCpp_INCLUDE_DIRS="${jsoncpp_include_dir}" \
-    -DCMAKE_CXX_FLAGS="-I${glew_include_dir} -I${jsoncpp_include_dir} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS}" \
-    -DCMAKE_C_FLAGS="-I${glew_include_dir} -I${jsoncpp_include_dir} -DGLEW_NO_GLU ${CMAKE_C_FLAGS}"
+    -DCMAKE_CXX_FLAGS="-I${glew_include_dir} --DGLEW_NO_GLU ${CMAKE_CXX_FLAGS}" \
+    -DCMAKE_C_FLAGS="-I${glew_include_dir} -DGLEW_NO_GLU ${CMAKE_C_FLAGS}"
 
 make -j$(nproc)
 

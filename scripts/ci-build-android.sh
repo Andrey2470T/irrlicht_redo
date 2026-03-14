@@ -7,14 +7,12 @@ png_ver=1.6.40
 jpeg_ver=3.0.1
 sdl2_ver=2.32.10
 glew_ver=2.2.0
-jsoncpp_ver=1.0.0
 
 download () {
 	get_tar_archive libpng "https://download.sourceforge.net/libpng/libpng-${png_ver}.tar.gz"
 	get_tar_archive libjpeg "https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${jpeg_ver}.tar.gz"
 	get_tar_archive libsdl2 "https://github.com/libsdl-org/SDL/releases/download/release-${sdl2_ver}/SDL2-${sdl2_ver}.tar.gz"
 	get_tar_archive libglew "https://github.com/nigels-com/glew/releases/download/glew-${glew_ver}/glew-${glew_ver}.tgz"
-	get_tar_archive jsoncpp "https://github.com/open-source-parsers/jsoncpp/archive/${jsoncpp_ver}.tar.gz"
 }
 
 build_png () {
@@ -90,48 +88,12 @@ build_glew () {
 	popd
 }
 
-build_jsoncpp () {
-	echo "Building JsonCpp $jsoncpp_ver for Android ($TARGET_ABI)..."
-	
-	mkdir -p jsoncpp
-	pushd jsoncpp
-
-	cp -r $srcdir/jsoncpp/* .
-	
-	mkdir -p build install
-	cd build
-	
-	cmake .. \
-		-DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
-		-DANDROID_ABI="$TARGET_ABI" \
-		-DANDROID_NATIVE_API_LEVEL=$API \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DBUILD_SHARED_LIBS=OFF \
-		-DBUILD_STATIC_LIBS=ON \
-		-DJSONCPP_WITH_TESTS=OFF \
-		-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
-		-DCMAKE_INSTALL_PREFIX=$PWD/../install
-		
-	make -j$(nproc)
-	make install
-	
-	popd
-	
-	if [ -f "jsoncpp/install/lib/libjsoncpp.a" ]; then
-		echo "JsonCpp build completed successfully"
-	else
-		echo "ERROR: JsonCpp build failed - libjsoncpp.a not found"
-		exit 1
-	fi
-}
-
 build () {
 	# Build libraries
 	build_png
 	build_jpeg
 	build_sdl2
 	build_glew
-	build_jsoncpp
 
 	local libpng=$PWD/libpng/usr/local/lib/libpng.a
 	local libjpeg=$(echo $PWD/libjpeg/opt/libjpeg-turbo/lib*/libjpeg.a)
@@ -139,8 +101,6 @@ build () {
 	local libsdl2_include=$PWD/libsdl2/install/include/SDL2
 	local libglew=$PWD/libglew/install/lib/libGLEW.a
 	local libglew_include=$PWD/libglew/install/include
-	local libjsoncpp=$PWD/jsoncpp/install/lib/libjsoncpp.a
-	local libjsoncpp_include=$PWD/jsoncpp/install/include
 
 	# Создаем директорию для конфигурационных файлов GLEW
 	mkdir -p $PWD/cmake/Modules
@@ -186,47 +146,6 @@ build () {
 	endif()
 EOF
 
-# Создаем FindJsonCpp.cmake для Android
-	cat > $PWD/cmake/Modules/FindJsonCpp.cmake << 'EOF'
-	# Кастомный FindJsonCpp.cmake для Android
-	# Всегда использует заранее определенные пути
-
-	if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
-		set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
-		set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
-		set(JsonCpp_FOUND TRUE)
-    
-		if(NOT TARGET JsonCpp::JsonCpp)
-			add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
-			set_target_properties(JsonCpp::JsonCpp PROPERTIES
-				IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
-				INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
-			)
-		endif()
-    
-		message(STATUS "Found JsonCpp (custom): ${JsonCpp_LIBRARY}")
-		return()
-	endif()
-	
-	# Если переменные не заданы, ищем стандартным способом
-	find_path(JsonCpp_INCLUDE_DIR json/json.h PATH_SUFFIXES jsoncpp)
-	find_library(JsonCpp_LIBRARY NAMES jsoncpp)
-
-	if(JsonCpp_INCLUDE_DIR AND JsonCpp_LIBRARY)
-		set(JsonCpp_INCLUDE_DIRS ${JsonCpp_INCLUDE_DIR})
-		set(JsonCpp_LIBRARIES ${JsonCpp_LIBRARY})
-		set(JsonCpp_FOUND TRUE)
-    
-		if(NOT TARGET JsonCpp::JsonCpp)
-			add_library(JsonCpp::JsonCpp UNKNOWN IMPORTED)
-			set_target_properties(JsonCpp::JsonCpp PROPERTIES
-				IMPORTED_LOCATION "${JsonCpp_LIBRARY}"
-				INTERFACE_INCLUDE_DIRECTORIES "${JsonCpp_INCLUDE_DIR}"
-			)
-		endif()
-	endif()
-EOF
-
 	# Добавляем нашу директорию с модулями в путь поиска CMake
 	CMAKE_FLAGS+=(-DCMAKE_MODULE_PATH="$PWD/cmake/Modules")
 
@@ -245,12 +164,8 @@ EOF
 		-DGLEW_INCLUDE_DIR=$libglew_include \
 		-DGLEW_LIBRARIES=$libglew \
 		-DGLEW_INCLUDE_DIRS=$libglew_include \
-		-DJsonCpp_LIBRARY=$libjsoncpp \
-		-DJsonCpp_INCLUDE_DIR=$libjsoncpp_include \
-		-DJsonCpp_LIBRARIES=$libjsoncpp \
-		-DJsonCpp_INCLUDE_DIRS=$libjsoncpp_include \
-		-DCMAKE_CXX_FLAGS="-I${libglew_include} -I${libjsoncpp_include} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS} -Wno-error -Wno-format-security" \
-		-DCMAKE_C_FLAGS="-I${libglew_include} -I${libjsoncpp_include} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security"
+		-DCMAKE_CXX_FLAGS="-I${libglew_include} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS} -Wno-error -Wno-format-security" \
+		-DCMAKE_C_FLAGS="-I${libglew_include} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security"
 		
 	make
 	
@@ -269,7 +184,7 @@ EOF
 		exit 1
 	fi
 
-	cp -p $libpng $libjpeg $libsdl2 $libglew $libjsoncpp $pkgdir/
+	cp -p $libpng $libjpeg $libsdl2 $libglew $pkgdir/
 	cp -a $srcdir/irrlicht/include $pkgdir/include
 	cp -a $srcdir/irrlicht/media/Shaders $pkgdir/Shaders
 }

@@ -15,7 +15,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libjsoncpp-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
+          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
 
       - name: Build
         run: |
@@ -29,7 +29,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libjsoncpp-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
+          sudo apt-get install g++ cmake libglew-dev libsdl2-dev libpng-dev libjpeg-dev zlib1g-dev xvfb -qyy
 
       - name: Build
         run: |
@@ -74,7 +74,7 @@ jobs:
       - name: Install deps
         run: |
           brew update --auto-update
-          brew install cmake glew libpng jpeg sdl2 jsoncpp
+          brew install cmake glew libpng jpeg sdl2
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
