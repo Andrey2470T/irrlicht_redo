@@ -313,13 +313,8 @@ bool CSceneManager::isCulled(const ISceneNode *node) const
 	}
 	bool result = false;
 
-	// has occlusion query information
-	if (node->getAutomaticCulling() & scene::EAC_OCC_QUERY) {
-		result = (Driver->getOcclusionQueryResult(const_cast<ISceneNode *>(node)) == 0);
-	}
-
 	// can be seen by a bounding box ?
-	if (!result && (node->getAutomaticCulling() & scene::EAC_BOX)) {
+	if (node->getAutomaticCulling() & scene::EAC_BOX) {
 		core::aabbox3d<f32> tbox = node->getBoundingBox();
 		node->getAbsoluteTransformation().transformBoxEx(tbox);
 		result = !(tbox.intersectsWithBox(cam->getViewFrustum()->getBoundingBox()));

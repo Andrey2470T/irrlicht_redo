@@ -201,7 +201,6 @@ bool CNullDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u
 bool CNullDriver::endScene()
 {
 	expireHardwareBuffers();
-	updateAllOcclusionQueries();
 	return true;
 }
 
@@ -1203,123 +1202,6 @@ bool CNullDriver::isHardwareBufferRecommend(const scene::IIndexBuffer *ib)
 		return false;
 
 	return true;
-}
-
-//! Create occlusion query.
-/** Use node for identification and mesh for occlusion test. */
-void CNullDriver::addOcclusionQuery(scene::ISceneNode *node, const scene::IMesh *mesh)
-{
-	if (!node)
-		return;
-	if (!mesh) {
-		if ((node->getType() != scene::ESNT_MESH) && (node->getType() != scene::ESNT_ANIMATED_MESH))
-			return;
-		else if (node->getType() == scene::ESNT_MESH)
-			mesh = static_cast<scene::IMeshSceneNode *>(node)->getMesh();
-		else
-			mesh = static_cast<scene::IAnimatedMeshSceneNode *>(node)->getMesh()->getMesh(0);
-		if (!mesh)
-			return;
-	}
-
-	// search for query
-	s32 index = OcclusionQueries.linear_search(SOccQuery(node));
-	if (index != -1) {
-		if (OcclusionQueries[index].Mesh != mesh) {
-			OcclusionQueries[index].Mesh->drop();
-			OcclusionQueries[index].Mesh = mesh;
-			mesh->grab();
-		}
-	} else {
-		OcclusionQueries.push_back(SOccQuery(node, mesh));
-		node->setAutomaticCulling(node->getAutomaticCulling() | scene::EAC_OCC_QUERY);
-	}
-}
-
-//! Remove occlusion query.
-void CNullDriver::removeOcclusionQuery(scene::ISceneNode *node)
-{
-	// search for query
-	s32 index = OcclusionQueries.linear_search(SOccQuery(node));
-	if (index != -1) {
-		node->setAutomaticCulling(node->getAutomaticCulling() & ~scene::EAC_OCC_QUERY);
-		OcclusionQueries.erase(index);
-	}
-}
-
-//! Remove all occlusion queries.
-void CNullDriver::removeAllOcclusionQueries()
-{
-	for (s32 i = OcclusionQueries.size() - 1; i >= 0; --i) {
-		removeOcclusionQuery(OcclusionQueries[i].Node);
-	}
-}
-
-//! Run occlusion query. Draws mesh stored in query.
-/** If the mesh shall be rendered visible, use
-flag to enable the proper material setting. */
-void CNullDriver::runOcclusionQuery(scene::ISceneNode *node, bool visible)
-{
-	if (!node)
-		return;
-	s32 index = OcclusionQueries.linear_search(SOccQuery(node));
-	if (index == -1)
-		return;
-	OcclusionQueries[index].Run = 0;
-	if (!visible) {
-		SMaterial mat;
-		mat.AntiAliasing = video::EAAM_OFF;
-		mat.ColorMask = ECP_NONE;
-		mat.ZWriteEnable = EZW_OFF;
-		setMaterial(mat);
-	}
-	setTransform(video::ETS_WORLD, node->getAbsoluteTransformation());
-	const scene::IMesh *mesh = OcclusionQueries[index].Mesh;
-	for (u32 i = 0; i < mesh->getMeshBufferCount(); ++i) {
-		if (visible)
-			setMaterial(mesh->getMeshBuffer(i)->getMaterial());
-		drawMeshBuffer(mesh->getMeshBuffer(i));
-	}
-}
-
-//! Run all occlusion queries. Draws all meshes stored in queries.
-/** If the meshes shall not be rendered visible, use
-overrideMaterial to disable the color and depth buffer. */
-void CNullDriver::runAllOcclusionQueries(bool visible)
-{
-	for (u32 i = 0; i < OcclusionQueries.size(); ++i)
-		runOcclusionQuery(OcclusionQueries[i].Node, visible);
-}
-
-//! Update occlusion query. Retrieves results from GPU.
-/** If the query shall not block, set the flag to false.
-Update might not occur in this case, though */
-void CNullDriver::updateOcclusionQuery(scene::ISceneNode *node, bool block)
-{
-}
-
-//! Update all occlusion queries. Retrieves results from GPU.
-/** If the query shall not block, set the flag to false.
-Update might not occur in this case, though */
-void CNullDriver::updateAllOcclusionQueries(bool block)
-{
-	for (u32 i = 0; i < OcclusionQueries.size(); ++i) {
-		if (OcclusionQueries[i].Run == u32(~0))
-			continue;
-		updateOcclusionQuery(OcclusionQueries[i].Node, block);
-		++OcclusionQueries[i].Run;
-		if (OcclusionQueries[i].Run > 1000)
-			removeOcclusionQuery(OcclusionQueries[i].Node);
-	}
-}
-
-//! Return query result.
-/** Return value is the number of visible pixels/fragments.
-The value is a safe approximation, i.e. can be larger then the
-actual value of pixels. */
-u32 CNullDriver::getOcclusionQueryResult(scene::ISceneNode *node) const
-{
-	return ~0;
 }
 
 //! Create render target.

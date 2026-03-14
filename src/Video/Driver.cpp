@@ -173,7 +173,6 @@ COpenGL3DriverBase::~COpenGL3DriverBase()
 
 	removeAllRenderTargets();
 	deleteAllTextures();
-	removeAllOcclusionQueries();
 	removeAllHardwareBuffers();
 
 	delete MaterialRenderer2DTexture;
