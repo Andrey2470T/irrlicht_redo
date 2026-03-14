@@ -240,7 +240,13 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 	if (EnableErrorTest) {
 		if (KHRDebugSupported) {
 			glEnable(GL_DEBUG_OUTPUT);
-			glDebugMessageCallback(debugCb, this);
+			struct Local {
+				static void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
+					static_cast<COpenGL3DriverBase*>(const_cast<void*>(userParam))->debugCb(source, type, id, severity, length, message);
+				}
+			};
+
+			glDebugMessageCallback(Local::debugCallback, this);
 		} else {
 			g_irrlogger->log("GL debug extension not available");
 		}

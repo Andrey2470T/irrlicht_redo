@@ -186,7 +186,6 @@ EOF
 
 	cp -p $libpng $libjpeg $libsdl2 $libglew $pkgdir/
 	cp -a $srcdir/irrlicht/include $pkgdir/include
-	cp -a $srcdir/irrlicht/media/Shaders $pkgdir/Shaders
 }
 
 get_tar_archive () {

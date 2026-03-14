@@ -5,7 +5,7 @@
 #include "DriverGLES2.h"
 #include <stdexcept>
 #include <cassert>
-#include "CColorConverter.h"
+#include "Image/CColorConverter.h"
 
 
 namespace video
@@ -18,7 +18,7 @@ E_DRIVER_TYPE COpenGLES2Driver::getDriverType() const
 
 OpenGLVersion COpenGLES2Driver::getVersionFromOpenGL() const
 {
-	auto version_string = reinterpret_cast<const char *>(GL.GetString(GL_VERSION));
+	auto version_string = reinterpret_cast<const char *>(glGetString(GL_VERSION));
 	int major = 0, minor = 0;
 	if (sscanf(version_string, "OpenGL ES %d.%d", &major, &minor) != 2) {
 		g_irrlogger->log("Failed to parse OpenGL ES version string", version_string, ELL_ERROR);
@@ -117,20 +117,20 @@ void COpenGLES2Driver::initFeatures()
 		}
 	}
 
-	const bool MRTSupported = Version.Major >= 3 || queryExtension("GL_EXT_draw_buffers");
-	LODBiasSupported = queryExtension("GL_EXT_texture_lod_bias");
-	AnisotropicFilterSupported = queryExtension("GL_EXT_texture_filter_anisotropic");
+	const bool MRTSupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_draw_buffers");
+	LODBiasSupported = isExtensionPresent("GL_EXT_texture_lod_bias");
+	AnisotropicFilterSupported = isExtensionPresent("GL_EXT_texture_filter_anisotropic");
 	BlendMinMaxSupported = (Version.Major >= 3) || FeatureAvailable[IRR_GL_EXT_blend_minmax];
 	TextureMultisampleSupported = isVersionAtLeast(3, 1);
-	Texture2DArraySupported = Version.Major >= 3 || queryExtension("GL_EXT_texture_array");
-	KHRDebugSupported = queryExtension("GL_KHR_debug");
+	Texture2DArraySupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_texture_array");
+	KHRDebugSupported = isExtensionPresent("GL_KHR_debug");
 	if (KHRDebugSupported)
-		MaxLabelLength = GetInteger(GL.MAX_LABEL_LENGTH);
+		MaxLabelLength = GetInteger(GL_MAX_LABEL_LENGTH);
 
 	// COGLESCoreExtensionHandler::Feature
 	static_assert(MATERIAL_MAX_TEXTURES <= 8, "Only up to 8 textures are guaranteed");
 	Feature.BlendOperation = true;
-	Feature.TexStorage = Version.Major >= 3 || queryExtension("GL_ARB_texture_storage");
+	Feature.TexStorage = Version.Major >= 3 || isExtensionPresent("GL_ARB_texture_storage");
 	Feature.ColorAttachment = 1;
 	if (MRTSupported)
 		Feature.ColorAttachment = GetInteger(GL_MAX_COLOR_ATTACHMENTS);
@@ -141,15 +141,15 @@ void COpenGLES2Driver::initFeatures()
 	// COGLESCoreExtensionHandler
 	if (AnisotropicFilterSupported)
 		MaxAnisotropy = GetInteger(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-	if (Version.Major >= 3 || queryExtension("GL_EXT_draw_range_elements"))
+	if (Version.Major >= 3 || isExtensionPresent("GL_EXT_draw_range_elements"))
 		MaxIndices = GetInteger(GL_MAX_ELEMENTS_INDICES);
 	MaxTextureSize = GetInteger(GL_MAX_TEXTURE_SIZE);
 	if (Texture2DArraySupported)
 		MaxArrayTextureLayers = GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
 	if (LODBiasSupported)
-		GL.GetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &MaxTextureLODBias);
-	GL.GetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
-	GL.GetFloatv(GL_ALIASED_POINT_SIZE_RANGE, DimAliasedPoint);
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &MaxTextureLODBias);
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
+	glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, DimAliasedPoint);
 }
 
 IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
@@ -160,5 +160,4 @@ IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::
 	return driver;
 }
 
-}
 }

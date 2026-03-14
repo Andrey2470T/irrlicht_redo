@@ -191,8 +191,8 @@ cmake . "${tmp[@]}" \
     -DGLEW_LIBRARY="${glew_library}" \
     -DGLEW_INCLUDE_DIR="${glew_include_dir}" \
     -DGLEW_INCLUDE_DIRS="${glew_include_dir}" \
-    -DCMAKE_CXX_FLAGS="-I${glew_include_dir} --DGLEW_NO_GLU ${CMAKE_CXX_FLAGS}" \
-    -DCMAKE_C_FLAGS="-I${glew_include_dir} -DGLEW_NO_GLU ${CMAKE_C_FLAGS}"
+    -DCMAKE_CXX_FLAGS="-I${glew_include_dir}" \
+    -DCMAKE_C_FLAGS="-I${glew_include_dir}"
 
 make -j$(nproc)
 

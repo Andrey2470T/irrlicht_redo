@@ -97,12 +97,18 @@ set(RENDERER "OpenGL 3+")
 if(ANDROID OR EMSCRIPTEN)
 	set(ENABLE_OPENGL3 FALSE)
 	set(ENABLE_GLES2 TRUE)
+
+	if(EMSCRIPTEN)
+		set(ENABLE_WEBGL1 TRUE)
+	endif()
+endif()
+
+if(ENABLE_GLES2)
 	set(RENDERER "OpenGL ES 2+")
 
 	add_compile_definitions(_IRR_COMPILE_WITH_OGLES2_)
 
-	if(EMSCRIPTEN)
-		set(ENABLE_WEBGL1 TRUE)
+	if(ENABLE_WEBGL1)
 		set(RENDERER "WebGL 1")
 
 		add_compile_definitions(_IRR_COMPILE_WITH_WEBGL1_)
