@@ -11,7 +11,6 @@
 #include "VBO.h"
 #include "Video/CNullDriver.h"
 #include "IMaterialRendererServices.h"
-#include "EDriverFeatures.h"
 #include "fast_atof.h"
 #include "ExtensionHandler.h"
 #include "IContextManager.h"
@@ -24,7 +23,7 @@ struct VertexType;
 class COpenGL3FixedPipelineRenderer;
 class COpenGL3Renderer2D;
 
-class COpenGL3DriverBase : public CNullDriver, public IMaterialRendererServices, public COpenGL3ExtensionHandler
+class COpenGL3DriverBase : public CNullDriver, public IMaterialRendererServices, public ExtensionHandler
 {
 	friend class COpenGLCoreTexture<COpenGL3DriverBase>;
 
@@ -84,12 +83,6 @@ public:
 	virtual void draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
 			const void *indexList, u32 primitiveCount,
 			E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType) override;
-
-	//! queries the features of the driver, returns true if feature is available
-	bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const override
-	{
-		return FeatureEnabled[feature] && COpenGL3ExtensionHandler::queryFeature(feature);
-	}
 
 	//! Sets a material.
 	void setMaterial(const SMaterial &material) override;
@@ -253,6 +246,10 @@ public:
 	const SMaterial &getCurrentMaterial() const;
 
 	COpenGL3CacheHandler *getCacheHandler() const;
+
+	static GLint GetInteger(GLenum key);
+
+	void ObjectLabel(GLenum identifier, GLuint name, const char *label);
 
 protected:
 	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);

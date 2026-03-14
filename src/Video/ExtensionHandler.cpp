@@ -16,7 +16,7 @@
 namespace video
 {
 
-void COpenGL3ExtensionHandler::initExtensions()
+void ExtensionHandler::initExtensions()
 {
 	/* OpenGL 3 & ES 3 way to enumerate extensions */
 	GLint ext_count = 0;
@@ -26,8 +26,8 @@ void COpenGL3ExtensionHandler::initExtensions()
 		extensions.reserve(ext_count);
 	for (GLint k = 0; k < ext_count; k++) {
 		auto tmp = glGetStringi(GL_EXTENSIONS, k);
-	if (tmp)
-		extensions.emplace((char*)tmp);
+		if (tmp)
+			extensions.emplace((char*)tmp);
 	}
 	if (!extensions.empty())
 		return;
@@ -41,9 +41,6 @@ void COpenGL3ExtensionHandler::initExtensions()
 	std::string tmp;
 	while (std::getline(ext_ss, tmp, ' '))
 		extensions.emplace(tmp);
-
-	for (size_t j = 0; j < IRR_OGLES_Feature_Count; ++j)
-		FeatureAvailable[j] = isExtensionPresent(getFeatureString(j));
 }
 
 } // end namespace video

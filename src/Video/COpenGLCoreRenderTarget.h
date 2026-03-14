@@ -31,12 +31,12 @@ public:
 
 		Size = Driver->getScreenSize();
 
-		ColorAttachment = Driver->getFeature().ColorAttachment;
-		MultipleRenderTarget = Driver->getFeature().MultipleRenderTarget;
+		ColorAttachment = Driver->getFeatures().ColorAttachment;
+		MultipleRenderTarget = Driver->getFeatures().MultipleRenderTarget;
 
 		if (ColorAttachment > 0) {
 			TEST_GL_ERROR(Driver);
-			Driver->irrGlGenFramebuffers(1, &BufferID);
+			glGenFramebuffers(1, &BufferID);
 			if (!BufferID) {
 				g_irrlogger->log("COpenGLCoreRenderTarget: framebuffer not created", ELL_ERROR);
 				return;
@@ -52,7 +52,7 @@ public:
 	virtual ~COpenGLCoreRenderTarget()
 	{
 		if (ColorAttachment > 0 && BufferID != 0)
-			Driver->irrGlDeleteFramebuffers(1, &BufferID);
+			glDeleteFramebuffers(1, &BufferID);
 
 		for (u32 i = 0; i < Textures.size(); ++i) {
 			if (Textures[i])
@@ -188,11 +188,11 @@ public:
 						default:
 							throw std::logic_error("not reachable");
 						}
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], textarget, textureID, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], textarget, textureID, 0);
 						TEST_GL_ERROR(Driver);
 					} else if (AssignedTextures[i] != GL_NONE) {
 						AssignedTextures[i] = GL_NONE;
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], GL_TEXTURE_2D, 0, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], GL_TEXTURE_2D, 0, 0);
 
 						g_irrlogger->log("Error: Could not set render target.", ELL_ERROR);
 					}
@@ -202,7 +202,7 @@ public:
 
 				for (u32 i = textureSize; i < AssignedTextures.size(); ++i) {
 					if (AssignedTextures[i] != GL_NONE) {
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], GL_TEXTURE_2D, 0, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, AssignedTextures[i], GL_TEXTURE_2D, 0, 0);
 						AssignedTextures[i] = GL_NONE;
 					}
 				}
@@ -234,22 +234,22 @@ public:
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_ // The WEBGL_depth_texture extension does not allow attaching stencil+depth separate.
 					if (textureFormat == ECF_D24S8) {
 						GLenum attachment = 0x821A; // GL_DEPTH_STENCIL_ATTACHMENT
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, textureID, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, textureID, 0);
 						AssignedStencil = true;
 					} else {
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textarget, textureID, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textarget, textureID, 0);
 						AssignedStencil = false;
 					}
 #else
-					Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textarget, textureID, 0);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textarget, textureID, 0);
 
 					if (textureFormat == ECF_D24S8) {
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, textarget, textureID, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, textarget, textureID, 0);
 
 						AssignedStencil = true;
 					} else {
 						if (AssignedStencil)
-							Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, textarget, 0, 0);
+							glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, textarget, 0, 0);
 
 						AssignedStencil = false;
 					}
@@ -258,10 +258,10 @@ public:
 				} else {
 					// No (valid) depth/stencil texture.
 					if (AssignedDepth)
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 
 					if (AssignedStencil)
-						Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 
 					AssignedDepth = false;
 					AssignedStencil = false;
@@ -276,14 +276,19 @@ public:
 			if (ColorAttachment > 0 && BufferID != 0) {
 				const u32 textureSize = Textures.size();
 
-				if (textureSize == 0)
-					Driver->irrGlDrawBuffer(GL_NONE);
-				else if (textureSize == 1 || MultipleRenderTarget == 0)
-					Driver->irrGlDrawBuffer(GL_COLOR_ATTACHMENT0);
+				GLenum mode = 0;
+				if (textureSize == 0) {
+					mode = GL_NONE;
+					glDrawBuffers(1, &mode);
+				}
+				else if (textureSize == 1 || MultipleRenderTarget == 0) {
+					mode = GL_COLOR_ATTACHMENT0;
+					glDrawBuffers(1, &mode);
+				}
 				else {
 					const u32 bufferCount = core::min_(MultipleRenderTarget, core::min_(textureSize, AssignedTextures.size()));
 
-					Driver->irrGlDrawBuffers(bufferCount, AssignedTextures.pointer());
+					glDrawBuffers(bufferCount, AssignedTextures.pointer());
 				}
 
 				TEST_GL_ERROR(Driver);
@@ -321,7 +326,7 @@ protected:
 		if (ColorAttachment == 0)
 			return true;
 
-		GLenum status = driver->irrGlCheckFramebufferStatus(GL_FRAMEBUFFER);
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		switch (status) {
 		case GL_FRAMEBUFFER_COMPLETE:

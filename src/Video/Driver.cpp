@@ -144,7 +144,7 @@ void COpenGL3DriverBase::debugCb(GLenum source, GLenum type, GLuint id, GLenum s
 }
 
 COpenGL3DriverBase::COpenGL3DriverBase(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager) :
-		CNullDriver(io, params.WindowSize), COpenGL3ExtensionHandler(), CacheHandler(0),
+		CNullDriver(io, params.WindowSize), ExtensionHandler(), CacheHandler(0),
 		Params(params), ResetRenderStates(true), LockRenderStateMode(false), AntiAlias(params.AntiAlias),
 		MaterialRenderer2DActive(0), MaterialRenderer2DTexture(0), MaterialRenderer2DNoTexture(0),
 		CurrentRenderMode(ERM_NONE), Transformation3DChanged(true),
@@ -222,6 +222,25 @@ void COpenGL3DriverBase::initVersion()
 	Version = getVersionFromOpenGL();
 }
 
+GLint COpenGL3DriverBase::GetInteger(GLenum key)
+{
+	GLint val = 0;
+	glGetIntegerv(key, &val);
+	return val;
+};
+
+void COpenGL3DriverBase::ObjectLabel(GLenum identifier, GLuint name, const char *label)
+{
+	if (features.KHRDebugSupported) {
+		u32 len = static_cast<u32>(strlen(label));
+		// Since our texture strings can get quite long we also truncate
+		// to a hardcoded limit of 82
+		len = std::min(len, std::min(features.MaxLabelLength, 82U));
+		glObjectLabel(identifier, name, len, label);
+	}
+}
+
+
 bool COpenGL3DriverBase::isVersionAtLeast(int major, int minor) const noexcept
 {
 	if (Version.Major < major)
@@ -238,7 +257,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 	printTextureFormats();
 
 	if (EnableErrorTest) {
-		if (KHRDebugSupported) {
+		if (features.KHRDebugSupported) {
 			glEnable(GL_DEBUG_OUTPUT);
 			struct Local {
 				static void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -252,7 +271,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 		}
 	} else {
 		// don't do debug things if they are not wanted (even if supported)
-		KHRDebugSupported = false;
+		features.KHRDebugSupported = false;
 	}
 
 	initQuadsIndices();
@@ -261,7 +280,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 	delete CacheHandler;
 	CacheHandler = new COpenGL3CacheHandler(this);
 
-	StencilBuffer = stencilBuffer;
+	features.StencilBuffer = stencilBuffer;
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
@@ -1083,7 +1102,7 @@ void COpenGL3DriverBase::setMaterial(const SMaterial &material)
 	Material = material;
 	OverrideMaterial.apply(Material);
 
-	for (u32 i = 0; i < Feature.MaxTextureUnits; ++i) {
+	for (u32 i = 0; i < features.MaxTextureUnits; ++i) {
 		auto *texture = material.getTexture(i);
 		CacheHandler->getTextureCache().set(i, texture);
 		if (texture) {
@@ -1279,13 +1298,13 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 			CacheHandler->setBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
 			break;
 		case EBO_MIN:
-			if (BlendMinMaxSupported)
+			if (features.BlendMinMaxSupported)
 				CacheHandler->setBlendEquation(GL_MIN);
 			else
 				g_irrlogger->log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
 			break;
 		case EBO_MAX:
-			if (BlendMinMaxSupported)
+			if (features.BlendMinMaxSupported)
 				CacheHandler->setBlendEquation(GL_MAX);
 			else
 				g_irrlogger->log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
@@ -1335,7 +1354,7 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 	}
 
 	if (resetAllRenderStates || lastmaterial.Thickness != material.Thickness)
-		glLineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), DimAliasedLine[0], DimAliasedLine[1]));
+		glLineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), features.DimAliasedLine[0], features.DimAliasedLine[1]));
 
 	// Anti aliasing
 	// Deal with MSAA even if it's not enabled in the OpenGL context, we might be
@@ -1356,7 +1375,7 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 {
 	// Set textures to TU/TIU and apply filters to them
 
-	for (s32 i = Feature.MaxTextureUnits - 1; i >= 0; --i) {
+	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
 		const COpenGL3Texture *tmpTexture = CacheHandler->getTextureCache()[i];
 
 		if (!tmpTexture)
@@ -1404,10 +1423,10 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 			}
 		}
 
-		if (LODBiasSupported &&
+		if (features.LODBiasSupported &&
 			(!states.IsCached || layer.LODBias != states.LODBias)) {
 			if (layer.LODBias) {
-				const float tmp = core::clamp(layer.LODBias * 0.125f, -MaxTextureLODBias, MaxTextureLODBias);
+				const float tmp = core::clamp(layer.LODBias * 0.125f, -features.MaxTextureLODBias, features.MaxTextureLODBias);
 				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, tmp);
 			} else
 				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, 0.f);
@@ -1415,10 +1434,10 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 			states.LODBias = layer.LODBias;
 		}
 
-		if (AnisotropicFilterSupported &&
+		if (features.AnisotropicFilterSupported &&
 				(!states.IsCached || layer.AnisotropicFilter != states.AnisotropicFilter)) {
 			glTexParameteri(tmpTextureType, GL_TEXTURE_MAX_ANISOTROPY,
-					layer.AnisotropicFilter > 1 ? core::min_(MaxAnisotropy, layer.AnisotropicFilter) : 1);
+					layer.AnisotropicFilter > 1 ? core::min_(features.MaxAnisotropy, layer.AnisotropicFilter) : 1);
 
 			states.AnisotropicFilter = layer.AnisotropicFilter;
 		}
@@ -1690,7 +1709,7 @@ ITexture *COpenGL3DriverBase::addRenderTargetTextureCubemap(const u32 sideLen, c
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
 
-	bool supportForFBO = (Feature.ColorAttachment > 0);
+	bool supportForFBO = (features.ColorAttachment > 0);
 
 	const core::dimension2d<u32> size(sideLen, sideLen);
 	core::dimension2du destSize(size);
@@ -1879,7 +1898,7 @@ void COpenGL3DriverBase::removeTexture(ITexture *texture)
 
 core::dimension2du COpenGL3DriverBase::getMaxTextureSize() const
 {
-	return core::dimension2du(MaxTextureSize, MaxTextureSize);
+	return core::dimension2du(features.MaxTextureSize, features.MaxTextureSize);
 }
 
 GLenum COpenGL3DriverBase::getGLBlend(E_BLEND_FACTOR factor) const

@@ -123,7 +123,7 @@ void COpenGL3MaterialRenderer::init(s32 &outMaterialTypeNr,
 		return;
 
 	if (debugName)
-		Driver->irrGlObjectLabel(GL_PROGRAM, Program, debugName);
+		Driver->ObjectLabel(GL_PROGRAM, Program, debugName);
 
 	if (addMaterial)
 		outMaterialTypeNr = Driver->addMaterialRenderer(this);

@@ -9,7 +9,6 @@
 
 #include "Driver.h"
 
-#include "Video/COpenGLCoreFeature.h"
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
 

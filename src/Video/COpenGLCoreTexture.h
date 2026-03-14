@@ -9,7 +9,6 @@
 
 #include "SMaterialLayer.h"
 #include "ITexture.h"
-#include "EDriverFeatures.h"
 #include "Logger.h"
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
@@ -127,7 +126,7 @@ public:
 		}
 
 		if (!name.empty())
-			Driver->irrGlObjectLabel(GL_TEXTURE, TextureName, name.c_str());
+			Driver->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
 
@@ -210,7 +209,7 @@ public:
 		initTexture(0);
 
 		if (!name.empty())
-			Driver->irrGlObjectLabel(GL_TEXTURE, TextureName, name.c_str());
+			Driver->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
 		TEST_GL_ERROR(Driver);
@@ -294,7 +293,7 @@ public:
 				} else {
 
 				GLuint tmpFBO = 0;
-				Driver->irrGlGenFramebuffers(1, &tmpFBO);
+				glGenFramebuffers(1, &tmpFBO);
 
 				GLuint prevFBO = 0;
 				Driver->getCacheHandler()->getFBO(prevFBO);
@@ -303,7 +302,7 @@ public:
 				GLenum tmpTextureType = getTextureTarget(layer);
 
 				// Warning: on GLES 2.0 this call will only work with mipmapLevel == 0
-				Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					tmpTextureType, getOpenGLTextureName(), mipmapLevel);
 				TEST_GL_ERROR(Driver);
 
@@ -311,12 +310,12 @@ public:
 				glReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
 					GL_RGBA, GL_UNSIGNED_BYTE, tmpImage->getData());
 
-				Driver->irrGlFramebufferTexture2D(GL_FRAMEBUFFER,
+				glFramebufferTexture2D(GL_FRAMEBUFFER,
 					GL_COLOR_ATTACHMENT0, tmpTextureType, 0, 0);
 
 				Driver->getCacheHandler()->setFBO(prevFBO);
 
-				Driver->irrGlDeleteFramebuffers(1, &tmpFBO);
+				glDeleteFramebuffers(1, &tmpFBO);
 
 				TEST_GL_ERROR(Driver);
 
@@ -386,7 +385,7 @@ public:
 		const COpenGLCoreTexture *prevTexture = Driver->getCacheHandler()->getTextureCache().get(0);
 		Driver->getCacheHandler()->getTextureCache().set(0, this);
 
-		Driver->irrGlGenerateMipmap(TextureType);
+		glGenerateMipmap(TextureType);
 		TEST_GL_ERROR(Driver);
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
@@ -476,17 +475,18 @@ protected:
 
 		const f32 ratio = (f32)Size.Width / (f32)Size.Height;
 
-		if ((Size.Width > Driver->MaxTextureSize) && (ratio >= 1.f)) {
-			Size.Width = Driver->MaxTextureSize;
-			Size.Height = (u32)(Driver->MaxTextureSize / ratio);
-		} else if (Size.Height > Driver->MaxTextureSize) {
-			Size.Height = Driver->MaxTextureSize;
-			Size.Width = (u32)(Driver->MaxTextureSize * ratio);
+		auto features = Driver->getFeatures();
+		if ((Size.Width > features.MaxTextureSize) && (ratio >= 1.f)) {
+			Size.Width = features.MaxTextureSize;
+			Size.Height = (u32)(features.MaxTextureSize / ratio);
+		} else if (Size.Height > features.MaxTextureSize) {
+			Size.Height = features.MaxTextureSize;
+			Size.Width = (u32)(features.MaxTextureSize * ratio);
 		}
 
-		bool needSquare = (!Driver->queryFeature(EVDF_TEXTURE_NSQUARE) || Type == ETT_CUBEMAP);
+		bool needSquare = (Type == ETT_CUBEMAP);
 
-		Size = Size.getOptimalSize(!Driver->queryFeature(EVDF_TEXTURE_NPOT), needSquare, true, Driver->MaxTextureSize);
+		Size = Size.getOptimalSize(false, needSquare, true, features.MaxTextureSize);
 
 		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
 	}
@@ -521,7 +521,7 @@ protected:
 		}
 
 		// reference: <https://www.khronos.org/opengl/wiki/Texture_Storage>
-		bool use_tex_storage = Driver->getFeature().TexStorage;
+		bool use_tex_storage = Driver->getFeatures().TexStorage;
 
 #ifndef IRR_COMPILE_GL_COMMON
 		// On GLES 3.0 if we don't have a sized format suitable for glTexStorage,
@@ -634,18 +634,7 @@ protected:
 
 			delete tmpImage;
 		} else {
-			u32 dataSize = IImage::getDataSizeFromFormat(ColorFormat, width, height);
-
-			switch (TextureType) {
-			case GL_TEXTURE_2D:
-			case GL_TEXTURE_CUBE_MAP:
-				Driver->irrGlCompressedTexImage2D(tmpTextureType, level, InternalFormat, width, height, 0, dataSize, data);
-				break;
-			default:
-				assert(false);
-				break;
-			}
-			TEST_GL_ERROR(Driver);
+			assert(false);
 		}
 	}
 

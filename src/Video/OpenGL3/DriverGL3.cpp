@@ -65,34 +65,33 @@ void COpenGL3Driver::initFeatures()
 	TextureFormats[ECF_D32] = {GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT}; // WARNING: may not be renderable (?!)
 	TextureFormats[ECF_D24S8] = {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8};
 
-	AnisotropicFilterSupported = isVersionAtLeast(4, 6) || isExtensionPresent("GL_ARB_texture_filter_anisotropic") || isExtensionPresent("GL_EXT_texture_filter_anisotropic");
-	LODBiasSupported = true;
-	BlendMinMaxSupported = true;
-	TextureMultisampleSupported = true;
-	Texture2DArraySupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_texture_array");
-	KHRDebugSupported = isVersionAtLeast(4, 6) || isExtensionPresent("GL_KHR_debug");
-	if (KHRDebugSupported)
-		MaxLabelLength = GetInteger(GL_MAX_LABEL_LENGTH);
+	features.AnisotropicFilterSupported = isVersionAtLeast(4, 6) || isExtensionPresent("GL_ARB_texture_filter_anisotropic") || isExtensionPresent("GL_EXT_texture_filter_anisotropic");
+	features.LODBiasSupported = true;
+	features.BlendMinMaxSupported = true;
+	features.TextureMultisampleSupported = true;
+	features.Texture2DArraySupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_texture_array");
+	features.KHRDebugSupported = isVersionAtLeast(4, 6) || isExtensionPresent("GL_KHR_debug");
+	if (features.KHRDebugSupported)
+		features.MaxLabelLength = GetInteger(GL_MAX_LABEL_LENGTH);
 
-	// COGLESCoreExtensionHandler::Feature
 	static_assert(MATERIAL_MAX_TEXTURES <= 16, "Only up to 16 textures are guaranteed");
-	Feature.BlendOperation = true;
-	Feature.TexStorage = isVersionAtLeast(4, 2) || isExtensionPresent("GL_ARB_texture_storage");
-	Feature.ColorAttachment = GetInteger(GL_MAX_COLOR_ATTACHMENTS);
-	Feature.MaxTextureUnits = MATERIAL_MAX_TEXTURES;
-	Feature.MultipleRenderTarget = GetInteger(GL_MAX_DRAW_BUFFERS);
+	features.BlendOperation = true;
+	features.TexStorage = isVersionAtLeast(4, 2) || isExtensionPresent("GL_ARB_texture_storage");
+	features.ColorAttachment = GetInteger(GL_MAX_COLOR_ATTACHMENTS);
+	features.MaxTextureUnits = MATERIAL_MAX_TEXTURES;
+	features.MultipleRenderTarget = GetInteger(GL_MAX_DRAW_BUFFERS);
 
 	// COGLESCoreExtensionHandler
-	if (AnisotropicFilterSupported)
-		MaxAnisotropy = GetInteger(GL_MAX_TEXTURE_MAX_ANISOTROPY);
-	MaxIndices = GetInteger(GL_MAX_ELEMENTS_INDICES);
-	MaxTextureSize = GetInteger(GL_MAX_TEXTURE_SIZE);
-	if (Texture2DArraySupported)
-		MaxArrayTextureLayers = GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
-	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &MaxTextureLODBias);
-	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
-	DimAliasedPoint[0] = 1.0f;
-	DimAliasedPoint[1] = 1.0f;
+	if (features.AnisotropicFilterSupported)
+		features.MaxAnisotropy = GetInteger(GL_MAX_TEXTURE_MAX_ANISOTROPY);
+	features.MaxIndices = GetInteger(GL_MAX_ELEMENTS_INDICES);
+	features.MaxTextureSize = GetInteger(GL_MAX_TEXTURE_SIZE);
+	if (features.Texture2DArraySupported)
+		features.MaxArrayTextureLayers = GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
+	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &features.MaxTextureLODBias);
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, features.DimAliasedLine);
+	features.DimAliasedPoint[0] = 1.0f;
+	features.DimAliasedPoint[1] = 1.0f;
 }
 
 IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)

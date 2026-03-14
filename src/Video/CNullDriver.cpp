@@ -80,8 +80,6 @@ CNullDriver::CNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &scre
 
 	// set ExposedData to 0
 	memset((void *)&ExposedData, 0, sizeof(ExposedData));
-	for (u32 i = 0; i < video::EVDF_COUNT; ++i)
-		FeatureEnabled[i] = true;
 
 	InitMaterial2D.AntiAliasing = video::EAAM_OFF;
 	InitMaterial2D.ZWriteEnable = video::EZW_OFF;
@@ -205,18 +203,6 @@ bool CNullDriver::endScene()
 	expireHardwareBuffers();
 	updateAllOcclusionQueries();
 	return true;
-}
-
-//! Disable a feature of the driver.
-void CNullDriver::disableFeature(E_VIDEO_DRIVER_FEATURE feature, bool flag)
-{
-	FeatureEnabled[feature] = !flag;
-}
-
-//! queries the features of the driver, returns true if feature is available
-bool CNullDriver::queryFeature(E_VIDEO_DRIVER_FEATURE feature) const
-{
-	return false;
 }
 
 //! sets transformation

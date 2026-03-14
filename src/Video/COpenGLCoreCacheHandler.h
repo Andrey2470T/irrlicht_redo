@@ -177,7 +177,7 @@ public:
 #pragma warning(push)
 #pragma warning(disable : 4355) // Warning: "'this' : used in base member initializer list. ". It's OK, we don't use the reference in STextureCache constructor.
 #endif
-			TextureCache(STextureCache(*this, driver->getDriverType(), driver->getFeature().MaxTextureUnits)),
+			TextureCache(STextureCache(*this, driver->getDriverType(), driver->getFeatures().MaxTextureUnits)),
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
@@ -186,9 +186,9 @@ public:
 			ColorMask(0), ColorMaskInvalid(false), CullFaceMode(GL_BACK), CullFace(false), DepthFunc(GL_LESS), DepthMask(true), DepthTest(false), FrameBufferID(0),
 			ProgramID(0), ActiveTexture(GL_TEXTURE0), ViewportX(0), ViewportY(0)
 	{
-		const COpenGLCoreFeature &feature = Driver->getFeature();
+		const OpenGLFeatures &features = Driver->getFeatures();
 
-		FrameBufferCount = core::max_(static_cast<GLuint>(1), static_cast<GLuint>(feature.MultipleRenderTarget));
+		FrameBufferCount = core::max_(static_cast<GLuint>(1), static_cast<GLuint>(features.MultipleRenderTarget));
 
 		BlendEquation = new GLenum[FrameBufferCount];
 		BlendSourceRGB = new GLenum[FrameBufferCount];
@@ -200,8 +200,8 @@ public:
 
 		// Initial OpenGL values from specification.
 
-		if (feature.BlendOperation) {
-			Driver->irrGlBlendEquation(GL_FUNC_ADD);
+		if (features.BlendOperation) {
+			glBlendEquation(GL_FUNC_ADD);
 		}
 
 		for (u32 i = 0; i < FrameBufferCount; ++i) {
@@ -228,7 +228,7 @@ public:
 		glDepthMask(GL_TRUE);
 		glDisable(GL_DEPTH_TEST);
 
-		Driver->irrGlActiveTexture(ActiveTexture);
+		glActiveTexture(ActiveTexture);
 
 #if defined(IRR_COMPILE_GL_COMMON)
 		glDisable(GL_TEXTURE_2D);
@@ -267,22 +267,12 @@ public:
 	void setBlendEquation(GLenum mode)
 	{
 		if (BlendEquation[0] != mode || BlendEquationInvalid) {
-			Driver->irrGlBlendEquation(mode);
+			glBlendEquation(mode);
 
 			for (GLuint i = 0; i < FrameBufferCount; ++i)
 				BlendEquation[i] = mode;
 
 			BlendEquationInvalid = false;
-		}
-	}
-
-	void setBlendEquationIndexed(GLuint index, GLenum mode)
-	{
-		if (index < FrameBufferCount && BlendEquation[index] != mode) {
-			Driver->irrGlBlendEquationIndexed(index, mode);
-
-			BlendEquation[index] = mode;
-			BlendEquationInvalid = true;
 		}
 	}
 
@@ -310,7 +300,7 @@ public:
 			if (BlendSourceRGB[0] != sourceRGB || BlendDestinationRGB[0] != destinationRGB ||
 					BlendSourceAlpha[0] != sourceAlpha || BlendDestinationAlpha[0] != destinationAlpha ||
 					BlendFuncInvalid) {
-				Driver->irrGlBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
+				glBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
 
 				for (GLuint i = 0; i < FrameBufferCount; ++i) {
 					BlendSourceRGB[i] = sourceRGB;
@@ -326,38 +316,6 @@ public:
 		}
 	}
 
-	void setBlendFuncIndexed(GLuint index, GLenum source, GLenum destination)
-	{
-		if (index < FrameBufferCount && (BlendSourceRGB[index] != source || BlendDestinationRGB[index] != destination ||
-												BlendSourceAlpha[index] != source || BlendDestinationAlpha[index] != destination)) {
-			Driver->irrGlBlendFuncIndexed(index, source, destination);
-
-			BlendSourceRGB[index] = source;
-			BlendDestinationRGB[index] = destination;
-			BlendSourceAlpha[index] = source;
-			BlendDestinationAlpha[index] = destination;
-			BlendFuncInvalid = true;
-		}
-	}
-
-	void setBlendFuncSeparateIndexed(GLuint index, GLenum sourceRGB, GLenum destinationRGB, GLenum sourceAlpha, GLenum destinationAlpha)
-	{
-		if (sourceRGB != sourceAlpha || destinationRGB != destinationAlpha) {
-			if (index < FrameBufferCount && (BlendSourceRGB[index] != sourceRGB || BlendDestinationRGB[index] != destinationRGB ||
-													BlendSourceAlpha[index] != sourceAlpha || BlendDestinationAlpha[index] != destinationAlpha)) {
-				Driver->irrGlBlendFuncSeparateIndexed(index, sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
-
-				BlendSourceRGB[index] = sourceRGB;
-				BlendDestinationRGB[index] = destinationRGB;
-				BlendSourceAlpha[index] = sourceAlpha;
-				BlendDestinationAlpha[index] = destinationAlpha;
-				BlendFuncInvalid = true;
-			}
-		} else {
-			setBlendFuncIndexed(index, sourceRGB, destinationRGB);
-		}
-	}
-
 	void setBlend(bool enable)
 	{
 		if (Blend[0] != enable || BlendInvalid) {
@@ -370,19 +328,6 @@ public:
 				Blend[i] = enable;
 
 			BlendInvalid = false;
-		}
-	}
-
-	void setBlendIndexed(GLuint index, bool enable)
-	{
-		if (index < FrameBufferCount && Blend[index] != enable) {
-			if (enable)
-				Driver->irrGlEnableIndexed(GL_BLEND, index);
-			else
-				Driver->irrGlDisableIndexed(GL_BLEND, index);
-
-			Blend[index] = enable;
-			BlendInvalid = true;
 		}
 	}
 
@@ -402,16 +347,6 @@ public:
 				ColorMask[i] = mask;
 
 			ColorMaskInvalid = false;
-		}
-	}
-
-	void setColorMaskIndexed(GLuint index, u8 mask)
-	{
-		if (index < FrameBufferCount && ColorMask[index] != mask) {
-			Driver->irrGlColorMaskIndexed(index, (mask & ECP_RED) ? GL_TRUE : GL_FALSE, (mask & ECP_GREEN) ? GL_TRUE : GL_FALSE, (mask & ECP_BLUE) ? GL_TRUE : GL_FALSE, (mask & ECP_ALPHA) ? GL_TRUE : GL_FALSE);
-
-			ColorMask[index] = mask;
-			ColorMaskInvalid = true;
 		}
 	}
 
@@ -491,7 +426,7 @@ public:
 	void setFBO(GLuint frameBufferID)
 	{
 		if (FrameBufferID != frameBufferID) {
-			Driver->irrGlBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
 			FrameBufferID = frameBufferID;
 		}
 	}
@@ -506,7 +441,7 @@ public:
 	void setProgram(GLuint programID)
 	{
 		if (ProgramID != programID) {
-			Driver->irrGlUseProgram(programID);
+			glUseProgram(programID);
 			ProgramID = programID;
 		}
 	}
@@ -521,7 +456,7 @@ public:
 	void setActiveTexture(GLenum texture)
 	{
 		if (ActiveTexture != texture) {
-			Driver->irrGlActiveTexture(texture);
+			glActiveTexture(texture);
 			ActiveTexture = texture;
 		}
 	}

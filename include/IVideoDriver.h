@@ -13,7 +13,6 @@
 #include "dimension2d.h"
 #include "position2d.h"
 #include "EDriverTypes.h"
-#include "EDriverFeatures.h"
 #include "EPrimitiveTypes.h"
 #include "EVideoTypes.h"
 #include "SExposedVideoData.h"
@@ -61,6 +60,33 @@ struct SFrameStats {
 	u32 HWBuffersUploaded = 0;
 	//! Number of active hardware buffers
 	u32 HWBuffersActive = 0;
+};
+
+struct OpenGLFeatures
+{
+	bool BlendOperation = false;
+	bool TexStorage = false;
+
+	u8 ColorAttachment = 0;
+	u8 MultipleRenderTarget = 0;
+	u8 MaxTextureUnits = 0;
+	u8 MaxAnisotropy = 1;
+	u32 MaxIndices = 0xffff;
+	u32 MaxTextureSize = 1;
+	u32 MaxArrayTextureLayers = 1;
+	f32 MaxTextureLODBias = 0.0f;
+	//! Minimal and maximal supported thickness for lines without smoothing
+	float DimAliasedLine[2] = {1.0f, 1.0f};
+	//! Minimal and maximal supported thickness for points without smoothing
+	float DimAliasedPoint[2] = {1.0f, 1.0f};
+	bool StencilBuffer = false;
+	bool LODBiasSupported = false;
+	bool AnisotropicFilterSupported = false;
+	bool BlendMinMaxSupported = false;
+	bool TextureMultisampleSupported = false;
+	bool Texture2DArraySupported = false;
+	bool KHRDebugSupported = false;
+	u32 MaxLabelLength = 0;
 };
 
 //! Interface to driver which is able to perform 2d and 3d graphics functions.
@@ -112,18 +138,10 @@ public:
 	\return False if failed and true if succeeded. */
 	virtual bool endScene() = 0;
 
-	//! Queries the features of the driver.
-	/** Returns true if a feature is available
-	\param feature Feature to query.
-	\return True if the feature is available, false if not. */
-	virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const = 0;
-
-	//! Disable a feature of the driver.
-	/** Can also be used to enable the features again. It is not
-	possible to enable unsupported features this way, though.
-	\param feature Feature to disable.
-	\param flag When true the feature is disabled, otherwise it is enabled. */
-	virtual void disableFeature(E_VIDEO_DRIVER_FEATURE feature, bool flag = true) = 0;
+	const OpenGLFeatures &getFeatures() const
+	{
+		return features;
+	}
 
 	//! Sets transformation matrices.
 	/** \param state Transformation type to be set, e.g. view,
@@ -264,8 +282,6 @@ public:
 
 	//! Adds a multisampled render target texture to the texture cache.
 	/** \param msaa The number of samples to use, values that make sense are > 1.
-	Only works if the driver supports the EVDF_TEXTURE_MULTISAMPLE feature,
-	check via queryFeature.
 	\see addRenderTargetTexture */
 	virtual ITexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
 			const io::path &name = "rt", const ECOLOR_FORMAT format = ECF_UNKNOWN) = 0;
@@ -398,9 +414,7 @@ public:
 			core::position2d<s32> colorKeyPixelPos) const = 0;
 
 	//! Set a render target.
-	/** This will only work if the driver supports the
-	EVDF_RENDER_TO_TARGET feature, which can be queried with
-	queryFeature(). Please note that you cannot render 3D or 2D
+	/** Please note that you cannot render 3D or 2D
 	geometry with a render target as texture on it when you are rendering
 	the scene into this render target at the same time. It is usually only
 	possible to render into a texture between the
@@ -417,9 +431,7 @@ public:
 			f32 clearDepth = 1.f, u8 clearStencil = 0) = 0;
 
 	//! Sets a new render target.
-	/** This will only work if the driver supports the
-	EVDF_RENDER_TO_TARGET feature, which can be queried with
-	queryFeature(). Usually, rendering to textures is done in this
+	/** Usually, rendering to textures is done in this
 	way:
 	\code
 	// create render target
@@ -1117,6 +1129,9 @@ public:
 
 	//! Used by some SceneNodes to check if a material should be rendered in the transparent render pass
 	virtual bool needsTransparentRenderPass(const video::SMaterial &material) const = 0;
+
+protected:
+	OpenGLFeatures features;
 };
 
 } // end namespace video

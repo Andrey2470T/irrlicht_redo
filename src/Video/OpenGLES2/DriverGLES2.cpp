@@ -63,14 +63,14 @@ void COpenGLES2Driver::initFeatures()
 		// NOTE a recent (2024) revision of EXT_texture_format_BGRA8888 also
 		// adds a sized format GL_BGRA8_EXT. Because we can't rely on that we
 		// have stupid workarounds in place on texture creation...
-		if (FeatureAvailable[IRR_GL_EXT_texture_format_BGRA8888] || FeatureAvailable[IRR_GL_APPLE_texture_format_BGRA8888])
+		if (isExtensionPresent("GL_EXT_texture_format_BGRA8888") || isExtensionPresent("GL_APPLE_texture_format_BGRA8888"))
 			TextureFormats[ECF_A8R8G8B8] = {GL_BGRA, GL_BGRA, GL_UNSIGNED_BYTE};
 
 		// OpenGL ES 3 doesn't include a GL_DEPTH_COMPONENT32, so still use
 		// OES_depth_texture for 32-bit depth texture support.
 		// OpenGL ES 3 would allow {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},
 		// but I guess that would have to be called ECF_D32F...
-		if (FeatureAvailable[IRR_GL_OES_depth_texture])
+		if (isExtensionPresent("GL_OES_depth_texture"))
 			TextureFormats[ECF_D32] = {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT};
 	} else {
 		// NOTE These are *texture* formats. They may or may not be suitable
@@ -84,72 +84,71 @@ void COpenGLES2Driver::initFeatures()
 		TextureFormats[ECF_R8G8B8] = {GL_RGB, GL_RGB, GL_UNSIGNED_BYTE};
 		TextureFormats[ECF_A8R8G8B8] = {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, CColorConverter::convert_A8R8G8B8toA8B8G8R8};
 
-		if (FeatureAvailable[IRR_GL_EXT_texture_format_BGRA8888] || FeatureAvailable[IRR_GL_APPLE_texture_format_BGRA8888])
+		if (isExtensionPresent("GL_EXT_texture_format_BGRA8888") || isExtensionPresent("GL_APPLE_texture_format_BGRA8888"))
 			TextureFormats[ECF_A8R8G8B8] = {GL_BGRA, GL_BGRA, GL_UNSIGNED_BYTE};
 
-		if (FeatureAvailable[IRR_GL_OES_texture_half_float]) {
+		if (isExtensionPresent("GL_OES_texture_half_float")) {
 			TextureFormats[ECF_A16B16G16R16F] = {GL_RGBA, GL_RGBA, HALF_FLOAT_OES};
 		}
-		if (FeatureAvailable[IRR_GL_OES_texture_float]) {
+		if (isExtensionPresent("GL_OES_texture_float")) {
 			TextureFormats[ECF_A32B32G32R32F] = {GL_RGBA, GL_RGBA, GL_FLOAT};
 		}
-		if (FeatureAvailable[IRR_GL_EXT_texture_rg]) {
+		if (isExtensionPresent("GL_EXT_texture_rg")) {
 			TextureFormats[ECF_R8] = {GL_RED, GL_RED, GL_UNSIGNED_BYTE};
 			TextureFormats[ECF_R8G8] = {GL_RG, GL_RG, GL_UNSIGNED_BYTE};
 
-			if (FeatureAvailable[IRR_GL_OES_texture_half_float]) {
+			if (isExtensionPresent("GL_OES_texture_half_float")) {
 				TextureFormats[ECF_R16F] = {GL_RED, GL_RED, HALF_FLOAT_OES};
 				TextureFormats[ECF_G16R16F] = {GL_RG, GL_RG, HALF_FLOAT_OES};
 			}
-			if (FeatureAvailable[IRR_GL_OES_texture_float]) {
+			if (isExtensionPresent("GL_OES_texture_float")) {
 				TextureFormats[ECF_R32F] = {GL_RED, GL_RED, GL_FLOAT};
 				TextureFormats[ECF_G32R32F] = {GL_RG, GL_RG, GL_FLOAT};
 			}
 		}
 
-		if (FeatureAvailable[IRR_GL_OES_depth_texture]) {
+		if (isExtensionPresent("GL_OES_depth_texture")) {
 			TextureFormats[ECF_D16] = {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT};
 			// OES_depth_texture includes 32-bit depth texture support.
 			TextureFormats[ECF_D32] = {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT};
 
-			if (FeatureAvailable[IRR_GL_OES_packed_depth_stencil])
+			if (isExtensionPresent("GL_OES_packed_depth_stencil"))
 				TextureFormats[ECF_D24S8] = {GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8};
 		}
 	}
 
 	const bool MRTSupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_draw_buffers");
-	LODBiasSupported = isExtensionPresent("GL_EXT_texture_lod_bias");
-	AnisotropicFilterSupported = isExtensionPresent("GL_EXT_texture_filter_anisotropic");
-	BlendMinMaxSupported = (Version.Major >= 3) || FeatureAvailable[IRR_GL_EXT_blend_minmax];
-	TextureMultisampleSupported = isVersionAtLeast(3, 1);
-	Texture2DArraySupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_texture_array");
-	KHRDebugSupported = isExtensionPresent("GL_KHR_debug");
-	if (KHRDebugSupported)
-		MaxLabelLength = GetInteger(GL_MAX_LABEL_LENGTH);
+	features.LODBiasSupported = isExtensionPresent("GL_EXT_texture_lod_bias");
+	features.AnisotropicFilterSupported = isExtensionPresent("GL_EXT_texture_filter_anisotropic");
+	features.BlendMinMaxSupported = (Version.Major >= 3) || isExtensionPresent("GL_EXT_blend_minmax");
+	features.TextureMultisampleSupported = isVersionAtLeast(3, 1);
+	features.Texture2DArraySupported = Version.Major >= 3 || isExtensionPresent("GL_EXT_texture_array");
+	features.KHRDebugSupported = isExtensionPresent("GL_KHR_debug");
+	if (features.KHRDebugSupported)
+		features.MaxLabelLength = GetInteger(GL_MAX_LABEL_LENGTH);
 
-	// COGLESCoreExtensionHandler::Feature
 	static_assert(MATERIAL_MAX_TEXTURES <= 8, "Only up to 8 textures are guaranteed");
-	Feature.BlendOperation = true;
-	Feature.TexStorage = Version.Major >= 3 || isExtensionPresent("GL_ARB_texture_storage");
-	Feature.ColorAttachment = 1;
+	features.BlendOperation = true;
+	features.TexStorage = Version.Major >= 3 || isExtensionPresent("GL_ARB_texture_storage");
+	features.ColorAttachment = 1;
 	if (MRTSupported)
-		Feature.ColorAttachment = GetInteger(GL_MAX_COLOR_ATTACHMENTS);
-	Feature.MaxTextureUnits = MATERIAL_MAX_TEXTURES;
+		features.ColorAttachment = GetInteger(GL_MAX_COLOR_ATTACHMENTS);
+	features.MaxTextureUnits = MATERIAL_MAX_TEXTURES;
 	if (MRTSupported)
-		Feature.MultipleRenderTarget = GetInteger(GL_MAX_DRAW_BUFFERS);
+		features.MultipleRenderTarget = GetInteger(GL_MAX_DRAW_BUFFERS);
 
 	// COGLESCoreExtensionHandler
-	if (AnisotropicFilterSupported)
-		MaxAnisotropy = GetInteger(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+	if (features.AnisotropicFilterSupported)
+		features.MaxAnisotropy = GetInteger(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
 	if (Version.Major >= 3 || isExtensionPresent("GL_EXT_draw_range_elements"))
-		MaxIndices = GetInteger(GL_MAX_ELEMENTS_INDICES);
-	MaxTextureSize = GetInteger(GL_MAX_TEXTURE_SIZE);
-	if (Texture2DArraySupported)
-		MaxArrayTextureLayers = GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
-	if (LODBiasSupported)
-		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &MaxTextureLODBias);
-	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, DimAliasedLine);
-	glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, DimAliasedPoint);
+		features.MaxIndices = GetInteger(GL_MAX_ELEMENTS_INDICES);
+	features.MaxTextureSize = GetInteger(GL_MAX_TEXTURE_SIZE);
+	if (features.Texture2DArraySupported)
+		features.MaxArrayTextureLayers = GetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
+	if (features.LODBiasSupported)
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &features.MaxTextureLODBias);
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, features.DimAliasedLine);
+	glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, features.DimAliasedPoint);
 }
 
 IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)

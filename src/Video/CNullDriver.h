@@ -41,12 +41,6 @@ public:
 
 	bool endScene() override;
 
-	//! Disable a feature of the driver.
-	void disableFeature(E_VIDEO_DRIVER_FEATURE feature, bool flag = true) override;
-
-	//! queries the features of the driver, returns true if feature is available
-	bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const override;
-
 	//! sets transformation
 	void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4 &mat) override;
 
@@ -716,8 +710,6 @@ protected:
 	bool PixelFog;
 	bool RangeFog;
 	bool AllowZWriteOnTransparent;
-
-	bool FeatureEnabled[video::EVDF_COUNT];
 };
 
 } // end namespace video
