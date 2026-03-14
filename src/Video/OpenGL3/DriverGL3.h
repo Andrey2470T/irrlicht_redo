@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #pragma once
-#include "Video/OpenGL/Driver.h"
+#include "Video/Driver.h"
 
 
 namespace video

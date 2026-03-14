@@ -238,12 +238,12 @@ set(IRRDRVROBJ
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
-		Video/OpenGL/Driver.cpp
-		Video/OpenGL/ExtensionHandler.cpp
-		Video/OpenGL/FixedPipelineRenderer.cpp
-		Video/OpenGL/MaterialRenderer.cpp
-		Video/OpenGL/Renderer2D.cpp
-		Video/OpenGL/VBO.cpp
+		Video/Driver.cpp
+		Video/ExtensionHandler.cpp
+		Video/FixedPipelineRenderer.cpp
+		Video/MaterialRenderer.cpp
+		Video/Renderer2D.cpp
+		Video/VBO.cpp
 	)
 endif()
 
@@ -308,7 +308,7 @@ endif()
 if(USE_SDL3)
 	include_directories(IRROTHEROBJ $<TARGET_PROPERTY:SDL3::Headers,INTERFACE_INCLUDE_DIRECTORIES>)
 	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_USE_SDL3_)
-	target_compile_definitions(IRRVIDEOOBJ PRIVATE _IRR_USE_SDL3_) # OpenGL/Common.h
+	target_compile_definitions(IRRVIDEOOBJ PRIVATE _IRR_USE_SDL3_) # Video/Common.h
 endif()
 
 add_library(IRRGUIOBJ OBJECT

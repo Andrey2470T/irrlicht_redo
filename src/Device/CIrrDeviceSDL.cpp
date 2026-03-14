@@ -16,7 +16,7 @@
 #include "Clipboard.h"
 #include "SIrrCreationParameters.h"
 
-#include "Video/OpenGL/Common.h"
+#include "Video/Common.h"
 #ifdef _IRR_USE_SDL3_
 #include <SDL3/SDL_version.h>
 #else
