@@ -512,11 +512,9 @@ inline vector3d<s32> vector3d<s32>::getSphericalCoordinateAngles() const
 	return angle;
 }
 
-//! Typedef for a f32 3d vector.
 typedef vector3d<f32> vector3df;
-
-//! Typedef for an integer 3d vector.
 typedef vector3d<s32> vector3di;
+typedef vector3d<u32> vector3du;
 
 //! Function multiplying a scalar and a vector component-wise.
 template <class S, class T>

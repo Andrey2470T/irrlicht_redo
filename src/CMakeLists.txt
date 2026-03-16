@@ -286,6 +286,7 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 		Video/FixedPipelineRenderer.cpp
 		Video/MaterialRenderer.cpp
 		Video/Renderer2D.cpp
+		Video/RenderTarget.cpp
 		Video/VBO.cpp
 	)
 endif()

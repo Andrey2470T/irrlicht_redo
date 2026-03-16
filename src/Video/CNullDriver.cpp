@@ -16,7 +16,7 @@
 #include "Mesh/CMeshManipulator.h"
 #include "Image/CColorConverter.h"
 #include "IReferenceCounted.h"
-#include "IRenderTarget.h"
+#include "RenderTarget.h"
 #include "Timer.h"
 
 #include <cassert>
@@ -180,7 +180,7 @@ void CNullDriver::deleteAllTextures()
 	// reset render targets.
 
 	for (u32 i = 0; i < RenderTargets.size(); ++i)
-		RenderTargets[i]->setTexture(0, 0);
+		RenderTargets[i]->setTextures({nullptr}, nullptr);
 
 	// remove textures.
 
@@ -500,7 +500,7 @@ ITexture *CNullDriver::createDeviceDependentTexture(const io::path &name, E_TEXT
 	return dummy;
 }
 
-bool CNullDriver::setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
+bool CNullDriver::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
 	return false;
 }
@@ -529,7 +529,7 @@ bool CNullDriver::setRenderTarget(ITexture *texture, u16 clearFlag, SColor clear
 			SharedDepthTextures.push_back(depthTexture);
 		}
 
-		SharedRenderTarget->setTexture(texture, depthTexture);
+		SharedRenderTarget->setTextures({texture}, depthTexture);
 
 		return setRenderTargetEx(SharedRenderTarget, clearFlag, clearColor, clearDepth, clearStencil);
 	} else {
@@ -671,7 +671,7 @@ const core::dimension2d<u32> &CNullDriver::getScreenSize() const
 }
 
 //! get current render target
-IRenderTarget *CNullDriver::getCurrentRenderTarget() const
+RenderTarget *CNullDriver::getCurrentRenderTarget() const
 {
 	return CurrentRenderTarget;
 }
@@ -1205,13 +1205,13 @@ bool CNullDriver::isHardwareBufferRecommend(const scene::IIndexBuffer *ib)
 }
 
 //! Create render target.
-IRenderTarget *CNullDriver::addRenderTarget()
+RenderTarget *CNullDriver::addRenderTarget()
 {
 	return 0;
 }
 
 //! Remove render target.
-void CNullDriver::removeRenderTarget(IRenderTarget *renderTarget)
+void CNullDriver::removeRenderTarget(RenderTarget *renderTarget)
 {
 	if (!renderTarget)
 		return;

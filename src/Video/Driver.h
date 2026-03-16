@@ -70,9 +70,9 @@ public:
 		const scene::IIndexBuffer *ib, u32 primCount,
 		scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES) override;
 
-	IRenderTarget *addRenderTarget() override;
+	RenderTarget *addRenderTarget() override;
 
-	void blitRenderTarget(IRenderTarget *from, IRenderTarget *to) override;
+	void blitRenderTarget(RenderTarget *from, RenderTarget *to) override;
 
 	//! draws a vertex primitive list
 	virtual void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
@@ -210,7 +210,7 @@ public:
 	ITexture *addRenderTargetTextureCubemap(const u32 sideLen,
 			const io::path &name, const ECOLOR_FORMAT format) override;
 
-	virtual bool setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
+	virtual bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0) override;
 
 	void clearBuffers(u16 flag, SColor color = SColor(255, 0, 0, 0), f32 depth = 1.f, u8 stencil = 0) override;
@@ -218,9 +218,9 @@ public:
 	//! Returns an image created from the last rendered frame.
 	IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER) override;
 
-	//! checks if an OpenGL error has happened and prints it, use via TEST_GL_ERROR().
+	//! checks if an OpenGL error has happened and prints it, use via testGLError().
 	// Does *nothing* unless in debug mode.
-	bool testGLError(const char *file, int line);
+	bool testGLError() override;
 
 	//! Returns the graphics card vendor name.
 	core::stringc getVendorInfo() override

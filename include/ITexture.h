@@ -188,6 +188,8 @@ public:
 	needs mipmap regeneration. */
 	virtual void regenerateMipMapLevels(u32 layer = 0) = 0;
 
+	virtual u32 getID() const = 0;
+
 	//! Get original size of the texture.
 	/** The texture is usually scaled, if it was created with an unoptimal
 	size. For example if the size was not a power of two. This method

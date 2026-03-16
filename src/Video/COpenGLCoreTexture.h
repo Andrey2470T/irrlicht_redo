@@ -86,7 +86,7 @@ public:
 		}
 
 		glGenTextures(1, &TextureName);
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
@@ -106,7 +106,7 @@ public:
 			else
 				glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
 		}
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 
 		initTexture(tmpImages->size());
 
@@ -130,7 +130,7 @@ public:
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
 
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 	}
 
 	COpenGLCoreTexture(const io::path &name, const core::dimension2d<u32> &size, E_TEXTURE_TYPE type, ECOLOR_FORMAT format, TOpenGLDriver *driver, u8 msaa = 0) :
@@ -162,7 +162,6 @@ public:
 			return;
 		}
 
-#ifndef IRR_COMPILE_GL_COMMON
 		// On GLES 3.0 we must use sized internal formats for textures when calling
 		// glTexStorage. But ECF_A8R8G8B8 might be mapped to GL_BGRA (an unsized format).
 		// Since we don't upload to RTT we can safely pick a different combo that works.
@@ -170,7 +169,6 @@ public:
 			InternalFormat = GL_RGBA8;
 			PixelFormat = GL_RGBA;
 		}
-#endif
 
 		char lbuf[100];
 		snprintf_irr(lbuf, sizeof(lbuf),
@@ -181,7 +179,7 @@ public:
 		g_irrlogger->log(lbuf, ELL_DEBUG);
 
 		glGenTextures(1, &TextureName);
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
@@ -212,7 +210,7 @@ public:
 			Driver->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 	}
 
 	virtual ~COpenGLCoreTexture()
@@ -257,11 +255,7 @@ public:
 			if (LockImage && mode != ETLM_WRITE_ONLY) {
 				bool passed = true;
 
-#ifdef IRR_COMPILE_GL_COMMON // legacy driver
-				constexpr bool use_gl_impl = true;
-#else
 				const bool use_gl_impl = Driver->Version.Spec != OpenGLSpec::ES;
-#endif
 
 				if (Type == ETT_2D_ARRAY) {
 
@@ -280,12 +274,12 @@ public:
 				IImage *tmpImage = LockImage;
 
 				Driver->getCacheHandler()->getTextureCache().set(0, this);
-				TEST_GL_ERROR(Driver);
+				Driver->testGLError();
 
 				GLenum tmpTextureType = getTextureTarget(layer);
 
 				glGetTexImage(tmpTextureType, MipLevelStored, PixelFormat, PixelType, tmpImage->getData());
-				TEST_GL_ERROR(Driver);
+				Driver->testGLError();
 
 				if (IsRenderTarget && lockFlags == ETLF_FLIP_Y_UP_RTT)
 					flipImageY(tmpImage);
@@ -303,8 +297,8 @@ public:
 
 				// Warning: on GLES 2.0 this call will only work with mipmapLevel == 0
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-					tmpTextureType, getOpenGLTextureName(), mipmapLevel);
-				TEST_GL_ERROR(Driver);
+					tmpTextureType, (GLuint)getID(), mipmapLevel);
+				Driver->testGLError();
 
 				IImage *tmpImage = Driver->createImage(ECF_A8R8G8B8, lockImageSize);
 				glReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
@@ -317,7 +311,7 @@ public:
 
 				glDeleteFramebuffers(1, &tmpFBO);
 
-				TEST_GL_ERROR(Driver);
+				Driver->testGLError();
 
 				if (IsRenderTarget && lockFlags == ETLF_FLIP_Y_UP_RTT)
 					flipImageY(tmpImage);
@@ -386,7 +380,7 @@ public:
 		Driver->getCacheHandler()->getTextureCache().set(0, this);
 
 		glGenerateMipmap(TextureType);
-		TEST_GL_ERROR(Driver);
+		Driver->testGLError();
 
 		Driver->getCacheHandler()->getTextureCache().set(0, prevTexture);
 	}
@@ -396,9 +390,9 @@ public:
 		return TextureType;
 	}
 
-	GLuint getOpenGLTextureName() const
+	u32 getID() const override
 	{
-		return TextureName;
+		return (u32)TextureName;
 	}
 
 	SStatesCache &getStatesCache() const
@@ -523,12 +517,10 @@ protected:
 		// reference: <https://www.khronos.org/opengl/wiki/Texture_Storage>
 		bool use_tex_storage = Driver->getFeatures().TexStorage;
 
-#ifndef IRR_COMPILE_GL_COMMON
 		// On GLES 3.0 if we don't have a sized format suitable for glTexStorage,
 		// just avoid using it. Only affects the extension that provides BGRA.
 		if (InternalFormat == GL_BGRA && Driver->Version.Major >= 3)
 			use_tex_storage = false;
-#endif
 
 		switch (Type) {
 		case ETT_2D:
@@ -539,7 +531,7 @@ protected:
 				glTexImage2D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 			}
-			TEST_GL_ERROR(Driver);
+			Driver->testGLError();
 			break;
 		case ETT_2D_MS: {
 			GLint max_samples = 0;
@@ -549,17 +541,13 @@ protected:
 			// glTexImage2DMultisample is supported by OpenGL 3.2+
 			// glTexStorage2DMultisample is supported by OpenGL 4.3+ and OpenGL ES 3.1+
 			// so pick the most compatible one
-#ifdef IRR_COMPILE_GL_COMMON // legacy driver
-			constexpr bool use_gl_impl = true;
-#else
 			const bool use_gl_impl = Driver->Version.Spec != OpenGLSpec::ES;
-#endif
 
 			if (use_gl_impl)
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
 			else
 				glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
-			TEST_GL_ERROR(Driver);
+			Driver->testGLError();
 			break;
 		}
 		case ETT_CUBEMAP:
@@ -572,7 +560,7 @@ protected:
 					glTexImage2D(target, 0, InternalFormat,
 						Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 				}
-				TEST_GL_ERROR(Driver);
+				Driver->testGLError();
 			}
 			break;
 		case ETT_2D_ARRAY:
@@ -583,7 +571,7 @@ protected:
 				glTexImage3D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, layers, 0, PixelFormat, PixelType, 0);
 			}
-			TEST_GL_ERROR(Driver);
+			Driver->testGLError();
 			break;
 		default:
 			assert(false);
@@ -630,7 +618,7 @@ protected:
 				assert(false);
 				break;
 			}
-			TEST_GL_ERROR(Driver);
+			Driver->testGLError();
 
 			delete tmpImage;
 		} else {

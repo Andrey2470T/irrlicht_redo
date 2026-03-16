@@ -79,7 +79,7 @@ public:
 
 	ITexture *addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8) override;
 
-	virtual bool setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
+	virtual bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0) override;
 
 	virtual bool setRenderTarget(ITexture *texture, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
@@ -176,7 +176,7 @@ public:
 	const core::dimension2d<u32> &getScreenSize() const override;
 
 	//! get current render target
-	IRenderTarget *getCurrentRenderTarget() const;
+	RenderTarget *getCurrentRenderTarget() const;
 
 	//! get render target size
 	const core::dimension2d<u32> &getCurrentRenderTargetSize() const override;
@@ -357,12 +357,12 @@ public:
 	virtual bool isHardwareBufferRecommend(const scene::IIndexBuffer *mb);
 
 	//! Create render target.
-	IRenderTarget *addRenderTarget() override;
+	RenderTarget *addRenderTarget() override;
 
-	void blitRenderTarget(IRenderTarget *from, IRenderTarget *to) override {}
+	void blitRenderTarget(RenderTarget *from, RenderTarget *to) override {}
 
 	//! Remove render target.
-	void removeRenderTarget(IRenderTarget *renderTarget) override;
+	void removeRenderTarget(RenderTarget *renderTarget) override;
 
 	//! Remove all render targets.
 	void removeAllRenderTargets() override;
@@ -442,6 +442,8 @@ public:
 
 	//! Returns an image created from the last rendered frame.
 	IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER) override;
+
+	bool testGLError() override { return true; }
 
 	//! Writes the provided image to disk file
 	bool writeImageToFile(IImage *image, const io::path &filename, u32 param = 0) override;
@@ -566,75 +568,18 @@ protected:
 		void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE, u32 mipmapLevel = 0, u32 layer = 0, E_TEXTURE_LOCK_FLAGS lockFlags = ETLF_FLIP_Y_UP_RTT) override { return 0; }
 		void unlock() override {}
 		void regenerateMipMapLevels(u32 layer = 0) override {}
+
+		u32 getID() const override { return 0; }
 	};
 	core::array<SSurface> Textures;
 
-	struct SOccQuery
-	{
-		SOccQuery(scene::ISceneNode *node, const scene::IMesh *mesh = 0) :
-				Node(node), Mesh(mesh), PID(0), Result(0xffffffff), Run(0xffffffff)
-		{
-			if (Node)
-				Node->grab();
-			if (Mesh)
-				Mesh->grab();
-		}
-
-		SOccQuery(const SOccQuery &other) :
-				Node(other.Node), Mesh(other.Mesh), PID(other.PID), Result(other.Result), Run(other.Run)
-		{
-			if (Node)
-				Node->grab();
-			if (Mesh)
-				Mesh->grab();
-		}
-
-		~SOccQuery()
-		{
-			if (Node)
-				Node->drop();
-			if (Mesh)
-				Mesh->drop();
-		}
-
-		SOccQuery &operator=(const SOccQuery &other)
-		{
-			Node = other.Node;
-			Mesh = other.Mesh;
-			PID = other.PID;
-			Result = other.Result;
-			Run = other.Run;
-			if (Node)
-				Node->grab();
-			if (Mesh)
-				Mesh->grab();
-			return *this;
-		}
-
-		bool operator==(const SOccQuery &other) const
-		{
-			return other.Node == Node;
-		}
-
-		scene::ISceneNode *Node;
-		const scene::IMesh *Mesh;
-		union
-		{
-			void *PID;
-			unsigned int UID;
-		};
-		u32 Result;
-		u32 Run;
-	};
-	core::array<SOccQuery> OcclusionQueries;
-
-	core::array<IRenderTarget *> RenderTargets;
+	core::array<RenderTarget *> RenderTargets;
 
 	// Shared objects used with simplified IVideoDriver::setRenderTarget method with ITexture* param.
-	IRenderTarget *SharedRenderTarget;
+	RenderTarget *SharedRenderTarget;
 	core::array<ITexture *> SharedDepthTextures;
 
-	IRenderTarget *CurrentRenderTarget;
+	RenderTarget *CurrentRenderTarget;
 	core::dimension2d<u32> CurrentRenderTargetSize;
 
 	core::array<video::IImageLoader *> SurfaceLoader;

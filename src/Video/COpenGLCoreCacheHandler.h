@@ -82,24 +82,9 @@ class COpenGLCoreCacheHandler
 
 							if (curTextureType != prevTextureType) {
 								glBindTexture(prevTextureType, 0);
-
-#if defined(IRR_COMPILE_GL_COMMON)
-								// The "enable/disable texture" stuff is so legacy that
-								// it's not even allowed for multisample textures.
-								// (IRR_COMPILE_GL_COMMON is for the legacy driver.)
-								if (prevTextureType != GL_TEXTURE_2D_MULTISAMPLE)
-									glDisable(prevTextureType);
-								if (curTextureType != GL_TEXTURE_2D_MULTISAMPLE)
-									glEnable(curTextureType);
-#endif
 							}
-#if defined(IRR_COMPILE_GL_COMMON)
-							else if (!prevTexture)
-								if (curTextureType != GL_TEXTURE_2D_MULTISAMPLE)
-									glEnable(curTextureType);
-#endif
 
-							auto name = static_cast<const TOpenGLTexture *>(texture)->getOpenGLTextureName();
+							auto name = static_cast<const TOpenGLTexture *>(texture)->getID();
 							assert(name != 0);
 							glBindTexture(curTextureType, name);
 						} else {
@@ -115,11 +100,6 @@ class COpenGLCoreCacheHandler
 						const GLenum prevTextureType = prevTexture->getOpenGLTextureType();
 
 						glBindTexture(prevTextureType, 0);
-
-#if defined(IRR_COMPILE_GL_COMMON)
-						if (prevTextureType != GL_TEXTURE_2D_MULTISAMPLE)
-							glDisable(prevTextureType);
-#endif
 					}
 
 					Texture[index] = static_cast<const TOpenGLTexture *>(texture);
@@ -229,10 +209,6 @@ public:
 		glDisable(GL_DEPTH_TEST);
 
 		glActiveTexture(ActiveTexture);
-
-#if defined(IRR_COMPILE_GL_COMMON)
-		glDisable(GL_TEXTURE_2D);
-#endif
 
 		const core::dimension2d<u32> ScreenSize = Driver->getScreenSize();
 		ViewportWidth = ScreenSize.Width;

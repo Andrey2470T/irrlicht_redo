@@ -10,7 +10,7 @@
 #include "IContextManager.h"
 
 #include "Video/COpenGLCoreTexture.h"
-#include "Video/COpenGLCoreRenderTarget.h"
+#include "RenderTarget.h"
 #include "Video/COpenGLCoreCacheHandler.h"
 
 #include "MaterialRenderer.h"
@@ -160,7 +160,7 @@ COpenGL3DriverBase::COpenGL3DriverBase(const SIrrlichtCreationParameters &params
 	ExposedData = ContextManager->getContext();
 	ContextManager->activateContext(ExposedData, false);
 
-	TEST_GL_ERROR(this);
+	testGLError();
 }
 
 COpenGL3DriverBase::~COpenGL3DriverBase()
@@ -307,7 +307,7 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 	// This fixes problems with intermediate changes to the material during texture load.
 	ResetRenderStates = true;
 
-	TEST_GL_ERROR(this);
+	testGLError();
 
 	return true;
 }
@@ -508,7 +508,7 @@ bool COpenGL3DriverBase::uploadHardwareBuffer(OpenGLVBO &vbo,
 
 	vbo.upload(buffer, bufferSize, 0, usage);
 
-	return (!TEST_GL_ERROR(this));
+	return (!testGLError());
 }
 
 bool COpenGL3DriverBase::updateVertexHardwareBuffer(SHWBufferLink_opengl *HWBuffer)
@@ -659,15 +659,15 @@ void COpenGL3DriverBase::drawBuffers(const scene::IVertexBuffer *vb,
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-IRenderTarget *COpenGL3DriverBase::addRenderTarget()
+RenderTarget *COpenGL3DriverBase::addRenderTarget()
 {
-	COpenGL3RenderTarget *renderTarget = new COpenGL3RenderTarget(this);
+	RenderTarget *renderTarget = new RenderTarget(this);
 	RenderTargets.push_back(renderTarget);
 
 	return renderTarget;
 }
 
-void COpenGL3DriverBase::blitRenderTarget(IRenderTarget *from, IRenderTarget *to)
+void COpenGL3DriverBase::blitRenderTarget(RenderTarget *from, RenderTarget *to)
 {
 	if (Version.Spec == OpenGLSpec::ES && Version.Major < 3) {
 		g_irrlogger->log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
@@ -677,13 +677,11 @@ void COpenGL3DriverBase::blitRenderTarget(IRenderTarget *from, IRenderTarget *to
 	GLuint prev_fbo_id;
 	CacheHandler->getFBO(prev_fbo_id);
 
-	COpenGL3RenderTarget *src = static_cast<COpenGL3RenderTarget *>(from);
-	COpenGL3RenderTarget *dst = static_cast<COpenGL3RenderTarget *>(to);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->getBufferID());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->getBufferID());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, from->getID());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to->getID());
 	glBlitFramebuffer(
-			0, 0, src->getSize().Width, src->getSize().Height,
-			0, 0, dst->getSize().Width, dst->getSize().Height,
+			0, 0, from->getSize().Width, from->getSize().Height,
+			0, 0, to->getSize().Width, to->getSize().Height,
 			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
 	// This resets both read and draw framebuffer. Note that we bypass CacheHandler here.
@@ -809,7 +807,7 @@ void COpenGL3DriverBase::draw2DImage(const video::ITexture *texture, const core:
 	if (clipRect)
 		glDisable(GL_SCISSOR_TEST);
 
-	TEST_GL_ERROR(this);
+	testGLError();
 }
 
 void COpenGL3DriverBase::draw2DImage(const video::ITexture *texture, u32 layer, bool flip)
@@ -1115,7 +1113,7 @@ void COpenGL3DriverBase::setMaterial(const SMaterial &material)
 }
 
 //! prints error if an error happened.
-bool COpenGL3DriverBase::testGLError(const char *file, int line)
+bool COpenGL3DriverBase::testGLError()
 {
 	if (!EnableErrorTest)
 		return false;
@@ -1157,6 +1155,9 @@ bool COpenGL3DriverBase::testGLError(const char *file, int line)
 	bool multiple = false;
 	while (glGetError() != GL_NO_ERROR)
 		multiple = true;
+
+	const char *file = __FILE__;
+	int line = __LINE__;
 
 	// basename
 	for (char sep : {'/', '\\'}) {
@@ -1734,22 +1735,14 @@ u32 COpenGL3DriverBase::getMaximalPrimitiveCount() const
 	return Version.Spec == OpenGLSpec::ES ? 65535 : 0x7fffffff;
 }
 
-bool COpenGL3DriverBase::setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
+bool COpenGL3DriverBase::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
-	if (target && target->getDriverType() != getDriverType()) {
-		g_irrlogger->log("Fatal Error: Tried to set a render target not owned by OpenGL 3 driver.", ELL_ERROR);
-		return false;
-	}
-
 	core::dimension2d<u32> destRenderTargetSize(0, 0);
 
 	if (target) {
-		COpenGL3RenderTarget *renderTarget = static_cast<COpenGL3RenderTarget *>(target);
+		CacheHandler->setFBO(target->getID());
 
-		CacheHandler->setFBO(renderTarget->getBufferID());
-		renderTarget->update();
-
-		destRenderTargetSize = renderTarget->getSize();
+		destRenderTargetSize = target->getSize();
 
 		setViewPortRaw(destRenderTargetSize.Width, destRenderTargetSize.Height);
 	} else {
@@ -1854,7 +1847,7 @@ IImage *COpenGL3DriverBase::createScreenShot(video::ECOLOR_FORMAT format, video:
 	}
 
 	glReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, internalformat, type, pixels);
-	TEST_GL_ERROR(this);
+	testGLError();
 
 	// opengl images are horizontally flipped, so we have to fix that here.
 	const s32 pitch = newImage->getPitch();
@@ -1882,7 +1875,7 @@ IImage *COpenGL3DriverBase::createScreenShot(video::ECOLOR_FORMAT format, video:
 		}
 	}
 
-	if (TEST_GL_ERROR(this)) {
+	if (testGLError()) {
 		newImage->drop();
 		return 0;
 	}

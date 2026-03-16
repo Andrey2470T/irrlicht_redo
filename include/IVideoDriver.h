@@ -42,7 +42,7 @@ class IImageLoader;
 class IImageWriter;
 class IMaterialRenderer;
 class IGPUProgrammingServices;
-class IRenderTarget;
+class RenderTarget;
 
 const c8 *const FogTypeNames[] = {
 		"FogExp",
@@ -338,17 +338,17 @@ public:
 	virtual void removeAllHardwareBuffers() = 0;
 
 	//! Create render target.
-	virtual IRenderTarget *addRenderTarget() = 0;
+	virtual RenderTarget *addRenderTarget() = 0;
 
 	//! Remove render target.
-	virtual void removeRenderTarget(IRenderTarget *renderTarget) = 0;
+	virtual void removeRenderTarget(RenderTarget *renderTarget) = 0;
 
 	//! Remove all render targets.
 	virtual void removeAllRenderTargets() = 0;
 
 	//! Blit contents of one render target to another one.
 	/** This is glBlitFramebuffer in OpenGL. */
-	virtual void blitRenderTarget(IRenderTarget *from, IRenderTarget *to) = 0;
+	virtual void blitRenderTarget(RenderTarget *from, RenderTarget *to) = 0;
 
 	//! Sets a boolean alpha channel on the texture based on a color key.
 	/** This makes the texture fully transparent at the texels where
@@ -390,7 +390,7 @@ public:
 	\param clearDepth The clear value for the depth buffer.
 	\param clearStencil The clear value for the stencil buffer.
 	\return True if successful and false if not. */
-	virtual bool setRenderTargetEx(IRenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
+	virtual bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0) = 0;
 
 	//! Sets a new render target.
@@ -1035,6 +1035,10 @@ public:
 	//! Make a screenshot of the last rendered frame.
 	/** \return An image created from the last rendered frame. */
 	virtual IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER) = 0;
+
+	//! checks if an OpenGL error has happened and prints it, use via testGLError().
+	// Does *nothing* unless in debug mode.
+	virtual bool testGLError() = 0;
 
 	//! Check if the image is already loaded.
 	/** Works similar to getTexture(), but does not load the texture
