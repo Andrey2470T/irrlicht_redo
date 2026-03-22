@@ -14,12 +14,13 @@
 #include "fast_atof.h"
 #include "ExtensionHandler.h"
 #include "IContextManager.h"
+#include <memory>
 
 
 namespace video
 {
 struct VertexType;
-
+class DrawContext;
 class COpenGL3FixedPipelineRenderer;
 class COpenGL3Renderer2D;
 
@@ -71,8 +72,6 @@ public:
 		scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES) override;
 
 	RenderTarget *addRenderTarget() override;
-
-	void blitRenderTarget(RenderTarget *from, RenderTarget *to) override;
 
 	//! draws a vertex primitive list
 	virtual void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
@@ -213,8 +212,6 @@ public:
 	virtual bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0) override;
 
-	void clearBuffers(u16 flag, SColor color = SColor(255, 0, 0, 0), f32 depth = 1.f, u8 stencil = 0) override;
-
 	//! Returns an image created from the last rendered frame.
 	IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER) override;
 
@@ -227,6 +224,7 @@ public:
 	{
 		return VendorName;
 	};
+	virtual OpenGLVersion getVersionFromOpenGL() const = 0;
 
 	void removeTexture(ITexture *texture) override;
 
@@ -236,16 +234,13 @@ public:
 	//! Used by some SceneNodes to check if a material should be rendered in the transparent render pass
 	bool needsTransparentRenderPass(const video::SMaterial &material) const override;
 
-	//! Convert E_BLEND_FACTOR to OpenGL equivalent
-	GLenum getGLBlend(E_BLEND_FACTOR factor) const;
-
 	virtual bool getColorFormatParameters(ECOLOR_FORMAT format, GLint &internalFormat, GLenum &pixelFormat,
 			GLenum &pixelType, void (**converter)(const void *, s32, void *)) const;
 
 	//! Get current material.
 	const SMaterial &getCurrentMaterial() const;
 
-	COpenGL3CacheHandler *getCacheHandler() const;
+	DrawContext *getContext() const override;
 
 	static GLint GetInteger(GLenum key);
 
@@ -255,7 +250,6 @@ protected:
 	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
 
 	void initVersion();
-	virtual OpenGLVersion getVersionFromOpenGL() const = 0;
 
 	virtual void initFeatures() = 0;
 
@@ -265,9 +259,6 @@ protected:
 
 	ITexture *createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type,
 		const std::vector<IImage*> &images) override;
-
-	//! Map Irrlicht wrap mode to OpenGL enum
-	GLint getTextureWrapMode(u8 clamp) const;
 
 	//! sets the needed renderstates
 	void setRenderStates3DMode();
@@ -312,7 +303,7 @@ protected:
 	void beginDraw(const VertexType &vertexType, uintptr_t verticesBase);
 	void endDraw(const VertexType &vertexType);
 
-	COpenGL3CacheHandler *CacheHandler;
+	std::unique_ptr<DrawContext> Context;
 	core::stringc Name;
 	core::stringc VendorName;
 	SIrrlichtCreationParameters Params;

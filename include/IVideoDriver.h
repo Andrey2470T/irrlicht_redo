@@ -43,6 +43,7 @@ class IImageWriter;
 class IMaterialRenderer;
 class IGPUProgrammingServices;
 class RenderTarget;
+class DrawContext;
 
 const c8 *const FogTypeNames[] = {
 		"FogExp",
@@ -447,6 +448,8 @@ public:
 	//! Gets the area of the current viewport.
 	/** \return Rectangle of the current viewport. */
 	virtual const core::rect<s32> &getViewPort() const = 0;
+
+	virtual DrawContext *getContext() const = 0;
 
 	//! Draws a vertex primitive list
 	/** Note that, depending on the index type, some vertices might be not
@@ -1016,21 +1019,6 @@ public:
 
 	//! Returns a pointer to the mesh manipulator.
 	virtual scene::IMeshManipulator *getMeshManipulator() = 0;
-
-	//! Clear the color, depth and/or stencil buffers.
-	virtual void clearBuffers(u16 flag, SColor color = SColor(255, 0, 0, 0), f32 depth = 1.f, u8 stencil = 0) = 0;
-
-	//! Clears the ZBuffer.
-	/** Note that you usually need not to call this method, as it
-	is automatically done in IVideoDriver::beginScene() or
-	IVideoDriver::setRenderTarget() if you enable zBuffer. But if
-	you have to render some special things, you can clear the
-	zbuffer during the rendering process with this method any time.
-	*/
-	void clearZBuffer()
-	{
-		clearBuffers(ECBF_DEPTH, SColor(255, 0, 0, 0), 1.f, 0);
-	}
 
 	//! Make a screenshot of the last rendered frame.
 	/** \return An image created from the last rendered frame. */

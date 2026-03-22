@@ -11,6 +11,7 @@
 #include "Logger.h"
 
 #include "Driver.h"
+#include "DrawContext.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
@@ -142,25 +143,23 @@ void COpenGL3MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 		bool resetAllRenderstates,
 		video::IMaterialRendererServices *services)
 {
-	COpenGL3CacheHandler *cacheHandler = Driver->getCacheHandler();
+	auto ctxt = Driver->getContext();
 
-	cacheHandler->setProgram(Program);
+	ctxt->setProgram(Program);
 
 	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 	if (Alpha) {
-		cacheHandler->setBlend(true);
-		cacheHandler->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		ctxt->enableBlend(true);
+		ctxt->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
 	} else if (Blending) {
 		E_BLEND_FACTOR srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact;
 		E_MODULATE_FUNC modulate;
 		u32 alphaSource;
 		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulate, alphaSource, material.MaterialTypeParam);
 
-		cacheHandler->setBlendFuncSeparate(Driver->getGLBlend(srcRGBFact), Driver->getGLBlend(dstRGBFact),
-				Driver->getGLBlend(srcAlphaFact), Driver->getGLBlend(dstAlphaFact));
-
-		cacheHandler->setBlend(true);
+		ctxt->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
+		ctxt->enableBlend(true);
 	}
 
 	if (CallBack)

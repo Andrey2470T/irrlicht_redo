@@ -8,6 +8,7 @@
 #include "Logger.h"
 
 #include "Driver.h"
+#include "DrawContext.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
@@ -24,9 +25,9 @@ COpenGL3Renderer2D::COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *
 	init(Temp, vertexShaderProgram, pixelShaderProgram,
 		withTexture ? "2DTexture" : "2DNoTexture", false);
 
-	COpenGL3CacheHandler *cacheHandler = Driver->getCacheHandler();
+	auto ctxt = Driver->getContext();
 
-	cacheHandler->setProgram(Program);
+	ctxt->setProgram(Program);
 
 	// These states don't change later.
 
@@ -43,7 +44,7 @@ COpenGL3Renderer2D::COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *
 		setPixelShaderConstant(TextureUsageID, &TextureUsage, 1);
 	}
 
-	cacheHandler->setProgram(0);
+	ctxt->setProgram(0);
 }
 
 COpenGL3Renderer2D::~COpenGL3Renderer2D()
@@ -55,7 +56,7 @@ void COpenGL3Renderer2D::OnSetMaterial(const video::SMaterial &material,
 		bool resetAllRenderstates,
 		video::IMaterialRendererServices *services)
 {
-	Driver->getCacheHandler()->setProgram(Program);
+	Driver->getContext()->setProgram(Program);
 	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 	f32 Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;

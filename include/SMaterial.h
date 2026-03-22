@@ -29,7 +29,8 @@ enum E_BLEND_FACTOR : u8
 	EBF_ONE_MINUS_SRC_ALPHA, //!< src & dest	(1-srcA, 1-srcA, 1-srcA, 1-srcA)
 	EBF_DST_ALPHA,           //!< src & dest	(destA, destA, destA, destA)
 	EBF_ONE_MINUS_DST_ALPHA, //!< src & dest	(1-destA, 1-destA, 1-destA, 1-destA)
-	EBF_SRC_ALPHA_SATURATE   //!< src	(min(srcA, 1-destA), idem, ...)
+	EBF_SRC_ALPHA_SATURATE,  //!< src	(min(srcA, 1-destA), idem, ...)
+	EBF_COUNT
 };
 
 //! Values defining the blend operation
@@ -44,7 +45,8 @@ enum E_BLEND_OPERATION : u8
 	EBO_MIN_FACTOR,  //!< Choose minimum value of each color channel after applying blend factors, not widely supported
 	EBO_MAX_FACTOR,  //!< Choose maximum value of each color channel after applying blend factors, not widely supported
 	EBO_MIN_ALPHA,   //!< Choose minimum value of each color channel based on alpha value, not widely supported
-	EBO_MAX_ALPHA    //!< Choose maximum value of each color channel based on alpha value, not widely supported
+	EBO_MAX_ALPHA,   //!< Choose maximum value of each color channel based on alpha value, not widely supported
+	EBO_COUNT
 };
 
 //! MaterialTypeParam: e.g. DirectX: D3DTOP_MODULATE, D3DTOP_MODULATE2X, D3DTOP_MODULATE4X
@@ -75,7 +77,8 @@ enum E_COMPARISON_FUNC : u8
 	//! test succeeds always
 	ECFN_ALWAYS,
 	//! Test never succeeds
-	ECFN_NEVER
+	ECFN_NEVER,
+	ECFN_COUNT
 };
 
 //! Enum values for enabling/disabling color planes for rendering

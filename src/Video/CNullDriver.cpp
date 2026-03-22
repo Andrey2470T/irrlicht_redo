@@ -1526,10 +1526,6 @@ ITexture *CNullDriver::addRenderTargetTextureCubemap(const u32 sideLen,
 	return 0;
 }
 
-void CNullDriver::clearBuffers(u16 flag, SColor color, f32 depth, u8 stencil)
-{
-}
-
 //! Returns a pointer to the mesh manipulator.
 scene::IMeshManipulator *CNullDriver::getMeshManipulator()
 {

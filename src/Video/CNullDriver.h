@@ -91,6 +91,8 @@ public:
 	//! gets the area of the current viewport
 	const core::rect<s32> &getViewPort() const override;
 
+	DrawContext *getContext() const override { return nullptr; }
+
 	//! draws a vertex primitive list
 	virtual void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 			const void *indexList, u32 primitiveCount,
@@ -437,8 +439,6 @@ public:
 
 	//! Returns a pointer to the mesh manipulator.
 	scene::IMeshManipulator *getMeshManipulator() override;
-
-	void clearBuffers(u16 flag, SColor color = SColor(255, 0, 0, 0), f32 depth = 1.f, u8 stencil = 0) override;
 
 	//! Returns an image created from the last rendered frame.
 	IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER) override;

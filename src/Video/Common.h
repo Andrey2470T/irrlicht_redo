@@ -27,16 +27,8 @@ class COpenGLCoreFeature;
 template <class TOpenGLDriver>
 class COpenGLCoreTexture;
 
-template <class TOpenGLDriver, class TOpenGLTexture>
-class COpenGLCoreRenderTarget;
-
-template <class TOpenGLDriver, class TOpenGLTexture>
-class COpenGLCoreCacheHandler;
-
 class COpenGL3DriverBase;
 typedef COpenGLCoreTexture<COpenGL3DriverBase> COpenGL3Texture;
-typedef COpenGLCoreRenderTarget<COpenGL3DriverBase, COpenGL3Texture> COpenGL3RenderTarget;
-typedef COpenGLCoreCacheHandler<COpenGL3DriverBase, COpenGL3Texture> COpenGL3CacheHandler;
 
 class OpenGLVBO;
 

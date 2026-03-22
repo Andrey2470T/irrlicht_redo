@@ -281,6 +281,7 @@ set(IRRDRVROBJ
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
+		Video/DrawContext.cpp
 		Video/Driver.cpp
 		Video/ExtensionHandler.cpp
 		Video/FixedPipelineRenderer.cpp

@@ -67,23 +67,30 @@ public:
 		return depthStencilTexture;
 	}
 
-    void setColorTextures(const std::vector<ITexture*> &textures, const std::vector<E_CUBE_SURFACE> &cubeMapFaceMappings={});
-	void setDepthStencilTexture(ITexture *texture, E_CUBE_SURFACE dsCubeMapFace=ECS_POSX);
+	void setColorTextures(
+		const std::vector<ITexture*> &textures,
+		const std::vector<E_CUBE_SURFACE> &cubeMapFaceMappings={},
+		u8 mipLevel=0);
+	void setDepthStencilTexture(
+		ITexture *texture, E_CUBE_SURFACE dsCubeMapFace=ECS_POSX, u8 mipLevel=0);
 
-	void setTextures(const std::vector<ITexture*> &_colorTextures, ITexture *_depthStencilTexture)
+	void setTextures(
+		const std::vector<ITexture*> &_colorTextures, ITexture *_depthStencilTexture, u8 mipLevel=0)
 	{
-		setColorTextures(_colorTextures);
-		setDepthStencilTexture(_depthStencilTexture);
+		setColorTextures(_colorTextures, {}, mipLevel);
+		setDepthStencilTexture(_depthStencilTexture, ECS_POSX, mipLevel);
 	}
 
-	bool operator==(const RenderTarget *other)
+	void blitRenderTarget(RenderTarget *from, RenderTarget *to);
+
+	bool operator==(const RenderTarget &other)
 	{
-		return fboID == other->fboID;
+		return fboID == other.fboID;
 	}
 
-	bool operator!=(const RenderTarget *other)
+	bool operator!=(const RenderTarget &other)
 	{
-		return fboID != other->fboID;
+		return fboID != other.fboID;
 	}
 private:
 	bool checkStatus() const;

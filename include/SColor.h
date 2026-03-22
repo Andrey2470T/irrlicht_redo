@@ -518,6 +518,20 @@ public:
 		b = bb;
 	}
 
+	//! Compares the color to another color.
+	/** \return True if the colors are the same, and false if not. */
+	bool operator==(const SColorf &other) const
+	{
+		return other.toSColor() == toSColor();
+	}
+
+	//! Compares the color to another color.
+	/** \return True if the colors are different, and false if they are the same. */
+	bool operator!=(const SColorf &other) const
+	{
+		return other.toSColor() != toSColor();
+	}
+
 	//! Interpolates the color with a f32 value to another color
 	/** Note that the interpolation is neither physically nor perceptually
 	linear if it happens directly in the sRGB color space.

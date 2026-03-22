@@ -9,9 +9,9 @@
 #include "Video/CNullDriver.h"
 #include "IContextManager.h"
 
-#include "Video/COpenGLCoreTexture.h"
 #include "RenderTarget.h"
-#include "Video/COpenGLCoreCacheHandler.h"
+#include "DrawContext.h"
+#include "Video/COpenGLCoreTexture.h"
 
 #include "MaterialRenderer.h"
 #include "FixedPipelineRenderer.h"
@@ -144,7 +144,7 @@ void COpenGL3DriverBase::debugCb(GLenum source, GLenum type, GLuint id, GLenum s
 }
 
 COpenGL3DriverBase::COpenGL3DriverBase(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager) :
-		CNullDriver(io, params.WindowSize), ExtensionHandler(), CacheHandler(0),
+		CNullDriver(io, params.WindowSize), ExtensionHandler(),
 		Params(params), ResetRenderStates(true), LockRenderStateMode(false), AntiAlias(params.AntiAlias),
 		MaterialRenderer2DActive(0), MaterialRenderer2DTexture(0), MaterialRenderer2DNoTexture(0),
 		CurrentRenderMode(ERM_NONE), Transformation3DChanged(true),
@@ -169,15 +169,12 @@ COpenGL3DriverBase::~COpenGL3DriverBase()
 
 	deleteMaterialRenders();
 
-	CacheHandler->getTextureCache().clear();
-
 	removeAllRenderTargets();
 	deleteAllTextures();
 	removeAllHardwareBuffers();
 
 	delete MaterialRenderer2DTexture;
 	delete MaterialRenderer2DNoTexture;
-	delete CacheHandler;
 
 	if (ContextManager) {
 		ContextManager->destroyContext();
@@ -276,8 +273,8 @@ bool COpenGL3DriverBase::genericDriverInit(const core::dimension2d<u32> &screenS
 	initQuadsIndices();
 
 	// reset cache handler
-	delete CacheHandler;
-	CacheHandler = new COpenGL3CacheHandler(this);
+	Context.reset();
+	Context = std::make_unique<DrawContext>(this);
 
 	features.StencilBuffer = stencilBuffer;
 
@@ -455,7 +452,7 @@ void COpenGL3DriverBase::createMaterialRenderers()
 bool COpenGL3DriverBase::setMaterialTexture(u32 layerIdx, const video::ITexture *texture)
 {
 	Material.TextureLayers[layerIdx].Texture = const_cast<ITexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
-	return CacheHandler->getTextureCache().set(0, texture);
+	return Context->setTextureUnit(0, texture);
 }
 
 bool COpenGL3DriverBase::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, const SExposedVideoData &videoData, core::rect<s32> *sourceRect)
@@ -465,7 +462,7 @@ bool COpenGL3DriverBase::beginScene(u16 clearFlag, SColor clearColor, f32 clearD
 	if (ContextManager)
 		ContextManager->activateContext(videoData, true);
 
-	clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
+	Context->clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
 
 	return true;
 }
@@ -665,27 +662,6 @@ RenderTarget *COpenGL3DriverBase::addRenderTarget()
 	RenderTargets.push_back(renderTarget);
 
 	return renderTarget;
-}
-
-void COpenGL3DriverBase::blitRenderTarget(RenderTarget *from, RenderTarget *to)
-{
-	if (Version.Spec == OpenGLSpec::ES && Version.Major < 3) {
-		g_irrlogger->log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
-		return;
-	}
-
-	GLuint prev_fbo_id;
-	CacheHandler->getFBO(prev_fbo_id);
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, from->getID());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to->getID());
-	glBlitFramebuffer(
-			0, 0, from->getSize().Width, from->getSize().Height,
-			0, 0, to->getSize().Width, to->getSize().Height,
-			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
-	// This resets both read and draw framebuffer. Note that we bypass CacheHandler here.
-	glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo_id);
 }
 
 //! draws a vertex primitive list
@@ -1101,7 +1077,7 @@ void COpenGL3DriverBase::setMaterial(const SMaterial &material)
 
 	for (u32 i = 0; i < features.MaxTextureUnits; ++i) {
 		auto *texture = material.getTexture(i);
-		CacheHandler->getTextureCache().set(i, texture);
+		Context->setTextureUnit(i, texture);
 		if (texture) {
 			setTransform((E_TRANSFORMATION_STATE)(ETS_TEXTURE_0 + i),
 				texture->isRenderTarget()
@@ -1180,8 +1156,8 @@ void COpenGL3DriverBase::setRenderStates3DMode()
 
 	if (CurrentRenderMode != ERM_3D) {
 		// Reset Texture Stages
-		CacheHandler->setBlend(false);
-		CacheHandler->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Context->enableBlend(false);
+		Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
 
 		ResetRenderStates = true;
 	}
@@ -1203,7 +1179,7 @@ void COpenGL3DriverBase::setRenderStates3DMode()
 					Material, LastMaterial, ResetRenderStates, this);
 
 		LastMaterial = Material;
-		CacheHandler->correctCacheMaterial(LastMaterial);
+		//CacheHandler->correctCacheMaterial(LastMaterial);
 		ResetRenderStates = false;
 	}
 
@@ -1219,93 +1195,53 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 	// ZBuffer
 	switch (material.ZBuffer) {
 	case ECFN_DISABLED:
-		CacheHandler->setDepthTest(false);
+		Context->enableDepthTest(false);
 		break;
-	case ECFN_LESSEQUAL:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_LEQUAL);
-		break;
-	case ECFN_EQUAL:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_EQUAL);
-		break;
-	case ECFN_LESS:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_LESS);
-		break;
-	case ECFN_NOTEQUAL:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_NOTEQUAL);
-		break;
-	case ECFN_GREATEREQUAL:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_GEQUAL);
-		break;
-	case ECFN_GREATER:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_GREATER);
-		break;
-	case ECFN_ALWAYS:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_ALWAYS);
-		break;
-	case ECFN_NEVER:
-		CacheHandler->setDepthTest(true);
-		CacheHandler->setDepthFunc(GL_NEVER);
+	case ECFN_COUNT:
 		break;
 	default:
+		Context->enableDepthTest(true);
+		Context->setDepthFunc(material.ZBuffer);
 		break;
 	}
 
 	// ZWrite
-	if (getWriteZBuffer(material)) {
-		CacheHandler->setDepthMask(true);
-	} else {
-		CacheHandler->setDepthMask(false);
-	}
+	Context->setDepthMask(getWriteZBuffer(material));
 
-	// Back face culling
-	if ((material.FrontfaceCulling) && (material.BackfaceCulling)) {
-		CacheHandler->setCullFaceFunc(GL_FRONT_AND_BACK);
-		CacheHandler->setCullFace(true);
-	} else if (material.BackfaceCulling) {
-		CacheHandler->setCullFaceFunc(GL_BACK);
-		CacheHandler->setCullFace(true);
-	} else if (material.FrontfaceCulling) {
-		CacheHandler->setCullFaceFunc(GL_FRONT);
-		CacheHandler->setCullFace(true);
-	} else {
-		CacheHandler->setCullFace(false);
-	}
+	// Face culling
+	Context->enableCullFace(material.FrontfaceCulling || material.BackfaceCulling);
+
+	if ((material.FrontfaceCulling) && (material.BackfaceCulling))
+		Context->setCullMode(ECM_FRONT_AND_BACK);
+	else if (material.BackfaceCulling)
+		Context->setCullMode(ECM_BACK);
+	else if (material.FrontfaceCulling)
+		Context->setCullMode(ECM_FRONT);
 
 	// Color Mask
-	CacheHandler->setColorMask(material.ColorMask);
+	Context->setColorMask(material.ColorMask);
 
 	// Blend Equation
 	if (material.BlendOperation == EBO_NONE)
-		CacheHandler->setBlend(false);
+		Context->enableBlend(false);
 	else {
-		CacheHandler->setBlend(true);
+		Context->enableBlend(true);
 
 		switch (material.BlendOperation) {
 		case EBO_ADD:
-			CacheHandler->setBlendEquation(GL_FUNC_ADD);
-			break;
 		case EBO_SUBTRACT:
-			CacheHandler->setBlendEquation(GL_FUNC_SUBTRACT);
-			break;
 		case EBO_REVSUBTRACT:
-			CacheHandler->setBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			Context->setBlendOp(material.BlendOperation);
 			break;
 		case EBO_MIN:
 			if (features.BlendMinMaxSupported)
-				CacheHandler->setBlendEquation(GL_MIN);
+				Context->setBlendOp(material.BlendOperation);
 			else
 				g_irrlogger->log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
 			break;
 		case EBO_MAX:
 			if (features.BlendMinMaxSupported)
-				CacheHandler->setBlendEquation(GL_MAX);
+				Context->setBlendOp(material.BlendOperation);
 			else
 				g_irrlogger->log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
 			break;
@@ -1326,8 +1262,7 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 
 		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo, alphaSource, material.BlendFactor);
 
-		CacheHandler->setBlendFuncSeparate(getGLBlend(srcRGBFact), getGLBlend(dstRGBFact),
-				getGLBlend(srcAlphaFact), getGLBlend(dstAlphaFact));
+		Context->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
 	}
 
 	// fillmode
@@ -1335,40 +1270,50 @@ void COpenGL3DriverBase::setBasicRenderStates(const SMaterial &material, const S
 			(resetAllRenderStates ||
 			lastmaterial.Wireframe != material.Wireframe ||
 			lastmaterial.PointCloud != material.PointCloud)) {
-		glPolygonMode(GL_FRONT_AND_BACK,
-				material.Wireframe ? GL_LINE :
-				material.PointCloud ? GL_POINT :
-				GL_FILL);
+		Context->setPolygonMode(ECM_FRONT_AND_BACK,
+			material.Wireframe ? EPM_LINE :
+			material.PointCloud ? EPM_POINT :
+			EPM_FILL);
 	}
 
 	// Polygon Offset
 	if (resetAllRenderStates ||
 			lastmaterial.PolygonOffsetDepthBias != material.PolygonOffsetDepthBias ||
 			lastmaterial.PolygonOffsetSlopeScale != material.PolygonOffsetSlopeScale) {
-		if (material.PolygonOffsetDepthBias || material.PolygonOffsetSlopeScale) {
-			glEnable(GL_POLYGON_OFFSET_FILL);
-			glPolygonOffset(material.PolygonOffsetSlopeScale, material.PolygonOffsetDepthBias);
-		} else {
-			glDisable(GL_POLYGON_OFFSET_FILL);
-		}
+		bool polygonOffset = material.PolygonOffsetDepthBias || material.PolygonOffsetSlopeScale;
+		Context->enablePolygonOffset(polygonOffset);
+
+		if (polygonOffset)
+			Context->setPolygonOffsetParams(material.PolygonOffsetSlopeScale, material.PolygonOffsetDepthBias);
 	}
 
 	if (resetAllRenderStates || lastmaterial.Thickness != material.Thickness)
-		glLineWidth(core::clamp(static_cast<GLfloat>(material.Thickness), features.DimAliasedLine[0], features.DimAliasedLine[1]));
+		Context->setLineWidth(core::clamp(material.Thickness, features.DimAliasedLine[0], features.DimAliasedLine[1]));
 
 	// Anti aliasing
 	// Deal with MSAA even if it's not enabled in the OpenGL context, we might be
 	// rendering to an FBO with multisampling.
 	if (resetAllRenderStates || lastmaterial.AntiAliasing != material.AntiAliasing) {
 		if (material.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			Context->enableSampleCoverage(true);
 		else if (lastmaterial.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			Context->enableSampleCoverage(false);
 	}
 
 	// Texture parameters
 	setTextureRenderStates(material, resetAllRenderStates);
 }
+
+std::array<GLenum, EBF_COUNT> toGLWrapMode = {
+	GL_REPEAT,
+	GL_CLAMP_TO_EDGE,
+	GL_CLAMP_TO_EDGE,
+	GL_CLAMP_TO_EDGE,
+	GL_REPEAT,
+	GL_REPEAT,
+	GL_REPEAT,
+	GL_REPEAT
+};
 
 //! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
 void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates)
@@ -1376,14 +1321,14 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 	// Set textures to TU/TIU and apply filters to them
 
 	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
-		const COpenGL3Texture *tmpTexture = CacheHandler->getTextureCache()[i];
+		auto tmpTexture = static_cast<const COpenGL3Texture *>(Context->getTextureUnit(i));
 
 		if (!tmpTexture)
 			continue;
 
 		GLenum tmpTextureType = tmpTexture->getOpenGLTextureType();
 
-		CacheHandler->setActiveTexture(GL_TEXTURE0 + i);
+		Context->activateUnit(i);
 
 		const auto &layer = material.TextureLayers[i];
 		auto &states = tmpTexture->getStatesCache();
@@ -1443,31 +1388,16 @@ void COpenGL3DriverBase::setTextureRenderStates(const SMaterial &material, bool 
 		}
 
 		if (!states.IsCached || layer.TextureWrapU != states.WrapU) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, getTextureWrapMode(layer.TextureWrapU));
+			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, toGLWrapMode[layer.TextureWrapU]);
 			states.WrapU = layer.TextureWrapU;
 		}
 
 		if (!states.IsCached || layer.TextureWrapV != states.WrapV) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, getTextureWrapMode(layer.TextureWrapV));
+			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, toGLWrapMode[layer.TextureWrapV]);
 			states.WrapV = layer.TextureWrapV;
 		}
 
 		states.IsCached = true;
-	}
-}
-
-// Get OpenGL ES2.0 texture wrap mode from Irrlicht wrap mode.
-GLint COpenGL3DriverBase::getTextureWrapMode(u8 clamp) const
-{
-	switch (clamp) {
-	case ETC_CLAMP:
-	case ETC_CLAMP_TO_EDGE:
-	case ETC_CLAMP_TO_BORDER:
-		return GL_CLAMP_TO_EDGE;
-	case ETC_MIRROR:
-		return GL_REPEAT;
-	default:
-		return GL_REPEAT;
 	}
 }
 
@@ -1495,19 +1425,20 @@ void COpenGL3DriverBase::setRenderStates2DMode(bool alpha, bool texture, bool al
 
 	MaterialRenderer2DActive->OnSetMaterial(Material, LastMaterial, true, 0);
 	LastMaterial = Material;
-	CacheHandler->correctCacheMaterial(LastMaterial);
+	//CacheHandler->correctCacheMaterial(LastMaterial);
 
 	// no alphaChannel without texture
 	alphaChannel &= texture;
 
-	if (alphaChannel || alpha) {
-		CacheHandler->setBlend(true);
-		CacheHandler->setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		CacheHandler->setBlendEquation(GL_FUNC_ADD);
-	} else
-		CacheHandler->setBlend(false);
+	bool alpha_blend = alphaChannel || alpha;
+	Context->enableBlend(alpha_blend);
 
-	Material.setTexture(0, const_cast<COpenGL3Texture *>(CacheHandler->getTextureCache().get(0)));
+	if (alpha_blend) {
+		Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
+		Context->setBlendOp(EBO_ADD);
+	}
+
+	Material.setTexture(0, const_cast<COpenGL3Texture *>(static_cast<const COpenGL3Texture *>(Context->getTextureUnit(0))));
 	setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
 
 	if (texture) {
@@ -1546,14 +1477,16 @@ void COpenGL3DriverBase::setViewPort(const core::rect<s32> &area)
 	vp.clipAgainst(rendert);
 
 	if (vp.getHeight() > 0 && vp.getWidth() > 0)
-		CacheHandler->setViewport(vp.UpperLeftCorner.X, getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight(), vp.getWidth(), vp.getHeight());
+		Context->setViewportSize(
+			{vp.UpperLeftCorner.X, (s32)(getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight()),
+			 vp.getWidth(), vp.getHeight()});
 
 	ViewPort = vp;
 }
 
 void COpenGL3DriverBase::setViewPortRaw(u32 width, u32 height)
 {
-	CacheHandler->setViewport(0, 0, width, height);
+	Context->setViewportSize({0, 0, (s32)width, (s32)height});
 	ViewPort = core::recti(0, 0, width, height);
 }
 
@@ -1575,7 +1508,7 @@ void COpenGL3DriverBase::draw3DLine(const core::vector3df &start,
 void COpenGL3DriverBase::OnResize(const core::dimension2d<u32> &size)
 {
 	CNullDriver::OnResize(size);
-	CacheHandler->setViewport(0, 0, size.Width, size.Height);
+	Context->setViewportSize({0, 0, (s32)size.Width, (s32)size.Height});
 	Transformation3DChanged = true;
 }
 
@@ -1740,13 +1673,13 @@ bool COpenGL3DriverBase::setRenderTargetEx(RenderTarget *target, u16 clearFlag, 
 	core::dimension2d<u32> destRenderTargetSize(0, 0);
 
 	if (target) {
-		CacheHandler->setFBO(target->getID());
+		Context->setRenderTarget(target);
 
 		destRenderTargetSize = target->getSize();
 
 		setViewPortRaw(destRenderTargetSize.Width, destRenderTargetSize.Height);
 	} else {
-		CacheHandler->setFBO(0);
+		Context->setRenderTarget(nullptr);
 
 		destRenderTargetSize = core::dimension2d<u32>(0, 0);
 
@@ -1761,46 +1694,9 @@ bool COpenGL3DriverBase::setRenderTargetEx(RenderTarget *target, u16 clearFlag, 
 
 	CurrentRenderTarget = target;
 
-	clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
+	Context->clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
 
 	return true;
-}
-
-void COpenGL3DriverBase::clearBuffers(u16 flag, SColor color, f32 depth, u8 stencil)
-{
-	GLbitfield mask = 0;
-	u8 colorMask = 0;
-	bool depthMask = false;
-
-	CacheHandler->getColorMask(colorMask);
-	CacheHandler->getDepthMask(depthMask);
-
-	if (flag & ECBF_COLOR) {
-		CacheHandler->setColorMask(ECP_ALL);
-
-		const f32 inv = 1.0f / 255.0f;
-		glClearColor(color.getRed() * inv, color.getGreen() * inv,
-				color.getBlue() * inv, color.getAlpha() * inv);
-
-		mask |= GL_COLOR_BUFFER_BIT;
-	}
-
-	if (flag & ECBF_DEPTH) {
-		CacheHandler->setDepthMask(true);
-		glClearDepthf(depth);
-		mask |= GL_DEPTH_BUFFER_BIT;
-	}
-
-	if (flag & ECBF_STENCIL) {
-		glClearStencil(stencil);
-		mask |= GL_STENCIL_BUFFER_BIT;
-	}
-
-	if (mask)
-		glClear(mask);
-
-	CacheHandler->setColorMask(colorMask);
-	CacheHandler->setDepthMask(depthMask);
 }
 
 //! Returns an image created from the last rendered frame.
@@ -1884,32 +1780,13 @@ IImage *COpenGL3DriverBase::createScreenShot(video::ECOLOR_FORMAT format, video:
 
 void COpenGL3DriverBase::removeTexture(ITexture *texture)
 {
-	CacheHandler->getTextureCache().remove(texture);
+	Context->removeTexture(texture);
 	CNullDriver::removeTexture(texture);
 }
 
 core::dimension2du COpenGL3DriverBase::getMaxTextureSize() const
 {
 	return core::dimension2du(features.MaxTextureSize, features.MaxTextureSize);
-}
-
-GLenum COpenGL3DriverBase::getGLBlend(E_BLEND_FACTOR factor) const
-{
-	static GLenum const blendTable[] = {
-			GL_ZERO,
-			GL_ONE,
-			GL_DST_COLOR,
-			GL_ONE_MINUS_DST_COLOR,
-			GL_SRC_COLOR,
-			GL_ONE_MINUS_SRC_COLOR,
-			GL_SRC_ALPHA,
-			GL_ONE_MINUS_SRC_ALPHA,
-			GL_DST_ALPHA,
-			GL_ONE_MINUS_DST_ALPHA,
-			GL_SRC_ALPHA_SATURATE,
-		};
-
-	return blendTable[factor];
 }
 
 bool COpenGL3DriverBase::getColorFormatParameters(ECOLOR_FORMAT format, GLint &internalFormat, GLenum &pixelFormat,
@@ -1938,9 +1815,9 @@ const SMaterial &COpenGL3DriverBase::getCurrentMaterial() const
 	return Material;
 }
 
-COpenGL3CacheHandler *COpenGL3DriverBase::getCacheHandler() const
+DrawContext *COpenGL3DriverBase::getContext() const
 {
-	return CacheHandler;
+	return Context.get();
 }
 
 } // end namespace
