@@ -155,26 +155,6 @@ public:
 	\return Matrix describing the transformation. */
 	virtual const core::matrix4 &getTransform(E_TRANSFORMATION_STATE state) const = 0;
 
-	//! Retrieve the number of image loaders
-	/** \return Number of image loaders */
-	virtual u32 getImageLoaderCount() const = 0;
-
-	//! Retrieve the given image loader
-	/** \param n The index of the loader to retrieve. This parameter is an 0-based
-	array index.
-	\return A pointer to the specified loader, 0 if the index is incorrect. */
-	virtual IImageLoader *getImageLoader(u32 n) = 0;
-
-	//! Retrieve the number of image writers
-	/** \return Number of image writers */
-	virtual u32 getImageWriterCount() const = 0;
-
-	//! Retrieve the given image writer
-	/** \param n The index of the writer to retrieve. This parameter is an 0-based
-	array index.
-	\return A pointer to the specified writer, 0 if the index is incorrect. */
-	virtual IImageWriter *getImageWriter(u32 n) = 0;
-
 	//! Sets a material.
 	/** All 3d drawing functions will draw geometry using this material thereafter.
 	\param material: Material to be used from now on. */
@@ -346,36 +326,6 @@ public:
 
 	//! Remove all render targets.
 	virtual void removeAllRenderTargets() = 0;
-
-	//! Blit contents of one render target to another one.
-	/** This is glBlitFramebuffer in OpenGL. */
-	virtual void blitRenderTarget(RenderTarget *from, RenderTarget *to) = 0;
-
-	//! Sets a boolean alpha channel on the texture based on a color key.
-	/** This makes the texture fully transparent at the texels where
-	this color key can be found when using for example draw2DImage
-	with useAlphachannel==true.  The alpha of other texels is not modified.
-	\param texture Texture whose alpha channel is modified.
-	\param color Color key color. Every texel with this color will
-	become fully transparent as described above. Please note that the
-	colors of a texture may be converted when loading it, so the
-	color values may not be exactly the same in the engine and for
-	example in picture edit programs. To avoid this problem, you
-	could use the makeColorKeyTexture method, which takes the
-	position of a pixel instead a color value. */
-	virtual void makeColorKeyTexture(video::ITexture *texture,
-			video::SColor color) const = 0;
-
-	//! Sets a boolean alpha channel on the texture based on the color at a position.
-	/** This makes the texture fully transparent at the texels where
-	the color key can be found when using for example draw2DImage
-	with useAlphachannel==true.  The alpha of other texels is not modified.
-	\param texture Texture whose alpha channel is modified.
-	\param colorKeyPixelPos Position of a pixel with the color key
-	color. Every texel with this color will become fully transparent as
-	described above. */
-	virtual void makeColorKeyTexture(video::ITexture *texture,
-			core::position2d<s32> colorKeyPixelPos) const = 0;
 
 	//! Set a render target.
 	/** Please note that you cannot render 3D or 2D
@@ -804,24 +754,6 @@ public:
 	/** \return Returns the name of the video driver, e.g. in case
 	of the Direct3D8 driver, it would return "Direct3D 8.1". */
 	virtual const char *getName() const = 0;
-
-	//! Adds an external image loader to the engine.
-	/** This is useful if the Irrlicht Engine should be able to load
-	textures of currently unsupported file formats (e.g. gif). The
-	IImageLoader only needs to be implemented for loading this file
-	format. A pointer to the implementation can be passed to the
-	engine using this method.
-	\param loader Pointer to the external loader created. */
-	virtual void addExternalImageLoader(IImageLoader *loader) = 0;
-
-	//! Adds an external image writer to the engine.
-	/** This is useful if the Irrlicht Engine should be able to
-	write textures of currently unsupported file formats (e.g
-	.gif). The IImageWriter only needs to be implemented for
-	writing this file format. A pointer to the implementation can
-	be passed to the engine using this method.
-	\param writer: Pointer to the external writer created. */
-	virtual void addExternalImageWriter(IImageWriter *writer) = 0;
 
 	//! Returns the maximum amount of primitives
 	/** (mostly vertices) which the device is able to render with

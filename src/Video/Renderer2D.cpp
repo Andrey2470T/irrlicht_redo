@@ -9,6 +9,7 @@
 
 #include "Driver.h"
 #include "DrawContext.h"
+#include "RenderTarget.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"

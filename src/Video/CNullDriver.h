@@ -44,18 +44,6 @@ public:
 	//! sets transformation
 	void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4 &mat) override;
 
-	//! Retrieve the number of image loaders
-	u32 getImageLoaderCount() const override;
-
-	//! Retrieve the given image loader
-	IImageLoader *getImageLoader(u32 n) override;
-
-	//! Retrieve the number of image writers
-	u32 getImageWriterCount() const override;
-
-	//! Retrieve the given image writer
-	IImageWriter *getImageWriter(u32 n) override;
-
 	//! sets a material
 	void setMaterial(const SMaterial &material) override;
 
@@ -189,12 +177,6 @@ public:
 	//! driver, it would return "Direct3D8.1".
 	const char *getName() const override;
 
-	//! Adds an external image loader to the engine.
-	void addExternalImageLoader(IImageLoader *loader) override;
-
-	//! Adds an external image writer to the engine.
-	void addExternalImageWriter(IImageWriter *writer) override;
-
 	//! Removes a texture from the texture cache and deletes it, freeing lot of
 	//! memory.
 	void removeTexture(ITexture *texture) override;
@@ -214,13 +196,6 @@ public:
 	//! Creates a render target texture for a cubemap
 	ITexture *addRenderTargetTextureCubemap(const u32 sideLen,
 			const io::path &name, const ECOLOR_FORMAT format) override;
-
-	//! Creates an 1bit alpha channel of the texture based of an color key.
-	void makeColorKeyTexture(video::ITexture *texture, video::SColor color) const override;
-
-	//! Creates an 1bit alpha channel of the texture based of an color key position.
-	virtual void makeColorKeyTexture(video::ITexture *texture,
-			core::position2d<s32> colorKeyPixelPos) const override;
 
 	//! Returns the maximum amount of primitives (mostly vertices) which
 	//! the device is able to render with one drawIndexedTriangleList
@@ -360,8 +335,6 @@ public:
 
 	//! Create render target.
 	RenderTarget *addRenderTarget() override;
-
-	void blitRenderTarget(RenderTarget *from, RenderTarget *to) override {}
 
 	//! Remove render target.
 	void removeRenderTarget(RenderTarget *renderTarget) override;

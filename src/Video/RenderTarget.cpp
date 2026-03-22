@@ -248,7 +248,7 @@ void RenderTarget::setDepthStencilTexture(
 	driver->testGLError();
 }
 
-void RenderTarget::blitRenderTarget(RenderTarget *from, RenderTarget *to)
+void RenderTarget::blitTo(RenderTarget *target)
 {
 	auto driverGL3 = static_cast<COpenGL3DriverBase *>(driver);
 	auto version = driverGL3->getVersionFromOpenGL();
@@ -259,13 +259,13 @@ void RenderTarget::blitRenderTarget(RenderTarget *from, RenderTarget *to)
 
 	auto prev_rt = driverGL3->getContext()->getRenderTarget();
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, from->getID());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, getID());
 	driver->testGLError();
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to->getID());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->getID());
 	driver->testGLError();
 	glBlitFramebuffer(
-			0, 0, from->getSize().Width, from->getSize().Height,
-			0, 0, to->getSize().Width, to->getSize().Height,
+			0, 0, getSize().Width, getSize().Height,
+			0, 0, target->getSize().Width, target->getSize().Height,
 			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 	driver->testGLError();
 

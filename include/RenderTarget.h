@@ -81,7 +81,7 @@ public:
 		setDepthStencilTexture(_depthStencilTexture, ECS_POSX, mipLevel);
 	}
 
-	void blitRenderTarget(RenderTarget *from, RenderTarget *to);
+	void blitTo(RenderTarget *target);
 
 	bool operator==(const RenderTarget &other)
 	{
