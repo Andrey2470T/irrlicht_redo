@@ -10,7 +10,7 @@
 
 namespace video
 {
-class IVideoDriver;
+class VideoDriver;
 } // end namespace video
 namespace io
 {

@@ -8,15 +8,16 @@
 #include <cassert>
 #include "IContextManager.h"
 
-#include "RenderTarget.h"
-#include "DrawContext.h"
-#include "Video/COpenGLCoreTexture.h"
-
 #include "MaterialRenderer.h"
 #include "FixedPipelineRenderer.h"
 #include "Renderer2D.h"
 #include "VertexType.h"
 #include "Common.h"
+
+#include "GLSpecificInfo.h"
+#include "RenderTarget.h"
+#include "DrawContext.h"
+#include "Video/COpenGLCoreTexture.h"
 
 #include "EVertexAttributes.h"
 #include "Image/CImage.h"
@@ -27,13 +28,14 @@
 #include "Image/CImageLoaderTGA.h"
 #include "Image/CImageWriterJPG.h"
 #include "Image/CImageWriterPNG.h"
+#include "IO/CWriteFile.h"
 
 
 namespace video
 {
 
 VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager) :
-		MaterialSystem(this, io, params.OGLES2ShaderPath),
+		MaterialSystem(this, io, params.OGLES2ShaderPath), DriverType(params.DriverType),
 		Params(params), AntiAlias(params.AntiAlias), SharedRenderTarget(nullptr),
 		CurrentRenderTarget(nullptr), CurrentRenderTargetSize(0, 0),
 		FileSystem(io), MeshManipulator(nullptr),
@@ -62,16 +64,12 @@ VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSys
 	SurfaceWriter.push_back(new CImageWriterJPG());
 	SurfaceWriter.push_back(new CImageWriterPNG());
 
-	memset((void *)&ExposedData, 0, sizeof(ExposedData));
-
 	if (!ContextManager)
 		return;
 
 	ContextManager->grab();
 	ContextManager->generateSurface();
 	ContextManager->generateContext();
-	ExposedData = ContextManager->getContext();
-	ContextManager->activateContext(ExposedData, false);
 
 	testGLError();
 }
@@ -110,7 +108,6 @@ VideoDriver *VideoDriver::create(const SIrrlichtCreationParameters &params, io::
 {
 	g_irrlogger->log("Create VideoDriver", ELL_INFORMATION);
 	auto driver = new VideoDriver(params, io, contextManager);
-	DriverType = params.DriverType;
 	driver->genericDriverInit(params.WindowSize, params.Stencilbuffer); // don't call in constructor, it uses virtual function calls of driver
 	return driver;
 }
@@ -133,13 +130,13 @@ void VideoDriver::initQuadsIndices(u32 max_vertex_count)
 		QuadsIndices.push_back(4 * k + 3);
 	}
 	QuadIndexVBO.upload(QuadsIndices.data(), QuadsIndices.size() * sizeof(u16),
-		0, GL_STATIC_DRAW, true);
+		0, scene::EHM_STATIC, true);
 	assert(QuadIndexVBO.exists());
 }
 
 bool VideoDriver::genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer)
 {
-	GLInfo = std::make_unique<GLSpecificInfo>(stencilBuffer);
+	GLInfo = std::make_unique<GLSpecificInfo>(stencilBuffer, EnableErrorTest);
 
 	initQuadsIndices();
 
@@ -219,14 +216,7 @@ bool VideoDriver::uploadHardwareBuffer(OpenGLVBO &vbo,
 	const void *buffer, size_t bufferSize, scene::E_HARDWARE_MAPPING hint)
 {
 	accountHWBufferUpload(bufferSize);
-
-	GLenum usage = GL_STATIC_DRAW;
-	if (hint == scene::EHM_STREAM)
-		usage = GL_STREAM_DRAW;
-	else if (hint == scene::EHM_DYNAMIC)
-		usage = GL_DYNAMIC_DRAW;
-
-	vbo.upload(buffer, bufferSize, 0, usage);
+	vbo.upload(buffer, bufferSize, 0, hint);
 
 	return (!testGLError());
 }
@@ -295,6 +285,24 @@ bool VideoDriver::updateHardwareBuffer(SHWBufferLink *HWBuffer)
 		}
 	}
 	return true;
+}
+
+void VideoDriver::updateHardwareBuffer(const scene::IVertexBuffer *vb)
+{
+	if (!vb)
+		return;
+	auto *link = getBufferLink(vb);
+	if (link)
+		updateHardwareBuffer(link);
+}
+
+void VideoDriver::updateHardwareBuffer(const scene::IIndexBuffer *ib)
+{
+	if (!ib)
+		return;
+	auto *link = getBufferLink(ib);
+	if (link)
+		updateHardwareBuffer(link);
 }
 
 VideoDriver::SHWBufferLink *VideoDriver::createHardwareBuffer(const scene::IVertexBuffer *vb)
@@ -442,6 +450,18 @@ void VideoDriver::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCoun
 	);
 
 	drawGeneric(vertices, indexList, primitiveCount, vType, pType, iType);
+}
+
+//! draws an 2d image
+void VideoDriver::draw2DImage(const video::ITexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture)
+{
+	if (!texture)
+		return;
+
+	draw2DImage(texture, destPos, core::rect<s32>(core::position2d<s32>(0, 0), core::dimension2di(texture->getOriginalSize())),
+			0,
+			SColor(255, 255, 255, 255),
+			useAlphaChannelOfTexture);
 }
 
 void VideoDriver::draw2DImage(const video::ITexture *texture, const core::position2d<s32> &destPos,
@@ -628,7 +648,7 @@ void VideoDriver::draw2DImageBatch(const video::ITexture *texture,
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, QuadIndexVBO.getName());
-	drawElements(GL_TRIANGLES, vt2DImage, vtx.data(), vtx.size(), 0, 6 * drawCount);
+	drawElements(scene::EPT_TRIANGLES, vt2DImage, vtx.data(), vtx.size(), 0, 6 * drawCount);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (clipRect)
@@ -699,26 +719,37 @@ void VideoDriver::draw2DLine(const core::position2d<s32> &start,
 		vertices[0] = S3DVertex(startX, startY, 0, 0, 0, 1, color, 0, 0);
 		vertices[1] = S3DVertex(endX, endY, 0, 0, 0, 1, color, 1, 1);
 
-		drawArrays(GL_LINES, vtPrimitive, vertices, 2);
+		drawArrays(scene::EPT_LINES, vtPrimitive, vertices, 2);
 	}
 }
 
 void VideoDriver::drawQuad(const VertexType &vertexType, const S3DVertex (&vertices)[4])
 {
-	drawArrays(GL_TRIANGLE_FAN, vertexType, vertices, 4);
+	drawArrays(scene::EPT_TRIANGLE_FAN, vertexType, vertices, 4);
 }
 
-void VideoDriver::drawArrays(GLenum primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount)
+std::array<GLenum, scene::EPT_COUNT> toGLPrimType = {
+	GL_POINTS,
+	GL_LINE_STRIP,
+	GL_LINE_LOOP,
+	GL_LINES,
+	GL_TRIANGLE_STRIP,
+	GL_TRIANGLE_FAN,
+	GL_TRIANGLES,
+	GL_POINTS
+};
+
+void VideoDriver::drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount)
 {
 	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
-	glDrawArrays(primitiveType, 0, vertexCount);
+	glDrawArrays(toGLPrimType[primitiveType], 0, vertexCount);
 	endDraw(vertexType);
 }
 
-void VideoDriver::drawElements(GLenum primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
+void VideoDriver::drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
 {
 	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
-	glDrawRangeElements(primitiveType, 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
+	glDrawRangeElements(toGLPrimType[primitiveType], 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
 	endDraw(vertexType);
 }
 
@@ -867,12 +898,6 @@ const core::dimension2d<u32> &VideoDriver::getCurrentRenderTargetSize() const
 		return CurrentRenderTargetSize;
 }
 
-//! \return Returns the name of the video driver.
-const char *VideoDriver::getName() const
-{
-	return Name.c_str();
-}
-
 void VideoDriver::setViewPort(const core::rect<s32> &area)
 {
 	core::rect<s32> vp = area;
@@ -903,7 +928,48 @@ void VideoDriver::draw3DLine(const core::vector3df &start,
 	vertices[0] = S3DVertex(start.X, start.Y, start.Z, 0, 0, 1, color, 0, 0);
 	vertices[1] = S3DVertex(end.X, end.Y, end.Z, 0, 0, 1, color, 0, 0);
 
-	drawArrays(GL_LINES, vtPrimitive, vertices, 2);
+	drawArrays(scene::EPT_LINES, vtPrimitive, vertices, 2);
+}
+
+//! Draws a 3d axis aligned box.
+void VideoDriver::draw3DBox(const core::aabbox3d<f32> &box, SColor color)
+{
+	core::vector3df edges[8];
+	box.getEdges(edges);
+
+	video::S3DVertex v[8];
+	for (u32 i = 0; i < 8; i++) {
+		v[i].Pos = edges[i];
+		v[i].Color = color;
+	}
+
+	const static u16 box_indices[24] = {
+		5, 1, 1, 3, 3, 7, 7, 5, 0, 2, 2, 6, 6, 4, 4, 0, 1, 0, 3, 2, 7, 6, 5, 4
+	};
+
+	drawVertexPrimitiveList(v, 8, box_indices, 12, EVT_STANDARD, scene::EPT_LINES, EIT_16BIT);
+}
+
+const std::string &VideoDriver::getName()
+{
+	return GLInfo->getRendererName();
+}
+const std::string &VideoDriver::getVendorInfo()
+{
+	return GLInfo->getVendorInfo();
+}
+const OpenGLVersion &VideoDriver::getVersion() const
+{
+	return GLInfo->getOpenGLVersion();
+}
+const OpenGLFeatures &VideoDriver::getFeatures() const
+{
+	return GLInfo->getFeatures();
+}
+
+void VideoDriver::setMinHardwareBufferVertexCount(u32 count)
+{
+	MinVertexCountForVBO = count;
 }
 
 //! Only used by the internal engine. Used to notify the driver that
@@ -956,7 +1022,7 @@ ITexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
 
-	bool supportForFBO = (features.ColorAttachment > 0);
+	bool supportForFBO = (GLInfo->getFeatures().ColorAttachment > 0);
 
 	const core::dimension2d<u32> size(sideLen, sideLen);
 	core::dimension2du destSize(size);
@@ -976,10 +1042,113 @@ ITexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io
 	return renderTargetTexture;
 }
 
+//! loads a Texture
+ITexture *VideoDriver::getTexture(const io::path &filename)
+{
+	// Identify textures by their absolute filenames if possible.
+	const io::path absolutePath = FileSystem->getAbsolutePath(filename);
+
+	ITexture *texture = findTexture(absolutePath);
+	if (texture)
+		return texture;
+
+	// Then try the raw filename, which might be in an Archive
+	texture = findTexture(filename);
+	if (texture)
+		return texture;
+
+	// Now try to open the file using the complete path.
+	io::IReadFile *file = FileSystem->createAndOpenFile(absolutePath);
+
+	if (!file) {
+		// Try to open it using the raw filename.
+		file = FileSystem->createAndOpenFile(filename);
+	}
+
+	if (file) {
+		// Re-check name for actual archive names
+		texture = findTexture(file->getFileName());
+		if (texture) {
+			file->drop();
+			return texture;
+		}
+
+		texture = loadTextureFromFile(file);
+		file->drop();
+
+		if (texture) {
+			addTexture(texture);
+			texture->drop(); // drop it because we created it, one grab too much
+		} else
+			g_irrlogger->log("Could not load texture", filename, ELL_ERROR);
+		return texture;
+	} else {
+		g_irrlogger->log("Could not open file of texture", filename, ELL_WARNING);
+		return 0;
+	}
+}
+
+//! loads a Texture
+ITexture *VideoDriver::getTexture(io::IReadFile *file)
+{
+	ITexture *texture = 0;
+
+	if (file) {
+		texture = findTexture(file->getFileName());
+
+		if (texture)
+			return texture;
+
+		texture = loadTextureFromFile(file);
+
+		if (texture) {
+			addTexture(texture);
+			texture->drop(); // drop it because we created it, one grab too much
+		}
+
+		if (!texture)
+			g_irrlogger->log("Could not load texture", file->getFileName(), ELL_WARNING);
+	}
+
+	return texture;
+}
+
+//! looks if the image is already loaded
+video::ITexture *VideoDriver::findTexture(const io::path &filename)
+{
+	SSurface s;
+	s.Name = filename;
+
+	s32 index = Textures.binary_search(s);
+	if (index != -1)
+		return Textures[index].Surface;
+
+	return 0;
+}
+
+//! opens the file and loads it into the surface
+video::ITexture *VideoDriver::loadTextureFromFile(io::IReadFile *file, const io::path &hashName)
+{
+	ITexture *texture = nullptr;
+
+	IImage *image = createImageFromFile(file);
+	if (!image)
+		return nullptr;
+
+	std::vector tmp { image };
+	texture = createDeviceDependentTexture(hashName.size() ? hashName : file->getFileName(), ETT_2D, tmp);
+	if (texture)
+		g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
+
+	image->drop();
+
+	return texture;
+}
+
 //! Returns the maximum amount of primitives
 u32 VideoDriver::getMaximalPrimitiveCount() const
 {
-	return Version.Spec == OpenGLSpec::ES ? 65535 : 0x7fffffff;
+	return GLInfo->getOpenGLVersion().Spec == OpenGLSpec::ES ? 65535 : 0x7fffffff;
 }
 
 bool VideoDriver::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
@@ -1011,6 +1180,38 @@ bool VideoDriver::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor 
 	Context->clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
 
 	return true;
+}
+
+bool VideoDriver::setRenderTarget(ITexture *texture, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
+{
+	if (texture) {
+		// create render target if require.
+		if (!SharedRenderTarget)
+			SharedRenderTarget = addRenderTarget();
+
+		ITexture *depthTexture = 0;
+
+		// try to find available depth texture with require size.
+		for (u32 i = 0; i < SharedDepthTextures.size(); ++i) {
+			if (SharedDepthTextures[i]->getSize() == texture->getSize()) {
+				depthTexture = SharedDepthTextures[i];
+
+				break;
+			}
+		}
+
+		// create depth texture if require.
+		if (!depthTexture) {
+			depthTexture = addRenderTargetTexture(texture->getSize(), "IRR_DEPTH_STENCIL", video::ECF_D24S8);
+			SharedDepthTextures.push_back(depthTexture);
+		}
+
+		SharedRenderTarget->setTextures({texture}, depthTexture);
+
+		return setRenderTargetEx(SharedRenderTarget, clearFlag, clearColor, clearDepth, clearStencil);
+	} else {
+		return setRenderTargetEx(0, clearFlag, clearColor, clearDepth, clearStencil);
+	}
 }
 
 //! Returns an image created from the last rendered frame.
@@ -1099,6 +1300,7 @@ void VideoDriver::removeTexture(ITexture *texture)
 	if (!texture)
 		return;
 	SSurface s;
+	s.Name = texture->getName();
 	s.Surface = texture;
 
 	s32 last;
@@ -1116,7 +1318,7 @@ void VideoDriver::removeTexture(ITexture *texture)
 
 core::dimension2du VideoDriver::getMaxTextureSize() const
 {
-	return core::dimension2du(features.MaxTextureSize, features.MaxTextureSize);
+	return core::dimension2du(GLInfo->getFeatures().MaxTextureSize, GLInfo->getFeatures().MaxTextureSize);
 }
 
 bool VideoDriver::needsTransparentRenderPass(const video::SMaterial &material) const
@@ -1250,10 +1452,142 @@ bool VideoDriver::isHardwareBufferRecommend(const scene::IIndexBuffer *ib)
 	return true;
 }
 
+ITexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format)
+{
+	IImage *image = new CImage(format, size);
+	ITexture *t = addTexture(name, image);
+	image->drop();
+	return t;
+}
+
+bool VideoDriver::checkImage(const std::vector<IImage*> &image) const
+{
+	if (image.empty())
+		return false;
+
+	ECOLOR_FORMAT lastFormat = image[0]->getColorFormat();
+	auto lastSize = image[0]->getDimension();
+
+	for (size_t i = 0; i < image.size(); ++i) {
+		if (!image[i])
+			return false;
+
+		ECOLOR_FORMAT format = image[i]->getColorFormat();
+		auto size = image[i]->getDimension();
+
+		if (format != lastFormat || size != lastSize)
+			return false;
+	}
+	return true;
+}
+
+ITexture *VideoDriver::addTexture(const io::path &name, IImage *image)
+{
+	if (0 == name.size()) {
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		return 0;
+	}
+
+	if (!image)
+		return 0;
+
+	ITexture *t = 0;
+
+	std::vector tmp { image };
+	t = createDeviceDependentTexture(name, ETT_2D, tmp);
+
+	if (t) {
+		addTexture(t);
+		t->drop();
+	}
+
+	return t;
+}
+
+ITexture *VideoDriver::addArrayTexture(const io::path &name, IImage **images, u32 count)
+{
+	if (0 == name.size()) {
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		return 0;
+	}
+
+	// this is stupid but who cares
+	std::vector<IImage*> tmp(images, images + count);
+
+	ITexture *t = nullptr;
+	if (checkImage(tmp)) {
+		t = createDeviceDependentTexture(name, ETT_2D_ARRAY, tmp);
+	}
+	if (t) {
+		addTexture(t);
+		t->drop();
+	}
+	return t;
+}
+
+ITexture *VideoDriver::addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
+		IImage *imageNegY, IImage *imagePosZ, IImage *imageNegZ)
+{
+	if (0 == name.size() || !imagePosX || !imageNegX || !imagePosY || !imageNegY || !imagePosZ || !imageNegZ)
+		return 0;
+
+	ITexture *t = 0;
+
+	std::vector<IImage*> imageArray;
+	imageArray.push_back(imagePosX);
+	imageArray.push_back(imageNegX);
+	imageArray.push_back(imagePosY);
+	imageArray.push_back(imageNegY);
+	imageArray.push_back(imagePosZ);
+	imageArray.push_back(imageNegZ);
+
+	if (checkImage(imageArray)) {
+		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
+	}
+
+	if (t) {
+		addTexture(t);
+		t->drop();
+	}
+
+	return t;
+}
+
+ITexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format)
+{
+	if (0 == sideLen)
+		return 0;
+
+	if (0 == name.size()) {
+		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		return 0;
+	}
+
+	std::vector<IImage*> imageArray;
+	for (int i = 0; i < 6; ++i)
+		imageArray.push_back(new CImage(format, core::dimension2du(sideLen, sideLen)));
+
+	ITexture *t = 0;
+	if (checkImage(imageArray)) {
+		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
+
+		if (t) {
+			addTexture(t);
+			t->drop();
+		}
+	}
+
+	for (int i = 0; i < 6; ++i)
+		imageArray[i]->drop();
+
+	return t;
+}
+
 void VideoDriver::addTexture(ITexture *texture)
 {
 	if (texture) {
 		SSurface s;
+		s.Name = texture->getName();
 		s.Surface = texture;
 		texture->grab();
 
@@ -1279,6 +1613,153 @@ void VideoDriver::setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enab
 bool VideoDriver::getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const
 {
 	return (TextureCreationFlags & flag) != 0;
+}
+
+bool VideoDriver::queryTextureFormat(ECOLOR_FORMAT format) const
+{
+	return GLSpecificInfo::TextureFormats[format].InternalFormat != 0;
+}
+
+IImage *VideoDriver::createImageFromFile(const io::path &filename)
+{
+	if (!filename.size())
+		return nullptr;
+
+	io::IReadFile *file = FileSystem->createAndOpenFile(filename);
+	if (!file) {
+		g_irrlogger->log("Could not open file of image", filename, ELL_WARNING);
+		return nullptr;
+	}
+
+	IImage *image = createImageFromFile(file);
+	file->drop();
+	return image;
+}
+
+IImage *VideoDriver::createImageFromFile(io::IReadFile *file)
+{
+	if (!file)
+		return nullptr;
+
+	// try to load file based on file extension
+	for (int i = SurfaceLoader.size() - 1; i >= 0; --i) {
+		if (!SurfaceLoader[i]->isALoadableFileExtension(file->getFileName()))
+			continue;
+
+		file->seek(0); // reset file position which might have changed due to previous loadImage calls
+		// avoid warnings if extension is wrong
+		if (!SurfaceLoader[i]->isALoadableFileFormat(file))
+			continue;
+
+		file->seek(0);
+		if (IImage *image = SurfaceLoader[i]->loadImage(file))
+			return image;
+	}
+
+	// try to load file based on what is in it
+	for (int i = SurfaceLoader.size() - 1; i >= 0; --i) {
+		if (SurfaceLoader[i]->isALoadableFileExtension(file->getFileName()))
+			continue;  // extension was tried above already
+		file->seek(0); // dito
+		if (!SurfaceLoader[i]->isALoadableFileFormat(file))
+			continue;
+
+		file->seek(0);
+		if (IImage *image = SurfaceLoader[i]->loadImage(file))
+			return image;
+	}
+
+	return nullptr;
+}
+
+//! Writes the provided image to disk file
+bool VideoDriver::writeImageToFile(IImage *image, const io::path &filename, u32 param)
+{
+	io::IWriteFile *file = FileSystem->createAndWriteFile(filename);
+	if (!file)
+		return false;
+
+	bool result = writeImageToFile(image, file, param);
+	file->drop();
+
+	return result;
+}
+
+//! Writes the provided image to a file.
+bool VideoDriver::writeImageToFile(IImage *image, io::IWriteFile *file, u32 param)
+{
+	if (!file)
+		return false;
+
+	for (s32 i = SurfaceWriter.size() - 1; i >= 0; --i) {
+		if (SurfaceWriter[i]->isAWriteableFileExtension(file->getFileName())) {
+			bool written = SurfaceWriter[i]->writeImage(file, image, param);
+			if (written)
+				return true;
+		}
+	}
+	return false; // failed to write
+}
+
+//! Creates a software image from a byte array.
+IImage *VideoDriver::createImageFromData(ECOLOR_FORMAT format,
+		const core::dimension2d<u32> &size, void *data, bool ownForeignMemory,
+		bool deleteMemory)
+{
+	return new CImage(format, size, data, ownForeignMemory, deleteMemory);
+}
+
+//! Creates an empty software image.
+IImage *VideoDriver::createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size)
+{
+	return new CImage(format, size);
+}
+
+//! Creates a software image from part of a texture.
+IImage *VideoDriver::createImage(ITexture *texture, const core::position2d<s32> &pos, const core::dimension2d<u32> &size)
+{
+	if ((pos == core::position2di(0, 0)) && (size == texture->getSize())) {
+		void *data = texture->lock(ETLM_READ_ONLY);
+		if (!data)
+			return 0;
+		IImage *image = new CImage(texture->getColorFormat(), size, data, false, false);
+		texture->unlock();
+		return image;
+	} else {
+		// make sure to avoid buffer overruns
+		// make the vector a separate variable for g++ 3.x
+		const core::vector2d<u32> leftUpper(core::clamp(static_cast<u32>(pos.X), 0u, texture->getSize().Width),
+				core::clamp(static_cast<u32>(pos.Y), 0u, texture->getSize().Height));
+		const core::rect<u32> clamped(leftUpper,
+				core::dimension2du(core::clamp(static_cast<u32>(size.Width), 0u, texture->getSize().Width),
+						core::clamp(static_cast<u32>(size.Height), 0u, texture->getSize().Height)));
+		if (!clamped.isValid())
+			return 0;
+		u8 *src = static_cast<u8 *>(texture->lock(ETLM_READ_ONLY));
+		if (!src)
+			return 0;
+		IImage *image = new CImage(texture->getColorFormat(), clamped.getSize());
+		u8 *dst = static_cast<u8 *>(image->getData());
+		src += clamped.UpperLeftCorner.Y * texture->getPitch() + image->getBytesPerPixel() * clamped.UpperLeftCorner.X;
+		for (u32 i = 0; i < clamped.getHeight(); ++i) {
+			video::CColorConverter::convert_viaFormat(src, texture->getColorFormat(), clamped.getWidth(), dst, image->getColorFormat());
+			src += texture->getPitch();
+			dst += image->getPitch();
+		}
+		texture->unlock();
+		return image;
+	}
+}
+
+//! Draws the normals of a mesh buffer
+void VideoDriver::drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length, SColor color)
+{
+	const u32 count = mb->getVertexCount();
+	for (u32 i = 0; i < count; ++i) {
+		core::vector3df normal = mb->getNormal(i);
+		const core::vector3df &pos = mb->getPosition(i);
+		draw3DLine(pos, pos + (normal * length), color);
+	}
 }
 
 void VideoDriver::setFog(SColor color, E_FOG_TYPE fogType, f32 start, f32 end, f32 density, bool pixelFog, bool rangeFog)

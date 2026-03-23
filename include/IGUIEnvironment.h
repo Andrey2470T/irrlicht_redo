@@ -25,7 +25,7 @@ class IFileSystem;
 } // end namespace io
 namespace video
 {
-class IVideoDriver;
+class VideoDriver;
 class ITexture;
 } // end namespace video
 

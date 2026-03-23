@@ -10,7 +10,7 @@
 namespace video
 {
 
-class IVideoDriver;
+class VideoDriver;
 
 //! Interface providing some methods for changing advanced, internal states of a IVideoDriver.
 class IMaterialRendererServices

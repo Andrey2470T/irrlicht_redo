@@ -14,7 +14,7 @@
 
 namespace video
 {
-class IVideoDriver;
+class VideoDriver;
 class IImage;
 }
 

@@ -12,7 +12,7 @@
 
 namespace video
 {
-	class IVideoDriver;
+	class VideoDriver;
 }
 namespace gui
 {

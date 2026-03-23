@@ -45,7 +45,7 @@ namespace video
 class IContextManager;
 class IImage;
 class ITexture;
-class IVideoDriver;
+class VideoDriver;
 extern "C" bool isDriverSupported(E_DRIVER_TYPE driver);
 } // end namespace video
 

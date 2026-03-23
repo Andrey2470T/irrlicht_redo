@@ -15,7 +15,7 @@
 
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
-		IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0),
+		IrrlichtDevice(), VideoDrv(0), GUIEnvironment(0), SceneManager(0),
 		CursorControl(0), UserReceiver(params.EventReceiver),
 		Logger(0), ClipBoard(0), FileSystem(0),
 		InputReceivingSceneManager(0), ContextManager(0),
@@ -45,8 +45,8 @@ CIrrDeviceStub::~CIrrDeviceStub()
 	if (SceneManager)
 		SceneManager->drop();
 
-	if (VideoDriver)
-		VideoDriver->drop();
+	if (VideoDrv)
+		VideoDrv->drop();
 
 	if (ContextManager)
 		ContextManager->drop();

@@ -71,6 +71,8 @@ public:
 			return indexCount / 3;
 		case scene::EPT_POINT_SPRITES:
 			return indexCount;
+		default:
+			return 0;
 		}
 		return 0;
 	}

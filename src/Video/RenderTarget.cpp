@@ -250,7 +250,7 @@ void RenderTarget::setDepthStencilTexture(
 
 void RenderTarget::blitTo(RenderTarget *target)
 {
-	auto version = driver->getVersionFromOpenGL();
+	auto version = driver->getVersion();
 	if (version.Spec == OpenGLSpec::ES && version.Major < 3) {
 		g_irrlogger->log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
 		return;

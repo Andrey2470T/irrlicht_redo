@@ -2,6 +2,7 @@
 #include "RenderTarget.h"
 #include "VideoDriver.h"
 #include "Common.h"
+#include "OpenGLFeatures.h"
 #include "COpenGLCoreTexture.h"
 #include "Logger.h"
 

@@ -92,9 +92,10 @@ void GLSpecificInfo::initVersion()
 	VendorName = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
 	g_irrlogger->log("Renderer", VendorName.c_str(), ELL_INFORMATION);
 
-	GLint major = 0, minor = 0, profile = 0;
+	GLint major = 0, minor = 0;
 	OpenGLSpec spec = OpenGLSpec::Core;
 #ifdef _IRR_COMPILE_WITH_OPENGL3_
+	GLint profile = 0;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
 	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
@@ -228,7 +229,7 @@ void GLSpecificInfo::initTextureFormats()
 	TextureFormats[ECF_D32] = {GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT}; // WARNING: may not be renderable (?!)
 	TextureFormats[ECF_D24S8] = {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8};
 #else
-	if (glVersion.Major >= 3) {
+	if (GLVersion.Major >= 3) {
 		// NOTE floating-point formats may not be suitable for render targets.
 		TextureFormats[ECF_A1R5G5B5] = {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, CColorConverter::convert_A1R5G5B5toR5G5B5A1};
 		TextureFormats[ECF_R5G6B5] = {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5};

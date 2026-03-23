@@ -35,7 +35,8 @@ enum E_PRIMITIVE_TYPE
 	EPT_TRIANGLES,
 
 	//! The single vertices are expanded to quad billboards on the GPU.
-	EPT_POINT_SPRITES
+	EPT_POINT_SPRITES,
+	EPT_COUNT
 };
 
 } // end namespace scene

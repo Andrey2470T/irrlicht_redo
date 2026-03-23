@@ -774,7 +774,7 @@ void CIrrDeviceSDL::createDriver()
 {
 	ContextManager = new video::CSDLManager(this);
 
-	VideoDrv = VideoDriver::create(CreationParams, FileSystem, ContextManager);
+	VideoDrv = video::VideoDriver::create(CreationParams, FileSystem, ContextManager);
 	if (!VideoDrv)
 		g_irrlogger->log("Could not create video driver", ELL_ERROR);
 }

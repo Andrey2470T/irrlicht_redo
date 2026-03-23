@@ -12,20 +12,12 @@
 #include "Logger.h"
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
+#include "VideoDriver.h"
+#include "GLSpecificInfo.h"
 
 
 namespace video
 {
-
-using FColorConverter = void (*)(const void *source, s32 count, void *dest);
-struct STextureFormatInfo
-{
-	GLenum InternalFormat;
-	GLenum PixelFormat;
-	GLenum PixelType;
-	FColorConverter Converter;
-};
-STextureFormatInfo TextureFormats[ECF_UNKNOWN] = {};
 
 class COpenGLCoreTexture : public ITexture
 {
@@ -136,7 +128,7 @@ public:
 		}
 
 		if (!name.empty())
-			Driver->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
+			Driver->GLInfo->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		ctxt->setTextureUnit(0, prevTexture);
 
@@ -167,7 +159,11 @@ public:
 
 		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
 
-		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
+		InternalFormat = GLSpecificInfo::TextureFormats[ColorFormat].InternalFormat;
+		PixelFormat = GLSpecificInfo::TextureFormats[ColorFormat].PixelFormat;
+		PixelType = GLSpecificInfo::TextureFormats[ColorFormat].PixelType;
+		Converter = GLSpecificInfo::TextureFormats[ColorFormat].Converter;
+		if (InternalFormat == 0) {
 			g_irrlogger->log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			return;
 		}
@@ -175,7 +171,7 @@ public:
 		// On GLES 3.0 we must use sized internal formats for textures when calling
 		// glTexStorage. But ECF_A8R8G8B8 might be mapped to GL_BGRA (an unsized format).
 		// Since we don't upload to RTT we can safely pick a different combo that works.
-		if (InternalFormat == GL_BGRA && Driver->Version.Major >= 3) {
+		if (InternalFormat == GL_BGRA && Driver->getVersion().Major >= 3) {
 			InternalFormat = GL_RGBA8;
 			PixelFormat = GL_RGBA;
 		}
@@ -218,7 +214,7 @@ public:
 		initTexture(0);
 
 		if (!name.empty())
-			Driver->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
+			Driver->GLInfo->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		ctxt->setTextureUnit(0, prevTexture);
 		Driver->testGLError();
@@ -266,7 +262,7 @@ public:
 			if (LockImage && mode != ETLM_WRITE_ONLY) {
 				bool passed = true;
 
-				const bool use_gl_impl = Driver->Version.Spec != OpenGLSpec::ES;
+				const bool use_gl_impl = Driver->getVersion().Spec != OpenGLSpec::ES;
 
 				auto ctxt = Driver->getContext();
 
@@ -452,7 +448,11 @@ protected:
 		OriginalColorFormat = image->getColorFormat();
 		ColorFormat = getBestColorFormat(OriginalColorFormat);
 
-		if (!Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter)) {
+		InternalFormat = GLSpecificInfo::TextureFormats[ColorFormat].InternalFormat;
+		PixelFormat = GLSpecificInfo::TextureFormats[ColorFormat].PixelFormat;
+		PixelType = GLSpecificInfo::TextureFormats[ColorFormat].PixelType;
+		Converter = GLSpecificInfo::TextureFormats[ColorFormat].Converter;
+		if (InternalFormat == 0) {
 			g_irrlogger->log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
 			InternalFormat = 0;
 			return;
@@ -522,7 +522,7 @@ protected:
 
 		// On GLES 3.0 if we don't have a sized format suitable for glTexStorage,
 		// just avoid using it. Only affects the extension that provides BGRA.
-		if (InternalFormat == GL_BGRA && Driver->Version.Major >= 3)
+		if (InternalFormat == GL_BGRA && Driver->getVersion().Major >= 3)
 			use_tex_storage = false;
 
 		switch (Type) {
@@ -544,7 +544,7 @@ protected:
 			// glTexImage2DMultisample is supported by OpenGL 3.2+
 			// glTexStorage2DMultisample is supported by OpenGL 4.3+ and OpenGL ES 3.1+
 			// so pick the most compatible one
-			const bool use_gl_impl = Driver->Version.Spec != OpenGLSpec::ES;
+			const bool use_gl_impl = Driver->getVersion().Spec != OpenGLSpec::ES;
 
 			if (use_gl_impl)
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);

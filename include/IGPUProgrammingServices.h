@@ -18,7 +18,7 @@ class IReadFile;
 namespace video
 {
 
-class IVideoDriver;
+class VideoDriver;
 class IShaderConstantSetCallBack;
 
 //! Interface making it possible to create and use programs running on the GPU.

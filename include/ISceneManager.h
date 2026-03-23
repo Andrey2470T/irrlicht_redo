@@ -30,7 +30,7 @@ class IGUIEnvironment;
 
 namespace video
 {
-class IVideoDriver;
+class VideoDriver;
 class SMaterial;
 class IImage;
 class ITexture;

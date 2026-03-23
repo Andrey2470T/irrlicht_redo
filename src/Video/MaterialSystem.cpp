@@ -22,7 +22,7 @@ namespace video
 {
 
 MaterialSystem::MaterialSystem(VideoDriver *driver, io::IFileSystem *filesys, const io::path &shadersPath)
-	: Driver(driver), Context(driver->getContext()), FileSystem(filesys), ShadersPath(shadersPath)
+	: Driver(driver), FileSystem(filesys), ShadersPath(shadersPath)
 {
 	InitMaterial2D.AntiAliasing = video::EAAM_OFF;
 	InitMaterial2D.ZWriteEnable = video::EZW_OFF;
@@ -115,7 +115,7 @@ void MaterialSystem::setMaterial(const SMaterial &material)
 	auto features = Driver->getFeatures();
 	for (u32 i = 0; i < features.MaxTextureUnits; ++i) {
 		auto *texture = material.getTexture(i);
-		Context->setTextureUnit(i, texture);
+		Driver->Context->setTextureUnit(i, texture);
 		if (texture) {
 			Driver->setTransform((E_TRANSFORMATION_STATE)(ETS_TEXTURE_0 + i),
 				texture->isRenderTarget()
@@ -293,8 +293,8 @@ void MaterialSystem::setRenderStates3DMode()
 
 	if (CurrentRenderMode != ERM_3D) {
 		// Reset Texture Stages
-		Context->enableBlend(false);
-		Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
+		Driver->Context->enableBlend(false);
+		Driver->Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
 
 		ResetRenderStates = true;
 	}
@@ -332,55 +332,55 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 	// ZBuffer
 	switch (material.ZBuffer) {
 	case ECFN_DISABLED:
-		Context->enableDepthTest(false);
+		Driver->Context->enableDepthTest(false);
 		break;
 	case ECFN_COUNT:
 		break;
 	default:
-		Context->enableDepthTest(true);
-		Context->setDepthFunc(material.ZBuffer);
+		Driver->Context->enableDepthTest(true);
+		Driver->Context->setDepthFunc(material.ZBuffer);
 		break;
 	}
 
 	// ZWrite
-	Context->setDepthMask(getWriteZBuffer(material));
+	Driver->Context->setDepthMask(getWriteZBuffer(material));
 
 	// Face culling
-	Context->enableCullFace(material.FrontfaceCulling || material.BackfaceCulling);
+	Driver->Context->enableCullFace(material.FrontfaceCulling || material.BackfaceCulling);
 
 	if ((material.FrontfaceCulling) && (material.BackfaceCulling))
-		Context->setCullMode(ECM_FRONT_AND_BACK);
+		Driver->Context->setCullMode(ECM_FRONT_AND_BACK);
 	else if (material.BackfaceCulling)
-		Context->setCullMode(ECM_BACK);
+		Driver->Context->setCullMode(ECM_BACK);
 	else if (material.FrontfaceCulling)
-		Context->setCullMode(ECM_FRONT);
+		Driver->Context->setCullMode(ECM_FRONT);
 
 	// Color Mask
-	Context->setColorMask(material.ColorMask);
+	Driver->Context->setColorMask(material.ColorMask);
 
 	auto features = Driver->getFeatures();
 
 	// Blend Equation
 	if (material.BlendOperation == EBO_NONE)
-		Context->enableBlend(false);
+		Driver->Context->enableBlend(false);
 	else {
-		Context->enableBlend(true);
+		Driver->Context->enableBlend(true);
 
 		switch (material.BlendOperation) {
 		case EBO_ADD:
 		case EBO_SUBTRACT:
 		case EBO_REVSUBTRACT:
-			Context->setBlendOp(material.BlendOperation);
+			Driver->Context->setBlendOp(material.BlendOperation);
 			break;
 		case EBO_MIN:
 			if (features.BlendMinMaxSupported)
-				Context->setBlendOp(material.BlendOperation);
+				Driver->Context->setBlendOp(material.BlendOperation);
 			else
 				g_irrlogger->log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
 			break;
 		case EBO_MAX:
 			if (features.BlendMinMaxSupported)
-				Context->setBlendOp(material.BlendOperation);
+				Driver->Context->setBlendOp(material.BlendOperation);
 			else
 				g_irrlogger->log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
 			break;
@@ -401,15 +401,15 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 
 		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo, alphaSource, material.BlendFactor);
 
-		Context->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
+		Driver->Context->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
 	}
 
 	// fillmode
-	if (Driver->getVersionFromOpenGL().Spec != OpenGLSpec::ES && // not supported in gles
+	if (Driver->getVersion().Spec != OpenGLSpec::ES && // not supported in gles
 			(resetAllRenderStates ||
 			lastmaterial.Wireframe != material.Wireframe ||
 			lastmaterial.PointCloud != material.PointCloud)) {
-		Context->setPolygonMode(ECM_FRONT_AND_BACK,
+		Driver->Context->setPolygonMode(ECM_FRONT_AND_BACK,
 			material.Wireframe ? EPM_LINE :
 			material.PointCloud ? EPM_POINT :
 			EPM_FILL);
@@ -420,23 +420,23 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 			lastmaterial.PolygonOffsetDepthBias != material.PolygonOffsetDepthBias ||
 			lastmaterial.PolygonOffsetSlopeScale != material.PolygonOffsetSlopeScale) {
 		bool polygonOffset = material.PolygonOffsetDepthBias || material.PolygonOffsetSlopeScale;
-		Context->enablePolygonOffset(polygonOffset);
+		Driver->Context->enablePolygonOffset(polygonOffset);
 
 		if (polygonOffset)
-			Context->setPolygonOffsetParams(material.PolygonOffsetSlopeScale, material.PolygonOffsetDepthBias);
+			Driver->Context->setPolygonOffsetParams(material.PolygonOffsetSlopeScale, material.PolygonOffsetDepthBias);
 	}
 
 	if (resetAllRenderStates || lastmaterial.Thickness != material.Thickness)
-		Context->setLineWidth(core::clamp(material.Thickness, features.DimAliasedLine[0], features.DimAliasedLine[1]));
+		Driver->Context->setLineWidth(core::clamp(material.Thickness, features.DimAliasedLine[0], features.DimAliasedLine[1]));
 
 	// Anti aliasing
 	// Deal with MSAA even if it's not enabled in the OpenGL context, we might be
 	// rendering to an FBO with multisampling.
 	if (resetAllRenderStates || lastmaterial.AntiAliasing != material.AntiAliasing) {
 		if (material.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			Context->enableSampleCoverage(true);
+			Driver->Context->enableSampleCoverage(true);
 		else if (lastmaterial.AntiAliasing & EAAM_ALPHA_TO_COVERAGE)
-			Context->enableSampleCoverage(false);
+			Driver->Context->enableSampleCoverage(false);
 	}
 
 	// Texture parameters
@@ -462,14 +462,14 @@ void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool rese
 	// Set textures to TU/TIU and apply filters to them
 
 	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
-		auto tmpTexture = static_cast<const COpenGLCoreTexture *>(Context->getTextureUnit(i));
+		auto tmpTexture = static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(i));
 
 		if (!tmpTexture)
 			continue;
 
 		GLenum tmpTextureType = tmpTexture->getOpenGLTextureType();
 
-		Context->activateUnit(i);
+		Driver->Context->activateUnit(i);
 
 		const auto &layer = material.TextureLayers[i];
 		auto &states = tmpTexture->getStatesCache();
@@ -572,14 +572,14 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 	alphaChannel &= texture;
 
 	bool alpha_blend = alphaChannel || alpha;
-	Context->enableBlend(alpha_blend);
+	Driver->Context->enableBlend(alpha_blend);
 
 	if (alpha_blend) {
-		Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
-		Context->setBlendOp(EBO_ADD);
+		Driver->Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
+		Driver->Context->setBlendOp(EBO_ADD);
 	}
 
-	Material.setTexture(0, const_cast<COpenGLCoreTexture *>(static_cast<const COpenGLCoreTexture *>(Context->getTextureUnit(0))));
+	Material.setTexture(0, const_cast<COpenGLCoreTexture *>(static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(0))));
 	Driver->setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
 
 	if (texture) {
@@ -673,7 +673,7 @@ void MaterialSystem::createMaterialRenderers()
 bool MaterialSystem::setMaterialTexture(u32 layerIdx, const video::ITexture *texture)
 {
 	Material.TextureLayers[layerIdx].Texture = const_cast<ITexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
-	return Context->setTextureUnit(0, texture);
+	return Driver->Context->setTextureUnit(0, texture);
 }
 
 void MaterialSystem::loadShaderData(const io::path &vertexShaderName, const io::path &fragmentShaderName, c8 **vertexShaderData, c8 **fragmentShaderData)

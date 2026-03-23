@@ -14,6 +14,7 @@
 #include "DrawContext.h"
 #include "RenderTarget.h"
 #include "Renderer2D.h"
+#include "GLSpecificInfo.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
@@ -126,7 +127,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
 		return;
 
 	if (debugName)
-		Driver->ObjectLabel(GL_PROGRAM, Program, debugName);
+		Driver->GLInfo->ObjectLabel(GL_PROGRAM, Program, debugName);
 
 	if (addMaterial)
 		outMaterialTypeNr = Driver->addMaterialRenderer(this);

@@ -2,6 +2,7 @@
 
 #include "SMaterial.h"
 #include "ITexture.h"
+#include <vector>
 
 namespace video
 {
