@@ -18,7 +18,7 @@ CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
 		IrrlichtDevice(), VideoDrv(0), GUIEnvironment(0), SceneManager(0),
 		CursorControl(0), UserReceiver(params.EventReceiver),
 		Logger(0), ClipBoard(0), FileSystem(0),
-		InputReceivingSceneManager(0), ContextManager(0),
+		InputReceivingSceneManager(0),
 		CreationParams(params), Close(false)
 {
 	os::Timer::init();
@@ -47,9 +47,6 @@ CIrrDeviceStub::~CIrrDeviceStub()
 
 	if (VideoDrv)
 		VideoDrv->drop();
-
-	if (ContextManager)
-		ContextManager->drop();
 
 	if (FileSystem)
 		FileSystem->drop();
@@ -114,12 +111,6 @@ bool CIrrDeviceStub::setWindowIcon(const video::IImage *img)
 gui::ICursorControl *CIrrDeviceStub::getCursorControl()
 {
 	return CursorControl;
-}
-
-//! return the context manager
-video::IContextManager *CIrrDeviceStub::getContextManager()
-{
-	return ContextManager;
 }
 
 //! Compares to the last call of this function to return double and triple clicks.

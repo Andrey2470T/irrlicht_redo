@@ -17,9 +17,7 @@
 #include "IMeshBuffer.h"
 #include "S3DVertex.h"
 #include "SVertexIndex.h"
-#include "SExposedVideoData.h"
 #include "fast_atof.h"
-#include "IContextManager.h"
 #include "EVideoTypes.h"
 #include "matrix4.h"
 #include "IMeshManipulator.h"
@@ -34,6 +32,7 @@ namespace io
 class IWriteFile;
 class IReadFile;
 }
+class IrrlichtDevice;
 namespace video
 {
 class IImageLoader;
@@ -65,20 +64,20 @@ class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 
 protected:
 	//! constructor (use createOpenGL3Driver instead)
-	VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
+	VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device);
 
 public:
 	//! destructor
 	virtual ~VideoDriver();
 
-	static VideoDriver *create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
+	static VideoDriver *create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device);
 
 	bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
-			const SExposedVideoData &videoData = SExposedVideoData(), core::rect<s32> *sourceRect = 0);
+			core::rect<s32> *sourceRect = 0);
 
 	//! Alternative beginScene implementation. Can't clear stencil buffer, but otherwise identical to other beginScene
 	bool beginScene(bool backBuffer, bool zBuffer, SColor color = SColor(255, 0, 0, 0),
-			const SExposedVideoData &videoData = SExposedVideoData(), core::rect<s32> *sourceRect = 0)
+			core::rect<s32> *sourceRect = 0)
 	{
 		u16 flag = 0;
 
@@ -88,7 +87,7 @@ public:
 		if (zBuffer)
 			flag |= ECBF_DEPTH;
 
-		return beginScene(flag, color, 1.f, 0, videoData, sourceRect);
+		return beginScene(flag, color, 1.f, 0, sourceRect);
 	}
 
 	bool endScene();
@@ -606,7 +605,7 @@ private:
 	//! Color buffer format
 	ECOLOR_FORMAT ColorFormat;
 
-	IContextManager *ContextManager;
+	IrrlichtDevice *Device;
 
 	bool EnableErrorTest;
 

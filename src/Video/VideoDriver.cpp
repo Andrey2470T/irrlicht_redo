@@ -6,7 +6,7 @@
 
 #include "VideoDriver.h"
 #include <cassert>
-#include "IContextManager.h"
+#include "IrrlichtDevice.h"
 
 #include "MaterialRenderer.h"
 #include "FixedPipelineRenderer.h"
@@ -34,7 +34,7 @@
 namespace video
 {
 
-VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager) :
+VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device) :
 		MaterialSystem(this, io, params.OGLES2ShaderPath), DriverType(params.DriverType),
 		Params(params), AntiAlias(params.AntiAlias), SharedRenderTarget(nullptr),
 		CurrentRenderTarget(nullptr), CurrentRenderTargetSize(0, 0),
@@ -42,7 +42,7 @@ VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSys
 		ViewPort(0, 0, 0, 0), ScreenSize(params.WindowSize),
 		MinVertexCountForVBO(500), TextureCreationFlags(0),
 		Transformation3DChanged(true), OGLES2ShaderPath(params.OGLES2ShaderPath),
-		ColorFormat(ECF_R8G8B8), ContextManager(contextManager), EnableErrorTest(params.DriverDebug)
+		ColorFormat(ECF_R8G8B8), Device(device), EnableErrorTest(params.DriverDebug)
 {
 	setFog();
 
@@ -64,12 +64,7 @@ VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSys
 	SurfaceWriter.push_back(new CImageWriterJPG());
 	SurfaceWriter.push_back(new CImageWriterPNG());
 
-	if (!ContextManager)
-		return;
-
-	ContextManager->grab();
-	ContextManager->generateSurface();
-	ContextManager->generateContext();
+	Device->grab();
 
 	testGLError();
 }
@@ -96,18 +91,13 @@ VideoDriver::~VideoDriver()
 
 	removeAllHardwareBuffers();
 
-	if (ContextManager) {
-		ContextManager->destroyContext();
-		ContextManager->destroySurface();
-		ContextManager->terminate();
-		ContextManager->drop();
-	}
+	Device->drop();
 }
 
-VideoDriver *VideoDriver::create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
+VideoDriver *VideoDriver::create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device)
 {
 	g_irrlogger->log("Create VideoDriver", ELL_INFORMATION);
-	auto driver = new VideoDriver(params, io, contextManager);
+	auto driver = new VideoDriver(params, io, device);
 	driver->genericDriverInit(params.WindowSize, params.Stencilbuffer); // don't call in constructor, it uses virtual function calls of driver
 	return driver;
 }
@@ -175,12 +165,9 @@ bool VideoDriver::genericDriverInit(const core::dimension2d<u32> &screenSize, bo
 	return true;
 }
 
-bool VideoDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, const SExposedVideoData &videoData, core::rect<s32> *sourceRect)
+bool VideoDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, core::rect<s32> *sourceRect)
 {
 	FrameStats = {};
-
-	if (ContextManager)
-		ContextManager->activateContext(videoData, true);
 
 	Context->clearBuffers(clearFlag, clearColor, clearDepth, clearStencil);
 
@@ -193,10 +180,7 @@ bool VideoDriver::endScene()
 
 	glFlush();
 
-	if (ContextManager)
-		return ContextManager->swapBuffers();
-
-	return false;
+	return Device->swapBuffers();
 }
 
 //! Returns the transformation set by setTransform

@@ -42,7 +42,6 @@ class ISceneManager;
 
 namespace video
 {
-class IContextManager;
 class IImage;
 class ITexture;
 class VideoDriver;
@@ -124,9 +123,6 @@ public:
 	//! Provides access to the message logger.
 	/** \return Pointer to the logger. */
 	virtual os::Logger *getLogger() = 0;
-
-	//! Get context manager
-	virtual video::IContextManager *getContextManager() = 0;
 
 	//! Provides access to the operation system operator object.
 	/** The OS operator provides methods for
@@ -336,6 +332,8 @@ public:
 	{
 		return video::isDriverSupported(driver);
 	}
+	
+	virtual bool swapBuffers() = 0;
 
 	//! Get the corresponding scancode for the keycode.
 	/**

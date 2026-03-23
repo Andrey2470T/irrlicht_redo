@@ -102,7 +102,7 @@ public:
 	//! Get the display density in dots per inch.
 	float getDisplayDensity() const override;
 
-	void SwapWindow();
+	bool swapBuffers() override;
 
 	//! Implementation of the linux cursor control
 	class CCursorControl : public gui::ICursorControl

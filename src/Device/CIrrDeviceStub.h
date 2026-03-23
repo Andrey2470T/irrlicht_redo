@@ -6,7 +6,6 @@
 
 #include "IrrlichtDevice.h"
 #include "SIrrCreationParameters.h"
-#include "IContextManager.h"
 
 namespace os
 {
@@ -54,9 +53,6 @@ public:
 
 	//! \return Returns a pointer to the mouse cursor control interface.
 	gui::ICursorControl *getCursorControl() override;
-
-	//! return the context manager
-	video::IContextManager *getContextManager() override;
 
 	//! Sets the window icon.
 	bool setWindowIcon(const video::IImage *img) override;
@@ -177,7 +173,6 @@ protected:
 		EMOUSE_INPUT_EVENT LastMouseInputEvent;
 	};
 	SMouseMultiClicks MouseMultiClicks;
-	video::IContextManager *ContextManager;
 	SIrrlichtCreationParameters CreationParams;
 	bool Close;
 };

@@ -5,7 +5,6 @@
 #include "MaterialRenderer.h"
 
 #include "EVertexAttributes.h"
-#include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
 #include "VideoDriver.h"
 #include "Logger.h"
@@ -17,7 +16,6 @@
 #include "GLSpecificInfo.h"
 
 #include "Video/COpenGLCoreTexture.h"
-#include "Video/COpenGLCoreCacheHandler.h"
 
 
 namespace video

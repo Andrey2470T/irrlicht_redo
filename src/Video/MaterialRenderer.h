@@ -8,7 +8,6 @@
 #include <vector>
 #include "EMaterialTypes.h"
 #include "IMaterialRenderer.h"
-#include "IGPUProgrammingServices.h"
 
 #include "Common.h"
 #include "irrArray.h"

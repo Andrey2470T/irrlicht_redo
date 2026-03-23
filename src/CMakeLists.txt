@@ -271,10 +271,6 @@ add_library(IRRMESHOBJ OBJECT
 	${IRRMESHLOADER}
 )
 
-set(IRRDRVROBJ
-	Device/CSDLManager.cpp
-)
-
 # the unified drivers
 
 if(ENABLE_OPENGL3 OR ENABLE_GLES2)

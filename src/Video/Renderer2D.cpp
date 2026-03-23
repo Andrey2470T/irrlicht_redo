@@ -4,7 +4,6 @@
 
 #include "Renderer2D.h"
 
-#include "IGPUProgrammingServices.h"
 #include "Logger.h"
 
 #include "VideoDriver.h"
@@ -12,7 +11,6 @@
 #include "RenderTarget.h"
 
 #include "Video/COpenGLCoreTexture.h"
-#include "Video/COpenGLCoreCacheHandler.h"
 
 
 namespace video

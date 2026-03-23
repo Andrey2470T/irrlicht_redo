@@ -3,8 +3,9 @@
 #include <string>
 #include <vector>
 #include "EMaterialTypes.h"
+#include "EPrimitiveTypes.h"
+#include "IReadFile.h"
 #include "IMaterialRenderer.h"
-#include "IGPUProgrammingServices.h"
 
 #include "irrArray.h"
 #include "SOverrideMaterial.h"

@@ -31,8 +31,6 @@
 #include <emscripten.h>
 #endif
 
-#include "CSDLManager.h"
-
 #ifndef _IRR_USE_SDL3_
 	// SDL2 backwards compatibility for things that were renamed in SDL3.
 	#define SDL_KMOD_SHIFT KMOD_SHIFT
@@ -772,9 +770,7 @@ bool CIrrDeviceSDL::createWindowWithContext()
 //! create the driver
 void CIrrDeviceSDL::createDriver()
 {
-	ContextManager = new video::CSDLManager(this);
-
-	VideoDrv = video::VideoDriver::create(CreationParams, FileSystem, ContextManager);
+	VideoDrv = video::VideoDriver::create(CreationParams, FileSystem, this);
 	if (!VideoDrv)
 		g_irrlogger->log("Could not create video driver", ELL_ERROR);
 }
@@ -1322,9 +1318,10 @@ float CIrrDeviceSDL::getDisplayDensity() const
 	return std::max(ScaleX * 96.0f, ScaleY * 96.0f);
 }
 
-void CIrrDeviceSDL::SwapWindow()
+bool CIrrDeviceSDL::swapBuffers()
 {
 	SDL_GL_SwapWindow(Window);
+	return true;
 }
 
 //! pause execution temporarily
