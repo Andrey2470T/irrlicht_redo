@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Common.h"
+#include "irrTypes.h"
+#include "EHardwareBufferFlags.h"
 #include <cstddef>
 
 
@@ -20,7 +21,7 @@ public:
 	~OpenGLVBO() = default;
 
 	/// @return "name" (ID) of this buffer in GL
-	GLuint getName() const { return m_name; }
+	u32 getName() const { return m_name; }
 	/// @return does this refer to an existing GL buffer?
 	bool exists() const { return m_name != 0; }
 
@@ -39,7 +40,7 @@ public:
 	 * @note modifies GL_ARRAY_BUFFER binding
 	 */
 	void upload(const void *data, size_t size, size_t offset,
-		GLenum usage, bool mustShrink = false);
+		scene::E_HARDWARE_MAPPING usage, bool mustShrink = false);
 
 	/**
 	 * Free buffer in GL.
@@ -48,7 +49,7 @@ public:
 	void destroy();
 
 private:
-	GLuint m_name = 0;
+	u32 m_name = 0;
 	size_t m_size = 0;
 };
 

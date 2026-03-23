@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CAnimatedMeshSceneNode.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "ISceneManager.h"
 #include "S3DVertex.h"
 #include "Logger.h"
@@ -120,7 +120,7 @@ void CAnimatedMeshSceneNode::OnRegisterSceneNode()
 		// materials, check of what type they are and register this node for the right
 		// render pass according to that.
 
-		video::IVideoDriver *driver = SceneManager->getVideoDriver();
+		video::VideoDriver *driver = SceneManager->getVideoDriver();
 
 		PassCount = 0;
 		int transparentCount = 0;
@@ -206,7 +206,7 @@ void CAnimatedMeshSceneNode::OnAnimate(u32 timeMs)
 //! renders the node.
 void CAnimatedMeshSceneNode::render()
 {
-	video::IVideoDriver *driver = SceneManager->getVideoDriver();
+	video::VideoDriver *driver = SceneManager->getVideoDriver();
 
 	if (!Mesh || !driver)
 		return;

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "IShaderConstantSetCallBack.h"
-#include "IMaterialRendererServices.h"
+#include "IMaterialRenderer.h"
 
 
 namespace video
@@ -18,7 +18,7 @@ public:
 	COpenGL3MaterialBaseCB();
 
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRendererServices *services, s32 userData);
+	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
 
 protected:
 	bool FirstUpdateBase;
@@ -45,7 +45,7 @@ public:
 	COpenGL3MaterialSolidCB();
 
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRendererServices *services, s32 userData);
+	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
 
 protected:
 	bool FirstUpdate;
@@ -66,7 +66,7 @@ public:
 	COpenGL3MaterialOneTextureBlendCB();
 
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRendererServices *services, s32 userData);
+	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
 
 protected:
 	bool FirstUpdate;

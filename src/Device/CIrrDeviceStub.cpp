@@ -8,39 +8,10 @@
 #include "IFileSystem.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "Logger.h"
 #include "Timer.h"
 #include "irrString.h"
-
-
-namespace video
-{
-#ifndef ENABLE_OPENGL3
-IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
-{
-	g_irrlogger->log("No OpenGL 3 support compiled in.", ELL_ERROR);
-	return nullptr;
-}
-#endif
-
-#ifndef _IRR_COMPILE_WITH_OGLES2_
-IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
-{
-	g_irrlogger->log("No OpenGL ES 2 support compiled in.", ELL_ERROR);
-	return nullptr;
-}
-#endif
-
-#ifndef _IRR_COMPILE_WITH_WEBGL1_
-IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager)
-{
-	g_irrlogger->log("No WebGL 1 support compiled in.", ELL_ERROR);
-	return nullptr;
-}
-#endif
-}
-
 
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const SIrrlichtCreationParameters &params) :
@@ -101,18 +72,18 @@ CIrrDeviceStub::~CIrrDeviceStub()
 void CIrrDeviceStub::createGUIAndScene()
 {
 	// create gui environment
-	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDriver, ClipBoard);
+	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDrv, ClipBoard);
 
 	// create Scene manager
-	SceneManager = scene::createSceneManager(VideoDriver, CursorControl);
+	SceneManager = scene::createSceneManager(VideoDrv, CursorControl);
 
 	setEventReceiver(UserReceiver);
 }
 
 //! returns the video driver
-video::IVideoDriver *CIrrDeviceStub::getVideoDriver()
+video::VideoDriver *CIrrDeviceStub::getVideoDriver()
 {
-	return VideoDriver;
+	return VideoDrv;
 }
 
 //! return file system

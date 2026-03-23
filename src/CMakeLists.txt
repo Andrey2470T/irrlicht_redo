@@ -272,7 +272,6 @@ add_library(IRRMESHOBJ OBJECT
 )
 
 set(IRRDRVROBJ
-	Video/CNullDriver.cpp
 	Device/CSDLManager.cpp
 )
 
@@ -282,27 +281,14 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
 		Video/DrawContext.cpp
-		Video/Driver.cpp
-		Video/ExtensionHandler.cpp
+		Video/GLSpecificInfo.cpp
 		Video/FixedPipelineRenderer.cpp
 		Video/MaterialRenderer.cpp
+		Video/MaterialSystem.cpp
 		Video/Renderer2D.cpp
 		Video/RenderTarget.cpp
 		Video/VBO.cpp
-	)
-endif()
-
-if(ENABLE_OPENGL3)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OpenGL3/DriverGL3.cpp
-	)
-endif()
-
-if(ENABLE_GLES2)
-	set(IRRDRVROBJ
-		${IRRDRVROBJ}
-		Video/OpenGLES2/DriverGLES2.cpp
+		Video/VideoDriver.cpp
 	)
 endif()
 

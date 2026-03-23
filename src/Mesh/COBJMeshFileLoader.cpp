@@ -4,7 +4,7 @@
 
 #include "COBJMeshFileLoader.h"
 #include "IMeshManipulator.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "SMesh.h"
 #include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"

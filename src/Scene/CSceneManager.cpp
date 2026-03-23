@@ -6,7 +6,7 @@
 #include <cassert>
 
 #include "CSceneManager.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IFileSystem.h"
 #include "SAnimatedMesh.h"
 #include "Mesh/CMeshCache.h"
@@ -36,7 +36,7 @@ namespace scene
 {
 
 //! constructor
-CSceneManager::CSceneManager(video::IVideoDriver *driver,
+CSceneManager::CSceneManager(video::VideoDriver *driver,
 		gui::ICursorControl *cursorControl, IMeshCache *cache) :
 		ISceneNode(0, 0),
 		Driver(driver),
@@ -154,7 +154,7 @@ IAnimatedMesh *CSceneManager::getUncachedMesh(io::IReadFile *file, const io::pat
 }
 
 //! returns the video driver
-video::IVideoDriver *CSceneManager::getVideoDriver()
+video::VideoDriver *CSceneManager::getVideoDriver()
 {
 	return Driver;
 }
@@ -759,7 +759,7 @@ SkinnedMesh *CSceneManager::createSkinnedMesh()
 }
 
 // creates a scenemanager
-ISceneManager *createSceneManager(video::IVideoDriver *driver, gui::ICursorControl *cursorcontrol)
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::ICursorControl *cursorcontrol)
 {
 	return new CSceneManager(driver, cursorcontrol, nullptr);
 }

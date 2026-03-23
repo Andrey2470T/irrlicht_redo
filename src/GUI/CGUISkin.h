@@ -20,7 +20,7 @@ namespace gui
 	{
 	public:
 
-		CGUISkin(video::IVideoDriver* driver);
+		CGUISkin(video::VideoDriver* driver);
 
 		//! destructor
 		virtual ~CGUISkin();
@@ -299,7 +299,7 @@ namespace gui
 		IGUIFont* Fonts[EGDF_COUNT];
 		IGUISpriteBank* SpriteBank;
 		core::stringw Texts[EGDT_COUNT];
-		video::IVideoDriver* Driver;
+		video::VideoDriver* Driver;
 	};
 
 } // end namespace gui

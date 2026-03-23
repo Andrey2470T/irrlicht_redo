@@ -135,7 +135,7 @@ public:
 	//! Get the video driver.
 	/** \return Pointer to the video Driver.
 	This pointer should not be dropped. See IReferenceCounted::drop() for more information. */
-	virtual video::IVideoDriver *getVideoDriver() = 0;
+	virtual video::VideoDriver *getVideoDriver() = 0;
 
 	//! Adds a scene node for rendering an animated mesh model.
 	/** \param mesh: Pointer to the loaded animated mesh to be displayed.

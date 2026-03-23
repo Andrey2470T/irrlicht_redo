@@ -7,7 +7,7 @@
 #include "IGPUProgrammingServices.h"
 #include "Logger.h"
 
-#include "Driver.h"
+#include "VideoDriver.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
 
@@ -18,8 +18,8 @@
 namespace video
 {
 
-COpenGL3Renderer2D::COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *pixelShaderProgram, COpenGL3DriverBase *driver, bool withTexture) :
-		COpenGL3MaterialRenderer(driver, 0, EMT_SOLID),
+COpenGL3Renderer2D::COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *pixelShaderProgram, VideoDriver *driver, bool withTexture) :
+		MaterialRenderer(driver, 0, EMT_SOLID),
 		WithTexture(withTexture)
 {
 	int Temp = 0;
@@ -54,8 +54,7 @@ COpenGL3Renderer2D::~COpenGL3Renderer2D()
 
 void COpenGL3Renderer2D::OnSetMaterial(const video::SMaterial &material,
 		const video::SMaterial &lastMaterial,
-		bool resetAllRenderstates,
-		video::IMaterialRendererServices *services)
+		bool resetAllRenderstates)
 {
 	Driver->getContext()->setProgram(Program);
 	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
@@ -80,7 +79,7 @@ void COpenGL3Renderer2D::OnSetMaterial(const video::SMaterial &material,
 	}
 }
 
-bool COpenGL3Renderer2D::OnRender(IMaterialRendererServices *service, E_VERTEX_TYPE vtxtype)
+bool COpenGL3Renderer2D::OnRender(E_VERTEX_TYPE vtxtype)
 {
 	return true;
 }

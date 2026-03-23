@@ -10,16 +10,16 @@
 namespace video
 {
 
-class COpenGL3Renderer2D : public COpenGL3MaterialRenderer
+class COpenGL3Renderer2D : public MaterialRenderer
 {
 public:
-	COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *pixelShaderProgram, COpenGL3DriverBase *driver, bool withTexture);
+	COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *pixelShaderProgram, VideoDriver *driver, bool withTexture);
 	~COpenGL3Renderer2D();
 
 	virtual void OnSetMaterial(const SMaterial &material, const SMaterial &lastMaterial,
-			bool resetAllRenderstates, IMaterialRendererServices *services);
+			bool resetAllRenderstates);
 
-	virtual bool OnRender(IMaterialRendererServices *service, E_VERTEX_TYPE vtxtype);
+	virtual bool OnRender(E_VERTEX_TYPE vtxtype);
 
 protected:
 	bool WithTexture;

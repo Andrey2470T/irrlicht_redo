@@ -8,7 +8,7 @@
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "rect.h"
 #include "Logger.h"
 
@@ -540,7 +540,7 @@ void CGUITabControl::draw()
 		return;
 
 	IGUIFont *font = skin->getFont();
-	video::IVideoDriver *driver = Environment->getVideoDriver();
+	video::VideoDriver *driver = Environment->getVideoDriver();
 
 	core::rect<s32> frameRect(AbsoluteRect);
 

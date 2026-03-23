@@ -9,13 +9,13 @@
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "IGUIElement.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 
 namespace gui
 {
 
-CGUISkin::CGUISkin(video::IVideoDriver* driver)
+CGUISkin::CGUISkin(video::VideoDriver* driver)
 : SpriteBank(0), Driver(driver)
 {
 	Colors[EGDC_3D_DARK_SHADOW]     = video::SColor(101,50,50,50);

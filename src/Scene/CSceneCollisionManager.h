@@ -6,7 +6,7 @@
 
 #include "ISceneCollisionManager.h"
 #include "ISceneManager.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 
 namespace scene
@@ -16,7 +16,7 @@ class CSceneCollisionManager : public ISceneCollisionManager
 {
 public:
 	//! constructor
-	CSceneCollisionManager(ISceneManager *smanager, video::IVideoDriver *driver);
+	CSceneCollisionManager(ISceneManager *smanager, video::VideoDriver *driver);
 
 	//! destructor
 	virtual ~CSceneCollisionManager();
@@ -27,7 +27,7 @@ public:
 
 private:
 	ISceneManager *SceneManager;
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 };
 
 } // end namespace scene

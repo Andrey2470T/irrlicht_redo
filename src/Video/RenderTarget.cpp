@@ -1,6 +1,6 @@
 #include "RenderTarget.h"
 #include "ITexture.h"
-#include "Driver.h"
+#include "VideoDriver.h"
 #include "DrawContext.h"
 #include "Common.h"
 #include "Logger.h"
@@ -18,7 +18,7 @@
 namespace video
 {
 
-RenderTarget::RenderTarget(IVideoDriver *_driver)
+RenderTarget::RenderTarget(VideoDriver *_driver)
     : driver(_driver)
 {
 	u8 maxColorAttachments = driver->getFeatures().ColorAttachment;
@@ -250,14 +250,13 @@ void RenderTarget::setDepthStencilTexture(
 
 void RenderTarget::blitTo(RenderTarget *target)
 {
-	auto driverGL3 = static_cast<COpenGL3DriverBase *>(driver);
-	auto version = driverGL3->getVersionFromOpenGL();
+	auto version = driver->getVersionFromOpenGL();
 	if (version.Spec == OpenGLSpec::ES && version.Major < 3) {
 		g_irrlogger->log("glBlitFramebuffer not supported by OpenGL ES < 3.0", ELL_ERROR);
 		return;
 	}
 
-	auto prev_rt = driverGL3->getContext()->getRenderTarget();
+	auto prev_rt = driver->getContext()->getRenderTarget();
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, getID());
 	driver->testGLError();

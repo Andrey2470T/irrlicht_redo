@@ -4,7 +4,7 @@
 
 #include "CCameraSceneNode.h"
 #include "ISceneManager.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "Logger.h"
 
 
@@ -23,7 +23,7 @@ CCameraSceneNode::CCameraSceneNode(ISceneNode *parent, ISceneManager *mgr, s32 i
 	Fovy = core::PI / 2.5f; // Field of view, in radians.
 	Aspect = 4.0f / 3.0f;   // Aspect ratio.
 
-	const video::IVideoDriver *const d = mgr ? mgr->getVideoDriver() : 0;
+	const video::VideoDriver *const d = mgr ? mgr->getVideoDriver() : 0;
 	if (d) {
 		if (d->getCurrentRenderTargetSize().Height)
 			Aspect = (f32)d->getCurrentRenderTargetSize().Width /
@@ -209,7 +209,7 @@ void CCameraSceneNode::render()
 {
 	updateMatrices();
 
-	video::IVideoDriver *driver = SceneManager->getVideoDriver();
+	video::VideoDriver *driver = SceneManager->getVideoDriver();
 	if (driver) {
 		driver->setTransform(video::ETS_PROJECTION, ViewArea.getTransform(video::ETS_PROJECTION));
 		driver->setTransform(video::ETS_VIEW, ViewArea.getTransform(video::ETS_VIEW));

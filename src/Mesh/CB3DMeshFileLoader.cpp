@@ -8,7 +8,7 @@
 
 #include "CB3DMeshFileLoader.h"
 
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IFileSystem.h"
 #include "SkinnedMesh.h"
 #include "coreutil.h"

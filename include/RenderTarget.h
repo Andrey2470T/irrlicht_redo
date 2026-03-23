@@ -9,7 +9,7 @@ namespace video
 {
 
 class ITexture;
-class IVideoDriver;
+class VideoDriver;
 
 //! Enumeration of cube texture surfaces
 enum E_CUBE_SURFACE
@@ -31,7 +31,7 @@ class RenderTarget : public virtual IReferenceCounted
 	u32 width;
 	u32 height;
 
-	IVideoDriver *driver;
+	VideoDriver *driver;
 
 	std::vector<ITexture*> colorTextures;
 	std::vector<E_CUBE_SURFACE> colorCubeMapFaces;
@@ -39,7 +39,7 @@ class RenderTarget : public virtual IReferenceCounted
 	ITexture* depthStencilTexture = nullptr;
 	E_CUBE_SURFACE depthStencilCubeMapFace;
 public:
-    RenderTarget(IVideoDriver *_driver);
+	RenderTarget(video::VideoDriver *_driver);
 
 	~RenderTarget();
 

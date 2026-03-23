@@ -24,28 +24,8 @@ namespace video
 
 class COpenGLCoreFeature;
 
-template <class TOpenGLDriver>
-class COpenGLCoreTexture;
-
 class COpenGL3DriverBase;
-typedef COpenGLCoreTexture<COpenGL3DriverBase> COpenGL3Texture;
 
 class OpenGLVBO;
-
-enum OpenGLSpec : u8
-{
-	Core,
-	Compat,
-	ES,
-	// WebGL, // TODO
-};
-
-struct OpenGLVersion
-{
-	OpenGLSpec Spec;
-	u8 Major;
-	u8 Minor;
-	u8 Release;
-};
 
 }

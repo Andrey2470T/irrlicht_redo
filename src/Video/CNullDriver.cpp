@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CNullDriver.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "SMaterial.h"
 #include "Logger.h"
 #include "Image/CImage.h"

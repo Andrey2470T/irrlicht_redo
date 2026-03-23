@@ -34,7 +34,7 @@ extern "C" IrrlichtDevice *createDeviceEx(const SIrrlichtCreationParameters &par
 {
 	IrrlichtDevice *dev = new CIrrDeviceSDL(params);
 
-	if (dev && !dev->getVideoDriver() && params.DriverType != video::EDT_NULL) {
+	if (dev && !dev->getVideoDriver()) {
 		dev->closeDevice(); // destroy window
 		dev->run();         // consume quit message
 		dev->drop();
@@ -56,8 +56,6 @@ const SMaterial IdentityMaterial;
 extern "C" bool isDriverSupported(E_DRIVER_TYPE driver)
 {
 	switch (driver) {
-	case EDT_NULL:
-		return true;
 #ifdef ENABLE_OPENGL3
 	case EDT_OPENGL3:
 		return true;

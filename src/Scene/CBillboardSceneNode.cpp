@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CBillboardSceneNode.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "ISceneManager.h"
 #include "ICameraSceneNode.h"
 #include "Logger.h"
@@ -64,7 +64,7 @@ void CBillboardSceneNode::OnRegisterSceneNode()
 //! render
 void CBillboardSceneNode::render()
 {
-	video::IVideoDriver *driver = SceneManager->getVideoDriver();
+	video::VideoDriver *driver = SceneManager->getVideoDriver();
 	ICameraSceneNode *camera = SceneManager->getActiveCamera();
 
 	if (!camera || !driver)

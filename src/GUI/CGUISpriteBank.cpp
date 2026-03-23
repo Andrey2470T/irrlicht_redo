@@ -5,7 +5,7 @@
 #include "CGUISpriteBank.h"
 
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "ITexture.h"
 
 

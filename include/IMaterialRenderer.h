@@ -12,9 +12,9 @@
 namespace video
 {
 
-class IVideoDriver;
-class IMaterialRendererServices;
+class VideoDriver;
 class IShaderConstantSetCallBack;
+class MaterialSystem;
 
 //! Interface for material rendering.
 /** Can be used to extend the engine with new materials. Refer to
@@ -46,7 +46,7 @@ public:
 	\param services: Interface providing some methods for changing
 	advanced, internal states of a IVideoDriver. */
 	virtual void OnSetMaterial(const SMaterial &material, const SMaterial &lastMaterial,
-			bool resetAllRenderstates, IMaterialRendererServices *services) {}
+			bool resetAllRenderstates, MaterialSystem *materialSys) {}
 
 	//! Called every time before a new bunch of geometry is being drawn using this material with for example drawIndexedTriangleList() call.
 	/** OnSetMaterial should normally only be called if the renderer decides
@@ -66,12 +66,52 @@ public:
 	example if he doesn't support the specified vertex type. This is
 	actually done in D3D9 when using a normal mapped material with
 	a vertex type other than EVT_TANGENTS. */
-	virtual bool OnRender(IMaterialRendererServices *service, E_VERTEX_TYPE vtxtype) { return true; }
+	virtual bool OnRender(E_VERTEX_TYPE vtxtype) { return true; }
 
 	//! Called by the IVideoDriver to unset this material.
 	/** Called during the IVideoDriver::setMaterial() call before the new
 	material will get the OnSetMaterial() call. */
 	virtual void OnUnsetMaterial() {}
+
+	//! Return an index constant for the vertex shader based on a uniform variable name.
+	virtual s32 getVertexShaderConstantID(const c8 *name) = 0;
+
+	//! Sets a value for a vertex shader uniform variable.
+	/** \param index Index of the variable (as received from getVertexShaderConstantID)
+	\param floats Pointer to array of floats
+	\param count Amount of floats in array.
+	\return True if successful.
+	*/
+	virtual bool setVertexShaderConstant(s32 index, const f32 *floats, int count) = 0;
+
+	//! Int interface for the above.
+	virtual bool setVertexShaderConstant(s32 index, const s32 *ints, int count) = 0;
+
+	//! Uint interface for the above.
+	virtual bool setVertexShaderConstant(s32 index, const u32 *ints, int count) = 0;
+
+	//! Return an index constant for the pixel shader for the given uniform variable name
+	virtual s32 getPixelShaderConstantID(const c8 *name) = 0;
+
+	//! Sets a value for the given pixel shader uniform variable
+	/** This can be used if you used a high level shader language like GLSL
+	or HLSL to create a shader. See setVertexShaderConstant() for an
+	example on how to use this.
+	\param index Index of the variable (as received from getPixelShaderConstantID)
+	\param floats Pointer to array of floats
+	\param count Amount of floats in array.
+	\return True if successful. */
+	virtual bool setPixelShaderConstant(s32 index, const f32 *floats, int count) = 0;
+
+	//! Int interface for the above.
+	virtual bool setPixelShaderConstant(s32 index, const s32 *ints, int count) = 0;
+
+	//! Uint interface for the above.
+	virtual bool setPixelShaderConstant(s32 index, const u32 *ints, int count) = 0;
+
+	//! Get pointer to the IVideoDriver interface
+	/** \return Pointer to the IVideoDriver interface */
+	virtual VideoDriver *getVideoDriver() = 0;
 
 	//! Returns if the material is transparent.
 	/** The scene management needs to know this

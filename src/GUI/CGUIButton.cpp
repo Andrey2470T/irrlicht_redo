@@ -6,7 +6,7 @@
 
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IGUIFont.h"
 #include "Timer.h"
 
@@ -200,7 +200,7 @@ void CGUIButton::draw()
 		return;
 
 	IGUISkin *skin = Environment->getSkin();
-	video::IVideoDriver *driver = Environment->getVideoDriver();
+	video::VideoDriver *driver = Environment->getVideoDriver();
 
 	if (DrawBorder) {
 		if (!Pressed) {

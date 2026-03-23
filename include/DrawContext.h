@@ -94,11 +94,11 @@ enum ClearBufferFlags : u8
 };
 
 class RenderTarget;
-class IVideoDriver;
+class VideoDriver;
 
 class DrawContext
 {
-	IVideoDriver *driver;
+	VideoDriver *driver;
 	RenderTarget *curRT = nullptr;
 	u32 curProgramID = 0;
 
@@ -124,7 +124,7 @@ class DrawContext
     u8 colorMask;
 public:
 	//! Constructor
-	DrawContext(IVideoDriver *_driver);
+	DrawContext(VideoDriver *_driver);
 	~DrawContext();
 
 	//! Getters

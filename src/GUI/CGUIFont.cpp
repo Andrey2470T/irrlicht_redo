@@ -8,7 +8,7 @@
 #include "coreutil.h"
 #include "IGUIEnvironment.h"
 #include "IReadFile.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IGUISpriteBank.h"
 
 

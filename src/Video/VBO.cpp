@@ -3,15 +3,24 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "VBO.h"
+#include "Common.h"
 
 #include <cassert>
+#include <array>
 
 
 namespace video
 {
 
+std::array<GLenum, scene::EHM_COUNT> toGLUsage = {
+	0,
+	GL_STATIC_DRAW,
+	GL_DYNAMIC_DRAW,
+	GL_STREAM_DRAW
+};
+
 void OpenGLVBO::upload(const void *data, size_t size, size_t offset,
-		GLenum usage, bool mustShrink)
+		scene::E_HARDWARE_MAPPING usage, bool mustShrink)
 {
 	bool newBuffer = false;
 	assert(!(mustShrink && offset > 0)); // forbidden usage
@@ -28,7 +37,7 @@ void OpenGLVBO::upload(const void *data, size_t size, size_t offset,
 
 	if (newBuffer) {
 		assert(offset == 0);
-		glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+		glBufferData(GL_ARRAY_BUFFER, size, data, toGLUsage[usage]);
 		m_size = size;
 	} else {
 		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);

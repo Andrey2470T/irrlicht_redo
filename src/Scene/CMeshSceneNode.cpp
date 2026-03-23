@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMeshSceneNode.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "ISceneManager.h"
 #include "IMeshCache.h"
 #include "IMeshBuffer.h"
@@ -41,7 +41,7 @@ void CMeshSceneNode::OnRegisterSceneNode()
 		// materials, check of what type they are and register this node for the right
 		// render pass according to that.
 
-		video::IVideoDriver *driver = SceneManager->getVideoDriver();
+		video::VideoDriver *driver = SceneManager->getVideoDriver();
 
 		PassCount = 0;
 		int transparentCount = 0;
@@ -76,7 +76,7 @@ void CMeshSceneNode::OnRegisterSceneNode()
 //! renders the node.
 void CMeshSceneNode::render()
 {
-	video::IVideoDriver *driver = SceneManager->getVideoDriver();
+	video::VideoDriver *driver = SceneManager->getVideoDriver();
 
 	if (!Mesh || !driver)
 		return;

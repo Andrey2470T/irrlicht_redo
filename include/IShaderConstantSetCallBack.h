@@ -9,7 +9,7 @@
 
 namespace video
 {
-class IMaterialRendererServices;
+class IMaterialRenderer;
 class SMaterial;
 
 //! Interface making it possible to set constants for gpu programs every frame.
@@ -31,9 +31,9 @@ public:
 			UsedMaterial=&material;
 		}
 
-		OnSetConstants(IMaterialRendererServices* services, s32 userData)
+		OnSetConstants(IMaterialRenderer* renderer, s32 userData)
 		{
-			services->setVertexShaderConstant("myColor", reinterpret_cast<f32*>(&UsedMaterial->color), 4);
+			renderer->setVertexShaderConstant("myColor", reinterpret_cast<f32*>(&UsedMaterial->color), 4);
 		}
 	}
 	\endcode
@@ -49,29 +49,29 @@ public:
 	before geometry is being drawn using your shader material. A sample implementation
 	would look like this:
 	\code
-	virtual void OnSetConstants(video::IMaterialRendererServices* services, s32 userData)
+	virtual void OnSetConstants(video::IMaterialRenderer* renderer, s32 userData)
 	{
-		video::IVideoDriver* driver = services->getVideoDriver();
+		video::VideoDriver* driver = renderer->getVideoDriver();
 
 		// set clip matrix at register 4
 		core::matrix4 worldViewProj(driver->getTransform(video::ETS_PROJECTION));
 		worldViewProj *= driver->getTransform(video::ETS_VIEW);
 		worldViewProj *= driver->getTransform(video::ETS_WORLD);
-		services->setVertexShaderConstant(&worldViewProj.M[0], 4, 4);
+		renderer->setVertexShaderConstant(&worldViewProj.M[0], 4, 4);
 		// for high level shading languages, this would be another solution:
-		//services->setVertexShaderConstant("mWorldViewProj", worldViewProj.M, 16);
+		//renderer->setVertexShaderConstant("mWorldViewProj", worldViewProj.M, 16);
 
 		// set some light color at register 9
 		video::SColorf col(0.0f,1.0f,1.0f,0.0f);
-		services->setVertexShaderConstant(reinterpret_cast<const f32*>(&col), 9, 1);
+		renderer->setVertexShaderConstant(reinterpret_cast<const f32*>(&col), 9, 1);
 		// for high level shading languages, this would be another solution:
-		//services->setVertexShaderConstant("myColor", reinterpret_cast<f32*>(&col), 4);
+		//renderer->setVertexShaderConstant("myColor", reinterpret_cast<f32*>(&col), 4);
 	}
 	\endcode
 	\param services: Pointer to an interface providing methods to set the constants for the shader.
 	\param userData: Userdata int which can be specified when creating the shader.
 	*/
-	virtual void OnSetConstants(IMaterialRendererServices *services, s32 userData) = 0;
+	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData) = 0;
 };
 
 } // end namespace video

@@ -17,7 +17,16 @@
 namespace video
 {
 
-template <class TOpenGLDriver>
+using FColorConverter = void (*)(const void *source, s32 count, void *dest);
+struct STextureFormatInfo
+{
+	GLenum InternalFormat;
+	GLenum PixelFormat;
+	GLenum PixelType;
+	FColorConverter Converter;
+};
+STextureFormatInfo TextureFormats[ECF_UNKNOWN] = {};
+
 class COpenGLCoreTexture : public ITexture
 {
 public:
@@ -41,7 +50,7 @@ public:
 		bool IsCached;
 	};
 
-	COpenGLCoreTexture(const io::path &name, const std::vector<IImage *> &srcImages, E_TEXTURE_TYPE type, TOpenGLDriver *driver) :
+	COpenGLCoreTexture(const io::path &name, const std::vector<IImage *> &srcImages, E_TEXTURE_TYPE type, VideoDriver *driver) :
 			ITexture(name, type), Driver(driver), TextureType(GL_TEXTURE_2D),
 			TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_RGBA), PixelType(GL_UNSIGNED_BYTE), MSAA(0), Converter(0), LockReadOnly(false), LockImage(0), LockLayer(0),
 			KeepImage(false), MipLevelStored(0)
@@ -134,7 +143,7 @@ public:
 		Driver->testGLError();
 	}
 
-	COpenGLCoreTexture(const io::path &name, const core::dimension2d<u32> &size, E_TEXTURE_TYPE type, ECOLOR_FORMAT format, TOpenGLDriver *driver, u8 msaa = 0) :
+	COpenGLCoreTexture(const io::path &name, const core::dimension2d<u32> &size, E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *driver, u8 msaa = 0) :
 			ITexture(name, type),
 			Driver(driver), TextureType(GL_TEXTURE_2D),
 			TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_RGBA), PixelType(GL_UNSIGNED_BYTE), MSAA(msaa), Converter(0), LockReadOnly(false), LockImage(0), LockLayer(0), KeepImage(false),
@@ -647,7 +656,7 @@ protected:
 		return tmp;
 	}
 
-	TOpenGLDriver *Driver;
+	VideoDriver *Driver;
 
 	GLenum TextureType;
 	GLuint TextureName;

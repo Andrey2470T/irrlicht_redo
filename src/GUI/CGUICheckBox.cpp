@@ -6,7 +6,7 @@
 
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IGUIFont.h"
 #include "Timer.h"
 
@@ -100,7 +100,7 @@ void CGUICheckBox::draw()
 
 	IGUISkin *skin = Environment->getSkin();
 	if (skin) {
-		video::IVideoDriver *driver = Environment->getVideoDriver();
+		video::VideoDriver *driver = Environment->getVideoDriver();
 		core::rect<s32> frameRect(AbsoluteRect);
 
 		// draw background

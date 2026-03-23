@@ -11,11 +11,6 @@ namespace video
 //! An enum for all types of drivers the Irrlicht Engine supports.
 enum E_DRIVER_TYPE
 {
-	//! Null driver, useful for applications to run the engine without visualization.
-	/** The null device is able to load textures, but does not
-	render and display any graphics. */
-	EDT_NULL,
-
 	//! OpenGL-ES 2.x driver, for embedded and mobile systems
 	/** Supports shaders etc. */
 	EDT_OGLES2,

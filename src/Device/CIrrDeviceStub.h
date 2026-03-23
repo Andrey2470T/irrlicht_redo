@@ -17,28 +17,17 @@ namespace gui
 {
 class IGUIEnvironment;
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
-		video::IVideoDriver *Driver, os::Clipboard *op);
+		video::VideoDriver *Driver, os::Clipboard *op);
 }
 
 namespace scene
 {
-ISceneManager *createSceneManager(video::IVideoDriver *driver, gui::ICursorControl *cc);
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::ICursorControl *cc);
 }
 
 namespace io
 {
 IFileSystem *createFileSystem();
-}
-
-namespace video
-{
-	IVideoDriver *createNullDriver(io::IFileSystem *io, const core::dimension2d<u32> &screenSize);
-
-	IVideoDriver *createOpenGL3Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-
-	IVideoDriver *createOGLES2Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
-
-	IVideoDriver *createWebGL1Driver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IContextManager *contextManager);
 }
 
 //! Stub for an Irrlicht Device implementation
@@ -52,7 +41,7 @@ public:
 	virtual ~CIrrDeviceStub();
 
 	//! returns the video driver
-	video::IVideoDriver *getVideoDriver() override;
+	video::VideoDriver *getVideoDriver() override;
 
 	//! return file system
 	io::IFileSystem *getFileSystem() override;
@@ -164,7 +153,7 @@ protected:
 	//! Checks whether the input device should take input from the IME
 	bool acceptsIME();
 
-	video::IVideoDriver *VideoDriver;
+	video::VideoDriver *VideoDrv;
 	gui::IGUIEnvironment *GUIEnvironment;
 	scene::ISceneManager *SceneManager;
 	gui::ICursorControl *CursorControl;

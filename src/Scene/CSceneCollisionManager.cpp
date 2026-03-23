@@ -13,7 +13,7 @@ namespace scene
 {
 
 //! constructor
-CSceneCollisionManager::CSceneCollisionManager(ISceneManager *smanager, video::IVideoDriver *driver) :
+CSceneCollisionManager::CSceneCollisionManager(ISceneManager *smanager, video::VideoDriver *driver) :
 		SceneManager(smanager), Driver(driver)
 {
 	if (Driver)

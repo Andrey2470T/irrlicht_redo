@@ -148,7 +148,7 @@ class ITexture : public virtual IReferenceCounted
 public:
 	//! constructor
 	ITexture(const io::path &name, E_TEXTURE_TYPE type) :
-			NamedPath(name), DriverType(EDT_NULL), OriginalColorFormat(ECF_UNKNOWN),
+			NamedPath(name), DriverType(EDT_OPENGL3), OriginalColorFormat(ECF_UNKNOWN),
 			ColorFormat(ECF_UNKNOWN), Pitch(0), HasMipMaps(false), IsRenderTarget(false), Type(type)
 	{
 	}

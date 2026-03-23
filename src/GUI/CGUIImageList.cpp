@@ -9,7 +9,7 @@ namespace gui
 {
 
 //! constructor
-CGUIImageList::CGUIImageList(video::IVideoDriver *driver) :
+CGUIImageList::CGUIImageList(video::VideoDriver *driver) :
 		Driver(driver),
 		Texture(0),
 		ImageCount(0),

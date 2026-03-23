@@ -6,7 +6,7 @@
 
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IGUIButton.h"
 #include "IGUIStaticText.h"
 #include "IGUIFont.h"

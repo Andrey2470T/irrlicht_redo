@@ -6,7 +6,7 @@
 
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 
 namespace gui
@@ -65,7 +65,7 @@ void CGUIImage::draw()
 		return;
 
 	IGUISkin *skin = Environment->getSkin();
-	video::IVideoDriver *driver = Environment->getVideoDriver();
+	video::VideoDriver *driver = Environment->getVideoDriver();
 
 	if (Texture) {
 		core::rect<s32> sourceRect(SourceRect);

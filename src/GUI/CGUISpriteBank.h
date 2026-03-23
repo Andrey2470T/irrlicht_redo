@@ -73,7 +73,7 @@ protected:
 	core::array<core::rect<s32>> Rectangles;
 	core::array<video::ITexture *> Textures;
 	IGUIEnvironment *Environment;
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 };
 
 } // end namespace gui

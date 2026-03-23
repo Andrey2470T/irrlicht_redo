@@ -5,7 +5,7 @@
 
 #include "CGUIEnvironment.h"
 
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 #include "CGUISkin.h"
 #include "CGUIButton.h"
@@ -34,7 +34,7 @@ namespace gui
 const io::path CGUIEnvironment::DefaultFontName = "#DefaultFont";
 
 //! constructor
-CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, os::Clipboard *op) :
+CGUIEnvironment::CGUIEnvironment(io::IFileSystem *fs, video::VideoDriver *driver, os::Clipboard *op) :
 		IGUIElement(EGUIET_ROOT, 0, 0, 0, core::rect<s32>(driver ? core::dimension2d<s32>(driver->getScreenSize()) : core::dimension2d<s32>(0, 0))),
 		Driver(driver), Hovered(0), HoveredNoSubelement(0), Focus(0), LastHoveredMousePos(0, 0), CurrentSkin(0),
 		FileSystem(fs), UserReceiver(0), ClipBoard(op), FocusFlags(EFF_SET_ON_LMOUSE_DOWN | EFF_SET_ON_TAB)
@@ -287,7 +287,7 @@ bool CGUIEnvironment::hasFocus(const IGUIElement *element, bool checkSubElements
 }
 
 //! returns the current video driver
-video::IVideoDriver *CGUIEnvironment::getVideoDriver() const
+video::VideoDriver *CGUIEnvironment::getVideoDriver() const
 {
 	return Driver;
 }
@@ -981,7 +981,7 @@ u32 CGUIEnvironment::getFocusBehavior() const
 
 //! creates an GUI Environment
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
-		video::IVideoDriver *Driver,
+		video::VideoDriver *Driver,
 		os::Clipboard *op)
 {
 	return new CGUIEnvironment(fs, Driver, op);

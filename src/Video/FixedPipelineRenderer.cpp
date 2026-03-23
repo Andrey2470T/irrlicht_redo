@@ -6,7 +6,7 @@
 #include "FixedPipelineRenderer.h"
 #include "Logger.h"
 
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 
 namespace video
@@ -27,21 +27,21 @@ void COpenGL3MaterialBaseCB::OnSetMaterial(const SMaterial &material)
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
 }
 
-void COpenGL3MaterialBaseCB::OnSetConstants(IMaterialRendererServices *services, s32 userData)
+void COpenGL3MaterialBaseCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
 {
-	IVideoDriver *driver = services->getVideoDriver();
+	VideoDriver *driver = renderer->getVideoDriver();
 
 	if (FirstUpdateBase) {
-		WVPMatrixID = services->getVertexShaderConstantID("uWVPMatrix");
-		WVMatrixID = services->getVertexShaderConstantID("uWVMatrix");
+		WVPMatrixID = renderer->getVertexShaderConstantID("uWVPMatrix");
+		WVMatrixID = renderer->getVertexShaderConstantID("uWVMatrix");
 
-		FogEnableID = services->getVertexShaderConstantID("uFogEnable");
-		FogTypeID = services->getVertexShaderConstantID("uFogType");
-		FogColorID = services->getVertexShaderConstantID("uFogColor");
-		FogStartID = services->getVertexShaderConstantID("uFogStart");
-		FogEndID = services->getVertexShaderConstantID("uFogEnd");
-		FogDensityID = services->getVertexShaderConstantID("uFogDensity");
-		ThicknessID = services->getVertexShaderConstantID("uThickness");
+		FogEnableID = renderer->getVertexShaderConstantID("uFogEnable");
+		FogTypeID = renderer->getVertexShaderConstantID("uFogType");
+		FogColorID = renderer->getVertexShaderConstantID("uFogColor");
+		FogStartID = renderer->getVertexShaderConstantID("uFogStart");
+		FogEndID = renderer->getVertexShaderConstantID("uFogEnd");
+		FogDensityID = renderer->getVertexShaderConstantID("uFogDensity");
+		ThicknessID = renderer->getVertexShaderConstantID("uThickness");
 
 		FirstUpdateBase = false;
 	}
@@ -51,13 +51,13 @@ void COpenGL3MaterialBaseCB::OnSetConstants(IMaterialRendererServices *services,
 	const core::matrix4 &P = driver->getTransform(ETS_PROJECTION);
 
 	core::matrix4 Matrix = V * W;
-	services->setPixelShaderConstant(WVMatrixID, Matrix.pointer(), 16);
+	renderer->setPixelShaderConstant(WVMatrixID, Matrix.pointer(), 16);
 
 	Matrix = P * Matrix;
-	services->setPixelShaderConstant(WVPMatrixID, Matrix.pointer(), 16);
+	renderer->setPixelShaderConstant(WVPMatrixID, Matrix.pointer(), 16);
 
 	s32 TempEnable = FogEnable ? 1 : 0;
-	services->setPixelShaderConstant(FogEnableID, &TempEnable, 1);
+	renderer->setPixelShaderConstant(FogEnableID, &TempEnable, 1);
 
 	if (FogEnable) {
 		SColor TempColor(0);
@@ -70,14 +70,14 @@ void COpenGL3MaterialBaseCB::OnSetConstants(IMaterialRendererServices *services,
 		s32 FogType = (s32)TempType;
 		SColorf FogColor(TempColor);
 
-		services->setPixelShaderConstant(FogTypeID, &FogType, 1);
-		services->setPixelShaderConstant(FogColorID, reinterpret_cast<f32 *>(&FogColor), 4);
-		services->setPixelShaderConstant(FogStartID, &FogStart, 1);
-		services->setPixelShaderConstant(FogEndID, &FogEnd, 1);
-		services->setPixelShaderConstant(FogDensityID, &FogDensity, 1);
+		renderer->setPixelShaderConstant(FogTypeID, &FogType, 1);
+		renderer->setPixelShaderConstant(FogColorID, reinterpret_cast<f32 *>(&FogColor), 4);
+		renderer->setPixelShaderConstant(FogStartID, &FogStart, 1);
+		renderer->setPixelShaderConstant(FogEndID, &FogEnd, 1);
+		renderer->setPixelShaderConstant(FogDensityID, &FogDensity, 1);
 	}
 
-	services->setPixelShaderConstant(ThicknessID, &Thickness, 1);
+	renderer->setPixelShaderConstant(ThicknessID, &Thickness, 1);
 }
 
 // EMT_SOLID + EMT_TRANSPARENT_ALPHA_CHANNEL + EMT_TRANSPARENT_VERTEX_ALPHA
@@ -95,27 +95,27 @@ void COpenGL3MaterialSolidCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void COpenGL3MaterialSolidCB::OnSetConstants(IMaterialRendererServices *services, s32 userData)
+void COpenGL3MaterialSolidCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
 {
-	COpenGL3MaterialBaseCB::OnSetConstants(services, userData);
+	COpenGL3MaterialBaseCB::OnSetConstants(renderer, userData);
 
-	IVideoDriver *driver = services->getVideoDriver();
+	VideoDriver *driver = renderer->getVideoDriver();
 
 	if (FirstUpdate) {
-		TMatrix0ID = services->getVertexShaderConstantID("uTMatrix0");
-		AlphaRefID = services->getVertexShaderConstantID("uAlphaRef");
-		TextureUsage0ID = services->getVertexShaderConstantID("uTextureUsage0");
-		TextureUnit0ID = services->getVertexShaderConstantID("uTextureUnit0");
+		TMatrix0ID = renderer->getVertexShaderConstantID("uTMatrix0");
+		AlphaRefID = renderer->getVertexShaderConstantID("uAlphaRef");
+		TextureUsage0ID = renderer->getVertexShaderConstantID("uTextureUsage0");
+		TextureUnit0ID = renderer->getVertexShaderConstantID("uTextureUnit0");
 
 		FirstUpdate = false;
 	}
 
 	core::matrix4 Matrix = driver->getTransform(ETS_TEXTURE_0);
-	services->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
+	renderer->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
 
-	services->setPixelShaderConstant(AlphaRefID, &AlphaRef, 1);
-	services->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
-	services->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
+	renderer->setPixelShaderConstant(AlphaRefID, &AlphaRef, 1);
+	renderer->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
+	renderer->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
 }
 
 // EMT_ONETEXTURE_BLEND
@@ -147,27 +147,27 @@ void COpenGL3MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void COpenGL3MaterialOneTextureBlendCB::OnSetConstants(IMaterialRendererServices *services, s32 userData)
+void COpenGL3MaterialOneTextureBlendCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
 {
-	COpenGL3MaterialBaseCB::OnSetConstants(services, userData);
+	COpenGL3MaterialBaseCB::OnSetConstants(renderer, userData);
 
-	IVideoDriver *driver = services->getVideoDriver();
+	VideoDriver *driver = renderer->getVideoDriver();
 
 	if (FirstUpdate) {
-		TMatrix0ID = services->getVertexShaderConstantID("uTMatrix0");
-		BlendTypeID = services->getVertexShaderConstantID("uBlendType");
-		TextureUsage0ID = services->getVertexShaderConstantID("uTextureUsage0");
-		TextureUnit0ID = services->getVertexShaderConstantID("uTextureUnit0");
+		TMatrix0ID = renderer->getVertexShaderConstantID("uTMatrix0");
+		BlendTypeID = renderer->getVertexShaderConstantID("uBlendType");
+		TextureUsage0ID = renderer->getVertexShaderConstantID("uTextureUsage0");
+		TextureUnit0ID = renderer->getVertexShaderConstantID("uTextureUnit0");
 
 		FirstUpdate = false;
 	}
 
 	core::matrix4 Matrix = driver->getTransform(ETS_TEXTURE_0);
-	services->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
+	renderer->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
 
-	services->setPixelShaderConstant(BlendTypeID, &BlendType, 1);
-	services->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
-	services->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
+	renderer->setPixelShaderConstant(BlendTypeID, &BlendType, 1);
+	renderer->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
+	renderer->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
 }
 
 }

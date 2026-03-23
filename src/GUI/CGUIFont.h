@@ -91,7 +91,7 @@ private:
 
 	core::array<SFontArea> Areas;
 	std::map<wchar_t, s32> CharacterMap;
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 	IGUISpriteBank *SpriteBank;
 	IGUIEnvironment *Environment;
 	u32 WrongCharacter;

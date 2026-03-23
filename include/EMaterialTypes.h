@@ -24,7 +24,7 @@ enum E_MATERIAL_TYPE
 	blend factor. Only first texture is used. If you are using
 	this material with small textures, it is a good idea to load
 	the texture in 32 bit mode
-	(video::IVideoDriver::setTextureCreationFlag()). Also, an alpha
+	(video::VideoDriver::setTextureCreationFlag()). Also, an alpha
 	ref is used, which can be manipulated using
 	SMaterial::MaterialTypeParam. This value controls how sharp the
 	edges become when going from a transparent to a solid spot on
@@ -40,7 +40,7 @@ enum E_MATERIAL_TYPE
 	blurry but sharp. Only first texture is used. If you are
 	using this material with small textures and 3d object, it
 	is a good idea to load the texture in 32 bit mode
-	(video::IVideoDriver::setTextureCreationFlag()). */
+	(video::VideoDriver::setTextureCreationFlag()). */
 	EMT_TRANSPARENT_ALPHA_CHANNEL_REF,
 
 	//! Makes the material transparent based on the vertex alpha value.

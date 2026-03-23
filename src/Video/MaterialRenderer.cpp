@@ -7,12 +7,13 @@
 #include "EVertexAttributes.h"
 #include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "Logger.h"
 
-#include "Driver.h"
+#include "VideoDriver.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
+#include "Renderer2D.h"
 
 #include "Video/COpenGLCoreTexture.h"
 #include "Video/COpenGLCoreCacheHandler.h"
@@ -21,7 +22,7 @@
 namespace video
 {
 
-COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
+MaterialRenderer::MaterialRenderer(VideoDriver *driver,
 		s32 &outMaterialTypeNr,
 		const c8 *vertexShaderProgram,
 		const c8 *pixelShaderProgram,
@@ -50,7 +51,7 @@ COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
 	init(outMaterialTypeNr, vertexShaderProgram, pixelShaderProgram, debugName);
 }
 
-COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
+MaterialRenderer::MaterialRenderer(VideoDriver *driver,
 		IShaderConstantSetCallBack *callback,
 		E_MATERIAL_TYPE baseMaterial, s32 userData) :
 		Driver(driver),
@@ -72,7 +73,7 @@ COpenGL3MaterialRenderer::COpenGL3MaterialRenderer(COpenGL3DriverBase *driver,
 		CallBack->grab();
 }
 
-COpenGL3MaterialRenderer::~COpenGL3MaterialRenderer()
+MaterialRenderer::~MaterialRenderer()
 {
 	if (CallBack)
 		CallBack->drop();
@@ -92,12 +93,12 @@ COpenGL3MaterialRenderer::~COpenGL3MaterialRenderer()
 	UniformInfo.clear();
 }
 
-GLuint COpenGL3MaterialRenderer::getProgram() const
+GLuint MaterialRenderer::getProgram() const
 {
 	return Program;
 }
 
-void COpenGL3MaterialRenderer::init(s32 &outMaterialTypeNr,
+void MaterialRenderer::init(s32 &outMaterialTypeNr,
 		const c8 *vertexShaderProgram,
 		const c8 *pixelShaderProgram,
 		const c8 *debugName,
@@ -131,7 +132,7 @@ void COpenGL3MaterialRenderer::init(s32 &outMaterialTypeNr,
 		outMaterialTypeNr = Driver->addMaterialRenderer(this);
 }
 
-bool COpenGL3MaterialRenderer::OnRender(IMaterialRendererServices *service, E_VERTEX_TYPE vtxtype)
+bool MaterialRenderer::OnRender(E_VERTEX_TYPE vtxtype)
 {
 	if (CallBack && Program)
 		CallBack->OnSetConstants(this, UserData);
@@ -139,16 +140,15 @@ bool COpenGL3MaterialRenderer::OnRender(IMaterialRendererServices *service, E_VE
 	return true;
 }
 
-void COpenGL3MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
+void MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 		const video::SMaterial &lastMaterial,
-		bool resetAllRenderstates,
-		video::IMaterialRendererServices *services)
+		bool resetAllRenderstatess, MaterialSystem *materialSys)
 {
 	auto ctxt = Driver->getContext();
 
 	ctxt->setProgram(Program);
 
-	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
+	materialSys->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
 
 	if (Alpha) {
 		ctxt->enableBlend(true);
@@ -167,21 +167,21 @@ void COpenGL3MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 		CallBack->OnSetMaterial(material);
 }
 
-void COpenGL3MaterialRenderer::OnUnsetMaterial()
+void MaterialRenderer::OnUnsetMaterial()
 {
 }
 
-bool COpenGL3MaterialRenderer::isTransparent() const
+bool MaterialRenderer::isTransparent() const
 {
 	return (Alpha || Blending);
 }
 
-s32 COpenGL3MaterialRenderer::getRenderCapability() const
+s32 MaterialRenderer::getRenderCapability() const
 {
 	return 0;
 }
 
-bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shader)
+bool MaterialRenderer::createShader(GLenum shaderType, const char *shader)
 {
 	if (Program) {
 		GLuint shaderHandle = glCreateShader(shaderType);
@@ -217,7 +217,7 @@ bool COpenGL3MaterialRenderer::createShader(GLenum shaderType, const char *shade
 	return true;
 }
 
-bool COpenGL3MaterialRenderer::linkProgram()
+bool MaterialRenderer::linkProgram()
 {
 	if (Program) {
 		glLinkProgram(Program);
@@ -291,19 +291,12 @@ bool COpenGL3MaterialRenderer::linkProgram()
 	return true;
 }
 
-void COpenGL3MaterialRenderer::setBasicRenderStates(const SMaterial &material,
-		const SMaterial &lastMaterial,
-		bool resetAllRenderstates)
-{
-	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
-}
-
-s32 COpenGL3MaterialRenderer::getVertexShaderConstantID(const c8 *name)
+s32 MaterialRenderer::getVertexShaderConstantID(const c8 *name)
 {
 	return getPixelShaderConstantID(name);
 }
 
-s32 COpenGL3MaterialRenderer::getPixelShaderConstantID(const c8 *name)
+s32 MaterialRenderer::getPixelShaderConstantID(const c8 *name)
 {
 	for (u32 i = 0; i < UniformInfo.size(); ++i) {
 		if (UniformInfo[i].name == name)
@@ -313,22 +306,22 @@ s32 COpenGL3MaterialRenderer::getPixelShaderConstantID(const c8 *name)
 	return -1;
 }
 
-bool COpenGL3MaterialRenderer::setVertexShaderConstant(s32 index, const f32 *floats, int count)
+bool MaterialRenderer::setVertexShaderConstant(s32 index, const f32 *floats, int count)
 {
 	return setPixelShaderConstant(index, floats, count);
 }
 
-bool COpenGL3MaterialRenderer::setVertexShaderConstant(s32 index, const s32 *ints, int count)
+bool MaterialRenderer::setVertexShaderConstant(s32 index, const s32 *ints, int count)
 {
 	return setPixelShaderConstant(index, ints, count);
 }
 
-bool COpenGL3MaterialRenderer::setVertexShaderConstant(s32 index, const u32 *ints, int count)
+bool MaterialRenderer::setVertexShaderConstant(s32 index, const u32 *ints, int count)
 {
 	return setPixelShaderConstant(index, ints, count);
 }
 
-bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const f32 *floats, int count)
+bool MaterialRenderer::setPixelShaderConstant(s32 index, const f32 *floats, int count)
 {
 	if (index < 0 || UniformInfo[index].location < 0)
 		return false;
@@ -373,7 +366,7 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const f32 *floa
 	return status;
 }
 
-bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints, int count)
+bool MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints, int count)
 {
 	if (index < 0 || UniformInfo[index].location < 0)
 		return false;
@@ -409,13 +402,13 @@ bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints
 	return status;
 }
 
-bool COpenGL3MaterialRenderer::setPixelShaderConstant(s32 index, const u32 *ints, int count)
+bool MaterialRenderer::setPixelShaderConstant(s32 index, const u32 *ints, int count)
 {
 	g_irrlogger->log("Unsigned int support is unimplemented", ELL_WARNING);
 	return false;
 }
 
-IVideoDriver *COpenGL3MaterialRenderer::getVideoDriver()
+VideoDriver *MaterialRenderer::getVideoDriver()
 {
 	return Driver;
 }

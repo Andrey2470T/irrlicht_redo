@@ -19,7 +19,7 @@ class CGUIEnvironment : public IGUIEnvironment, public IGUIElement
 {
 public:
 	//! constructor
-	CGUIEnvironment(io::IFileSystem *fs, video::IVideoDriver *driver, os::Clipboard *op);
+	CGUIEnvironment(io::IFileSystem *fs, video::VideoDriver *driver, os::Clipboard *op);
 
 	//! destructor
 	virtual ~CGUIEnvironment();
@@ -28,7 +28,7 @@ public:
 	void drawAll(bool useScreenSize) override;
 
 	//! returns the current video driver
-	video::IVideoDriver *getVideoDriver() const override;
+	video::VideoDriver *getVideoDriver() const override;
 
 	//! returns pointer to the filesystem
 	io::IFileSystem *getFileSystem() const override;
@@ -206,7 +206,7 @@ private:
 
 	core::array<SFont> Fonts;
 	core::array<SSpriteBank> Banks;
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 	IGUIElement *Hovered;
 	IGUIElement *HoveredNoSubelement; // subelements replaced by their parent, so you only have 'real' elements here
 	IGUIElement *Focus;

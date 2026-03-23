@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "IFileSystem.h"
 #include "IGPUProgrammingServices.h"
 #include "irrArray.h"

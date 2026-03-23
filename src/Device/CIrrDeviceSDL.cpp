@@ -8,7 +8,7 @@
 #include "IGUIEnvironment.h"
 #include "IImageLoader.h"
 #include "IFileSystem.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "Logger.h"
 #include "Timer.h"
 #include "irrString.h"
@@ -448,8 +448,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 #ifndef _IRR_USE_SDL3_
 		flags |= SDL_INIT_TIMER;
 #endif
-		if (CreationParams.DriverType != video::EDT_NULL)
-			flags |= SDL_INIT_VIDEO;
+		flags |= SDL_INIT_VIDEO;
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 		flags |= SDL_INIT_JOYSTICK;
 #endif
@@ -469,11 +468,9 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 	createKeyMap();
 
 	// create window
-	if (CreationParams.DriverType != video::EDT_NULL) {
-		if (!createWindow()) {
-			Close = true;
-			return;
-		}
+	if (!createWindow()) {
+		Close = true;
+		return;
 	}
 
 	core::stringc sdlver = "SDL ";
@@ -494,9 +491,9 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 	// create driver
 	createDriver();
 
-	if (VideoDriver) {
+	if (VideoDrv) {
 		createGUIAndScene();
-		VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
+		VideoDrv->OnResize(core::dimension2d<u32>(Width, Height));
 	}
 }
 
@@ -775,25 +772,10 @@ bool CIrrDeviceSDL::createWindowWithContext()
 //! create the driver
 void CIrrDeviceSDL::createDriver()
 {
-	if (CreationParams.DriverType == video::EDT_NULL) {
-		VideoDriver = video::createNullDriver(FileSystem, CreationParams.WindowSize);
-		return;
-	}
-
 	ContextManager = new video::CSDLManager(this);
-	switch (CreationParams.DriverType) {
-	case video::EDT_OPENGL3:
-		VideoDriver = video::createOpenGL3Driver(CreationParams, FileSystem, ContextManager);
-		break;
-	case video::EDT_OGLES2:
-		VideoDriver = video::createOGLES2Driver(CreationParams, FileSystem, ContextManager);
-		break;
-	case video::EDT_WEBGL1:
-		VideoDriver = video::createWebGL1Driver(CreationParams, FileSystem, ContextManager);
-		break;
-	default:;
-	}
-	if (!VideoDriver)
+
+	VideoDrv = VideoDriver::create(CreationParams, FileSystem, ContextManager);
+	if (!VideoDrv)
 		g_irrlogger->log("Could not create video driver", ELL_ERROR);
 }
 
@@ -829,8 +811,8 @@ bool CIrrDeviceSDL::run()
 		f32 old_scale_x = ScaleX, old_scale_y = ScaleY;
 		updateSizeAndScale();
 		if (old_w != Width || old_h != Height) {
-			if (VideoDriver)
-				VideoDriver->OnResize(core::dimension2d<u32>(Width, Height));
+			if (VideoDrv)
+				VideoDrv->OnResize(core::dimension2d<u32>(Width, Height));
 		}
 		if (old_scale_x != ScaleX || old_scale_y != ScaleY) {
 			irrevent.EventType = EET_APPLICATION_EVENT;

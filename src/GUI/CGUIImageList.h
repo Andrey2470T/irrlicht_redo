@@ -4,7 +4,7 @@
 #pragma once
 
 #include "IGUIImageList.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 
 
 namespace gui
@@ -14,7 +14,7 @@ class CGUIImageList : public IGUIImageList
 {
 public:
 	//! constructor
-	CGUIImageList(video::IVideoDriver *Driver);
+	CGUIImageList(video::VideoDriver *Driver);
 
 	//! destructor
 	virtual ~CGUIImageList();
@@ -52,7 +52,7 @@ public:
 	}
 
 private:
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 	video::ITexture *Texture;
 	s32 ImageCount;
 	core::dimension2d<s32> ImageSize;

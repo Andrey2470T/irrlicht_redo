@@ -30,7 +30,7 @@ class CSceneManager final : public ISceneManager, public ISceneNode
 {
 public:
 	//! constructor
-	CSceneManager(video::IVideoDriver *driver, gui::ICursorControl *cursorControl, IMeshCache *cache = 0);
+	CSceneManager(video::VideoDriver *driver, gui::ICursorControl *cursorControl, IMeshCache *cache = 0);
 
 	//! destructor
 	virtual ~CSceneManager();
@@ -42,7 +42,7 @@ public:
 	IMeshCache *getMeshCache() override;
 
 	//! returns the video driver
-	video::IVideoDriver *getVideoDriver() override;
+	video::VideoDriver *getVideoDriver() override;
 
 	//! adds a scene node for rendering an animated mesh model
 	virtual IAnimatedMeshSceneNode *addAnimatedMeshSceneNode(IAnimatedMesh *mesh, ISceneNode *parent = 0, s32 id = -1,
@@ -238,7 +238,7 @@ private:
 	};
 
 	//! video driver
-	video::IVideoDriver *Driver;
+	video::VideoDriver *Driver;
 
 	//! cursor control
 	gui::ICursorControl *CursorControl;

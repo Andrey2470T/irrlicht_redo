@@ -20,7 +20,8 @@ enum E_HARDWARE_MAPPING
 	EHM_DYNAMIC,
 
 	//! Always changed, cache optimizing on the GPU
-	EHM_STREAM
+	EHM_STREAM,
+	EHM_COUNT
 };
 
 enum E_BUFFER_TYPE

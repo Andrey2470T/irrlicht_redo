@@ -1,6 +1,6 @@
 #include "DrawContext.h"
 #include "RenderTarget.h"
-#include "IVideoDriver.h"
+#include "VideoDriver.h"
 #include "Common.h"
 #include "COpenGLCoreTexture.h"
 #include "Logger.h"
@@ -93,7 +93,7 @@ std::array<GLenum, EPM_COUNT> toGLPolygonMode
 	GL_LINE
 };
 
-DrawContext::DrawContext(IVideoDriver *_driver)
+DrawContext::DrawContext(VideoDriver *_driver)
 	: driver(_driver), maxTextureUnits(driver->getFeatures().MaxTextureUnits)
 {
 	textureUnits.resize(maxTextureUnits, nullptr);
@@ -221,7 +221,7 @@ bool DrawContext::setTextureUnit(u32 index, const ITexture *texture)
 
     if (textureUnits[index] != texture) {
         if (textureUnits[index]) {
-			auto texImpl = static_cast<const COpenGL3Texture *>(textureUnits[index]);
+			auto texImpl = static_cast<const COpenGLCoreTexture *>(textureUnits[index]);
 			glBindTexture(texImpl->getOpenGLTextureType(), 0);
 			driver->testGLError();
 
@@ -229,7 +229,7 @@ bool DrawContext::setTextureUnit(u32 index, const ITexture *texture)
             textureUnits[index] = nullptr;
         }
         if (texture) {
-			auto texImpl = static_cast<const COpenGL3Texture *>(texture);
+			auto texImpl = static_cast<const COpenGLCoreTexture *>(texture);
 			glBindTexture(texImpl->getOpenGLTextureType(), texImpl->getID());
 			driver->testGLError();
 

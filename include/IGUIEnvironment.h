@@ -99,7 +99,7 @@ public:
 
 	//! Returns the current video driver.
 	/** \return Pointer to the video driver. */
-	virtual video::IVideoDriver *getVideoDriver() const = 0;
+	virtual video::VideoDriver *getVideoDriver() const = 0;
 
 	//! Returns the file system.
 	/** \return Pointer to the file system. */
