@@ -15,6 +15,7 @@
 #include "Keycodes.h"
 #include "Clipboard.h"
 #include "SIrrCreationParameters.h"
+#include "ISceneManager.h"
 
 #include "Video/Common.h"
 #ifdef _IRR_USE_SDL3_
@@ -379,13 +380,32 @@ void CIrrDeviceSDL::resetReceiveTextInputEvents()
 
 //! constructor
 CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
-		CIrrDeviceStub(param),
+		VideoDrv(0), GUIEnvironment(0), SceneManager(0),
+		CursorControl(0), UserReceiver(param.EventReceiver),
+		Logger(0), ClipBoard(0), FileSystem(0),
+		InputReceivingSceneManager(0),
+		CreationParams(param), Close(false),
 		Window((SDL_Window *)param.WindowId),
 		MouseX(0), MouseY(0), MouseXRel(0), MouseYRel(0), MouseButtonStates(0),
 		Width(param.WindowSize.Width), Height(param.WindowSize.Height),
 		Resizable(param.WindowResizable == 1 ? true : false), CurrentTouchCount(0),
 		IsInBackground(false)
 {
+	os::Timer::init();
+	if (g_irrlogger) {
+		g_irrlogger->grab();
+		Logger = g_irrlogger;
+		Logger->setReceiver(UserReceiver);
+	} else {
+		Logger = new os::Logger(UserReceiver);
+		g_irrlogger = Logger;
+	}
+	Logger->setLogLevel(CreationParams.LoggingLevel);
+
+	g_irrlogger = Logger;
+
+	FileSystem = io::createFileSystem();
+
 	if (++SDLDeviceInstances == 1) {
 #ifdef __ANDROID__
 		// Blocking on pause causes problems with multiplayer.
@@ -498,6 +518,32 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 //! destructor
 CIrrDeviceSDL::~CIrrDeviceSDL()
 {
+	if (GUIEnvironment)
+		GUIEnvironment->drop();
+
+	if (SceneManager)
+		SceneManager->drop();
+
+	if (VideoDrv)
+		VideoDrv->drop();
+
+	if (FileSystem)
+		FileSystem->drop();
+
+	if (InputReceivingSceneManager)
+		InputReceivingSceneManager->drop();
+
+	if (CursorControl)
+		CursorControl->drop();
+
+	if (ClipBoard)
+		ClipBoard->drop();
+
+	CursorControl = 0;
+
+	if (Logger->drop())
+		g_irrlogger = nullptr;
+
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
 	const u32 numJoysticks = Joysticks.size();
 	for (u32 i = 0; i < numJoysticks; ++i)
@@ -773,6 +819,17 @@ void CIrrDeviceSDL::createDriver()
 	VideoDrv = video::VideoDriver::create(CreationParams, FileSystem, this);
 	if (!VideoDrv)
 		g_irrlogger->log("Could not create video driver", ELL_ERROR);
+}
+
+void CIrrDeviceSDL::createGUIAndScene()
+{
+	// create gui environment
+	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDrv, ClipBoard);
+
+	// create Scene manager
+	SceneManager = scene::createSceneManager(VideoDrv, CursorControl);
+
+	setEventReceiver(UserReceiver);
 }
 
 static int wrap_PollEvent(SDL_Event *ev)
@@ -1536,6 +1593,232 @@ bool CIrrDeviceSDL::isWindowMinimized() const
 	return Window && (SDL_GetWindowFlags(Window) & SDL_WINDOW_MINIMIZED) != 0;
 }
 
+//! Compares to the last call of this function to return double and triple clicks.
+u32 CIrrDeviceSDL::checkSuccessiveClicks(s32 mouseX, s32 mouseY, EMOUSE_INPUT_EVENT inputEvent)
+{
+	const s32 MAX_MOUSEMOVE = 3;
+
+	u32 clickTime = os::Timer::getRealTime();
+
+	if ((clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime && core::abs_(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE && core::abs_(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE && MouseMultiClicks.CountSuccessiveClicks < 3 && MouseMultiClicks.LastMouseInputEvent == inputEvent) {
+		++MouseMultiClicks.CountSuccessiveClicks;
+	} else {
+		MouseMultiClicks.CountSuccessiveClicks = 1;
+	}
+
+	MouseMultiClicks.LastMouseInputEvent = inputEvent;
+	MouseMultiClicks.LastClickTime = clickTime;
+	MouseMultiClicks.LastClick.X = mouseX;
+	MouseMultiClicks.LastClick.Y = mouseY;
+
+	return MouseMultiClicks.CountSuccessiveClicks;
+}
+
+//! Checks whether the input device should take input from the IME
+bool CIrrDeviceSDL::acceptsIME()
+{
+	if (!GUIEnvironment)
+		return false;
+	gui::IGUIElement *elem = GUIEnvironment->getFocus();
+	return elem && elem->acceptsIME();
+}
+
+//! send the event to the right receiver
+bool CIrrDeviceSDL::postEventFromUser(const SEvent &event)
+{
+	bool absorbed = false;
+
+	if (UserReceiver)
+		absorbed = UserReceiver->OnEvent(event);
+
+	if (!absorbed && GUIEnvironment)
+		absorbed = GUIEnvironment->postEventFromUser(event);
+
+	scene::ISceneManager *inputReceiver = InputReceivingSceneManager;
+	if (!inputReceiver)
+		inputReceiver = SceneManager;
+
+	if (!absorbed && inputReceiver)
+		absorbed = inputReceiver->postEventFromUser(event);
+
+	return absorbed;
+}
+
+//! Sets a new event receiver to receive events
+void CIrrDeviceSDL::setEventReceiver(IEventReceiver *receiver)
+{
+	UserReceiver = receiver;
+	Logger->setReceiver(receiver);
+	if (GUIEnvironment)
+		GUIEnvironment->setUserEventReceiver(receiver);
+}
+
+//! Returns pointer to the current event receiver. Returns 0 if there is none.
+IEventReceiver *CIrrDeviceSDL::getEventReceiver()
+{
+	return UserReceiver;
+}
+
+//! \return Returns a pointer to the logger.
+os::Logger *CIrrDeviceSDL::getLogger()
+{
+	return Logger;
+}
+
+//! Returns the operation system opertator object.
+os::Clipboard *CIrrDeviceSDL::getOSOperator()
+{
+	return ClipBoard;
+}
+
+//! Sets the input receiving scene manager.
+void CIrrDeviceSDL::setInputReceivingSceneManager(scene::ISceneManager *sceneManager)
+{
+	if (sceneManager)
+		sceneManager->grab();
+	if (InputReceivingSceneManager)
+		InputReceivingSceneManager->drop();
+
+	InputReceivingSceneManager = sceneManager;
+}
+
+//! returns the video driver
+video::VideoDriver *CIrrDeviceSDL::getVideoDriver()
+{
+	return VideoDrv;
+}
+
+//! return file system
+io::IFileSystem *CIrrDeviceSDL::getFileSystem()
+{
+	return FileSystem;
+}
+
+//! returns the gui environment
+gui::IGUIEnvironment *CIrrDeviceSDL::getGUIEnvironment()
+{
+	return GUIEnvironment;
+}
+
+//! returns the scene manager
+scene::ISceneManager *CIrrDeviceSDL::getSceneManager()
+{
+	return SceneManager;
+}
+
+//! \return Returns a pointer to the mouse cursor control interface.
+gui::ICursorControl *CIrrDeviceSDL::getCursorControl()
+{
+	return CursorControl;
+}
+
+void CIrrDeviceSDL::CCursorControl::initCursors()
+{
+	Cursors.reserve(gui::ECI_COUNT);
+
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT));     // ECI_NORMAL
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR));   // ECI_CROSS
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER));     // ECI_HAND
+	Cursors.emplace_back(nullptr);                                               // ECI_HELP
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT));        // ECI_IBEAM
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED)); // ECI_NO
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT));        // ECI_WAIT
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE));        // ECI_SIZEALL
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)); // ECI_SIZENESW
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)); // ECI_SIZENWSE
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE));   // ECI_SIZENS
+	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE));   // ECI_SIZEWE
+	Cursors.emplace_back(nullptr);                                               // ECI_UP
+}
+
+//! Activate accelerometer.
+bool CIrrDeviceSDL::activateAccelerometer(float updateInterval)
+{
+	return false;
+}
+
+//! Deactivate accelerometer.
+bool CIrrDeviceSDL::deactivateAccelerometer()
+{
+	return false;
+}
+
+//! Is accelerometer active.
+bool CIrrDeviceSDL::isAccelerometerActive()
+{
+	return false;
+}
+
+//! Is accelerometer available.
+bool CIrrDeviceSDL::isAccelerometerAvailable()
+{
+	return false;
+}
+
+//! Activate gyroscope.
+bool CIrrDeviceSDL::activateGyroscope(float updateInterval)
+{
+	return false;
+}
+
+//! Deactivate gyroscope.
+bool CIrrDeviceSDL::deactivateGyroscope()
+{
+	return false;
+}
+
+//! Is gyroscope active.
+bool CIrrDeviceSDL::isGyroscopeActive()
+{
+	return false;
+}
+
+//! Is gyroscope available.
+bool CIrrDeviceSDL::isGyroscopeAvailable()
+{
+	return false;
+}
+
+//! Activate device motion.
+bool CIrrDeviceSDL::activateDeviceMotion(float updateInterval)
+{
+	return false;
+}
+
+//! Deactivate device motion.
+bool CIrrDeviceSDL::deactivateDeviceMotion()
+{
+	return false;
+}
+
+//! Is device motion active.
+bool CIrrDeviceSDL::isDeviceMotionActive()
+{
+	return false;
+}
+
+//! Is device motion available.
+bool CIrrDeviceSDL::isDeviceMotionAvailable()
+{
+	return false;
+}
+
+//! Set the maximal elapsed time between 2 clicks to generate doubleclicks for the mouse. It also affects tripleclick behavior.
+void CIrrDeviceSDL::setDoubleClickTime(u32 timeMs)
+{
+	MouseMultiClicks.DoubleClickTime = timeMs;
+}
+
+//! Get the maximal elapsed time between 2 clicks to generate double- and tripleclicks for the mouse.
+u32 CIrrDeviceSDL::getDoubleClickTime() const
+{
+	return MouseMultiClicks.DoubleClickTime;
+}
+
+//! Remove all messages pending in the system message loop
+void CIrrDeviceSDL::clearSystemMessages()
+{
+}
 
 void CIrrDeviceSDL::createKeyMap()
 {
@@ -1653,23 +1936,4 @@ void CIrrDeviceSDL::createKeyMap()
 	KeyMap.emplace(SDLK_PERIOD, KEY_PERIOD);
 
 	// some special keys missing
-}
-
-void CIrrDeviceSDL::CCursorControl::initCursors()
-{
-	Cursors.reserve(gui::ECI_COUNT);
-
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT));     // ECI_NORMAL
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR));   // ECI_CROSS
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER));     // ECI_HAND
-	Cursors.emplace_back(nullptr);                                               // ECI_HELP
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT));        // ECI_IBEAM
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED)); // ECI_NO
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT));        // ECI_WAIT
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE));        // ECI_SIZEALL
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)); // ECI_SIZENESW
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)); // ECI_SIZENWSE
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE));   // ECI_SIZENS
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE));   // ECI_SIZEWE
-	Cursors.emplace_back(nullptr);                                               // ECI_UP
 }

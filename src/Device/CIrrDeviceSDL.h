@@ -7,8 +7,29 @@
 #pragma once
 
 #include "IrrlichtDevice.h"
-#include "CIrrDeviceStub.h"
-#include "ICursorControl.h"
+#include "SIrrCreationParameters.h"
+
+namespace os
+{
+class Logger;
+}
+
+namespace gui
+{
+class IGUIEnvironment;
+IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
+		video::VideoDriver *Driver, os::Clipboard *op);
+}
+
+namespace scene
+{
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::ICursorControl *cc);
+}
+
+namespace io
+{
+IFileSystem *createFileSystem();
+}
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten/html5.h>
@@ -25,7 +46,8 @@
 #include <memory>
 #include <unordered_map>
 
-class CIrrDeviceSDL : public CIrrDeviceStub
+//! Stub for an Irrlicht Device implementation (now merged into CIrrDeviceSDL)
+class CIrrDeviceSDL : public IrrlichtDevice
 {
 public:
 	//! constructor
@@ -102,7 +124,89 @@ public:
 	//! Get the display density in dots per inch.
 	float getDisplayDensity() const override;
 
+	//! Activate accelerometer.
+	bool activateAccelerometer(float updateInterval = 0.016666f) override;
+
+	//! Deactivate accelerometer.
+	bool deactivateAccelerometer() override;
+
+	//! Is accelerometer active.
+	bool isAccelerometerActive() override;
+
+	//! Is accelerometer available.
+	bool isAccelerometerAvailable() override;
+
+	//! Activate gyroscope.
+	bool activateGyroscope(float updateInterval = 0.016666f) override;
+
+	//! Deactivate gyroscope.
+	bool deactivateGyroscope() override;
+
+	//! Is gyroscope active.
+	bool isGyroscopeActive() override;
+
+	//! Is gyroscope available.
+	bool isGyroscopeAvailable() override;
+
+	//! Activate device motion.
+	bool activateDeviceMotion(float updateInterval = 0.016666f) override;
+
+	//! Deactivate device motion.
+	bool deactivateDeviceMotion() override;
+
+	//! Is device motion active.
+	bool isDeviceMotionActive() override;
+
+	//! Is device motion available.
+	bool isDeviceMotionAvailable() override;
+
+	//! Set the maximal elapsed time between 2 clicks to generate doubleclicks for the mouse. It also affects tripleclick behavior.
+	void setDoubleClickTime(u32 timeMs) override;
+
+	//! Get the maximal elapsed time between 2 clicks to generate double- and tripleclicks for the mouse.
+	u32 getDoubleClickTime() const override;
+
+	//! Remove all messages pending in the system message loop
+	void clearSystemMessages() override;
+
+	//! Resize the render window.
+	void setWindowSize(const core::dimension2d<u32> &size) override {}
+
 	bool swapBuffers() override;
+
+	//! returns the video driver
+	video::VideoDriver *getVideoDriver() override;
+
+	//! return file system
+	io::IFileSystem *getFileSystem() override;
+
+	//! returns the gui environment
+	gui::IGUIEnvironment *getGUIEnvironment() override;
+
+	//! returns the scene manager
+	scene::ISceneManager *getSceneManager() override;
+
+	//! \return Returns a pointer to the mouse cursor control interface.
+	gui::ICursorControl *getCursorControl() override;
+
+	//! send the event to the right receiver
+	bool postEventFromUser(const SEvent &event) override;
+
+	//! Sets a new event receiver to receive events
+	void setEventReceiver(IEventReceiver *receiver) override;
+
+	//! Returns pointer to the current event receiver. Returns 0 if there is none.
+	IEventReceiver *getEventReceiver() override;
+
+	//! Sets the input receiving scene manager.
+	/** If set to null, the main scene manager (returned by GetSceneManager()) will receive the input */
+	void setInputReceivingSceneManager(scene::ISceneManager *sceneManager) override;
+
+	//! Returns a pointer to the logger.
+	os::Logger *getLogger() override;
+
+	//! Returns the operation system opertator object.
+	os::Clipboard *getOSOperator() override;
 
 	//! Implementation of the linux cursor control
 	class CCursorControl : public gui::ICursorControl
@@ -278,6 +382,16 @@ public:
 		gui::ECURSOR_ICON ActiveIcon = gui::ECURSOR_ICON::ECI_NORMAL;
 	};
 
+protected:
+	//! Compares to the last call of this function to return double and triple clicks.
+	/** Needed for win32 device event handling
+	\return Returns only 1,2 or 3. A 4th click will start with 1 again.
+	*/
+	u32 checkSuccessiveClicks(s32 mouseX, s32 mouseY, EMOUSE_INPUT_EVENT inputEvent);
+
+	//! Checks whether the input device should take input from the IME
+	bool acceptsIME();
+
 private:
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
@@ -300,12 +414,39 @@ private:
 	//! create the driver
 	void createDriver();
 
+	//! create GUI and Scene
+	void createGUIAndScene();
+
 	bool createWindow();
 	bool createWindowWithContext();
 
 	void createKeyMap();
 
 	void logAttributes();
+
+	// video driver
+	video::VideoDriver *VideoDrv;
+	// gui environment
+	gui::IGUIEnvironment *GUIEnvironment;
+	// scene manager
+	scene::ISceneManager *SceneManager;
+	// cursor control
+	gui::ICursorControl *CursorControl;
+	// event receiver
+	IEventReceiver *UserReceiver;
+	// logger
+	os::Logger *Logger;
+	// clipboard
+	os::Clipboard *ClipBoard;
+	// file system
+	io::IFileSystem *FileSystem;
+	// input receiving scene manager
+	scene::ISceneManager *InputReceivingSceneManager;
+	// creation parameters
+	SIrrlichtCreationParameters CreationParams;
+	// close flag
+	bool Close;
+
 	SDL_GLContext Context;
 	SDL_Window *Window;
 #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
@@ -335,4 +476,19 @@ private:
 
 	s32 CurrentTouchCount;
 	bool IsInBackground;
+
+	struct SMouseMultiClicks
+	{
+		SMouseMultiClicks() :
+				DoubleClickTime(500), CountSuccessiveClicks(0), LastClickTime(0), LastMouseInputEvent(EMIE_COUNT)
+		{
+		}
+
+		u32 DoubleClickTime;
+		u32 CountSuccessiveClicks;
+		u32 LastClickTime;
+		core::position2di LastClick;
+		EMOUSE_INPUT_EVENT LastMouseInputEvent;
+	};
+	SMouseMultiClicks MouseMultiClicks;
 };
