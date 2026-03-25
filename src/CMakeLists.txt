@@ -317,10 +317,9 @@ add_library(IRRIOOBJ OBJECT
 
 add_library(IRRDEVICEOBJ OBJECT
 	Device/byteswap.cpp
-	Device/CIrrDeviceSDL.cpp
+	Device/SDLDevice.cpp
 	Device/Clipboard.cpp
 	Device/CursorControl.cpp
-	Device/Irrlicht.cpp
 	Device/Logger.cpp
 	Device/Timer.cpp
 )

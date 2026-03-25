@@ -6,7 +6,7 @@
 
 #include "VideoDriver.h"
 #include <cassert>
-#include "IrrlichtDevice.h"
+#include "SDLDevice.h"
 
 #include "MaterialRenderer.h"
 #include "FixedPipelineRenderer.h"
@@ -34,7 +34,7 @@
 namespace video
 {
 
-VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device) :
+VideoDriver::VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device) :
 		MaterialSystem(this, io, params.OGLES2ShaderPath), DriverType(params.DriverType),
 		Params(params), AntiAlias(params.AntiAlias), SharedRenderTarget(nullptr),
 		CurrentRenderTarget(nullptr), CurrentRenderTargetSize(0, 0),
@@ -94,7 +94,7 @@ VideoDriver::~VideoDriver()
 	Device->drop();
 }
 
-VideoDriver *VideoDriver::create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device)
+VideoDriver *VideoDriver::create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device)
 {
 	g_irrlogger->log("Create VideoDriver", ELL_INFORMATION);
 	auto driver = new VideoDriver(params, io, device);

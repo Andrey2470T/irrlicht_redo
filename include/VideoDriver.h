@@ -32,7 +32,7 @@ namespace io
 class IWriteFile;
 class IReadFile;
 }
-class IrrlichtDevice;
+class SDLDevice;
 namespace video
 {
 class IImageLoader;
@@ -64,13 +64,13 @@ class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 
 protected:
 	//! constructor (use createOpenGL3Driver instead)
-	VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device);
+	VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 public:
 	//! destructor
 	virtual ~VideoDriver();
 
-	static VideoDriver *create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, IrrlichtDevice *device);
+	static VideoDriver *create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 	bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
 			core::rect<s32> *sourceRect = 0);
@@ -605,7 +605,7 @@ private:
 	//! Color buffer format
 	ECOLOR_FORMAT ColorFormat;
 
-	IrrlichtDevice *Device;
+	SDLDevice *Device;
 
 	bool EnableErrorTest;
 
