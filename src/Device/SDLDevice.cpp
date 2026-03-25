@@ -374,8 +374,6 @@ SDLDevice *SDLDevice::createDevice(video::E_DRIVER_TYPE driverType,
 		u32 bits, bool fullscreen,
 		bool stencilbuffer, bool vsync, IEventReceiver *res)
 {
-	(void)copyright; // prevent unused variable warning
-
 	SIrrlichtCreationParameters p;
 	p.DriverType = driverType;
 	p.WindowSize = windowSize;

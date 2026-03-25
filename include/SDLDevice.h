@@ -20,28 +20,6 @@
 #include <variant>
 #include "SIrrCreationParameters.h"
 
-namespace os
-{
-class Logger;
-}
-
-namespace gui
-{
-class IGUIEnvironment;
-IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
-		video::VideoDriver *Driver, os::Clipboard *op);
-}
-
-namespace scene
-{
-ISceneManager *createSceneManager(video::VideoDriver *driver, gui::CursorControl *cc);
-}
-
-namespace io
-{
-IFileSystem *createFileSystem();
-}
-
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten/html5.h>
 #endif
@@ -57,27 +35,10 @@ IFileSystem *createFileSystem();
 #include <memory>
 #include <unordered_map>
 
-class IEventReceiver;
-
 namespace os
 {
 class Logger;
 }
-
-namespace io
-{
-class IFileSystem;
-} // end namespace io
-
-namespace gui
-{
-class IGUIEnvironment;
-} // end namespace gui
-
-namespace scene
-{
-class ISceneManager;
-} // end namespace scene
 
 namespace video
 {
@@ -85,7 +46,28 @@ class IImage;
 class ITexture;
 class VideoDriver;
 extern bool isDriverSupported(E_DRIVER_TYPE driver);
-} // end namespace video
+}
+
+namespace io
+{
+class IFileSystem;
+IFileSystem *createFileSystem();
+}
+
+namespace gui
+{
+class IGUIEnvironment;
+IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
+		video::VideoDriver *Driver, os::Clipboard *op);
+}
+
+namespace scene
+{
+class ISceneManager;
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::CursorControl *cc);
+}
+
+class IEventReceiver;
 
 //! Stub for an Irrlicht Device implementation (now merged into SDLDevice)
 class SDLDevice : public virtual IReferenceCounted
@@ -286,28 +268,6 @@ device could not be created. */
 
 	//! Returns the operation system opertator object.
 	os::Clipboard *getOSOperator();
-	
-	//! Get the corresponding scancode for the keycode.
-	/**
-	\param key The keycode to convert.
-	\return The implementation-dependent scancode for the key (represented by the u32 component) or, if a scancode is not
-	available, the corresponding Irrlicht keycode (represented by the EKEY_CODE component).
-	*/
-	virtual std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const {
-		if (auto pv = std::get_if<EKEY_CODE>(&key))
-			return *pv;
-		return (u32)std::get<wchar_t>(key);
-	}
-
-	//! Get the corresponding keycode for the scancode.
-	/**
-	\param scancode The implementation-dependent scancode for the key.
-	\return The corresponding keycode.
-	*/
-	virtual Keycode getKeyFromScancode(const u32 scancode) const {
-		(void)scancode;
-		return Keycode(KEY_UNKNOWN, (wchar_t)0xFFFF);
-	}
 
 protected:
 	//! Compares to the last call of this function to return double and triple clicks.

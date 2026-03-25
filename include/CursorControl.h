@@ -7,7 +7,27 @@
 #include "IReferenceCounted.h"
 #include "position2d.h"
 #include "rect.h"
+#include <memory>
 
+#ifdef _IRR_USE_SDL3_
+#define SDL_DISABLE_OLD_NAMES
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_mouse.h>
+#else
+#include <SDL.h>
+
+#define SDL_SYSTEM_CURSOR_DEFAULT SDL_SYSTEM_CURSOR_ARROW
+#define SDL_SYSTEM_CURSOR_POINTER SDL_SYSTEM_CURSOR_HAND
+#define SDL_SYSTEM_CURSOR_TEXT SDL_SYSTEM_CURSOR_IBEAM
+#define SDL_SYSTEM_CURSOR_NOT_ALLOWED SDL_SYSTEM_CURSOR_NO
+#define SDL_SYSTEM_CURSOR_MOVE SDL_SYSTEM_CURSOR_SIZEALL
+#define SDL_SYSTEM_CURSOR_NESW_RESIZE SDL_SYSTEM_CURSOR_SIZENESW
+#define SDL_SYSTEM_CURSOR_NWSE_RESIZE SDL_SYSTEM_CURSOR_SIZENWSE
+#define SDL_SYSTEM_CURSOR_NS_RESIZE SDL_SYSTEM_CURSOR_SIZENS
+#define SDL_SYSTEM_CURSOR_EW_RESIZE SDL_SYSTEM_CURSOR_SIZEWE
+#endif
+
+class SDLDevice;
 
 namespace gui
 {
@@ -55,24 +75,6 @@ const c8 *const GUICursorIconNames[ECI_COUNT + 1] = {
 		"sizewe",
 		"sizeup",
 		0,
-	};
-
-//! structure used to set sprites as cursors.
-struct SCursorSprite
-{
-	SCursorSprite() :
-			SpriteBank(0), SpriteId(-1)
-	{
-	}
-
-	SCursorSprite(gui::IGUISpriteBank *spriteBank, s32 spriteId, const core::position2d<s32> &hotspot = (core::position2d<s32>(0, 0))) :
-			SpriteBank(spriteBank), SpriteId(spriteId), HotSpot(hotspot)
-	{
-	}
-
-	IGUISpriteBank *SpriteBank;
-	s32 SpriteId;
-	core::position2d<s32> HotSpot;
 };
 
 //! platform specific behavior flags for the cursor
@@ -92,154 +94,54 @@ enum ECURSOR_PLATFORM_BEHAVIOR
 
 //! Interface to manipulate the mouse cursor.
 class CursorControl : public virtual IReferenceCounted
-	{
-	public:
-		CursorControl(SDLDevice *dev) :
-				Device(dev), IsVisible(true)
-		{
-			initCursors();
-		}
+{
+public:
+		CursorControl(SDLDevice *dev);
 
 		//! Changes the visible state of the mouse cursor.
-		void setVisible(bool visible) override
-		{
-			IsVisible = visible;
-#ifdef _IRR_USE_SDL3_
-			if (visible)
-				SDL_ShowCursor();
-			else
-				SDL_HideCursor();
-#else
-			SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
-#endif
-		}
+		void setVisible(bool visible);
 
 		//! Returns if the cursor is currently visible.
-		bool isVisible() const override
+		bool isVisible() const
 		{
 			return IsVisible;
 		}
 
 		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<f32> &pos) override
+		void setPosition(const core::position2d<f32> &pos)
 		{
 			setPosition(pos.X, pos.Y);
 		}
 
 		//! Sets the new position of the cursor.
-		void setPosition(f32 x, f32 y) override
-		{
-			setPosition((s32)(x * Device->Width), (s32)(y * Device->Height));
-		}
+		void setPosition(f32 x, f32 y);
 
 		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<s32> &pos) override
+		void setPosition(const core::position2d<s32> &pos)
 		{
 			setPosition(pos.X, pos.Y);
 		}
 
 		//! Sets the new position of the cursor.
-		void setPosition(s32 x, s32 y) override
-		{
-#ifndef __ANDROID__
-			// On Android, this somehow results in a camera jump when enabling
-			// relative mouse mode and it isn't supported anyway.
-			SDL_WarpMouseInWindow(Device->Window,
-					static_cast<int>(x / Device->ScaleX),
-					static_cast<int>(y / Device->ScaleY));
-#endif
-#ifdef _IRR_USE_SDL3_
-			if (SDL_GetWindowRelativeMouseMode(Device->Window)) {
-#else
-			if (SDL_GetRelativeMouseMode()) {
-#endif
-				// There won't be an event for this warp (details on libsdl-org/SDL/issues/6034)
-				Device->MouseX = x;
-				Device->MouseY = y;
-			}
-		}
+		void setPosition(s32 x, s32 y);
 
 		//! Returns the current position of the mouse cursor.
-		const core::position2d<s32> &getPosition(bool updateCursor) override
-		{
-			if (updateCursor)
-				updateCursorPos();
-			return CursorPos;
-		}
+		const core::position2d<s32> &getPosition(bool updateCursor=true);
 
 		//! Returns the current position of the mouse cursor.
-		core::position2d<f32> getRelativePosition(bool updateCursor) override
-		{
-			if (updateCursor)
-				updateCursorPos();
-			return core::position2d<f32>(CursorPos.X / (f32)Device->Width,
-					CursorPos.Y / (f32)Device->Height);
-		}
+		core::position2d<f32> getRelativePosition(bool updateCursor=true);
 
-		void setReferenceRect(core::rect<s32> *rect = 0) override
-		{
-		}
+		void setRelativeMode(bool relative);
 
-		virtual void setRelativeMode(bool relative) override
-		{
-#ifdef _IRR_USE_SDL3_
-			if (relative != (bool)SDL_GetWindowRelativeMouseMode(Device->Window)) {
-				SDL_SetWindowRelativeMouseMode(Device->Window, relative);
-			}
-#else
-			// Only change it when necessary, as it flushes mouse motion when enabled
-			if (relative != static_cast<bool>(SDL_GetRelativeMouseMode())) {
-				SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE);
-			}
-#endif
-		}
+		void setActiveIcon(gui::ECURSOR_ICON iconId);
 
-		void setActiveIcon(gui::ECURSOR_ICON iconId) override
-		{
-			ActiveIcon = iconId;
-			if (iconId > Cursors.size() || !Cursors[iconId]) {
-				iconId = gui::ECI_NORMAL;
-				if (iconId > Cursors.size() || !Cursors[iconId])
-					return;
-			}
-			SDL_SetCursor(Cursors[iconId].get());
-		}
-
-		gui::ECURSOR_ICON getActiveIcon() const override
+		gui::ECURSOR_ICON getActiveIcon() const
 		{
 			return ActiveIcon;
 		}
 
 	private:
-		void updateCursorPos()
-		{
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
-			EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
-			if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
-				if (pointerlockStatus.isActive) {
-					CursorPos.X += Device->MouseXRel;
-					CursorPos.Y += Device->MouseYRel;
-					Device->MouseXRel = 0;
-					Device->MouseYRel = 0;
-				} else {
-					CursorPos.X = Device->MouseX;
-					CursorPos.Y = Device->MouseY;
-				}
-			}
-#else
-			CursorPos.X = Device->MouseX;
-			CursorPos.Y = Device->MouseY;
-
-			if (CursorPos.X < 0)
-				CursorPos.X = 0;
-			if (CursorPos.X > (s32)Device->Width)
-				CursorPos.X = Device->Width;
-			if (CursorPos.Y < 0)
-				CursorPos.Y = 0;
-			if (CursorPos.Y > (s32)Device->Height)
-				CursorPos.Y = Device->Height;
-#endif
-		}
+		void updateCursorPos();
 
 		void initCursors();
 
