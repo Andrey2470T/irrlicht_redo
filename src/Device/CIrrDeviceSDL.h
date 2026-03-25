@@ -23,7 +23,7 @@ IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
 
 namespace scene
 {
-ISceneManager *createSceneManager(video::VideoDriver *driver, gui::ICursorControl *cc);
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::CursorControl *cc);
 }
 
 namespace io
@@ -187,7 +187,7 @@ public:
 	scene::ISceneManager *getSceneManager() override;
 
 	//! \return Returns a pointer to the mouse cursor control interface.
-	gui::ICursorControl *getCursorControl() override;
+	gui::CursorControl *getCursorControl() override;
 
 	//! send the event to the right receiver
 	bool postEventFromUser(const SEvent &event) override;
@@ -207,180 +207,6 @@ public:
 
 	//! Returns the operation system opertator object.
 	os::Clipboard *getOSOperator() override;
-
-	//! Implementation of the linux cursor control
-	class CCursorControl : public gui::ICursorControl
-	{
-	public:
-		CCursorControl(CIrrDeviceSDL *dev) :
-				Device(dev), IsVisible(true)
-		{
-			initCursors();
-		}
-
-		//! Changes the visible state of the mouse cursor.
-		void setVisible(bool visible) override
-		{
-			IsVisible = visible;
-#ifdef _IRR_USE_SDL3_
-			if (visible)
-				SDL_ShowCursor();
-			else
-				SDL_HideCursor();
-#else
-			SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
-#endif
-		}
-
-		//! Returns if the cursor is currently visible.
-		bool isVisible() const override
-		{
-			return IsVisible;
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<f32> &pos) override
-		{
-			setPosition(pos.X, pos.Y);
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(f32 x, f32 y) override
-		{
-			setPosition((s32)(x * Device->Width), (s32)(y * Device->Height));
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<s32> &pos) override
-		{
-			setPosition(pos.X, pos.Y);
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(s32 x, s32 y) override
-		{
-#ifndef __ANDROID__
-			// On Android, this somehow results in a camera jump when enabling
-			// relative mouse mode and it isn't supported anyway.
-			SDL_WarpMouseInWindow(Device->Window,
-					static_cast<int>(x / Device->ScaleX),
-					static_cast<int>(y / Device->ScaleY));
-#endif
-#ifdef _IRR_USE_SDL3_
-			if (SDL_GetWindowRelativeMouseMode(Device->Window)) {
-#else
-			if (SDL_GetRelativeMouseMode()) {
-#endif
-				// There won't be an event for this warp (details on libsdl-org/SDL/issues/6034)
-				Device->MouseX = x;
-				Device->MouseY = y;
-			}
-		}
-
-		//! Returns the current position of the mouse cursor.
-		const core::position2d<s32> &getPosition(bool updateCursor) override
-		{
-			if (updateCursor)
-				updateCursorPos();
-			return CursorPos;
-		}
-
-		//! Returns the current position of the mouse cursor.
-		core::position2d<f32> getRelativePosition(bool updateCursor) override
-		{
-			if (updateCursor)
-				updateCursorPos();
-			return core::position2d<f32>(CursorPos.X / (f32)Device->Width,
-					CursorPos.Y / (f32)Device->Height);
-		}
-
-		void setReferenceRect(core::rect<s32> *rect = 0) override
-		{
-		}
-
-		virtual void setRelativeMode(bool relative) override
-		{
-#ifdef _IRR_USE_SDL3_
-			if (relative != (bool)SDL_GetWindowRelativeMouseMode(Device->Window)) {
-				SDL_SetWindowRelativeMouseMode(Device->Window, relative);
-			}
-#else
-			// Only change it when necessary, as it flushes mouse motion when enabled
-			if (relative != static_cast<bool>(SDL_GetRelativeMouseMode())) {
-				SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE);
-			}
-#endif
-		}
-
-		void setActiveIcon(gui::ECURSOR_ICON iconId) override
-		{
-			ActiveIcon = iconId;
-			if (iconId > Cursors.size() || !Cursors[iconId]) {
-				iconId = gui::ECI_NORMAL;
-				if (iconId > Cursors.size() || !Cursors[iconId])
-					return;
-			}
-			SDL_SetCursor(Cursors[iconId].get());
-		}
-
-		gui::ECURSOR_ICON getActiveIcon() const override
-		{
-			return ActiveIcon;
-		}
-
-	private:
-		void updateCursorPos()
-		{
-#ifdef _IRR_EMSCRIPTEN_PLATFORM_
-			EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
-			if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
-				if (pointerlockStatus.isActive) {
-					CursorPos.X += Device->MouseXRel;
-					CursorPos.Y += Device->MouseYRel;
-					Device->MouseXRel = 0;
-					Device->MouseYRel = 0;
-				} else {
-					CursorPos.X = Device->MouseX;
-					CursorPos.Y = Device->MouseY;
-				}
-			}
-#else
-			CursorPos.X = Device->MouseX;
-			CursorPos.Y = Device->MouseY;
-
-			if (CursorPos.X < 0)
-				CursorPos.X = 0;
-			if (CursorPos.X > (s32)Device->Width)
-				CursorPos.X = Device->Width;
-			if (CursorPos.Y < 0)
-				CursorPos.Y = 0;
-			if (CursorPos.Y > (s32)Device->Height)
-				CursorPos.Y = Device->Height;
-#endif
-		}
-
-		void initCursors();
-
-		CIrrDeviceSDL *Device;
-		core::position2d<s32> CursorPos;
-		bool IsVisible;
-
-		struct CursorDeleter
-		{
-			void operator()(SDL_Cursor *ptr)
-			{
-#ifdef _IRR_USE_SDL3_
-				if (ptr)
-					SDL_DestroyCursor(ptr);
-#else
-				if (ptr)
-					SDL_FreeCursor(ptr);
-#endif
-			}
-		};
-		std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
-		gui::ECURSOR_ICON ActiveIcon = gui::ECURSOR_ICON::ECI_NORMAL;
-	};
 
 protected:
 	//! Compares to the last call of this function to return double and triple clicks.
@@ -431,7 +257,7 @@ private:
 	// scene manager
 	scene::ISceneManager *SceneManager;
 	// cursor control
-	gui::ICursorControl *CursorControl;
+	gui::CursorControl *CursorControl;
 	// event receiver
 	IEventReceiver *UserReceiver;
 	// logger
@@ -491,4 +317,6 @@ private:
 		EMOUSE_INPUT_EVENT LastMouseInputEvent;
 	};
 	SMouseMultiClicks MouseMultiClicks;
+
+	friend class gui::CursorControl;
 };

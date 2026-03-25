@@ -7,7 +7,7 @@
 #include "SkinnedMesh.h"
 #include "ISceneManager.h"
 #include "ISceneNode.h"
-#include "ICursorControl.h"
+#include "CursorControl.h"
 #include "irrString.h"
 #include "irrArray.h"
 #include "IMeshLoader.h"
@@ -30,7 +30,7 @@ class CSceneManager final : public ISceneManager, public ISceneNode
 {
 public:
 	//! constructor
-	CSceneManager(video::VideoDriver *driver, gui::ICursorControl *cursorControl, IMeshCache *cache = 0);
+	CSceneManager(video::VideoDriver *driver, gui::CursorControl *cursorControl, IMeshCache *cache = 0);
 
 	//! destructor
 	virtual ~CSceneManager();
@@ -241,7 +241,7 @@ private:
 	video::VideoDriver *Driver;
 
 	//! cursor control
-	gui::ICursorControl *CursorControl;
+	gui::CursorControl *CursorControl;
 
 	//! collision manager
 	ISceneCollisionManager *CollisionManager;

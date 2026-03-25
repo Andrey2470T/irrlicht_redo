@@ -8,7 +8,7 @@
 #include "dimension2d.h"
 #include "EDriverTypes.h"
 #include "IEventReceiver.h"
-#include "ICursorControl.h"
+#include "CursorControl.h"
 #include "Timer.h"
 #include "Clipboard.h"
 #include "irrArray.h"
@@ -118,7 +118,7 @@ public:
 
 	//! Provides access to the cursor control.
 	/** \return Pointer to the mouse cursor control interface. */
-	virtual gui::ICursorControl *getCursorControl() = 0;
+	virtual gui::CursorControl *getCursorControl() = 0;
 
 	//! Provides access to the message logger.
 	/** \return Pointer to the logger. */

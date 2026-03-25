@@ -14,6 +14,7 @@
 #include "irrString.h"
 #include "Keycodes.h"
 #include "Clipboard.h"
+#include "CursorControl.h"
 #include "SIrrCreationParameters.h"
 #include "ISceneManager.h"
 
@@ -80,16 +81,6 @@
 
 	#define SDL_GetWindowSizeInPixels SDL_GL_GetDrawableSize
 	#define SDL_DestroySurface SDL_FreeSurface
-
-	#define SDL_SYSTEM_CURSOR_DEFAULT SDL_SYSTEM_CURSOR_ARROW
-	#define SDL_SYSTEM_CURSOR_POINTER SDL_SYSTEM_CURSOR_HAND
-	#define SDL_SYSTEM_CURSOR_TEXT SDL_SYSTEM_CURSOR_IBEAM
-	#define SDL_SYSTEM_CURSOR_NOT_ALLOWED SDL_SYSTEM_CURSOR_NO
-	#define SDL_SYSTEM_CURSOR_MOVE SDL_SYSTEM_CURSOR_SIZEALL
-	#define SDL_SYSTEM_CURSOR_NESW_RESIZE SDL_SYSTEM_CURSOR_SIZENESW
-	#define SDL_SYSTEM_CURSOR_NWSE_RESIZE SDL_SYSTEM_CURSOR_SIZENWSE
-	#define SDL_SYSTEM_CURSOR_NS_RESIZE SDL_SYSTEM_CURSOR_SIZENS
-	#define SDL_SYSTEM_CURSOR_EW_RESIZE SDL_SYSTEM_CURSOR_SIZEWE
 #endif
 
 #ifdef _IRR_USE_SDL3_
@@ -504,7 +495,7 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
 	}
 
 	// create cursor control
-	CursorControl = new CCursorControl(this);
+	CursorControl = new gui::CursorControl(this);
 
 	// create driver
 	createDriver();
@@ -1707,28 +1698,9 @@ scene::ISceneManager *CIrrDeviceSDL::getSceneManager()
 }
 
 //! \return Returns a pointer to the mouse cursor control interface.
-gui::ICursorControl *CIrrDeviceSDL::getCursorControl()
+gui::CursorControl *CIrrDeviceSDL::getCursorControl()
 {
 	return CursorControl;
-}
-
-void CIrrDeviceSDL::CCursorControl::initCursors()
-{
-	Cursors.reserve(gui::ECI_COUNT);
-
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT));     // ECI_NORMAL
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR));   // ECI_CROSS
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER));     // ECI_HAND
-	Cursors.emplace_back(nullptr);                                               // ECI_HELP
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT));        // ECI_IBEAM
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED)); // ECI_NO
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT));        // ECI_WAIT
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE));        // ECI_SIZEALL
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)); // ECI_SIZENESW
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)); // ECI_SIZENWSE
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE));   // ECI_SIZENS
-	Cursors.emplace_back(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE));   // ECI_SIZEWE
-	Cursors.emplace_back(nullptr);                                               // ECI_UP
 }
 
 //! Activate accelerometer.
