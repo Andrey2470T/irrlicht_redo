@@ -45,7 +45,6 @@ namespace video
 class IImage;
 class ITexture;
 class VideoDriver;
-extern bool isDriverSupported(E_DRIVER_TYPE driver);
 }
 
 namespace io
@@ -58,7 +57,7 @@ namespace gui
 {
 class IGUIEnvironment;
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
-		video::VideoDriver *Driver, os::Clipboard *op);
+	video::VideoDriver *Driver, os::Clipboard *op);
 }
 
 namespace scene
@@ -73,49 +72,49 @@ class IEventReceiver;
 class SDLDevice : public virtual IReferenceCounted
 {
 public:
-  //! Creates an Irrlicht device. The Irrlicht device is the root object for using the engine.
-/** If you need more parameters to be passed to the creation of the Irrlicht Engine device,
-use the createDeviceEx() function.
-\param driverType: Type of the video driver to use.
-\param windowSize: Size of the window or the video mode in fullscreen mode.
-\param bits: Bits per pixel in fullscreen mode. Ignored if windowed mode.
-\param fullscreen: Should be set to true if the device should run in fullscreen. Otherwise
-	the device runs in windowed mode.
-\param stencilbuffer: Specifies if the stencil buffer should be enabled. Set this to true,
-if you want the engine be able to draw stencil buffer shadows. Note that not all
-devices are able to use the stencil buffer. If they don't no shadows will be drawn.
-\param vsync: Specifies vertical synchronization: If set to true, the driver will wait
-for the vertical retrace period, otherwise not.
-\param receiver: A user created event receiver.
-\return Returns pointer to the created IrrlichtDevice or null if the
-device could not be created.
-*/
-  static SDLDevice *createDevice(
-		  video::E_DRIVER_TYPE driverType = video::EDT_OPENGL3,
-		  // parentheses are necessary for some compilers
-		  const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
-		  u32 bits = 32,
-		  bool fullscreen = false,
-		  bool stencilbuffer = true,
-		  bool vsync = false,
-		  IEventReceiver *receiver = 0);
+	//! Creates an Irrlicht device. The Irrlicht device is the root object for using the engine.
+	/** If you need more parameters to be passed to the creation of the Irrlicht Engine device,
+	use the createDeviceEx() function.
+	\param driverType: Type of the video driver to use.
+	\param windowSize: Size of the window or the video mode in fullscreen mode.
+	\param bits: Bits per pixel in fullscreen mode. Ignored if windowed mode.
+	\param fullscreen: Should be set to true if the device should run in fullscreen. Otherwise
+		the device runs in windowed mode.
+	\param stencilbuffer: Specifies if the stencil buffer should be enabled. Set this to true,
+	if you want the engine be able to draw stencil buffer shadows. Note that not all
+	devices are able to use the stencil buffer. If they don't no shadows will be drawn.
+	\param vsync: Specifies vertical synchronization: If set to true, the driver will wait
+	for the vertical retrace period, otherwise not.
+	\param receiver: A user created event receiver.
+	\return Returns pointer to the created IrrlichtDevice or null if the
+	device could not be created.
+	*/
+	static SDLDevice *createDevice(
+		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL3,
+		// parentheses are necessary for some compilers
+		const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
+		u32 bits = 32,
+		bool fullscreen = false,
+		bool stencilbuffer = true,
+		bool vsync = false,
+		IEventReceiver *receiver = 0);
 
-//! Creates an Irrlicht device with the option to specify advanced parameters.
-/** Usually you should used createDevice() for creating an Irrlicht Engine device.
-Use this function only if you wish to specify advanced parameters like a window
-handle in which the device should be created.
-\param parameters: Structure containing advanced parameters for the creation of the device.
-See SIrrlichtCreationParameters for details.
-\return Returns pointer to the created IrrlichtDevice or null if the
-device could not be created. */
-  static SDLDevice *createDeviceEx(
+	//! Creates an Irrlicht device with the option to specify advanced parameters.
+	/** Usually you should used createDevice() for creating an Irrlicht Engine device.
+	Use this function only if you wish to specify advanced parameters like a window
+	handle in which the device should be created.
+	\param parameters: Structure containing advanced parameters for the creation of the device.
+	See SIrrlichtCreationParameters for details.
+	\return Returns pointer to the created IrrlichtDevice or null if the
+	device could not be created. */
+	static SDLDevice *createDeviceEx(
 		const SIrrlichtCreationParameters &parameters);
 
 	//! constructor
 	SDLDevice(const SIrrlichtCreationParameters &param);
 
 	//! destructor
-	virtual ~SDLDevice();
+	~SDLDevice();
 
 	//! runs the device. Returns false if device wants to be deleted
 	bool run();
@@ -269,7 +268,10 @@ device could not be created. */
 	//! Returns the operation system opertator object.
 	os::Clipboard *getOSOperator();
 
-protected:
+	std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const;
+	Keycode getKeyFromScancode(const u32 scancode) const;
+
+private:
 	//! Compares to the last call of this function to return double and triple clicks.
 	/** Needed for win32 device event handling
 	\return Returns only 1,2 or 3. A 4th click will start with 1 again.
@@ -279,7 +281,6 @@ protected:
 	//! Checks whether the input device should take input from the IME
 	bool acceptsIME();
 
-private:
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 	static EM_BOOL MouseUpDownCallback(int eventType, const EmscriptenMouseEvent *event, void *userData);
 	static EM_BOOL MouseEnterCallback(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
@@ -291,9 +292,6 @@ private:
 
 	// Return the Char that should be sent to Irrlicht for the given key (either the one passed in or 0).
 	static wchar_t findCharToPassToIrrlicht(uint32_t sdlKey, EKEY_CODE irrlichtKey, u16 keymod);
-
-	std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const;
-	Keycode getKeyFromScancode(const u32 scancode) const;
 
 	// Check if a text box is in focus. Enable or disable SDL_TEXTINPUT events only if in focus.
 	void resetReceiveTextInputEvents();
@@ -318,7 +316,7 @@ private:
 	// scene manager
 	scene::ISceneManager *SceneManager;
 	// cursor control
-	gui::CursorControl *CursorControl;
+	gui::CursorControl *CursorCtrl;
 	// event receiver
 	IEventReceiver *UserReceiver;
 	// logger

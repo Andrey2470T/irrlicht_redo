@@ -3,19 +3,13 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "SDLDevice.h"
-#include "IEventReceiver.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
 #include "IImageLoader.h"
 #include "IFileSystem.h"
 #include "VideoDriver.h"
-#include "Logger.h"
-#include "Timer.h"
 #include "irrString.h"
 #include "Keycodes.h"
-#include "Clipboard.h"
-#include "CursorControl.h"
-#include "SIrrCreationParameters.h"
 #include "ISceneManager.h"
 
 #include "Video/Common.h"
@@ -400,35 +394,10 @@ SDLDevice *SDLDevice::createDeviceEx(const SIrrlichtCreationParameters &params)
 	return dev;
 }
 
-namespace video
-{
-const SMaterial IdentityMaterial;
-
-extern bool isDriverSupported(E_DRIVER_TYPE driver)
-{
-	switch (driver) {
-#ifdef ENABLE_OPENGL3
-	case EDT_OPENGL3:
-		return true;
-#endif
-#ifdef _IRR_COMPILE_WITH_OGLES2_
-	case EDT_OGLES2:
-		return true;
-#endif
-#ifdef _IRR_COMPILE_WITH_WEBGL1_
-	case EDT_WEBGL1:
-		return true;
-#endif
-	default:
-		return false;
-	}
-}
-}
-
 //! constructor
 SDLDevice::SDLDevice(const SIrrlichtCreationParameters &param) :
 		VideoDrv(0), GUIEnvironment(0), SceneManager(0),
-		CursorControl(0), UserReceiver(param.EventReceiver),
+		CursorCtrl(0), UserReceiver(param.EventReceiver),
 		Logger(0), ClipBoard(0), FileSystem(0),
 		InputReceivingSceneManager(0),
 		CreationParams(param), Close(false),
@@ -551,7 +520,7 @@ SDLDevice::SDLDevice(const SIrrlichtCreationParameters &param) :
 	}
 
 	// create cursor control
-	CursorControl = new gui::CursorControl(this);
+	CursorCtrl = new gui::CursorControl(this);
 
 	// create driver
 	createDriver();
@@ -580,13 +549,13 @@ SDLDevice::~SDLDevice()
 	if (InputReceivingSceneManager)
 		InputReceivingSceneManager->drop();
 
-	if (CursorControl)
-		CursorControl->drop();
+	if (CursorCtrl)
+		CursorCtrl->drop();
 
 	if (ClipBoard)
 		ClipBoard->drop();
 
-	CursorControl = 0;
+	CursorCtrl = 0;
 
 	if (Logger->drop())
 		g_irrlogger = nullptr;
@@ -874,7 +843,7 @@ void SDLDevice::createGUIAndScene()
 	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDrv, ClipBoard);
 
 	// create Scene manager
-	SceneManager = scene::createSceneManager(VideoDrv, CursorControl);
+	SceneManager = scene::createSceneManager(VideoDrv, CursorCtrl);
 
 	setEventReceiver(UserReceiver);
 }
@@ -998,10 +967,10 @@ bool SDLDevice::run()
 			if (SDL_event.type == SDL_MOUSEBUTTONDOWN && !isFullscreen()) {
 				EmscriptenPointerlockChangeEvent pointerlockStatus; // let's hope that test is not expensive ...
 				if (emscripten_get_pointerlock_status(&pointerlockStatus) == EMSCRIPTEN_RESULT_SUCCESS) {
-					if (CursorControl->isVisible() && pointerlockStatus.isActive) {
+					if (CursorCtrl->isVisible() && pointerlockStatus.isActive) {
 						emscripten_exit_pointerlock();
 						return !Close;
-					} else if (!CursorControl->isVisible() && !pointerlockStatus.isActive) {
+					} else if (!CursorCtrl->isVisible() && !pointerlockStatus.isActive) {
 						emscripten_request_pointerlock(0, true);
 						return !Close;
 					}
@@ -1756,7 +1725,7 @@ scene::ISceneManager *SDLDevice::getSceneManager()
 //! \return Returns a pointer to the mouse cursor control interface.
 gui::CursorControl *SDLDevice::getCursorControl()
 {
-	return CursorControl;
+	return CursorCtrl;
 }
 
 //! Activate accelerometer.

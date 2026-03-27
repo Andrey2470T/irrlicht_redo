@@ -5,7 +5,7 @@ namespace gui
 {
 
 CursorControl::CursorControl(SDLDevice *dev) :
-		Device(dev), IsVisible(true)
+	Device(dev), IsVisible(true)
 {
 	initCursors();
 }

@@ -188,7 +188,7 @@ public:
 
 	void enableSampleCoverage(bool samplecoverage);
 
-	void setViewportSize(core::recti viewportSize);
+	void setViewport(s32 x, s32 y, s32 w, s32 h);
 
 	void clearBuffers(u16 flags, video::SColor color={255, 0, 0, 0}, f32 depth=1.0f, u8 stencil=0);
 

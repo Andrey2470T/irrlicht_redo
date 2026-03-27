@@ -22,10 +22,6 @@ namespace video
 
 // Forward declarations.
 
-class COpenGLCoreFeature;
-
-class COpenGL3DriverBase;
-
 class OpenGLVBO;
 
 }

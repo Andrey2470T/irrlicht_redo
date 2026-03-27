@@ -320,6 +320,7 @@ add_library(IRRDEVICEOBJ OBJECT
 	Device/SDLDevice.cpp
 	Device/Clipboard.cpp
 	Device/CursorControl.cpp
+	Device/globals.cpp
 	Device/Logger.cpp
 	Device/Timer.cpp
 )

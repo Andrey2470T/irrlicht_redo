@@ -579,13 +579,12 @@ void DrawContext::enableSampleCoverage(bool samplecoverage)
     }
 }
 
-void DrawContext::setViewportSize(core::recti viewportSize)
+void DrawContext::setViewport(s32 x, s32 y, s32 w, s32 h)
 {
-	if (viewport != viewportSize) {
-		glViewport(
-			viewportSize.UpperLeftCorner.X, viewportSize.UpperLeftCorner.Y,
-			viewportSize.getWidth(), viewportSize.getHeight());
-		viewport = viewportSize;
+	core::recti targetRect(x, y, x+w, y+h);
+	if (viewport != targetRect) {
+		glViewport(x, y, w, h);
+		viewport = targetRect;
 
 	   driver->testGLError();
 	}
@@ -660,7 +659,7 @@ void DrawContext::initContext()
 	glActiveTexture(GL_TEXTURE0);
 
 	auto ScreenSize = driver->getScreenSize();
-	setViewportSize(core::recti(0, 0, ScreenSize.Width, ScreenSize.Height));
+	setViewport(0, 0, ScreenSize.Width, ScreenSize.Height);
 }
 
 }

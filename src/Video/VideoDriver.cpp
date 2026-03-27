@@ -889,16 +889,16 @@ void VideoDriver::setViewPort(const core::rect<s32> &area)
 	vp.clipAgainst(rendert);
 
 	if (vp.getHeight() > 0 && vp.getWidth() > 0)
-		Context->setViewportSize(
-			{vp.UpperLeftCorner.X, (s32)(getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight()),
-			 vp.getWidth(), vp.getHeight()});
+		Context->setViewport(
+			vp.UpperLeftCorner.X, (s32)(getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight()),
+			vp.getWidth(), vp.getHeight());
 
 	ViewPort = vp;
 }
 
 void VideoDriver::setViewPortRaw(u32 width, u32 height)
 {
-	Context->setViewportSize({0, 0, (s32)width, (s32)height});
+	Context->setViewport(0, 0, (s32)width, (s32)height);
 	ViewPort = core::recti(0, 0, width, height);
 }
 
@@ -967,7 +967,7 @@ void VideoDriver::OnResize(const core::dimension2d<u32> &size)
 
 	ScreenSize = size;
 
-	Context->setViewportSize({0, 0, (s32)size.Width, (s32)size.Height});
+	Context->setViewport(0, 0, size.Width, size.Height);
 	Transformation3DChanged = true;
 }
 

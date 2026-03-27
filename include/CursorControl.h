@@ -7,6 +7,7 @@
 #include "IReferenceCounted.h"
 #include "position2d.h"
 #include "rect.h"
+#include <vector>
 #include <memory>
 
 #ifdef _IRR_USE_SDL3_
@@ -77,93 +78,78 @@ const c8 *const GUICursorIconNames[ECI_COUNT + 1] = {
 		0,
 };
 
-//! platform specific behavior flags for the cursor
-enum ECURSOR_PLATFORM_BEHAVIOR
-{
-	//! default - no platform specific behavior
-	ECPB_NONE = 0,
-
-	//! On X11 try caching cursor updates as XQueryPointer calls can be expensive.
-	/** Update cursor positions only when the irrlicht timer has been updated or the timer is stopped.
-		This means you usually get one cursor update per device->run() which will be fine in most cases.
-		See this forum-thread for a more detailed explanation:
-		http://irrlicht.sourceforge.net/forum/viewtopic.php?f=7&t=45525
-	*/
-	ECPB_X11_CACHE_UPDATES = 1
-};
-
 //! Interface to manipulate the mouse cursor.
 class CursorControl : public virtual IReferenceCounted
 {
 public:
-		CursorControl(SDLDevice *dev);
+	CursorControl(SDLDevice *dev);
 
-		//! Changes the visible state of the mouse cursor.
-		void setVisible(bool visible);
+	//! Changes the visible state of the mouse cursor.
+	void setVisible(bool visible);
 
-		//! Returns if the cursor is currently visible.
-		bool isVisible() const
+	//! Returns if the cursor is currently visible.
+	bool isVisible() const
+	{
+		return IsVisible;
+	}
+
+	//! Sets the new position of the cursor.
+	void setPosition(const core::position2d<f32> &pos)
+	{
+		setPosition(pos.X, pos.Y);
+	}
+
+	//! Sets the new position of the cursor.
+	void setPosition(f32 x, f32 y);
+
+	//! Sets the new position of the cursor.
+	void setPosition(const core::position2d<s32> &pos)
+	{
+		setPosition(pos.X, pos.Y);
+	}
+
+	//! Sets the new position of the cursor.
+	void setPosition(s32 x, s32 y);
+
+	//! Returns the current position of the mouse cursor.
+	const core::position2d<s32> &getPosition(bool updateCursor=true);
+
+	//! Returns the current position of the mouse cursor.
+	core::position2d<f32> getRelativePosition(bool updateCursor=true);
+
+	void setRelativeMode(bool relative);
+
+	void setActiveIcon(gui::ECURSOR_ICON iconId);
+
+	gui::ECURSOR_ICON getActiveIcon() const
+	{
+		return ActiveIcon;
+	}
+
+private:
+	void updateCursorPos();
+
+	void initCursors();
+
+	SDLDevice *Device;
+	core::position2d<s32> CursorPos;
+	bool IsVisible;
+
+	struct CursorDeleter
+	{
+		void operator()(SDL_Cursor *ptr)
 		{
-			return IsVisible;
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<f32> &pos)
-		{
-			setPosition(pos.X, pos.Y);
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(f32 x, f32 y);
-
-		//! Sets the new position of the cursor.
-		void setPosition(const core::position2d<s32> &pos)
-		{
-			setPosition(pos.X, pos.Y);
-		}
-
-		//! Sets the new position of the cursor.
-		void setPosition(s32 x, s32 y);
-
-		//! Returns the current position of the mouse cursor.
-		const core::position2d<s32> &getPosition(bool updateCursor=true);
-
-		//! Returns the current position of the mouse cursor.
-		core::position2d<f32> getRelativePosition(bool updateCursor=true);
-
-		void setRelativeMode(bool relative);
-
-		void setActiveIcon(gui::ECURSOR_ICON iconId);
-
-		gui::ECURSOR_ICON getActiveIcon() const
-		{
-			return ActiveIcon;
-		}
-
-	private:
-		void updateCursorPos();
-
-		void initCursors();
-
-		SDLDevice *Device;
-		core::position2d<s32> CursorPos;
-		bool IsVisible;
-
-		struct CursorDeleter
-		{
-			void operator()(SDL_Cursor *ptr)
-			{
 #ifdef _IRR_USE_SDL3_
-				if (ptr)
-					SDL_DestroyCursor(ptr);
+			if (ptr)
+				SDL_DestroyCursor(ptr);
 #else
-				if (ptr)
-					SDL_FreeCursor(ptr);
+			if (ptr)
+				SDL_FreeCursor(ptr);
 #endif
-			}
-		};
-		std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
-		gui::ECURSOR_ICON ActiveIcon = gui::ECURSOR_ICON::ECI_NORMAL;
+		}
 	};
+	std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
+	gui::ECURSOR_ICON ActiveIcon = gui::ECURSOR_ICON::ECI_NORMAL;
+};
 
 } // end namespace gui
