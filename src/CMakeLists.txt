@@ -135,36 +135,7 @@ message(STATUS "Renderer: ${RENDERER}")
 
 include(CheckCXXSourceCompiles)
 
-if(ANDROID_ABI)
-	if (CUSTOM_GLEW_DIR)
-		message(STATUS "Using custom GLEW (${CUSTOM_GLEW_DIR}) for Android ABI: ${ANDROID_ABI}")
-
-		set(GLEW_FOUND TRUE)
-		set(GLEW_INCLUDE_DIR "${CUSTOM_GLEW_DIR}/${ANDROID_ABI}/glew/include")
-		set(GLEW_LIBRARY "${CUSTOM_GLEW_DIR}/${ANDROID_ABI}/glew/lib/libGLEW.a")
-		set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
-		set(GLEW_LIBRARIES ${GLEW_LIBRARY})
-		set(CMAKE_CXX_FLAGS "-I${GLEW_INCLUDE_DIR} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS} -Wno-error -Wno-format-security")
-		set(CMAKE_C_FLAGS "-I${GLEW_INCLUDE_DIR} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security")
-	else()
-		message(FATAL_ERROR "CUSTOM_GLEW_DIR (${CUSTOM_GLEW_DIR}) is not set for Android ABI: ${ANDROID_ABI}")
-	endif()
-else()
-	find_package(GLEW REQUIRED)
-endif()
-
-# Create GLEW::GLEW target if not provided by find_package
-if(NOT TARGET GLEW::GLEW)
-	if(GLEW_LIBRARY AND GLEW_INCLUDE_DIR)
-		add_library(GLEW::GLEW UNKNOWN IMPORTED)
-		set_target_properties(GLEW::GLEW PROPERTIES
-			IMPORTED_LOCATION "${GLEW_LIBRARY}"
-			INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}")
-	else()
-		message(FATAL_ERROR "GLEW found but GLEW::GLEW target not available and GLEW_LIBRARY/GLEW_INCLUDE_DIR not set")
-	endif()
-endif()
-
+find_package(GLEW REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
@@ -235,7 +206,6 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
-	"$<$<NOT:$<BOOL:${USE_SDL3}>>:${SDL2_INCLUDE_DIRS}>"
 
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
@@ -362,7 +332,7 @@ foreach(object_lib
 	IRRMESHOBJ IRRVIDEOOBJ
 	IRRIOOBJ IRRDEVICEOBJ IRRGUIOBJ)
 	# Set include directories for object library compilation
-	target_include_directories(${object_lib} PRIVATE ${link_includes})
+	target_include_directories(${object_lib} PRIVATE ${link_includes} ${sdl2_link_includes})
 	if(CMAKE_GENERATOR STREQUAL "Xcode")
 		# Workaround for Cmake Xcode project generator
 		target_link_libraries(IrrlichtRedo PRIVATE ${object_lib})
@@ -399,9 +369,6 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	GLEW::GLEW
 
 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-
-	# incl. transitive SDL2 dependencies for static linking
-	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 )
 
 target_link_libraries(IrrlichtRedo PUBLIC
@@ -409,6 +376,9 @@ target_link_libraries(IrrlichtRedo PUBLIC
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 
 	"$<$<BOOL:${USE_SDL3}>:SDL3::SDL3-${SDL3_SUFFIX}>"
+
+	# incl. transitive SDL2 dependencies for static linking
+	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 )
 
 if(WIN32)
