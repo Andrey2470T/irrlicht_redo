@@ -135,7 +135,33 @@ message(STATUS "Renderer: ${RENDERER}")
 
 include(CheckCXXSourceCompiles)
 
-find_package(GLEW REQUIRED)
+if(ANDROID_ABI AND CUSTOM_GLEW_DIR)
+	message(STATUS "Using custom GLEW (${CUSTOM_GLEW_DIR}) for Android ABI: ${ANDROID_ABI}")
+
+	set(GLEW_INCLUDE_DIR "${CUSTOM_GLEW_DIR}/${ANDROID_ABI}/glew/include")
+	set(GLEW_LIBRARY "${CUSTOM_GLEW_DIR}/${ANDROID_ABI}/glew/libGLEW.a")
+
+	if(NOT TARGET GLEW::GLEW)
+		add_library(GLEW::GLEW STATIC IMPORTED GLOBAL)
+		set_target_properties(GLEW::GLEW PROPERTIES
+			IMPORTED_LOCATION "${GLEW_LIBRARY}"
+			INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
+			INTERFACE_COMPILE_DEFINITIONS "GLEW_STATIC;GLEW_NO_GLU"
+			INTERFACE_LINK_LIBRARIES "GLESv2"
+		)
+	endif()
+
+	set(GLEW_FOUND TRUE)
+	set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
+	set(GLEW_LIBRARIES GLEW::GLEW)
+	set(CMAKE_CXX_FLAGS "-I${GLEW_INCLUDE_DIR} -DGLEW_NO_GLU ${CMAKE_CXX_FLAGS} -Wno-error -Wno-format-security")
+	set(CMAKE_C_FLAGS "-I${GLEW_INCLUDE_DIR} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security")
+
+	add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
+else()
+	find_package(GLEW REQUIRED)
+endif()
+
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
