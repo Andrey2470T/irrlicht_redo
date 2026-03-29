@@ -280,6 +280,7 @@ public:
 
 				} else if (use_gl_impl) {
 
+#ifdef _IRR_COMPILE_WITH_OPENGL3_
 				IImage *tmpImage = LockImage;
 
 				ctxt->setTextureUnit(0, this);
@@ -292,6 +293,7 @@ public:
 
 				if (IsRenderTarget && lockFlags == ETLF_FLIP_Y_UP_RTT)
 					flipImageY(tmpImage);
+#endif
 
 				} else {
 

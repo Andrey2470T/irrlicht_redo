@@ -352,12 +352,12 @@ void DrawContext::setBlendOp(E_BLEND_OPERATION op)
 	if (!curBlend.enabled)
 	    return;
 	if (curBlend.mode != op) {
-        glBlendEquation(toGLBlendOp[op]);
+		glBlendEquation(toGLBlendOp[op]);
 
 		curBlend.mode = op;
 
 		driver->testGLError();
-    }
+	}
 }
 
 void DrawContext::enableDepthTest(bool depthtest)
@@ -482,12 +482,12 @@ void DrawContext::setStencilOp(E_STENCIL_OP _sfail_op, E_STENCIL_OP _dpfail_op, 
 
 void DrawContext::enableScissorTest(bool scissortest)
 {
-    if (scissortest)
-        glEnable(GL_SCISSOR_TEST);
-    else
-        glDisable(GL_SCISSOR_TEST);
+	if (scissortest)
+		glEnable(GL_SCISSOR_TEST);
+	else
+		glDisable(GL_SCISSOR_TEST);
 
-    curScissorTest.enabled = scissortest;
+	curScissorTest.enabled = scissortest;
 
 	driver->testGLError();
 }
@@ -501,33 +501,33 @@ void DrawContext::setScissorBox(const core::recti &box)
 		box.UpperLeftCorner.X, viewport.getHeight()-box.LowerRightCorner.Y,
 		abs(box.getWidth()), abs(box.getHeight()));
 
-    curScissorTest.box = box;
+	curScissorTest.box = box;
 
 	driver->testGLError();
 }
 
 void DrawContext::enablePolygonOffset(bool polygonoffset)
 {
-    if (curPolygonOffset.enabled != polygonoffset) {
-        if (polygonoffset)
-            glEnable(GL_POLYGON_OFFSET_FILL);
-        else
-            glDisable(GL_POLYGON_OFFSET_FILL);
+	if (curPolygonOffset.enabled != polygonoffset) {
+		if (polygonoffset)
+			glEnable(GL_POLYGON_OFFSET_FILL);
+		else
+			glDisable(GL_POLYGON_OFFSET_FILL);
 
-        curPolygonOffset.enabled = polygonoffset;
+		curPolygonOffset.enabled = polygonoffset;
 
 		driver->testGLError();
-    }
+	}
 }
 
 void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
 {
-    if (!curPolygonOffset.enabled)
-        return;
-    if (curPolygonOffset.slope_scale != slope_scaled || curPolygonOffset.depth_bias != depth_bias) {
-        glPolygonOffset(slope_scaled, depth_bias);
-        curPolygonOffset.slope_scale = slope_scaled;
-        curPolygonOffset.depth_bias = depth_bias;
+	if (!curPolygonOffset.enabled)
+		return;
+	if (curPolygonOffset.slope_scale != slope_scaled || curPolygonOffset.depth_bias != depth_bias) {
+		glPolygonOffset(slope_scaled, depth_bias);
+		curPolygonOffset.slope_scale = slope_scaled;
+		curPolygonOffset.depth_bias = depth_bias;
 
 		driver->testGLError();
     }
@@ -535,14 +535,16 @@ void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
 
 void DrawContext::setPolygonMode(E_CULL_MODE face, E_POLYGON_MODE mode)
 {
-    if (curPolygonMode.face != face || curPolygonMode.mode != mode) {
-        glPolygonMode(toGLCullMode[face], toGLPolygonMode[mode]);
+#ifdef _IRR_COMPILE_WITH_OPENGL3_
+	if (curPolygonMode.face != face || curPolygonMode.mode != mode) {
+		glPolygonMode(toGLCullMode[face], toGLPolygonMode[mode]);
 
-        curPolygonMode.face = face;
-        curPolygonMode.mode = mode;
+		curPolygonMode.face = face;
+		curPolygonMode.mode = mode;
 
 		driver->testGLError();
-    }
+	}
+#endif
 }
 
 void DrawContext::setPointSize(f32 pointsize)
@@ -567,16 +569,16 @@ void DrawContext::setLineWidth(f32 linewidth)
 
 void DrawContext::enableSampleCoverage(bool samplecoverage)
 {
-    if (sampleCoverage != samplecoverage) {
-        if (samplecoverage)
-            glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-        else
-            glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+	if (sampleCoverage != samplecoverage) {
+		if (samplecoverage)
+			glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		else
+			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 
-        sampleCoverage = samplecoverage;
+		sampleCoverage = samplecoverage;
 
 		driver->testGLError();
-    }
+	}
 }
 
 void DrawContext::setViewport(s32 x, s32 y, s32 w, s32 h)
@@ -586,7 +588,7 @@ void DrawContext::setViewport(s32 x, s32 y, s32 w, s32 h)
 		glViewport(x, y, w, h);
 		viewport = targetRect;
 
-	   driver->testGLError();
+		driver->testGLError();
 	}
 }
 
@@ -633,7 +635,7 @@ void DrawContext::setColorMask(u8 mask)
 			(mask & ECP_BLUE) ? GL_TRUE : GL_FALSE,
 			(mask & ECP_ALPHA) ? GL_TRUE : GL_FALSE);
 
-        colorMask = mask;
+		colorMask = mask;
 
 		driver->testGLError();
     }
