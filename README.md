@@ -1,14 +1,17 @@
-IrrlichtRedo version 1.0.0
+IrrlichtRedo version 1.1.0
 ==========================
 
-My fork of the IrrlichtMt [Minetest](https://github.com/minetest/irrlicht). Represents the much modified version of the 3D engine which aiming to be more modern and readable.
+My fork of the IrrlichtMt [Minetest](https://github.com/minetest/irrlicht).
+Represents the much modified version of the 3D engine which aiming to be more modern and readable.
 
 Features
 -----
 
 * Support of OpenGL 3.2+ and ES 2.0+ with using their new features.
+* Using GLEW instead of the own opengl loader
+* Port of the latest SDL2/SDL3 from luanti-org's irrlichtmt
 * Low-level graphics API representing the abstraction wrappers over OpenGL.
-* Much more flexible and readable comparing to the original, free from the the messed and invent-biked code.
+* Free of the any platform-specific code like the timer, printing, clipboard, byteswapping and etc.
 
 Build
 -----
@@ -16,16 +19,15 @@ Build
 The build system is CMake.
 
 The following libraries are required to be installed:
+* GLEW 2.2.0+
 * zlib, libPNG, libJPEG
-* OpenGL
-  * or on mobile: OpenGL ES (can be optionally enabled on desktop too)
-* on Unix: X11
+* OpenGL 3.0+ (or OpenGL ES 2.0+ if on mobile)
 * SDL2 or SDL3 (see below)
 
 Aside from standard search options (`ZLIB_INCLUDE_DIR`, `ZLIB_LIBRARY`, ...) the following options are available:
 * `ENABLE_OPENGL3` (default: `ON`) - Enable OpenGL 3+ driver
 * `ENABLE_GLES2` - Enable OpenGL ES 2+ driver
-* `USE_SDL2` (default: platform-dependent, usually `ON`) - Use SDL2 instead of older native device code
+* `USE_SDL2` (default: platform-dependent, usually `ON`) - Use SDL2
 * `USE_SDL3` (default: `OFF`) - Use the SDL3 device instead of SDL2 (**experimental**)
 
 e.g. on a Linux system you might want to build for local use like this:
@@ -55,12 +57,11 @@ Driver (rows) vs Device (columns)
 | OpenGL 3.2+               | Works    | Works    |
 | OpenGL ES 2.x             | Works    | Testing  |
 | WebGL 1                   | ?        | ?        |
-| Null (no graphics output) | Works    | Works    |
 
 Notes:
 
- * [1] `CIrrDeviceSDL` with `USE_SDL3=0`: supports [many platforms](https://wiki.libsdl.org/SDL3/README-platforms)
- * [2] `CIrrDeviceSDL` with `USE_SDL3=1`
+ * [1] `SDLDevice` with `USE_SDL3=0`: supports [many platforms](https://wiki.libsdl.org/SDL3/README-platforms)
+ * [2] `SDLDevice` with `USE_SDL3=1`
 
 License
 -------
