@@ -4,23 +4,12 @@
 #include "EDriverTypes.h"
 #include "irrArray.h"
 #include "dimension2d.h"
+#include "ITexture.h"
 
 namespace video
 {
 
-class ITexture;
 class VideoDriver;
-
-//! Enumeration of cube texture surfaces
-enum E_CUBE_SURFACE
-{
-	ECS_POSX = 0,
-	ECS_NEGX,
-	ECS_POSY,
-	ECS_NEGY,
-	ECS_POSZ,
-	ECS_NEGZ
-};
 
 //! Interface of a Render Target.
 /** This is a framebuffer object (FBO) in OpenGL. */
@@ -34,23 +23,25 @@ class RenderTarget : public virtual IReferenceCounted
 	VideoDriver *driver;
 
 	std::vector<ITexture*> colorTextures;
-	std::vector<E_CUBE_SURFACE> colorCubeMapFaces;
+	std::vector<E_CUBEMAP_FACE> colorCubeMapFaces;
 
 	ITexture* depthStencilTexture = nullptr;
-	E_CUBE_SURFACE depthStencilCubeMapFace;
+	E_CUBEMAP_FACE depthStencilCubeMapFace;
+
+	bool bound = false;
 public:
 	RenderTarget(video::VideoDriver *_driver);
 
 	~RenderTarget();
 
-    u32 getID() const
-    {
-        return fboID;
-    }
+	u32 getID() const
+	{
+		return fboID;
+	}
 
-	void bind() const;
+	void bind();
 
-	void unbind() const;
+	void unbind();
 
 	core::dimension2du getSize() const
 	{
@@ -69,16 +60,16 @@ public:
 
 	void setColorTextures(
 		const std::vector<ITexture*> &textures,
-		const std::vector<E_CUBE_SURFACE> &cubeMapFaceMappings={},
+		const std::vector<E_CUBEMAP_FACE> &cubeMapFaceMappings={},
 		u8 mipLevel=0);
 	void setDepthStencilTexture(
-		ITexture *texture, E_CUBE_SURFACE dsCubeMapFace=ECS_POSX, u8 mipLevel=0);
+		ITexture *texture, E_CUBEMAP_FACE dsCubeMapFace=ECMF_POS_X, u8 mipLevel=0);
 
 	void setTextures(
 		const std::vector<ITexture*> &_colorTextures, ITexture *_depthStencilTexture, u8 mipLevel=0)
 	{
 		setColorTextures(_colorTextures, {}, mipLevel);
-		setDepthStencilTexture(_depthStencilTexture, ECS_POSX, mipLevel);
+		setDepthStencilTexture(_depthStencilTexture, ECMF_POS_X, mipLevel);
 	}
 
 	void blitTo(RenderTarget *target);

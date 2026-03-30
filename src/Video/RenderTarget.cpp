@@ -45,21 +45,29 @@ RenderTarget::~RenderTarget()
 	driver->testGLError();
 }
 
-void RenderTarget::bind() const
+void RenderTarget::bind()
 {
+	if (bound)
+		return;
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
+	bound = true;
+
 	driver->testGLError();
 }
 
-void RenderTarget::unbind() const
+void RenderTarget::unbind()
 {
+	if (!bound)
+		return;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	bound = false;
+
 	driver->testGLError();
 }
 
 void RenderTarget::setColorTextures(
 	const std::vector<ITexture*> &textures,
-	const std::vector<E_CUBE_SURFACE> &cubeMapFaceMappings,
+	const std::vector<E_CUBEMAP_FACE> &cubeMapFaceMappings,
 	u8 mipLevel)
 {
 	if (textures.size() == 0)
@@ -172,7 +180,7 @@ void RenderTarget::setColorTextures(
 }
 
 void RenderTarget::setDepthStencilTexture(
-	ITexture *texture, E_CUBE_SURFACE dsCubeMapFace, u8 mipLevel)
+	ITexture *texture, E_CUBEMAP_FACE dsCubeMapFace, u8 mipLevel)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
 	driver->testGLError();
