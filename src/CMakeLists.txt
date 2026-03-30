@@ -158,6 +158,16 @@ if(ANDROID_ABI AND CUSTOM_GLEW_DIR)
 	set(CMAKE_C_FLAGS "-I${GLEW_INCLUDE_DIR} -DGLEW_NO_GLU ${CMAKE_C_FLAGS} -Wno-error -Wno-format-security")
 
 	add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
+elseif(MINGW)
+	if(NOT TARGET GLEW::GLEW)
+		message(STATUS "Extracting GLEW::GLEW target for mingw build")
+
+		add_library(GLEW::GLEW SHARED IMPORTED)
+		set_target_properties(GLEW::GLEW PROPERTIES
+			IMPORTED_LOCATION "${GLEW_LIBRARY}"
+			INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
+		)
+	endif()
 else()
 	find_package(GLEW REQUIRED)
 endif()
@@ -232,6 +242,7 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
+	"${GLEW_INCLUDE_DIR}"
 
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
