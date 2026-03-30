@@ -96,7 +96,7 @@ fi
 glew_dll=$(find $libs/glew/bin -name "*.dll" 2>/dev/null | head -1)
 # ============================================================
 
-tmp=(
+cmake . \
 	-DCMAKE_SYSTEM_NAME=Windows \
 	-DPNG_LIBRARY="$libs/libpng/lib/libpng.dll.a" \
 	-DPNG_PNG_INCLUDE_DIR="$libs/libpng/include" \
@@ -104,18 +104,17 @@ tmp=(
 	-DJPEG_INCLUDE_DIR="$libs/libjpeg/include" \
 	-DZLIB_LIBRARY="$libs/zlib/lib/libz.dll.a" \
 	-DZLIB_INCLUDE_DIR="$libs/zlib/include" \
-	-DGLEW_LIBRARY="$glew_library" \
-	-DGLEW_LIBRARIES="$glew_library" \
-	-DGLEW_INCLUDE_DIR="$glew_include_dir" \
-	-DGLEW_INCLUDE_DIRS="$glew_include_dir" \
 	-DCMAKE_PREFIX_PATH="$libs/sdl2/lib/cmake" \
 	-DSDL2_LIBRARIES="$libs/sdl2/lib/libSDL2.dll.a" \
 	-DSDL2_INCLUDE_DIRS="$libs/sdl2/include/SDL2" \
 	-DSDL2_LIBRARY="$libs/sdl2/lib/libSDL2.dll.a" \
 	-DSDL2_INCLUDE_DIR="$libs/sdl2/include/SDL2" \
 	-DDISABLE_CHECK_SDL_VERSION=TRUE \
-	-DSDL2_VERSION=2.28.5
-)
+	-DSDL2_VERSION=2.28.5 \
+	-DGLEW_LIBRARY="$glew_library" \
+	-DGLEW_INCLUDE_DIR="$glew_include_dir" \
+	-DCMAKE_CXX_FLAGS="-I${glew_include_dir}" \
+    -DCMAKE_C_FLAGS="-I${glew_include_dir}"
 
 echo "=== Build configuration ==="
 echo "Using GLEW library: $glew_library"
@@ -136,63 +135,6 @@ if [ ! -f "$glew_include_dir/GL/glew.h" ]; then
 	echo "ERROR: GLEW header not found at $glew_include_dir/GL/glew.h"
 	exit 1
 fi
-
-# После определения переменных, но до вызова cmake, добавьте:
-
-# Создаем директорию для конфигурационных файлов GLEW
-mkdir -p $PWD/cmake/Modules
-
-# Создаем FindGLEW.cmake, который всегда будет находить нашу GLEW
-cat > $PWD/cmake/Modules/FindGLEW.cmake << 'EOF'
-# Кастомный FindGLEW.cmake для MinGW
-# Всегда использует заранее определенные пути
-
-if(GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-    set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
-    set(GLEW_LIBRARIES ${GLEW_LIBRARY})
-    set(GLEW_FOUND TRUE)
-    
-    if(NOT TARGET GLEW::GLEW)
-        add_library(GLEW::GLEW UNKNOWN IMPORTED)
-        set_target_properties(GLEW::GLEW PROPERTIES
-            IMPORTED_LOCATION "${GLEW_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
-        )
-    endif()
-    
-    message(STATUS "Found GLEW (custom): ${GLEW_LIBRARY}")
-    return()
-endif()
-
-# Если переменные не заданы, ищем стандартным способом
-find_path(GLEW_INCLUDE_DIR GL/glew.h)
-find_library(GLEW_LIBRARY NAMES GLEW glew32 libGLEW)
-
-if(GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-    set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
-    set(GLEW_LIBRARIES ${GLEW_LIBRARY})
-    set(GLEW_FOUND TRUE)
-    
-    if(NOT TARGET GLEW::GLEW)
-        add_library(GLEW::GLEW UNKNOWN IMPORTED)
-        set_target_properties(GLEW::GLEW PROPERTIES
-            IMPORTED_LOCATION "${GLEW_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
-        )
-    endif()
-endif()
-EOF
-
-# Добавляем нашу директорию с модулями в путь поиска CMake
-tmp+=(-DCMAKE_MODULE_PATH="$PWD/cmake/Modules")
-
-# Запускаем CMake
-cmake . "${tmp[@]}" \
-    -DGLEW_LIBRARY="${glew_library}" \
-    -DGLEW_INCLUDE_DIR="${glew_include_dir}" \
-    -DGLEW_INCLUDE_DIRS="${glew_include_dir}" \
-    -DCMAKE_CXX_FLAGS="-I${glew_include_dir}" \
-    -DCMAKE_C_FLAGS="-I${glew_include_dir}"
 
 make -j$(nproc)
 
