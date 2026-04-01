@@ -368,7 +368,7 @@ SDLDevice *SDLDevice::createDevice(video::E_DRIVER_TYPE driverType,
 		u32 bits, bool fullscreen,
 		bool stencilbuffer, bool vsync, IEventReceiver *res)
 {
-	SIrrlichtCreationParameters p;
+	SDLDeviceParameters p;
 	p.DriverType = driverType;
 	p.WindowSize = windowSize;
 	p.Bits = (u8)bits;
@@ -380,7 +380,7 @@ SDLDevice *SDLDevice::createDevice(video::E_DRIVER_TYPE driverType,
 	return createDeviceEx(p);
 }
 
-SDLDevice *SDLDevice::createDeviceEx(const SIrrlichtCreationParameters &params)
+SDLDevice *SDLDevice::createDeviceEx(const SDLDeviceParameters &params)
 {
 	auto dev = new SDLDevice(params);
 
@@ -395,7 +395,7 @@ SDLDevice *SDLDevice::createDeviceEx(const SIrrlichtCreationParameters &params)
 }
 
 //! constructor
-SDLDevice::SDLDevice(const SIrrlichtCreationParameters &param) :
+SDLDevice::SDLDevice(const SDLDeviceParameters &param) :
 		VideoDrv(0), GUIEnvironment(0), SceneManager(0),
 		CursorCtrl(0), UserReceiver(param.EventReceiver),
 		Logger(0), ClipBoard(0), FileSystem(0),

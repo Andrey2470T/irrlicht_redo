@@ -228,7 +228,7 @@ const c8 *const ZWriteNames[] = {
 
 //! Maximum number of texture an SMaterial can have.
 /** SMaterial might ignore some textures in most function, like assignment and comparison,
-	when SIrrlichtCreationParameters::MaxTextureUnits is set to a lower number.
+	when SDLDeviceParameters::MaxTextureUnits is set to a lower number.
 */
 constexpr static u32 MATERIAL_MAX_TEXTURES = 4;
 

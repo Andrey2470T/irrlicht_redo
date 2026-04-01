@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "SIrrCreationParameters.h"
+#include "SDLDeviceParameters.h"
 #include "../src/Video/VBO.h"
 #include "../src/Video/MaterialSystem.h"
 #include "IFileSystem.h"
@@ -64,13 +64,13 @@ class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 
 protected:
 	//! constructor (use createOpenGL3Driver instead)
-	VideoDriver(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device);
+	VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 public:
 	//! destructor
 	virtual ~VideoDriver();
 
-	static VideoDriver *create(const SIrrlichtCreationParameters &params, io::IFileSystem *io, SDLDevice *device);
+	static VideoDriver *create(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 	bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
 			core::rect<s32> *sourceRect = 0);
@@ -543,7 +543,7 @@ private:
 	E_DRIVER_TYPE DriverType;
 	std::unique_ptr<GLSpecificInfo> GLInfo;
 	std::unique_ptr<DrawContext> Context;
-	SIrrlichtCreationParameters Params;
+	SDLDeviceParameters Params;
 
 	u8 AntiAlias;
 

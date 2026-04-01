@@ -14,68 +14,35 @@ class IEventReceiver;
 
 //! Structure for holding Irrlicht Device creation parameters.
 /** This structure is used in the createDeviceEx() function. */
-struct SIrrlichtCreationParameters
+struct SDLDeviceParameters
 {
-	//! Constructs a SIrrlichtCreationParameters structure with default values.
-	SIrrlichtCreationParameters() :
-			DriverType(video::EDT_OPENGL3),
-			WindowSize(core::dimension2d<u32>(800, 600)),
-			WindowPosition(core::position2di(-1, -1)),
-			Bits(32),
-			ZBufferBits(24),
-			Fullscreen(false),
-			WindowMaximized(false),
-			WindowResizable(2),
-			Stencilbuffer(true),
-			Vsync(false),
-			AntiAlias(0),
-			WithAlphaChannel(false),
-			Doublebuffer(true),
-			Stereobuffer(false),
-			EventReceiver(0),
-			WindowId(0),
-#ifdef _DEBUG
-			LoggingLevel(ELL_DEBUG),
-#else
-			LoggingLevel(ELL_INFORMATION),
-#endif
-			PrivateData(0),
-#ifdef IRR_MOBILE_PATHS
-			OGLES2ShaderPath("media/Shaders/"),
-#else
-			OGLES2ShaderPath("../../media/Shaders/"),
-#endif
-			DriverDebug(false)
-	{
-	}
-
 	//! Type of video driver used to render graphics.
-	video::E_DRIVER_TYPE DriverType;
+	video::E_DRIVER_TYPE DriverType{video::EDT_OPENGL3};
 
 	//! Size of the window or the video mode in fullscreen mode. Default: 800x600
-	core::dimension2d<u32> WindowSize;
+	core::dimension2d<u32> WindowSize{800, 600};
 
 	//! Position of the window on-screen. Default: (-1, -1) or centered.
-	core::position2di WindowPosition;
+	core::position2di WindowPosition{-1, -1};
 
 	//! Minimum Bits per pixel of the color buffer in fullscreen mode. Ignored if windowed mode. Default: 32.
-	u8 Bits;
+	u8 Bits{32};
 
 	//! Minimum Bits per pixel of the depth buffer. Default: 24.
-	u8 ZBufferBits;
+	u8 ZBufferBits{24};
 
 	//! Should be set to true if the device should run in fullscreen.
 	/** Otherwise the device runs in windowed mode. Default: false. */
-	bool Fullscreen;
+	bool Fullscreen{false};
 
 	//! Maximised window. (Only supported on SDL.) Default: false
-	bool WindowMaximized;
+	bool WindowMaximized{false};
 
 	//! Should a non-fullscreen window be resizable.
 	/** Might not be supported by all devices. Ignored when Fullscreen is true.
 	Values: 0 = not resizable, 1 = resizable, 2 = system decides default itself
 	Default: 2*/
-	u8 WindowResizable;
+	u8 WindowResizable{2};
 
 	//! Specifies if the stencil buffer should be enabled.
 	/** Set this to true, if you want the engine be able to draw
@@ -83,13 +50,13 @@ struct SIrrlichtCreationParameters
 	use the stencil buffer, hence it can be ignored during device
 	creation. Without the stencil buffer no shadows will be drawn.
 	Default: true. */
-	bool Stencilbuffer;
+	bool Stencilbuffer{true};
 
 	//! Specifies vertical synchronization.
 	/** If set to true, the driver will wait for the vertical
 	retrace period, otherwise not. May be silently ignored.
 	Default: false */
-	bool Vsync;
+	bool Vsync{false};
 
 	//! Specifies if the device should use fullscreen anti aliasing
 	/** Makes sharp/pixelated edges softer, but requires more
@@ -107,7 +74,7 @@ struct SIrrlichtCreationParameters
 	special value on some platforms. On D3D devices it maps to
 	NONMASKABLE.
 	Default value: 0 - disabled */
-	u8 AntiAlias;
+	u8 AntiAlias{0};
 
 	//! Whether the main framebuffer uses an alpha channel.
 	/** In some situations it might be desirable to get a color
@@ -118,7 +85,7 @@ struct SIrrlichtCreationParameters
 	are considered. Otherwise, it depends on the actual hardware
 	if the colorbuffer has an alpha channel or not.
 	Default value: false */
-	bool WithAlphaChannel;
+	bool WithAlphaChannel{false};
 
 	//! Whether the main framebuffer uses doublebuffering.
 	/** This should be usually enabled, in order to avoid render
@@ -126,7 +93,7 @@ struct SIrrlichtCreationParameters
 	useful to use only one buffer on very small devices. If no
 	doublebuffering is available, the drivers will fall back to
 	single buffers. Default value: true */
-	bool Doublebuffer;
+	bool Doublebuffer{true};
 
 	//! Specifies if the device should use stereo buffers
 	/** Some high-end gfx cards support two framebuffers for direct
@@ -134,10 +101,10 @@ struct SIrrlichtCreationParameters
 	device tries to create a stereo context.
 	Currently only supported by OpenGL.
 	Default value: false */
-	bool Stereobuffer;
+	bool Stereobuffer{false};
 
 	//! A user created event receiver.
-	IEventReceiver *EventReceiver;
+	IEventReceiver *EventReceiver{nullptr};
 
 	//! Window Id.
 	/** If this is set to a value other than 0, the Irrlicht Engine
@@ -190,29 +157,36 @@ struct SIrrlichtCreationParameters
 	\endcode
 	However, there is no need to draw the picture this often. Just
 	do it how you like. */
-	void *WindowId;
+	void *WindowId{nullptr};
 
 	//! Specifies the logging level used in the logging interface.
 	/** The default value is ELL_INFORMATION. You can access the ILogger interface
 	later on from the IrrlichtDevice with getLogger() and set another level.
 	But if you need more or less logging information already from device creation,
-	then you have to change it here.
-	*/
-	ELOG_LEVEL LoggingLevel;
+	then you have to change it here. */
+#ifdef _DEBUG
+	ELOG_LEVEL LoggingLevel{ELL_DEBUG};
+#else
+	ELOG_LEVEL LoggingLevel{ELL_INFORMATION};
+#endif
 
 	//! Define some private data storage.
 	/** Used when platform devices need access to OS specific data structures etc.
 	This is only used for Android at the moment in order to access the native
 	Java RE. */
-	void *PrivateData;
+	void *PrivateData{nullptr};
 
 	//! Set the path where default-shaders to simulate the fixed-function pipeline can be found.
 	/** This is about the shaders which can be found in media/Shaders by default. It's only necessary
 	to set when using OGL-ES 2.0 */
-	io::path OGLES2ShaderPath;
+#ifdef IRR_MOBILE_PATHS
+	io::path OGLES2ShaderPath{"media/Shaders/"};
+#else
+	io::path OGLES2ShaderPath{"../../media/Shaders/"};
+#endif
 
 	//! Enable debug and error checks in video driver.
-	bool DriverDebug;
+	bool DriverDebug{false};
 };
 
 

@@ -18,7 +18,7 @@
 #include "SColor.h" // video::ECOLOR_FORMAT
 #include <string>
 #include <variant>
-#include "SIrrCreationParameters.h"
+#include "SDLDeviceParameters.h"
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten/html5.h>
@@ -104,14 +104,14 @@ public:
 	Use this function only if you wish to specify advanced parameters like a window
 	handle in which the device should be created.
 	\param parameters: Structure containing advanced parameters for the creation of the device.
-	See SIrrlichtCreationParameters for details.
+	See SDLDeviceParameters for details.
 	\return Returns pointer to the created IrrlichtDevice or null if the
 	device could not be created. */
 	static SDLDevice *createDeviceEx(
-		const SIrrlichtCreationParameters &parameters);
+		const SDLDeviceParameters &parameters);
 
 	//! constructor
-	SDLDevice(const SIrrlichtCreationParameters &param);
+	SDLDevice(const SDLDeviceParameters &param);
 
 	//! destructor
 	~SDLDevice();
@@ -328,7 +328,7 @@ private:
 	// input receiving scene manager
 	scene::ISceneManager *InputReceivingSceneManager;
 	// creation parameters
-	SIrrlichtCreationParameters CreationParams;
+	SDLDeviceParameters CreationParams;
 	// close flag
 	bool Close;
 
