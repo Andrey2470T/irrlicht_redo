@@ -246,6 +246,9 @@ public:
 	virtual void updateParameters(
 		const TextureSettings &newTexSettings,
 		bool updateLodBias, bool updateAnisotropy) = 0;
+		
+	virtual void resize(const core::dimension2du &newSize) = 0;
+	virtual ITexture *copy(const std::string &name="") = 0;
 
 	bool operator==(const ITexture &other) const;
 

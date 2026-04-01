@@ -15,8 +15,8 @@ ITexture::ITexture(video::VideoDriver *_driver, const std::string &_name,
 
 ITexture::~ITexture()
 {
-	glDeleteTextures(1, &texID);
-    driver->testGLError();
+  glDeleteTextures(1, &texID);
+  driver->testGLError();
 }
 
 //! Returns if the texture has an alpha channel
@@ -40,7 +40,7 @@ bool ITexture::hasAlpha() const
 
 bool ITexture::operator==(const ITexture &other) const
 {
-    return texID == other.texID;
+  return texID == other.texID;
 }
 
 ECOLOR_FORMAT ITexture::getBestColorFormat(ECOLOR_FORMAT format)
@@ -91,10 +91,6 @@ void ITexture::getParametersFromImage(const IImage *image)
 	originalColorFormat = image->getColorFormat();
 	colorFormat = getBestColorFormat(originalColorFormat);
 
-	if (IImage::isCompressedFormat(image->getColorFormat())) {
-		copyCache = false;
-	}
-
 	originalSize = image->getDimension();
 	size = originalSize;
 
@@ -106,7 +102,7 @@ void ITexture::getParametersFromImage(const IImage *image)
 	const f32 ratio = (f32)size.Width / (f32)size.Height;
 
 	auto features = driver->getFeatures();
-	if ((size.Width > features.MaxTextureSize) && (ratio >= 1.f)) {
+	if ((size.Width > features.MaxTextureSize) && (ratio >= 1.0f)) {
 		size.Width = features.MaxTextureSize;
 		size.Height = (u32)(features.MaxTextureSize / ratio);
 	} else if (size.Height > features.MaxTextureSize) {

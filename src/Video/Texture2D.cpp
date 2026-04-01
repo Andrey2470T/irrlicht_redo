@@ -36,7 +36,7 @@ Texture2D::Texture2D(
 	IImage *image, const TextureSettings &settings)
 	: Texture(driver, name, image->getSize(), image->getColorFormat(), settings)
 {
-	texSettings.hasMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
+	texSettings.hasMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS) || texSettings.hasMipMaps;
 	copyCache = driver->getTextureCreationFlag(ETCF_ALLOW_MEMORY_COPY);
 
 	getParametersFromImage(image);
@@ -76,16 +76,18 @@ void Texture2D::initTexture(IImage *image)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+      texSettings.minF = ETMINF_NEAREST;
 			texSettings.wrapU = ETC_CLAMP_TO_EDGE;
 			texSettings.wrapV = ETC_CLAMP_TO_EDGE;
-			texSettings.wrapW = ETC_CLAMP_TO_EDGE;
 		}
 
 		driver->testGLError();
 	}
 	else {
-        glTexParameteri(tex2D(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(tex2D(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    texSettings.minF = ETMINF_NEAREST;
 
 		if (texSettings.hasMipMaps) {
 			if (driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_SPEED))
@@ -98,16 +100,9 @@ void Texture2D::initTexture(IImage *image)
 		Driver->testGLError();
 	}
 
-	// Compressed textures cannot be pre-allocated and are initialized on upload
-	if (IImage::isCompressedFormat(colorFormat)) {
-		assert(!texSettings.isRenderTarget);
-		return;
-	}
-
-	u32 levels = 1;
-	if (texSettings.hasMipMaps) {
+	u32 levels = texSettings.maxMipLevel;
+	if (texSettings.hasMipMaps && levels == 0)
 		levels = core::u32_log2(core::max_(size.Width, size.Height)) + 1;
-	}
 
 	// reference: <https://www.khronos.org/opengl/wiki/Texture_Storage>
 	bool use_tex_storage = driver->getFeatures().TexStorage;
@@ -184,12 +179,12 @@ void Texture2D::unbind()
 	bound = false;
 }
 
-void Texture2D::uploadData(img::Image *img, img::ImageModifier *imgMod)
+void Texture2D::uploadData(img::Image *img, u8 mipLevel)
 {
-	uploadSubData(width, height, img, imgMod);
+	uploadSubData(width, height, img, mipLevel);
 }
 
-void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, img::ImageModifier *imgMod)
+void Texture2D::uploadSubData(u32 x, u32 y, img::Image *img, u8 mipLevel)
 {
     v2u pos = img->getClipPos();
     v2u size = img->getClipSize();

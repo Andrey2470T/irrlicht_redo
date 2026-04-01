@@ -278,12 +278,6 @@ public:
 		return imageSize;
 	}
 
-	//! check if this is compressed color format
-	static bool isCompressedFormat(const ECOLOR_FORMAT format)
-	{
-		return false;
-	}
-
 	//! check if the color format is only viable for depth/stencil textures
 	static bool isDepthFormat(const ECOLOR_FORMAT format)
 	{
@@ -301,9 +295,6 @@ public:
 	//! Check if the color format uses floating point values for pixels
 	static bool isFloatingPointFormat(const ECOLOR_FORMAT format)
 	{
-		if (isCompressedFormat(format))
-			return false;
-
 		switch (format) {
 		case ECF_R16F:
 		case ECF_G16R16F:

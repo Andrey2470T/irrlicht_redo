@@ -237,9 +237,6 @@ public:
 		if (LockImage)
 			return LockImage->getData();
 
-		if (IImage::isCompressedFormat(ColorFormat))
-			return 0;
-
 		LockReadOnly |= (mode == ETLM_READ_ONLY);
 		LockLayer = layer;
 		MipLevelStored = mipmapLevel;
@@ -460,10 +457,6 @@ protected:
 			return;
 		}
 
-		if (IImage::isCompressedFormat(image->getColorFormat())) {
-			KeepImage = false;
-		}
-
 		OriginalSize = image->getDimension();
 		Size = OriginalSize;
 
@@ -508,12 +501,6 @@ protected:
 
 	void initTexture(u32 layers)
 	{
-		// Compressed textures cannot be pre-allocated and are initialized on upload
-		if (IImage::isCompressedFormat(ColorFormat)) {
-			assert(!IsRenderTarget);
-			return;
-		}
-
 		u32 levels = 1;
 		if (HasMipMaps) {
 			levels = core::u32_log2(core::max_(Size.Width, Size.Height)) + 1;
@@ -598,37 +585,33 @@ protected:
 
 		GLenum tmpTextureType = getTextureTarget(layer);
 
-		if (!IImage::isCompressedFormat(ColorFormat)) {
-			CImage *tmpImage = 0;
-			void *tmpData = data;
+		CImage *tmpImage = 0;
+		void *tmpData = data;
 
-			if (Converter) {
-				const core::dimension2d<u32> tmpImageSize(width, height);
+		if (Converter) {
+			const core::dimension2d<u32> tmpImageSize(width, height);
 
-				tmpImage = new CImage(ColorFormat, tmpImageSize);
-				tmpData = tmpImage->getData();
+			tmpImage = new CImage(ColorFormat, tmpImageSize);
+			tmpData = tmpImage->getData();
 
-				Converter(data, tmpImageSize.getArea(), tmpData);
-			}
-
-			switch (TextureType) {
-			case GL_TEXTURE_2D:
-			case GL_TEXTURE_CUBE_MAP:
-				glTexSubImage2D(tmpTextureType, level, 0, 0, width, height, PixelFormat, PixelType, tmpData);
-				break;
-			case GL_TEXTURE_2D_ARRAY:
-				glTexSubImage3D(tmpTextureType, level, 0, 0, layer, width, height, 1, PixelFormat, PixelType, tmpData);
-				break;
-			default:
-				assert(false);
-				break;
-			}
-			Driver->testGLError();
-
-			delete tmpImage;
-		} else {
-			assert(false);
+			Converter(data, tmpImageSize.getArea(), tmpData);
 		}
+
+		switch (TextureType) {
+		case GL_TEXTURE_2D:
+		case GL_TEXTURE_CUBE_MAP:
+			glTexSubImage2D(tmpTextureType, level, 0, 0, width, height, PixelFormat, PixelType, tmpData);
+			break;
+		case GL_TEXTURE_2D_ARRAY:
+			glTexSubImage3D(tmpTextureType, level, 0, 0, layer, width, height, 1, PixelFormat, PixelType, tmpData);
+			break;
+		default:
+			assert(false);
+			break;
+		}
+		Driver->testGLError();
+
+		delete tmpImage;
 	}
 
 	GLenum TextureTypeIrrToGL(E_TEXTURE_TYPE type) const

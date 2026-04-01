@@ -119,11 +119,6 @@ SColor CImage::getPixel(u32 x, u32 y) const
 //! copies this surface into another at given position
 void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	if (!Blit(BLITTER_TEXTURE, target, 0, &pos, this, 0, 0) && target && pos.X == 0 && pos.Y == 0 &&
 			CColorConverter::canConvertFormat(Format, target->getColorFormat())) {
 		// No fast blitting, but copyToScaling uses other color conversions and might work
@@ -135,22 +130,12 @@ void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
 //! copies this surface partially into another at given position
 void CImage::copyTo(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyTo method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	Blit(BLITTER_TEXTURE, target, clipRect, &pos, this, &sourceRect, 0);
 }
 
 //! copies this surface into another, using the alpha mask, a cliprect and a color to add with
 void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const SColor &color, const core::rect<s32> *clipRect, bool combineAlpha)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyToWithAlpha method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	eBlitter op = combineAlpha ? BLITTER_TEXTURE_COMBINE_ALPHA : color.color == 0xFFFFFFFF ? BLITTER_TEXTURE_ALPHA_BLEND
 																						   : BLITTER_TEXTURE_ALPHA_COLOR_BLEND;
 	Blit(op, target, clipRect, &pos, this, &sourceRect, color.color);
@@ -159,11 +144,6 @@ void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, c
 //! copies this surface into another, if it has the exact same size and format.
 bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch) const
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyToNoScaling method doesn't work with compressed images.", ELL_WARNING);
-		return false;
-	}
-
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return false;
 
@@ -198,11 +178,6 @@ bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT 
 // note: this is very very slow.
 void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return;
 
@@ -255,11 +230,6 @@ void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT fo
 // note: this is very very slow.
 void CImage::copyToScaling(IImage *target)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyToScaling method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	if (!target)
 		return;
 
@@ -276,11 +246,6 @@ void CImage::copyToScaling(IImage *target)
 //! copies this surface into another, scaling it to fit it.
 void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::copyToScalingBoxFilter method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	const core::dimension2d<u32> destSize = target->getDimension();
 
 	const f32 sourceXStep = (f32)Size.Width / (f32)destSize.Width;
@@ -306,11 +271,6 @@ void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
 //! fills the surface with given color
 void CImage::fill(const SColor &color)
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::fill method doesn't work with compressed images.", ELL_WARNING);
-		return;
-	}
-
 	u32 c;
 
 	switch (Format) {
@@ -344,11 +304,6 @@ void CImage::fill(const SColor &color)
 //! get a filtered pixel
 inline SColor CImage::getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const
 {
-	if (IImage::isCompressedFormat(Format)) {
-		g_irrlogger->log("IImage::getPixelBox method doesn't work with compressed images.", ELL_WARNING);
-		return SColor(0);
-	}
-
 	SColor c;
 	s32 a = 0, r = 0, g = 0, b = 0;
 

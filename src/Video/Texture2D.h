@@ -13,12 +13,12 @@ class Texture2D : public ITexture
 protected:
 	IImage *imgCache;
 
-    u8 msaa = 0;
+  u8 msaa = 0;
 public:
     Texture2D(video::VideoDriver *driver, const std::string &name,
-		const core::dimension2du &size, ECOLOR_FORMAT format, u8 msaa_n=0);
+		  const core::dimension2du &size, ECOLOR_FORMAT format, u8 msaa_n=0);
     Texture2D(video::VideoDriver *driver, const std::string &name,
-		IImage *image, const TextureSettings &settings=TextureSettings());
+		  IImage *image, const TextureSettings &settings=TextureSettings());
 
 	~Texture2D()
 	{
@@ -45,8 +45,8 @@ public:
 		const TextureSettings &newTexSettings,
 		bool updateLodBias, bool updateAnisotropy) override;
 
-	//void resize(u32 newWidth, u32 newHeight, img::ImageModifier *imgMod);
-	//Texture2D *copy(const std::string &name="");
+	void resize(const core::dimension2du &newSize) override;
+	ITexture *copy(const std::string &name="") override;
 
 	u32 tex2D() const
 	{
