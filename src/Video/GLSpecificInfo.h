@@ -10,7 +10,7 @@
 
 #include "Common.h"
 #include "OpenGLFeatures.h"
-#include "SColor.h"
+#include "PixelFormats.h"
 #include <string>
 #include <array>
 

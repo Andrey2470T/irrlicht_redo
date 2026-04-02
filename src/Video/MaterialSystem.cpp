@@ -607,11 +607,11 @@ void MaterialSystem::createMaterialRenderers()
 {
 	// Create callbacks.
 
-	COpenGL3MaterialSolidCB *SolidCB = new COpenGL3MaterialSolidCB();
-	COpenGL3MaterialSolidCB *TransparentAlphaChannelCB = new COpenGL3MaterialSolidCB();
-	COpenGL3MaterialSolidCB *TransparentAlphaChannelRefCB = new COpenGL3MaterialSolidCB();
-	COpenGL3MaterialSolidCB *TransparentVertexAlphaCB = new COpenGL3MaterialSolidCB();
-	COpenGL3MaterialOneTextureBlendCB *OneTextureBlendCB = new COpenGL3MaterialOneTextureBlendCB();
+	MaterialSolidCB *SolidCB = new MaterialSolidCB();
+	MaterialSolidCB *TransparentAlphaChannelCB = new MaterialSolidCB();
+	MaterialSolidCB *TransparentAlphaChannelRefCB = new MaterialSolidCB();
+	MaterialSolidCB *TransparentVertexAlphaCB = new MaterialSolidCB();
+	MaterialOneTextureBlendCB *OneTextureBlendCB = new MaterialOneTextureBlendCB();
 
 	// Create built-in materials.
 	// The addition order must be the same as in the E_MATERIAL_TYPE enumeration. Thus the

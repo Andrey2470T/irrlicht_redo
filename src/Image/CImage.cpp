@@ -147,7 +147,7 @@ bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT 
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return false;
 
-	const u32 bpp = getBitsPerPixelFromFormat(format) / 8;
+	const u32 bpp = pixelFormatsInfo[format].size / 8;
 	if (0 == pitch)
 		pitch = width * bpp;
 
@@ -181,7 +181,7 @@ void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT fo
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return;
 
-	const u32 bpp = getBitsPerPixelFromFormat(format) / 8;
+	const u32 bpp = pixelFormatsInfo[format].size / 8;
 	if (0 == pitch)
 		pitch = width * bpp;
 

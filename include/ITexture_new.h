@@ -79,30 +79,6 @@ enum E_TEXTURE_CREATION_FLAG
 	ETCF_FORCE_32_BIT_DO_NOT_USE = 0x7fffffff
 };
 
-//! Additional bitflags for ITexture::lock() call
-enum E_TEXTURE_LOCK_FLAGS
-{
-	ETLF_NONE = 0,
-
-	//! Flip left-bottom origin rendertarget textures upside-down
-	/** Irrlicht usually has all textures with left-top as origin.
-	And for drivers with a left-bottom origin coordinate system (OpenGL)
-	Irrlicht modifies the texture-matrix in the fixed function pipeline to make
-	the textures show up correctly (shader coders have to handle upside down
-	textures themselves).
-	But rendertarget textures (RTT's) are written by drivers the way the
-	coordinate system of that driver works. So on OpenGL images tend to look
-	upside down (aka Y coordinate going up) on lock() when this flag isn't set.
-	When the flag is set it will flip such textures on lock() to make them look
-	like non-rtt textures (origin left-top). Note that this also means the texture
-	will be uploaded flipped on unlock. So mostly you want to have this flag set
-	when you want to look at the texture or save it, but unset if you want to
-	upload it again to the card.
-	If you disable this flag you get the memory just as it is on the graphic card.
-	For backward compatibility reasons this flag is enabled by default. */
-	ETLF_FLIP_Y_UP_RTT = 1
-};
-
 //! Enumeration describing the type of ITexture.
 enum E_TEXTURE_TYPE
 {
@@ -113,10 +89,7 @@ enum E_TEXTURE_TYPE
 	ETT_2D_MS,
 
 	//! Cubemap texture.
-	ETT_CUBEMAP,
-
-	//! 2D array texture
-	ETT_2D_ARRAY
+	ETT_CUBEMAP
 };
 
 //! Enumeration of each cubemap face
@@ -246,7 +219,7 @@ public:
 	virtual void updateParameters(
 		const TextureSettings &newTexSettings,
 		bool updateLodBias, bool updateAnisotropy) = 0;
-		
+
 	virtual void resize(const core::dimension2du &newSize) = 0;
 	virtual ITexture *copy(const std::string &name="") = 0;
 

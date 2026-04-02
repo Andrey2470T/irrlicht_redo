@@ -101,7 +101,8 @@ static bool writeJPEGFile(io::IWriteFile *file, IImage *image, u32 quality)
 		format = CColorConverter::convert_R5G6B5toR8G8B8;
 		break;
 	default:
-		g_irrlogger->log("writeJPEGFile does not support image format", ColorFormatNames[image->getColorFormat()], ELL_WARNING);
+		g_irrlogger->log("writeJPEGFile does not support image format",
+			pixelFormatsInfo[image->getColorFormat()].name.c_str(), ELL_WARNING);
 		break;
 	}
 

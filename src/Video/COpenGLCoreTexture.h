@@ -157,14 +157,15 @@ public:
 		OriginalSize = size;
 		Size = OriginalSize;
 
-		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
+		Pitch = Size.Width * pixelFormatsInfo[ColorFormat].size / 8;
 
 		InternalFormat = GLSpecificInfo::TextureFormats[ColorFormat].InternalFormat;
 		PixelFormat = GLSpecificInfo::TextureFormats[ColorFormat].PixelFormat;
 		PixelType = GLSpecificInfo::TextureFormats[ColorFormat].PixelType;
 		Converter = GLSpecificInfo::TextureFormats[ColorFormat].Converter;
 		if (InternalFormat == 0) {
-			g_irrlogger->log("COpenGLCoreTexture: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("COpenGLCoreTexture: Color format is not supported",
+				pixelFormatsInfo[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN].name.c_str(), ELL_ERROR);
 			return;
 		}
 
@@ -452,7 +453,8 @@ protected:
 		PixelType = GLSpecificInfo::TextureFormats[ColorFormat].PixelType;
 		Converter = GLSpecificInfo::TextureFormats[ColorFormat].Converter;
 		if (InternalFormat == 0) {
-			g_irrlogger->log("getImageValues: Color format is not supported", ColorFormatNames[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN], ELL_ERROR);
+			g_irrlogger->log("getImageValues: Color format is not supported",
+				pixelFormatsInfo[ColorFormat < ECF_UNKNOWN ? ColorFormat : ECF_UNKNOWN].name.c_str(), ELL_ERROR);
 			InternalFormat = 0;
 			return;
 		}
@@ -480,7 +482,7 @@ protected:
 
 		Size = Size.getOptimalSize(false, needSquare, true, features.MaxTextureSize);
 
-		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
+		Pitch = Size.Width * pixelFormatsInfo[ColorFormat].size / 8;
 	}
 
 	static void flipImageY(IImage *image)

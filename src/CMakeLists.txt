@@ -294,6 +294,7 @@ set(IRRIMAGEOBJ
 	Image/CImageLoaderTGA.cpp
 	Image/CImageWriterJPG.cpp
 	Image/CImageWriterPNG.cpp
+	Image/PixelFormats.cpp
 )
 
 add_library(IRRVIDEOOBJ OBJECT

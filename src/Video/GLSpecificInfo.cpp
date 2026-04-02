@@ -327,10 +327,10 @@ void GLSpecificInfo::printTextureFormats()
 	for (u32 i = 0; i < static_cast<u32>(ECF_UNKNOWN); i++) {
 		auto &info = TextureFormats[i];
 		if (!info.InternalFormat) {
-			snprintf_irr(buf, sizeof(buf), "%s -> unsupported", ColorFormatNames[i]);
+			snprintf_irr(buf, sizeof(buf), "%s -> unsupported", pixelFormatsInfo[i].name.c_str());
 		} else {
 			snprintf_irr(buf, sizeof(buf), "%s -> %#06x %#06x %#06x%s",
-					ColorFormatNames[i], info.InternalFormat, info.PixelFormat,
+					pixelFormatsInfo[i].name.c_str(), info.InternalFormat, info.PixelFormat,
 					info.PixelType, info.Converter ? " (c)" : "");
 		}
 		g_irrlogger->log(buf, ELL_DEBUG);

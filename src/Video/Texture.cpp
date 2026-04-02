@@ -15,8 +15,8 @@ ITexture::ITexture(video::VideoDriver *_driver, const std::string &_name,
 
 ITexture::~ITexture()
 {
-  glDeleteTextures(1, &texID);
-  driver->testGLError();
+	glDeleteTextures(1, &texID);
+	driver->testGLError();
 }
 
 //! Returns if the texture has an alpha channel
@@ -40,7 +40,7 @@ bool ITexture::hasAlpha() const
 
 bool ITexture::operator==(const ITexture &other) const
 {
-  return texID == other.texID;
+	return texID == other.texID;
 }
 
 ECOLOR_FORMAT ITexture::getBestColorFormat(ECOLOR_FORMAT format)

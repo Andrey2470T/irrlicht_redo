@@ -143,7 +143,8 @@ bool CImageWriterPNG::writeImage(io::IWriteFile *file, IImage *image, u32 param)
 		break;
 		// TODO: Error handling in case of unsupported color format
 	default:
-		g_irrlogger->log("CImageWriterPNG does not support image format", ColorFormatNames[image->getColorFormat()], ELL_WARNING);
+		g_irrlogger->log("CImageWriterPNG does not support image format",
+			pixelFormatsInfo[image->getColorFormat()].name.c_str(), ELL_WARNING);
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		return false;
 	}

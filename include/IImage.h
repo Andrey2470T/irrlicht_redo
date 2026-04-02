@@ -26,7 +26,7 @@ public:
 	IImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, bool deleteMemory) :
 			Format(format), Size(size), Data(0), BytesPerPixel(0), Pitch(0), DeleteMemory(deleteMemory)
 	{
-		BytesPerPixel = getBitsPerPixelFromFormat(Format) / 8;
+		BytesPerPixel = pixelFormatsInfo[Format].size / 8;
 		Pitch = BytesPerPixel * Size.Width;
 	}
 
@@ -52,7 +52,7 @@ public:
 	//! Returns bits per pixel.
 	u32 getBitsPerPixel() const
 	{
-		return getBitsPerPixelFromFormat(Format);
+		return pixelFormatsInfo[Format].size;
 	}
 
 	//! Returns bytes per pixel
@@ -77,74 +77,6 @@ public:
 	u32 getPitch() const
 	{
 		return Pitch;
-	}
-
-	//! Returns mask for red value of a pixel
-	u32 getRedMask() const
-	{
-		switch (Format) {
-		case ECF_A1R5G5B5:
-			return 0x1F << 10;
-		case ECF_R5G6B5:
-			return 0x1F << 11;
-		case ECF_R8G8B8:
-			return 0x00FF0000;
-		case ECF_A8R8G8B8:
-			return 0x00FF0000;
-		default:
-			return 0x0;
-		}
-	}
-
-	//! Returns mask for green value of a pixel
-	u32 getGreenMask() const
-	{
-		switch (Format) {
-		case ECF_A1R5G5B5:
-			return 0x1F << 5;
-		case ECF_R5G6B5:
-			return 0x3F << 5;
-		case ECF_R8G8B8:
-			return 0x0000FF00;
-		case ECF_A8R8G8B8:
-			return 0x0000FF00;
-		default:
-			return 0x0;
-		}
-	}
-
-	//! Returns mask for blue value of a pixel
-	u32 getBlueMask() const
-	{
-		switch (Format) {
-		case ECF_A1R5G5B5:
-			return 0x1F;
-		case ECF_R5G6B5:
-			return 0x1F;
-		case ECF_R8G8B8:
-			return 0x000000FF;
-		case ECF_A8R8G8B8:
-			return 0x000000FF;
-		default:
-			return 0x0;
-		}
-	}
-
-	//! Returns mask for alpha value of a pixel
-	u32 getAlphaMask() const
-	{
-		switch (Format) {
-		case ECF_A1R5G5B5:
-			return 0x1 << 15;
-		case ECF_R5G6B5:
-			return 0x0;
-		case ECF_R8G8B8:
-			return 0x0;
-		case ECF_A8R8G8B8:
-			return 0xFF000000;
-		default:
-			return 0x0;
-		}
 	}
 
 	//! Use this to get a pointer to the image data.
@@ -220,94 +152,6 @@ public:
 
 	//! fills the surface with given color
 	virtual void fill(const SColor &color) = 0;
-
-	//! get the amount of Bits per Pixel of the given color format
-	static u32 getBitsPerPixelFromFormat(const ECOLOR_FORMAT format)
-	{
-		switch (format) {
-		case ECF_A1R5G5B5:
-			return 16;
-		case ECF_R5G6B5:
-			return 16;
-		case ECF_R8G8B8:
-			return 24;
-		case ECF_A8R8G8B8:
-			return 32;
-		case ECF_D16:
-			return 16;
-		case ECF_D24:
-			return 32;
-		case ECF_D32:
-			return 32;
-		case ECF_D24S8:
-			return 32;
-		case ECF_R8:
-			return 8;
-		case ECF_R8G8:
-			return 16;
-		case ECF_R16:
-			return 16;
-		case ECF_R16G16:
-			return 32;
-		case ECF_A2R10G10B10:
-			return 32;
-		case ECF_R16F:
-			return 16;
-		case ECF_G16R16F:
-			return 32;
-		case ECF_A16B16G16R16F:
-			return 64;
-		case ECF_R32F:
-			return 32;
-		case ECF_G32R32F:
-			return 64;
-		case ECF_A32B32G32R32F:
-			return 128;
-		default:
-			return 0;
-		}
-	}
-
-	//! calculate image data size in bytes for selected format, width and height.
-	static u32 getDataSizeFromFormat(ECOLOR_FORMAT format, u32 width, u32 height)
-	{
-		// non-compressed formats
-		u32 imageSize = getBitsPerPixelFromFormat(format) / 8 * width;
-		imageSize *= height;
-
-		return imageSize;
-	}
-
-	//! check if the color format is only viable for depth/stencil textures
-	static bool isDepthFormat(const ECOLOR_FORMAT format)
-	{
-		switch (format) {
-		case ECF_D16:
-		case ECF_D24:
-		case ECF_D32:
-		case ECF_D24S8:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	//! Check if the color format uses floating point values for pixels
-	static bool isFloatingPointFormat(const ECOLOR_FORMAT format)
-	{
-		switch (format) {
-		case ECF_R16F:
-		case ECF_G16R16F:
-		case ECF_A16B16G16R16F:
-		case ECF_R32F:
-		case ECF_G32R32F:
-		case ECF_A32B32G32R32F:
-			return true;
-		default:
-			break;
-		}
-		return false;
-	}
 
 protected:
 	ECOLOR_FORMAT Format;
