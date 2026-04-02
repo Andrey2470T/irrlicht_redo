@@ -12,7 +12,7 @@
 #include "RenderTarget.h"
 #include "Renderer2D.h"
 #include "MaterialRenderer.h"
-#include "FixedPipelineRenderer.h"
+#include "MaterialCallbacks.h"
 
 #include "Video/COpenGLCoreTexture.h"
 

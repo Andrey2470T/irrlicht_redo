@@ -9,7 +9,7 @@
 #include "SDLDevice.h"
 
 #include "MaterialRenderer.h"
-#include "FixedPipelineRenderer.h"
+#include "MaterialCallbacks.h"
 #include "Renderer2D.h"
 #include "VertexType.h"
 #include "Common.h"
