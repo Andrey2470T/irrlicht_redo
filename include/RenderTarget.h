@@ -27,8 +27,6 @@ class RenderTarget : public virtual IReferenceCounted
 
 	ITexture* depthStencilTexture = nullptr;
 	E_CUBEMAP_FACE depthStencilCubeMapFace;
-
-	bool bound = false;
 public:
 	RenderTarget(video::VideoDriver *_driver);
 
@@ -39,9 +37,9 @@ public:
 		return fboID;
 	}
 
-	void bind();
+	void bind() const;
 
-	void unbind();
+	void unbind() const;
 
 	core::dimension2du getSize() const
 	{

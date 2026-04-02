@@ -45,23 +45,15 @@ RenderTarget::~RenderTarget()
 	driver->testGLError();
 }
 
-void RenderTarget::bind()
+void RenderTarget::bind() const
 {
-	if (bound)
-		return;
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
-	bound = true;
-
 	driver->testGLError();
 }
 
-void RenderTarget::unbind()
+void RenderTarget::unbind() const
 {
-	if (!bound)
-		return;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	bound = false;
-
 	driver->testGLError();
 }
 
