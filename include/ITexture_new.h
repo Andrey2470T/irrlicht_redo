@@ -89,7 +89,9 @@ enum E_TEXTURE_TYPE
 	ETT_2D_MS,
 
 	//! Cubemap texture.
-	ETT_CUBEMAP
+	ETT_CUBEMAP,
+
+	ETT_COUNT
 };
 
 //! Enumeration of each cubemap face
@@ -127,11 +129,12 @@ struct TextureSettings
 class IImage;
 class VideoDriver;
 
-class ITexture
+class Texture
 {
 protected:
 	video::VideoDriver *driver;
 
+	E_TEXTURE_TYPE type;
 	u32 texID;
 	std::string name;
 
@@ -141,23 +144,25 @@ protected:
 	ECOLOR_FORMAT originalColorFormat = ECF_UNKNOWN;
 	ECOLOR_FORMAT colorFormat = ECF_UNKNOWN;
 	u32 pitch = 0;
+	u8 msaa = 0;
 
 	TextureSettings texSettings;
 
-	bool copyCache = false;
-	bool bound = false;
+	std::vector<IImage *> imgCache;
+	bool cacheImages = false;
 public:
-	ITexture(video::VideoDriver *_driver, const std::string &_name,
-		const core::dimension2du &_size, ECOLOR_FORMAT _format,
-		const TextureSettings &_texSettings=TextureSettings());
+	Texture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const std::string &_name,
+		  const core::dimension2du &_size, ECOLOR_FORMAT _format, u8 _msaa=0);
+    Texture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const std::string &_name,
+		  const std::vector<IImage *> &_images, const TextureSettings &_settings=TextureSettings());
 
-	virtual ~ITexture();
+	~Texture();
 
 	//! Get name of texture (in most cases this is the filename)
 	const std::string &getName() const { return name; }
 
 	//! Returns the type of texture
-	virtual E_TEXTURE_TYPE getType() const = 0;
+	E_TEXTURE_TYPE getType() const { return type; };
 
 	u32 getID() const { return texID; }
 
@@ -203,32 +208,36 @@ public:
 	bool isRenderTarget() const { return texSettings.isRenderTarget; }
 
 	//! Returns if the texture has an alpha channel
-	bool hasAlpha() const;
+	bool hasAlpha() const { return pixelFormatsInfo[colorFormat].hasAlpha; }
 
 	const TextureSettings &getParameters() const { return texSettings; }
 
-	virtual void bind() = 0;
-	virtual void unbind() = 0;
+	void bind() const;
+	void unbind() const;
 
-	virtual void uploadData(IImage *img, u8 mipLevel=0) = 0;
-	virtual void uploadSubData(u32 x, u32 y, IImage *img, u8 mipLevel=0) = 0;
+	void uploadData(IImage *img, u8 mipLevel=0, u8 layer=0);
+	void uploadSubData(u32 x, u32 y, IImage *img, u8 mipLevel=0, u8 layer=0);
 
-	virtual std::vector<IImage *> downloadData() = 0;
-	virtual void regenerateMipMaps() = 0;
+	IImage * downloadData(u8 mipLevel=0, u8 layer=0);
+	void regenerateMipMaps();
 
-	virtual void updateParameters(
-		const TextureSettings &newTexSettings,
-		bool updateLodBias, bool updateAnisotropy) = 0;
+	// NOTE: Will be defined later
+	//void updateParameters(
+	//	const TextureSettings &newTexSettings,
+	//	bool updateLodBias, bool updateAnisotropy);
 
-	virtual void resize(const core::dimension2du &newSize) = 0;
-	virtual ITexture *copy(const std::string &name="") = 0;
+	//void resize(const core::dimension2du &newSize);
+	//ITexture *copy(const std::string &name="");
 
-	bool operator==(const ITexture &other) const;
+	bool operator==(const Texture &other) const;
 
 protected:
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
 	void getParametersFromImage(const IImage *image);
-	static void flipImageY(IImage *image);
+
+	core::dimension2u getMipMapSize(u8 mipLevel);
+
+	void initTexture(u8 layers);
 };
 
 } // end namespace video

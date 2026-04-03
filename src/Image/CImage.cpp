@@ -9,6 +9,7 @@
 #include "Logger.h"
 #include "SoftwareDriver2_helper.h"
 
+#include <vector>
 #include <cassert>
 
 
@@ -299,6 +300,21 @@ void CImage::fill(const SColor &color)
 		return;
 	}
 	memset32(Data, c, getImageDataSizeInBytes());
+}
+
+void CImage::flipY()
+{
+	u8 *srcA = static_cast<u8 *>(Data);
+	u8 *srcB = srcA + (Size.Height - 1) * Pitch;
+
+	std::vector<u8> tmpBuffer(Pitch);
+	for (u32 i = 0; i < Size.Height; i += 2) {
+		memcpy(tmpBuffer.data(), srcA, Pitch);
+		memcpy(srcA, srcB, Pitch);
+		memcpy(srcB, tmpBuffer.data(), Pitch);
+		srcA += Pitch;
+		srcB -= Pitch;
+	}
 }
 
 //! get a filtered pixel

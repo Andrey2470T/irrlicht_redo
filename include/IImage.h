@@ -98,7 +98,7 @@ public:
 	}
 
 	//! Calculate mipmap size for a certain level
-	/** level 0 will be full image size. Every further level is half the size.	*/
+	/** level 0 will be full image size. Every further level is half the size.      */
 	static core::dimension2du getMipMapsSize(const core::dimension2du &sizeLevel0, u32 mipmapLevel)
 	{
 		core::dimension2du result(sizeLevel0);
@@ -115,6 +115,7 @@ public:
 		}
 		return result;
 	}
+
 
 	//! Returns a pixel
 	virtual SColor getPixel(u32 x, u32 y) const = 0;
@@ -152,6 +153,8 @@ public:
 
 	//! fills the surface with given color
 	virtual void fill(const SColor &color) = 0;
+
+	virtual void flipY() = 0;
 
 protected:
 	ECOLOR_FORMAT Format;
