@@ -27,12 +27,12 @@ A simple example:
 
 If you want to create a texture, you may want to call an imaginable method
 IDriver::createTexture. You call
-ITexture* texture = driver->createTexture(dimension2d<u32>(128, 128));
+Texture* texture = driver->createTexture(dimension2d<u32>(128, 128));
 If you no longer need the texture, call texture->drop().
 
 If you want to load a texture, you may want to call imaginable method
 IDriver::loadTexture. You do this like
-ITexture* texture = driver->loadTexture("example.jpg");
+Texture* texture = driver->loadTexture("example.jpg");
 You will not have to drop the pointer to the loaded texture, because
 the name of the method does not start with 'create'. The texture
 is stored somewhere by the driver.
@@ -77,11 +77,11 @@ public:
 
 	If you want to create a texture, you may want to call an
 	imaginable method IDriver::createTexture. You call
-	ITexture* texture = driver->createTexture(dimension2d<u32>(128, 128));
+	Texture* texture = driver->createTexture(dimension2d<u32>(128, 128));
 	If you no longer need the texture, call texture->drop().
 	If you want to load a texture, you may want to call imaginable
 	method IDriver::loadTexture. You do this like
-	ITexture* texture = driver->loadTexture("example.jpg");
+	Texture* texture = driver->loadTexture("example.jpg");
 	You will not have to drop the pointer to the loaded texture,
 	because the name of the method does not start with 'create'.
 	The texture is stored somewhere by the driver. */
@@ -106,11 +106,11 @@ public:
 
 	If you want to create a texture, you may want to call an
 	imaginable method IDriver::createTexture. You call
-	ITexture* texture = driver->createTexture(dimension2d<u32>(128, 128));
+	Texture* texture = driver->createTexture(dimension2d<u32>(128, 128));
 	If you no longer need the texture, call texture->drop().
 	If you want to load a texture, you may want to call imaginable
 	method IDriver::loadTexture. You do this like
-	ITexture* texture = driver->loadTexture("example.jpg");
+	Texture* texture = driver->loadTexture("example.jpg");
 	You will not have to drop the pointer to the loaded texture,
 	because the name of the method does not start with 'create'.
 	The texture is stored somewhere by the driver.

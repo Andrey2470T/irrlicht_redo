@@ -627,7 +627,7 @@ IGUIScrollBar *CGUIEnvironment::addScrollBar(bool horizontal, const core::rect<s
 }
 
 //! Adds an image element.
-IGUIImage *CGUIEnvironment::addImage(video::ITexture *image, core::position2d<s32> pos,
+IGUIImage *CGUIEnvironment::addImage(video::GLTexture *image, core::position2d<s32> pos,
 		bool useAlphaChannel, IGUIElement *parent, s32 id, const wchar_t *text)
 {
 	core::dimension2d<s32> sz(0, 0);
@@ -910,7 +910,7 @@ IGUISpriteBank *CGUIEnvironment::addEmptySpriteBank(const io::path &name)
 }
 
 //! Creates the image list from the given texture.
-IGUIImageList *CGUIEnvironment::createImageList(video::ITexture *texture,
+IGUIImageList *CGUIEnvironment::createImageList(video::GLTexture *texture,
 		core::dimension2d<s32> imageSize, bool useAlphaChannel)
 {
 	CGUIImageList *imageList = new CGUIImageList(Driver);

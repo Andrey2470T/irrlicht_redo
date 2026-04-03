@@ -89,34 +89,6 @@ public:
 		return Data;
 	}
 
-	//! Get the mipmap size for this image for a certain mipmap level
-	/** level 0 will be full image size. Every further level is half the size.
-		Doesn't care if the image actually has mipmaps, just which size would be needed. */
-	core::dimension2du getMipMapsSize(u32 mipmapLevel) const
-	{
-		return getMipMapsSize(Size, mipmapLevel);
-	}
-
-	//! Calculate mipmap size for a certain level
-	/** level 0 will be full image size. Every further level is half the size.      */
-	static core::dimension2du getMipMapsSize(const core::dimension2du &sizeLevel0, u32 mipmapLevel)
-	{
-		core::dimension2du result(sizeLevel0);
-		u32 i = 0;
-		while (i != mipmapLevel) {
-			if (result.Width > 1)
-				result.Width >>= 1;
-			if (result.Height > 1)
-				result.Height >>= 1;
-			++i;
-
-			if (result.Width == 1 && result.Height == 1 && i < mipmapLevel)
-				return core::dimension2du(0, 0);
-		}
-		return result;
-	}
-
-
 	//! Returns a pixel
 	virtual SColor getPixel(u32 x, u32 y) const = 0;
 

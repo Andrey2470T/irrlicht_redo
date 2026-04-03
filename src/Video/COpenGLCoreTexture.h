@@ -8,7 +8,7 @@
 #include <cassert>
 
 #include "SMaterialLayer.h"
-#include "ITexture.h"
+#include "Texture.h"
 #include "Logger.h"
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
@@ -19,7 +19,7 @@
 namespace video
 {
 
-class COpenGLCoreTexture : public ITexture
+class COpenGLCoreTexture : public Texture
 {
 public:
 	struct SStatesCache
@@ -43,7 +43,7 @@ public:
 	};
 
 	COpenGLCoreTexture(const io::path &name, const std::vector<IImage *> &srcImages, E_TEXTURE_TYPE type, VideoDriver *driver) :
-			ITexture(name, type), Driver(driver), TextureType(GL_TEXTURE_2D),
+			Texture(name, type), Driver(driver), TextureType(GL_TEXTURE_2D),
 			TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_RGBA), PixelType(GL_UNSIGNED_BYTE), MSAA(0), Converter(0), LockReadOnly(false), LockImage(0), LockLayer(0),
 			KeepImage(false), MipLevelStored(0)
 	{
@@ -87,7 +87,7 @@ public:
 		}
 
 		glGenTextures(1, &TextureName);
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
@@ -108,7 +108,7 @@ public:
 			else
 				glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
 		}
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 
 		initTexture(tmpImages->size());
 
@@ -132,11 +132,11 @@ public:
 
 		ctxt->setTextureUnit(0, prevTexture);
 
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 	}
 
 	COpenGLCoreTexture(const io::path &name, const core::dimension2d<u32> &size, E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *driver, u8 msaa = 0) :
-			ITexture(name, type),
+			Texture(name, type),
 			Driver(driver), TextureType(GL_TEXTURE_2D),
 			TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_RGBA), PixelType(GL_UNSIGNED_BYTE), MSAA(msaa), Converter(0), LockReadOnly(false), LockImage(0), LockLayer(0), KeepImage(false),
 			MipLevelStored(0)
@@ -186,7 +186,7 @@ public:
 		g_irrlogger->log(lbuf, ELL_DEBUG);
 
 		glGenTextures(1, &TextureName);
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 		if (!TextureName) {
 			g_irrlogger->log("COpenGLCoreTexture: texture not created", ELL_ERROR);
 			return;
@@ -218,7 +218,7 @@ public:
 			Driver->GLInfo->ObjectLabel(GL_TEXTURE, TextureName, name.c_str());
 
 		ctxt->setTextureUnit(0, prevTexture);
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 	}
 
 	virtual ~COpenGLCoreTexture()
@@ -282,12 +282,12 @@ public:
 				IImage *tmpImage = LockImage;
 
 				ctxt->setTextureUnit(0, this);
-				Driver->testGLError();
+				TEST_GL_ERROR(Driver);
 
 				GLenum tmpTextureType = getTextureTarget(layer);
 
 				glGetTexImage(tmpTextureType, MipLevelStored, PixelFormat, PixelType, tmpImage->getData());
-				Driver->testGLError();
+				TEST_GL_ERROR(Driver);
 
 				if (IsRenderTarget && lockFlags == ETLF_FLIP_Y_UP_RTT)
 					flipImageY(tmpImage);
@@ -379,7 +379,7 @@ public:
 		Driver->getContext()->setTextureUnit(0, this);
 
 		glGenerateMipmap(TextureType);
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 
 		Driver->getContext()->setTextureUnit(0, prevTexture);
 	}
@@ -525,7 +525,7 @@ protected:
 				glTexImage2D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 			}
-			Driver->testGLError();
+			TEST_GL_ERROR(Driver);
 			break;
 		case ETT_2D_MS: {
 			GLint max_samples = 0;
@@ -541,7 +541,7 @@ protected:
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
 			else
 				glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, MSAA, InternalFormat, Size.Width, Size.Height, GL_TRUE);
-			Driver->testGLError();
+			TEST_GL_ERROR(Driver);
 			break;
 		}
 		case ETT_CUBEMAP:
@@ -554,7 +554,7 @@ protected:
 					glTexImage2D(target, 0, InternalFormat,
 						Size.Width, Size.Height, 0, PixelFormat, PixelType, 0);
 				}
-				Driver->testGLError();
+				TEST_GL_ERROR(Driver);
 			}
 			break;
 		case ETT_2D_ARRAY:
@@ -565,7 +565,7 @@ protected:
 				glTexImage3D(TextureType, 0, InternalFormat,
 					Size.Width, Size.Height, layers, 0, PixelFormat, PixelType, 0);
 			}
-			Driver->testGLError();
+			TEST_GL_ERROR(Driver);
 			break;
 		default:
 			assert(false);
@@ -611,7 +611,7 @@ protected:
 			assert(false);
 			break;
 		}
-		Driver->testGLError();
+		TEST_GL_ERROR(Driver);
 
 		delete tmpImage;
 	}

@@ -17,7 +17,7 @@
 #include "GLSpecificInfo.h"
 #include "RenderTarget.h"
 #include "DrawContext.h"
-#include "Video/COpenGLCoreTexture.h"
+#include "Texture.h"
 
 #include "EVertexAttributes.h"
 #include "Image/CImage.h"
@@ -28,6 +28,7 @@
 #include "Image/CImageLoaderTGA.h"
 #include "Image/CImageWriterJPG.h"
 #include "Image/CImageWriterPNG.h"
+#include "Image/CColorConverter.h"
 #include "IO/CWriteFile.h"
 
 
@@ -66,7 +67,7 @@ VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io,
 
 	Device->grab();
 
-	testGLError();
+	TEST_GL_ERROR(this);
 }
 
 VideoDriver::~VideoDriver()
@@ -160,7 +161,7 @@ bool VideoDriver::genericDriverInit(const core::dimension2d<u32> &screenSize, bo
 	// This fixes problems with intermediate changes to the material during texture load.
 	ResetRenderStates = true;
 
-	testGLError();
+	TEST_GL_ERROR(this);
 
 	return true;
 }
@@ -202,7 +203,7 @@ bool VideoDriver::uploadHardwareBuffer(OpenGLVBO &vbo,
 	accountHWBufferUpload(bufferSize);
 	vbo.upload(buffer, bufferSize, 0, hint);
 
-	return (!testGLError());
+	return (!TEST_GL_ERROR(this));
 }
 
 bool VideoDriver::updateVertexHardwareBuffer(SHWBufferLink *HWBuffer)
@@ -437,7 +438,7 @@ void VideoDriver::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCoun
 }
 
 //! draws an 2d image
-void VideoDriver::draw2DImage(const video::ITexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture)
+void VideoDriver::draw2DImage(const GLTexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture)
 {
 	if (!texture)
 		return;
@@ -448,7 +449,7 @@ void VideoDriver::draw2DImage(const video::ITexture *texture, const core::positi
 			useAlphaChannelOfTexture);
 }
 
-void VideoDriver::draw2DImage(const video::ITexture *texture, const core::position2d<s32> &destPos,
+void VideoDriver::draw2DImage(const GLTexture *texture, const core::position2d<s32> &destPos,
 		const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect, SColor color,
 		bool useAlphaChannelOfTexture)
 {
@@ -462,7 +463,7 @@ void VideoDriver::draw2DImage(const video::ITexture *texture, const core::positi
 	draw2DImage(texture, {destPos, sourceRect.getSize()}, sourceRect, clipRect, colors, useAlphaChannelOfTexture);
 }
 
-void VideoDriver::draw2DImage(const video::ITexture *texture, const core::rect<s32> &destRect,
+void VideoDriver::draw2DImage(const GLTexture *texture, const core::rect<s32> &destRect,
 		const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect,
 		const video::SColor *const colors, bool useAlphaChannelOfTexture)
 {
@@ -524,10 +525,10 @@ void VideoDriver::draw2DImage(const video::ITexture *texture, const core::rect<s
 	if (clipRect)
 		glDisable(GL_SCISSOR_TEST);
 
-	testGLError();
+	TEST_GL_ERROR(this);
 }
 
-void VideoDriver::draw2DImage(const video::ITexture *texture, u32 layer, bool flip)
+void VideoDriver::draw2DImage(const GLTexture *texture, u32 layer, bool flip)
 {
 	if (!texture)
 		return;
@@ -560,7 +561,7 @@ void VideoDriver::draw2DImage(const video::ITexture *texture, u32 layer, bool fl
 	drawQuad(vt2DImage, quad2DVertices);
 }
 
-void VideoDriver::draw2DImageBatch(const video::ITexture *texture,
+void VideoDriver::draw2DImageBatch(const GLTexture *texture,
 		const core::array<core::position2d<s32>> &positions,
 		const core::array<core::rect<s32>> &sourceRects,
 		const core::rect<s32> *clipRect,
@@ -808,13 +809,8 @@ void VideoDriver::endDraw(const VertexType &vertexType)
 		glDisableVertexAttribArray(attr.Index);
 }
 
-ITexture *VideoDriver::createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type, const std::vector<IImage*> &images)
-{
-	return new COpenGLCoreTexture(name, images, type, this);
-}
-
 //! prints error if an error happened.
-bool VideoDriver::testGLError()
+bool VideoDriver::testGLError(const char *file, int line)
 {
 	if (!EnableErrorTest)
 		return false;
@@ -856,9 +852,6 @@ bool VideoDriver::testGLError()
 	bool multiple = false;
 	while (glGetError() != GL_NO_ERROR)
 		multiple = true;
-
-	const char *file = __FILE__;
-	int line = __LINE__;
 
 	// basename
 	for (char sep : {'/', '\\'}) {
@@ -977,20 +970,20 @@ ECOLOR_FORMAT VideoDriver::getColorFormat() const
 	return ColorFormat;
 }
 
-ITexture *VideoDriver::addRenderTargetTexture(const core::dimension2d<u32> &size,
+GLTexture *VideoDriver::addRenderTargetTexture(const core::dimension2d<u32> &size,
 		const io::path &name, const ECOLOR_FORMAT format)
 {
 	return addRenderTargetTextureMs(size, 0, name, format);
 }
 
-ITexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
+GLTexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
 		const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
 
-	COpenGLCoreTexture *renderTargetTexture = new COpenGLCoreTexture(name, size, msaa > 0 ? ETT_2D_MS : ETT_2D, format, this, msaa);
+	auto renderTargetTexture = new GLTexture(this, msaa > 0 ? ETT_2D_MS : ETT_2D, name, size, format, msaa);
 	addTexture(renderTargetTexture);
 	renderTargetTexture->drop();
 
@@ -1000,7 +993,7 @@ ITexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2d<u32> &si
 	return renderTargetTexture;
 }
 
-ITexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
+GLTexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
@@ -1016,7 +1009,7 @@ ITexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io
 		destSize = destSize.getOptimalSize((size == size.getOptimalSize()), false, false);
 	}
 
-	COpenGLCoreTexture *renderTargetTexture = new COpenGLCoreTexture(name, destSize, ETT_CUBEMAP, format, this);
+	auto renderTargetTexture = new GLTexture(this, ETT_CUBEMAP, name, destSize, format);
 	addTexture(renderTargetTexture);
 	renderTargetTexture->drop();
 
@@ -1027,12 +1020,12 @@ ITexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io
 }
 
 //! loads a Texture
-ITexture *VideoDriver::getTexture(const io::path &filename)
+GLTexture *VideoDriver::getTexture(const io::path &filename)
 {
 	// Identify textures by their absolute filenames if possible.
 	const io::path absolutePath = FileSystem->getAbsolutePath(filename);
 
-	ITexture *texture = findTexture(absolutePath);
+	GLTexture *texture = findTexture(absolutePath);
 	if (texture)
 		return texture;
 
@@ -1073,9 +1066,9 @@ ITexture *VideoDriver::getTexture(const io::path &filename)
 }
 
 //! loads a Texture
-ITexture *VideoDriver::getTexture(io::IReadFile *file)
+GLTexture *VideoDriver::getTexture(io::IReadFile *file)
 {
-	ITexture *texture = 0;
+	GLTexture *texture = 0;
 
 	if (file) {
 		texture = findTexture(file->getFileName());
@@ -1098,7 +1091,7 @@ ITexture *VideoDriver::getTexture(io::IReadFile *file)
 }
 
 //! looks if the image is already loaded
-video::ITexture *VideoDriver::findTexture(const io::path &filename)
+GLTexture *VideoDriver::findTexture(const io::path &filename)
 {
 	SSurface s;
 	s.Name = filename;
@@ -1111,16 +1104,14 @@ video::ITexture *VideoDriver::findTexture(const io::path &filename)
 }
 
 //! opens the file and loads it into the surface
-video::ITexture *VideoDriver::loadTextureFromFile(io::IReadFile *file, const io::path &hashName)
+GLTexture *VideoDriver::loadTextureFromFile(io::IReadFile *file, const io::path &hashName)
 {
-	ITexture *texture = nullptr;
-
 	IImage *image = createImageFromFile(file);
 	if (!image)
 		return nullptr;
 
 	std::vector tmp { image };
-	texture = createDeviceDependentTexture(hashName.size() ? hashName : file->getFileName(), ETT_2D, tmp);
+	auto texture = new GLTexture(this, ETT_2D, hashName.size() ? hashName : file->getFileName(), tmp);
 	if (texture)
 		g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
 
@@ -1166,14 +1157,14 @@ bool VideoDriver::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor 
 	return true;
 }
 
-bool VideoDriver::setRenderTarget(ITexture *texture, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
+bool VideoDriver::setRenderTarget(GLTexture *texture, u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil)
 {
 	if (texture) {
 		// create render target if require.
 		if (!SharedRenderTarget)
 			SharedRenderTarget = addRenderTarget();
 
-		ITexture *depthTexture = 0;
+		GLTexture *depthTexture = 0;
 
 		// try to find available depth texture with require size.
 		for (u32 i = 0; i < SharedDepthTextures.size(); ++i) {
@@ -1242,7 +1233,7 @@ IImage *VideoDriver::createScreenShot(video::ECOLOR_FORMAT format, video::E_REND
 	}
 
 	glReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, internalformat, type, pixels);
-	testGLError();
+	TEST_GL_ERROR(this);
 
 	// opengl images are horizontally flipped, so we have to fix that here.
 	const s32 pitch = newImage->getPitch();
@@ -1270,14 +1261,14 @@ IImage *VideoDriver::createScreenShot(video::ECOLOR_FORMAT format, video::E_REND
 		}
 	}
 
-	if (testGLError()) {
+	if (TEST_GL_ERROR(this)) {
 		newImage->drop();
 		return 0;
 	}
 	return newImage;
 }
 
-void VideoDriver::removeTexture(ITexture *texture)
+void VideoDriver::removeTexture(GLTexture *texture)
 {
 	Context->removeTexture(texture);
 
@@ -1436,49 +1427,26 @@ bool VideoDriver::isHardwareBufferRecommend(const scene::IIndexBuffer *ib)
 	return true;
 }
 
-ITexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format)
+GLTexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format)
 {
 	IImage *image = new CImage(format, size);
-	ITexture *t = addTexture(name, image);
+	GLTexture *t = addTexture(name, image);
 	image->drop();
 	return t;
 }
 
-bool VideoDriver::checkImage(const std::vector<IImage*> &image) const
-{
-	if (image.empty())
-		return false;
-
-	ECOLOR_FORMAT lastFormat = image[0]->getColorFormat();
-	auto lastSize = image[0]->getDimension();
-
-	for (size_t i = 0; i < image.size(); ++i) {
-		if (!image[i])
-			return false;
-
-		ECOLOR_FORMAT format = image[i]->getColorFormat();
-		auto size = image[i]->getDimension();
-
-		if (format != lastFormat || size != lastSize)
-			return false;
-	}
-	return true;
-}
-
-ITexture *VideoDriver::addTexture(const io::path &name, IImage *image)
+GLTexture *VideoDriver::addTexture(const io::path &name, IImage *image)
 {
 	if (0 == name.size()) {
-		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		g_irrlogger->log("Could not create Texture, texture needs to have a non-empty name.", ELL_WARNING);
 		return 0;
 	}
 
 	if (!image)
 		return 0;
 
-	ITexture *t = 0;
-
 	std::vector tmp { image };
-	t = createDeviceDependentTexture(name, ETT_2D, tmp);
+	auto t = new GLTexture(this, ETT_2D, name, tmp);
 
 	if (t) {
 		addTexture(t);
@@ -1488,34 +1456,11 @@ ITexture *VideoDriver::addTexture(const io::path &name, IImage *image)
 	return t;
 }
 
-ITexture *VideoDriver::addArrayTexture(const io::path &name, IImage **images, u32 count)
-{
-	if (0 == name.size()) {
-		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
-		return 0;
-	}
-
-	// this is stupid but who cares
-	std::vector<IImage*> tmp(images, images + count);
-
-	ITexture *t = nullptr;
-	if (checkImage(tmp)) {
-		t = createDeviceDependentTexture(name, ETT_2D_ARRAY, tmp);
-	}
-	if (t) {
-		addTexture(t);
-		t->drop();
-	}
-	return t;
-}
-
-ITexture *VideoDriver::addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
+GLTexture *VideoDriver::addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
 		IImage *imageNegY, IImage *imagePosZ, IImage *imageNegZ)
 {
 	if (0 == name.size() || !imagePosX || !imageNegX || !imagePosY || !imageNegY || !imagePosZ || !imageNegZ)
 		return 0;
-
-	ITexture *t = 0;
 
 	std::vector<IImage*> imageArray;
 	imageArray.push_back(imagePosX);
@@ -1525,9 +1470,7 @@ ITexture *VideoDriver::addTextureCubemap(const io::path &name, IImage *imagePosX
 	imageArray.push_back(imagePosZ);
 	imageArray.push_back(imageNegZ);
 
-	if (checkImage(imageArray)) {
-		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
-	}
+	auto t = new GLTexture(this, ETT_CUBEMAP, name, imageArray);
 
 	if (t) {
 		addTexture(t);
@@ -1537,13 +1480,13 @@ ITexture *VideoDriver::addTextureCubemap(const io::path &name, IImage *imagePosX
 	return t;
 }
 
-ITexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format)
+GLTexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format)
 {
 	if (0 == sideLen)
 		return 0;
 
 	if (0 == name.size()) {
-		g_irrlogger->log("Could not create ITexture, texture needs to have a non-empty name.", ELL_WARNING);
+		g_irrlogger->log("Could not create Texture, texture needs to have a non-empty name.", ELL_WARNING);
 		return 0;
 	}
 
@@ -1551,14 +1494,11 @@ ITexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &name
 	for (int i = 0; i < 6; ++i)
 		imageArray.push_back(new CImage(format, core::dimension2du(sideLen, sideLen)));
 
-	ITexture *t = 0;
-	if (checkImage(imageArray)) {
-		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
+	GLTexture *t = new GLTexture(this, ETT_CUBEMAP, name, imageArray);
 
-		if (t) {
-			addTexture(t);
-			t->drop();
-		}
+	if (t) {
+		addTexture(t);
+		t->drop();
 	}
 
 	for (int i = 0; i < 6; ++i)
@@ -1567,7 +1507,7 @@ ITexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &name
 	return t;
 }
 
-void VideoDriver::addTexture(ITexture *texture)
+void VideoDriver::addTexture(GLTexture *texture)
 {
 	if (texture) {
 		SSurface s;
@@ -1700,16 +1640,11 @@ IImage *VideoDriver::createImage(ECOLOR_FORMAT format, const core::dimension2d<u
 }
 
 //! Creates a software image from part of a texture.
-IImage *VideoDriver::createImage(ITexture *texture, const core::position2d<s32> &pos, const core::dimension2d<u32> &size)
+IImage *VideoDriver::createImage(GLTexture *texture, const core::position2d<s32> &pos, const core::dimension2d<u32> &size)
 {
-	if ((pos == core::position2di(0, 0)) && (size == texture->getSize())) {
-		void *data = texture->lock(ETLM_READ_ONLY);
-		if (!data)
-			return 0;
-		IImage *image = new CImage(texture->getColorFormat(), size, data, false, false);
-		texture->unlock();
-		return image;
-	} else {
+	if ((pos == core::position2di(0, 0)) && (size == texture->getSize()))
+		return new CImage(texture->getColorFormat(), size, texture->downloadData(), false, false);
+	else {
 		// make sure to avoid buffer overruns
 		// make the vector a separate variable for g++ 3.x
 		const core::vector2d<u32> leftUpper(core::clamp(static_cast<u32>(pos.X), 0u, texture->getSize().Width),
@@ -1719,9 +1654,7 @@ IImage *VideoDriver::createImage(ITexture *texture, const core::position2d<s32> 
 						core::clamp(static_cast<u32>(size.Height), 0u, texture->getSize().Height)));
 		if (!clamped.isValid())
 			return 0;
-		u8 *src = static_cast<u8 *>(texture->lock(ETLM_READ_ONLY));
-		if (!src)
-			return 0;
+		u8 *src = texture->downloadData();
 		IImage *image = new CImage(texture->getColorFormat(), clamped.getSize());
 		u8 *dst = static_cast<u8 *>(image->getData());
 		src += clamped.UpperLeftCorner.Y * texture->getPitch() + image->getBytesPerPixel() * clamped.UpperLeftCorner.X;
@@ -1730,7 +1663,6 @@ IImage *VideoDriver::createImage(ITexture *texture, const core::position2d<s32> 
 			src += texture->getPitch();
 			dst += image->getPitch();
 		}
-		texture->unlock();
 		return image;
 	}
 }

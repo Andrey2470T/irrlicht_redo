@@ -10,7 +10,7 @@
 
 namespace video
 {
-class ITexture;
+class GLTexture;
 }
 namespace gui
 {
@@ -23,10 +23,10 @@ public:
 			IGUIElement(EGUIET_IMAGE, environment, parent, id, rectangle) {}
 
 	//! Sets an image texture
-	virtual void setImage(video::ITexture *image) = 0;
+	virtual void setImage(video::GLTexture *image) = 0;
 
 	//! Gets the image texture
-	virtual video::ITexture *getImage() const = 0;
+	virtual video::GLTexture *getImage() const = 0;
 
 	//! Sets the color of the image
 	/** \param color Color with which the image is drawn. If the color

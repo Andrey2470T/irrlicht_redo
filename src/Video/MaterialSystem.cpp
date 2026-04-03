@@ -13,8 +13,7 @@
 #include "Renderer2D.h"
 #include "MaterialRenderer.h"
 #include "MaterialCallbacks.h"
-
-#include "Video/COpenGLCoreTexture.h"
+#include "Texture.h"
 
 namespace video
 {
@@ -441,17 +440,6 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 	setTextureRenderStates(material, resetAllRenderStates);
 }
 
-std::array<GLenum, EBF_COUNT> toGLWrapMode = {
-	GL_REPEAT,
-	GL_CLAMP_TO_EDGE,
-	GL_CLAMP_TO_EDGE,
-	GL_CLAMP_TO_EDGE,
-	GL_REPEAT,
-	GL_REPEAT,
-	GL_REPEAT,
-	GL_REPEAT
-};
-
 //! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
 void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates)
 {
@@ -460,83 +448,25 @@ void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool rese
 	// Set textures to TU/TIU and apply filters to them
 
 	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
-		auto tmpTexture = static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(i));
+		auto tex = const_cast<GLTexture *>(Driver->Context->getTextureUnit(i));
 
-		if (!tmpTexture)
+		if (!tex)
 			continue;
-
-		GLenum tmpTextureType = tmpTexture->getOpenGLTextureType();
 
 		Driver->Context->activateUnit(i);
 
 		const auto &layer = material.TextureLayers[i];
-		auto &states = tmpTexture->getStatesCache();
 
-		if (resetAllRenderstates)
-			states.IsCached = false;
+		TextureSettings newSettings;
+		newSettings.hasMipMaps = material.UseMipMaps;
+		newSettings.wrapU = (video::E_TEXTURE_CLAMP)layer.TextureWrapU;
+		newSettings.wrapV = (video::E_TEXTURE_CLAMP)layer.TextureWrapV;
+		newSettings.minF = layer.MinFilter;
+		newSettings.magF = layer.MagFilter;
+		newSettings.lodBias = layer.LODBias;
+		newSettings.anisotropyFilter = layer.AnisotropicFilter;
 
-		if (!states.IsCached || layer.MagFilter != states.MagFilter) {
-			E_TEXTURE_MAG_FILTER magFilter = layer.MagFilter;
-			glTexParameteri(tmpTextureType, GL_TEXTURE_MAG_FILTER,
-					magFilter == ETMAGF_NEAREST ? GL_NEAREST : (assert(magFilter == ETMAGF_LINEAR), GL_LINEAR));
-
-			states.MagFilter = magFilter;
-		}
-
-		if (material.UseMipMaps && tmpTexture->hasMipMaps()) {
-			if (!states.IsCached || layer.MinFilter != states.MinFilter ||
-					!states.MipMapStatus) {
-				E_TEXTURE_MIN_FILTER minFilter = layer.MinFilter;
-				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-						minFilter == ETMINF_NEAREST_MIPMAP_NEAREST ? GL_NEAREST_MIPMAP_NEAREST : minFilter == ETMINF_LINEAR_MIPMAP_NEAREST ? GL_LINEAR_MIPMAP_NEAREST
-																						 : minFilter == ETMINF_NEAREST_MIPMAP_LINEAR       ? GL_NEAREST_MIPMAP_LINEAR
-																																		   : (assert(minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR_MIPMAP_LINEAR));
-
-				states.MinFilter = minFilter;
-				states.MipMapStatus = true;
-			}
-		} else {
-			if (!states.IsCached || layer.MinFilter != states.MinFilter ||
-					states.MipMapStatus) {
-				E_TEXTURE_MIN_FILTER minFilter = layer.MinFilter;
-				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-						(minFilter == ETMINF_NEAREST_MIPMAP_NEAREST || minFilter == ETMINF_NEAREST_MIPMAP_LINEAR) ? GL_NEAREST : (assert(minFilter == ETMINF_LINEAR_MIPMAP_NEAREST || minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR));
-
-				states.MinFilter = minFilter;
-				states.MipMapStatus = false;
-			}
-		}
-
-		if (features.LODBiasSupported &&
-			(!states.IsCached || layer.LODBias != states.LODBias)) {
-			if (layer.LODBias) {
-				const float tmp = core::clamp(layer.LODBias * 0.125f, -features.MaxTextureLODBias, features.MaxTextureLODBias);
-				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, tmp);
-			} else
-				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, 0.f);
-
-			states.LODBias = layer.LODBias;
-		}
-
-		if (features.AnisotropicFilterSupported &&
-				(!states.IsCached || layer.AnisotropicFilter != states.AnisotropicFilter)) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_MAX_ANISOTROPY,
-					layer.AnisotropicFilter > 1 ? core::min_(features.MaxAnisotropy, layer.AnisotropicFilter) : 1);
-
-			states.AnisotropicFilter = layer.AnisotropicFilter;
-		}
-
-		if (!states.IsCached || layer.TextureWrapU != states.WrapU) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, toGLWrapMode[layer.TextureWrapU]);
-			states.WrapU = layer.TextureWrapU;
-		}
-
-		if (!states.IsCached || layer.TextureWrapV != states.WrapV) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, toGLWrapMode[layer.TextureWrapV]);
-			states.WrapV = layer.TextureWrapV;
-		}
-
-		states.IsCached = true;
+		tex->updateParameters(newSettings, resetAllRenderstates);
 	}
 }
 
@@ -577,7 +507,7 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 		Driver->Context->setBlendOp(EBO_ADD);
 	}
 
-	Material.setTexture(0, const_cast<COpenGLCoreTexture *>(static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(0))));
+	Material.setTexture(0, const_cast<GLTexture *>(Driver->Context->getTextureUnit(0)));
 	Driver->setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
 
 	if (texture) {
@@ -668,9 +598,9 @@ void MaterialSystem::createMaterialRenderers()
 	delete[] fs2DData;
 }
 
-bool MaterialSystem::setMaterialTexture(u32 layerIdx, const video::ITexture *texture)
+bool MaterialSystem::setMaterialTexture(u32 layerIdx, const GLTexture *texture)
 {
-	Material.TextureLayers[layerIdx].Texture = const_cast<ITexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
+	Material.TextureLayers[layerIdx].Texture = const_cast<GLTexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
 	return Driver->Context->setTextureUnit(0, texture);
 }
 

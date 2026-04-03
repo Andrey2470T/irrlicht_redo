@@ -11,7 +11,7 @@
 
 namespace video
 {
-class ITexture;
+class GLTexture;
 } // end namespace video
 
 namespace gui
@@ -157,32 +157,32 @@ public:
 	\param state: One of ::EGUI_BUTTON_IMAGE_STATE
 	\param image: Image to be displayed or NULL to remove the image
 	\param sourceRect: Source rectangle on the image texture. When width or height are 0 then the full texture-size is used (default). */
-	virtual void setImage(EGUI_BUTTON_IMAGE_STATE state, video::ITexture *image = 0, const core::rect<s32> &sourceRect = core::rect<s32>(0, 0, 0, 0)) = 0;
+	virtual void setImage(EGUI_BUTTON_IMAGE_STATE state, video::GLTexture *image = 0, const core::rect<s32> &sourceRect = core::rect<s32>(0, 0, 0, 0)) = 0;
 
 	//! Sets an image which should be displayed on the button when it is in normal state.
 	/** This is identical to calling setImage(EGBIS_IMAGE_UP, image); and might be deprecated in future revisions.
 	\param image: Image to be displayed */
-	virtual void setImage(video::ITexture *image = 0) = 0;
+	virtual void setImage(video::GLTexture *image = 0) = 0;
 
 	//! Sets a background image for the button when it is in normal state.
 	/** This is identical to calling setImage(EGBIS_IMAGE_UP, image, sourceRect); and might be deprecated in future revisions.
 	\param image: Texture containing the image to be displayed
 	\param sourceRect: Position in the texture, where the image is located.
 	When width or height are 0 then the full texture-size is used */
-	virtual void setImage(video::ITexture *image, const core::rect<s32> &sourceRect) = 0;
+	virtual void setImage(video::GLTexture *image, const core::rect<s32> &sourceRect) = 0;
 
 	//! Sets a background image for the button when it is in pressed state.
 	/** This is identical to calling setImage(EGBIS_IMAGE_DOWN, image); and might be deprecated in future revisions.
 	If no images is specified for the pressed state via
 	setPressedImage(), this image is also drawn in pressed state.
 	\param image: Image to be displayed */
-	virtual void setPressedImage(video::ITexture *image = 0) = 0;
+	virtual void setPressedImage(video::GLTexture *image = 0) = 0;
 
 	//! Sets an image which should be displayed on the button when it is in pressed state.
 	/** This is identical to calling setImage(EGBIS_IMAGE_DOWN, image, sourceRect); and might be deprecated in future revisions.
 	\param image: Texture containing the image to be displayed
 	\param sourceRect: Position in the texture, where the image is located */
-	virtual void setPressedImage(video::ITexture *image, const core::rect<s32> &sourceRect) = 0;
+	virtual void setPressedImage(video::GLTexture *image, const core::rect<s32> &sourceRect) = 0;
 
 	//! Sets the sprite bank used by the button
 	/** NOTE: The spritebank itself is _not_ serialized so far. The sprites are serialized.

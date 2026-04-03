@@ -281,6 +281,7 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 		Video/MaterialSystem.cpp
 		Video/Renderer2D.cpp
 		Video/RenderTarget.cpp
+		Video/Texture.cpp
 		Video/VBO.cpp
 		Video/VideoDriver.cpp
 	)

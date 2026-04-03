@@ -3,7 +3,7 @@
 #include "VideoDriver.h"
 #include "Common.h"
 #include "OpenGLFeatures.h"
-#include "COpenGLCoreTexture.h"
+#include "Texture.h"
 #include "Logger.h"
 
 namespace video
@@ -121,7 +121,7 @@ u32 DrawContext::getProgram() const
 	return curProgramID;
 }
 
-const ITexture *DrawContext::getTextureUnit(u32 index) const
+const GLTexture *DrawContext::getTextureUnit(u32 index) const
 {
     if (index >= textureUnits.size()) {
 		g_irrlogger->log("DrawContext::getActiveUnit() indexing the active unit out of the range", ELL_ERROR);
@@ -131,7 +131,7 @@ const ITexture *DrawContext::getTextureUnit(u32 index) const
     return textureUnits[index];
 }
 
-std::vector<const ITexture *> DrawContext::getTextureUnits() const
+std::vector<const GLTexture *> DrawContext::getTextureUnits() const
 {
     return textureUnits;
 }
@@ -198,7 +198,7 @@ void DrawContext::setProgram(u32 programID)
 		glUseProgram(programID);
 		curProgramID = programID;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -207,11 +207,11 @@ void DrawContext::activateUnit(u32 index)
 	if (activeUnit != index) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		activeUnit = index;
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
-bool DrawContext::setTextureUnit(u32 index, const ITexture *texture)
+bool DrawContext::setTextureUnit(u32 index, const GLTexture *texture)
 {
     if (index >= textureUnits.size()) {
 		g_irrlogger->log("DrawContext::setActiveUnit() setting the new active unit index out of the range", ELL_ERROR);
@@ -222,17 +222,13 @@ bool DrawContext::setTextureUnit(u32 index, const ITexture *texture)
 
     if (textureUnits[index] != texture) {
         if (textureUnits[index]) {
-			auto texImpl = static_cast<const COpenGLCoreTexture *>(textureUnits[index]);
-			glBindTexture(texImpl->getOpenGLTextureType(), 0);
-			driver->testGLError();
+			textureUnits[index]->unbind();
 
 			textureUnits[index]->drop();
             textureUnits[index] = nullptr;
         }
         if (texture) {
-			auto texImpl = static_cast<const COpenGLCoreTexture *>(texture);
-			glBindTexture(texImpl->getOpenGLTextureType(), texImpl->getID());
-			driver->testGLError();
+			texture->bind();
 
 			texture->grab();
             textureUnits[index] = texture;
@@ -242,7 +238,7 @@ bool DrawContext::setTextureUnit(u32 index, const ITexture *texture)
 	return true;
 }
 
-void DrawContext::removeTexture(ITexture *texture)
+void DrawContext::removeTexture(GLTexture *texture)
 {
 	if (!texture)
 		return;
@@ -265,7 +261,7 @@ void DrawContext::enableBlend(bool blend)
 
         curBlend.enabled = blend;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
     }
 }
 
@@ -300,7 +296,7 @@ void DrawContext::setBlendColor(const SColorf &color)
 
         curBlend.color = color;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
     }
 }
 
@@ -317,7 +313,7 @@ void DrawContext::setBlendFunc(E_BLEND_FACTOR src, E_BLEND_FACTOR dest)
 		curBlend.func_srca = src;
 		curBlend.func_desta = dest;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
     }
 }
 
@@ -337,13 +333,13 @@ void DrawContext::setBlendSeparateFunc(E_BLEND_FACTOR srcrgb, E_BLEND_FACTOR des
 			curBlend.func_srca = srca;
 			curBlend.func_desta = desta;
 
-			driver->testGLError();
+			TEST_GL_ERROR(driver);
 		}
 	}
 	else {
 		setBlendFunc(srcrgb, destrgb);
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -356,7 +352,7 @@ void DrawContext::setBlendOp(E_BLEND_OPERATION op)
 
 		curBlend.mode = op;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -370,7 +366,7 @@ void DrawContext::enableDepthTest(bool depthtest)
 
 		curDepthTest.enabled = depthtest;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -382,7 +378,7 @@ void DrawContext::setDepthMask(bool depthmask)
 		glDepthMask(depthmask);
 		curDepthTest.mask = depthmask;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -394,7 +390,7 @@ void DrawContext::setDepthFunc(E_COMPARISON_FUNC depthfunc)
 		glDepthFunc(toGLCompareFunc[depthfunc]);
 		curDepthTest.func = depthfunc;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -408,7 +404,7 @@ void DrawContext::enableCullFace(bool cullface)
 
 		curCullFace.enabled = cullface;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -420,7 +416,7 @@ void DrawContext::setCullMode(E_CULL_MODE cullmode)
 		glCullFace(toGLCullMode[cullmode]);
 		curCullFace.mode = cullmode;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -434,7 +430,7 @@ void DrawContext::enableStencilTest(bool stenciltest)
 
 		curStencilTest.enabled = stenciltest;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -448,7 +444,7 @@ void DrawContext::setStencilFunc(E_COMPARISON_FUNC stencilfunc, s32 ref, u32 mas
 		curStencilTest.ref = ref;
 		curStencilTest.mask = mask;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -460,7 +456,7 @@ void DrawContext::setStencilMask(u32 stencilmask)
         glStencilMask(stencilmask);
 		curStencilTest.mask = stencilmask;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -476,7 +472,7 @@ void DrawContext::setStencilOp(E_STENCIL_OP _sfail_op, E_STENCIL_OP _dpfail_op, 
 		curStencilTest.dpfail_op = _dpfail_op;
 		curStencilTest.dppass_op = _dppass_op;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -489,7 +485,7 @@ void DrawContext::enableScissorTest(bool scissortest)
 
 	curScissorTest.enabled = scissortest;
 
-	driver->testGLError();
+	TEST_GL_ERROR(driver);
 }
 
 void DrawContext::setScissorBox(const core::recti &box)
@@ -503,7 +499,7 @@ void DrawContext::setScissorBox(const core::recti &box)
 
 	curScissorTest.box = box;
 
-	driver->testGLError();
+	TEST_GL_ERROR(driver);
 }
 
 void DrawContext::enablePolygonOffset(bool polygonoffset)
@@ -516,7 +512,7 @@ void DrawContext::enablePolygonOffset(bool polygonoffset)
 
 		curPolygonOffset.enabled = polygonoffset;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -529,7 +525,7 @@ void DrawContext::setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias)
 		curPolygonOffset.slope_scale = slope_scaled;
 		curPolygonOffset.depth_bias = depth_bias;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
     }
 }
 
@@ -542,7 +538,7 @@ void DrawContext::setPolygonMode(E_CULL_MODE face, E_POLYGON_MODE mode)
 		curPolygonMode.face = face;
 		curPolygonMode.mode = mode;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 #endif
 }
@@ -553,7 +549,7 @@ void DrawContext::setPointSize(f32 pointsize)
 		glPointSize(pointsize);
 		pointSize = pointsize;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -563,7 +559,7 @@ void DrawContext::setLineWidth(f32 linewidth)
 		glLineWidth(linewidth);
 		lineWidth = linewidth;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -577,7 +573,7 @@ void DrawContext::enableSampleCoverage(bool samplecoverage)
 
 		sampleCoverage = samplecoverage;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -588,7 +584,7 @@ void DrawContext::setViewport(s32 x, s32 y, s32 w, s32 h)
 		glViewport(x, y, w, h);
 		viewport = targetRect;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
 	}
 }
 
@@ -637,7 +633,7 @@ void DrawContext::setColorMask(u8 mask)
 
 		colorMask = mask;
 
-		driver->testGLError();
+		TEST_GL_ERROR(driver);
     }
 }
 

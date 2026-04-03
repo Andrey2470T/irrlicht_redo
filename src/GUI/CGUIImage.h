@@ -20,10 +20,10 @@ public:
 	virtual ~CGUIImage();
 
 	//! sets an image
-	void setImage(video::ITexture *image) override;
+	void setImage(video::GLTexture *image) override;
 
 	//! Gets the image texture
-	video::ITexture *getImage() const override;
+	video::GLTexture *getImage() const override;
 
 	//! sets the color of the image
 	void setColor(video::SColor color) override;
@@ -83,7 +83,7 @@ protected:
 	}
 
 private:
-	video::ITexture *Texture;
+	video::GLTexture *Texture;
 	video::SColor Color;
 	bool UseAlphaChannel;
 	bool ScaleImage;

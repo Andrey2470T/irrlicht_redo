@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SMaterial.h"
-#include "ITexture.h"
 #include <vector>
 
 namespace video
@@ -96,6 +95,7 @@ enum ClearBufferFlags : u8
 
 class RenderTarget;
 class VideoDriver;
+class GLTexture;
 
 class DrawContext
 {
@@ -104,7 +104,7 @@ class DrawContext
 	u32 curProgramID = 0;
 
     u32 maxTextureUnits;
-	std::vector<const ITexture *> textureUnits;
+	std::vector<const GLTexture *> textureUnits;
     u32 activeUnit;
 
     BlendState curBlend;
@@ -136,8 +136,8 @@ public:
 
 	RenderTarget *getRenderTarget() const;
 	u32 getProgram() const;
-	const ITexture *getTextureUnit(u32 index) const;
-	std::vector<const ITexture *> getTextureUnits() const;
+	const GLTexture *getTextureUnit(u32 index) const;
+	std::vector<const GLTexture *> getTextureUnits() const;
 
 	BlendState getBlendState() const;
 	DepthTestState getDepthTest() const;
@@ -153,8 +153,8 @@ public:
 	void setRenderTarget(RenderTarget *rt);
 	void setProgram(u32 programID);
 	void activateUnit(u32 index);
-	bool setTextureUnit(u32 index, const ITexture *texture);
-	void removeTexture(ITexture *texture);
+	bool setTextureUnit(u32 index, const GLTexture *texture);
+	void removeTexture(GLTexture *texture);
 
 	void enableBlend(bool blend);
 	void setBlendColor(const SColorf &color);

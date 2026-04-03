@@ -14,8 +14,7 @@
 #include "RenderTarget.h"
 #include "Renderer2D.h"
 #include "GLSpecificInfo.h"
-
-#include "Video/COpenGLCoreTexture.h"
+#include "Texture.h"
 
 
 namespace video

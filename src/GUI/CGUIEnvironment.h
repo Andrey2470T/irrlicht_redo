@@ -62,7 +62,7 @@ public:
 	IGUISkin *createSkin() override;
 
 	//! Creates the image list from the given texture.
-	virtual IGUIImageList *createImageList(video::ITexture *texture,
+	virtual IGUIImageList *createImageList(video::GLTexture *texture,
 			core::dimension2d<s32> imageSize, bool useAlphaChannel) override;
 
 	//! returns the font
@@ -91,7 +91,7 @@ public:
 			IGUIElement *parent = 0, s32 id = -1) override;
 
 	//! Adds an image element.
-	virtual IGUIImage *addImage(video::ITexture *image, core::position2d<s32> pos,
+	virtual IGUIImage *addImage(video::GLTexture *image, core::position2d<s32> pos,
 			bool useAlphaChannel = true, IGUIElement *parent = 0, s32 id = -1, const wchar_t *text = 0) override;
 
 	//! adds an image. The returned pointer must not be dropped.

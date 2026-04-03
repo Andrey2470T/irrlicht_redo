@@ -69,7 +69,7 @@ enum E_TEXTURE_CREATION_FLAG
 	ETCF_NO_ALPHA_CHANNEL = 0x00000020,
 
 	//! Allow the driver to keep a copy of the texture in memory
-	/** Enabling this makes calls to ITexture::lock a lot faster, but costs main memory.
+	/** Enabling this makes calls to Texture::lock a lot faster, but costs main memory.
 	This is disabled by default.
 	*/
 	ETCF_ALLOW_MEMORY_COPY = 0x00000080,
@@ -79,7 +79,7 @@ enum E_TEXTURE_CREATION_FLAG
 	ETCF_FORCE_32_BIT_DO_NOT_USE = 0x7fffffff
 };
 
-//! Enumeration describing the type of ITexture.
+//! Enumeration describing the type of Texture.
 enum E_TEXTURE_TYPE
 {
 	//! 2D texture.
@@ -129,14 +129,14 @@ struct TextureSettings
 class IImage;
 class VideoDriver;
 
-class Texture
+class GLTexture : public virtual IReferenceCounted
 {
 protected:
 	video::VideoDriver *driver;
 
 	E_TEXTURE_TYPE type;
 	u32 texID;
-	std::string name;
+	io::SNamedPath name;
 
 	core::dimension2du originalSize;
 	core::dimension2du size;
@@ -151,15 +151,15 @@ protected:
 	std::vector<IImage *> imgCache;
 	bool cacheImages = false;
 public:
-	Texture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const std::string &_name,
+	GLTexture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const io::path &_name,
 		  const core::dimension2du &_size, ECOLOR_FORMAT _format, u8 _msaa=0);
-    Texture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const std::string &_name,
+	GLTexture(video::VideoDriver *_driver, E_TEXTURE_TYPE _type, const io::path &_name,
 		  const std::vector<IImage *> &_images, const TextureSettings &_settings=TextureSettings());
 
-	~Texture();
+	~GLTexture();
 
 	//! Get name of texture (in most cases this is the filename)
-	const std::string &getName() const { return name; }
+	const io::SNamedPath &getName() const { return name; }
 
 	//! Returns the type of texture
 	E_TEXTURE_TYPE getType() const { return type; };
@@ -171,7 +171,7 @@ public:
 	size. For example if the size was not a power of two. This method
 	returns the size of the texture it had before it was scaled. Can be
 	useful when drawing 2d images on the screen, which should have the
-	exact size of the original texture. Use ITexture::getSize() if you want
+	exact size of the original texture. Use Texture::getSize() if you want
 	to know the real size it has now stored in the system.
 	\return The original size of the texture. */
 	const core::dimension2du &getOriginalSize() const { return originalSize; };
@@ -200,6 +200,8 @@ public:
 	/** \return True if texture has MipMaps, else false. */
 	bool hasMipMaps() const { return texSettings.hasMipMaps; }
 
+	bool hasCache() const { return cacheImages; }
+
 	//! Check whether the texture is a render target
 	/** Render targets can be set as such in the video driver, in order to
 	render a scene into the texture. Once unbound as render target, they can
@@ -215,27 +217,25 @@ public:
 	void bind() const;
 	void unbind() const;
 
-	void uploadData(IImage *img, u8 mipLevel=0, u8 layer=0);
-	void uploadSubData(u32 x, u32 y, IImage *img, u8 mipLevel=0, u8 layer=0);
+	void uploadData(u8 *data, u8 mipLevel=0, u8 layer=0);
+	void uploadSubData(u32 x, u32 y, u8 *data, u8 mipLevel=0, u8 layer=0);
 
-	IImage * downloadData(u8 mipLevel=0, u8 layer=0);
+	u8 *downloadData(u8 mipLevel=0, u8 layer=0);
 	void regenerateMipMaps();
 
+	void updateParameters(const TextureSettings &newTexSettings, bool force=false);
+
 	// NOTE: Will be defined later
-	//void updateParameters(
-	//	const TextureSettings &newTexSettings,
-	//	bool updateLodBias, bool updateAnisotropy);
-
 	//void resize(const core::dimension2du &newSize);
-	//ITexture *copy(const std::string &name="");
+	//Texture *copy(const std::string &name="");
 
-	bool operator==(const Texture &other) const;
+	bool operator==(const GLTexture &other) const;
 
 protected:
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
 	void getParametersFromImage(const IImage *image);
 
-	core::dimension2u getMipMapSize(u8 mipLevel);
+	core::dimension2du getMipMapSize(u8 mipLevel);
 
 	void initTexture(u8 layers);
 };
