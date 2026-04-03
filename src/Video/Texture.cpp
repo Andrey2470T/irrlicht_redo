@@ -5,6 +5,7 @@
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
 #include "Logger.h"
+#include <vector>
 
 #ifndef _IRR_COMPILE_WITH_OPENGL3_
 #include "RenderTarget.h"
@@ -167,9 +168,8 @@ u8 *GLTexture::downloadData(u8 mipLevel, u8 layer)
 	auto tmpImgSize = getMipMapSize(mipLevel);
 	auto tmpImg = new CImage(colorFormat, tmpImgSize);
 
-#ifdef _IRR_COMPILE_WITH_OPENGL3_
 	auto ctxt = driver->getContext();
-
+#ifdef _IRR_COMPILE_WITH_OPENGL3_
 	auto prevTexture = ctxt->getTextureUnit(0);
 	ctxt->setTextureUnit(0, this);
 
