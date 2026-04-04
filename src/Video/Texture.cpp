@@ -5,7 +5,6 @@
 #include "Image/CImage.h"
 #include "Image/CColorConverter.h"
 #include "Logger.h"
-#include <vector>
 
 #ifndef _IRR_COMPILE_WITH_OPENGL3_
 #include "RenderTarget.h"
@@ -236,10 +235,8 @@ u8 *GLTexture::downloadData(u8 mipLevel, u8 layer)
 
 void GLTexture::regenerateMipMaps()
 {
-	if (!texSettings.hasMipMaps) {
-		g_irrlogger->log("Texture2D::regenerateMipMaps() mip maps are disabled", ELL_ERROR);
+	if (!texSettings.hasMipMaps)
 		return;
-	}
 
 	auto ctxt = driver->getContext();
 
@@ -457,8 +454,13 @@ void GLTexture::initTexture(u8 layers)
 		TEST_GL_ERROR(driver);
 	}
 
-	if (texSettings.hasMipMaps && texSettings.maxMipLevel == 0)
-		texSettings.maxMipLevel = core::u32_log2(core::max_(size.Width, size.Height)) + 1;
+	if (texSettings.hasMipMaps) {
+		texSettings.maxMipLevel = core::max_(texSettings.maxMipLevel,
+			(u8)core::u32_log2(core::max_(size.Width, size.Height)));
+
+		glTexParameteri(toGLTexType[type], GL_TEXTURE_MAX_LEVEL, (s32)texSettings.maxMipLevel);
+		TEST_GL_ERROR(driver);
+	}
 
 	// reference: <https://www.khronos.org/opengl/wiki/Texture_Storage>
 	bool use_tex_storage = driver->getFeatures().TexStorage;
@@ -473,7 +475,7 @@ void GLTexture::initTexture(u8 layers)
 	if (type != ETT_2D_MS) {
 		for (u8 i = 0; i < layers; i++) {
 			if (use_tex_storage) {
-				glTexStorage2D(getTextureTarget(type, i), texSettings.maxMipLevel, formatInfo.InternalFormat,
+				glTexStorage2D(getTextureTarget(type, i), texSettings.maxMipLevel+1, formatInfo.InternalFormat,
 					size.Width, size.Height);
 			} else {
 				glTexImage2D(getTextureTarget(type, i), 0, formatInfo.InternalFormat,

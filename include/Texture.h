@@ -10,6 +10,7 @@
 #include "EDriverTypes.h"
 #include "SMaterialLayer.h"
 #include "path.h"
+#include <vector>
 
 
 namespace video
