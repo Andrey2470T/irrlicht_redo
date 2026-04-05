@@ -65,7 +65,7 @@ public:
 	//! fills the surface with given color
 	void fill(const SColor &color) override;
 
-	void flipY() override;
+    void flip(E_FLIP_AXIS axis) override;
 
 private:
 	inline SColor getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const;

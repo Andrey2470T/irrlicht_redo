@@ -14,6 +14,12 @@
 namespace video
 {
 
+enum E_FLIP_AXIS
+{
+    EFA_X,
+    EFA_Y
+};
+
 //! Interface for software image data.
 /** Image loaders create these images from files. IVideoDrivers convert
 these images into their (hardware) textures.
@@ -126,7 +132,7 @@ public:
 	//! fills the surface with given color
 	virtual void fill(const SColor &color) = 0;
 
-	virtual void flipY() = 0;
+    virtual void flip(E_FLIP_AXIS axis) = 0;
 
 protected:
 	ECOLOR_FORMAT Format;

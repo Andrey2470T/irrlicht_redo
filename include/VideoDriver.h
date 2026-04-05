@@ -60,10 +60,8 @@ struct SFrameStats {
 
 class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 {
-	friend class COpenGLCoreTexture;
-
-protected:
-	//! constructor (use createOpenGL3Driver instead)
+private:
+    //! constructor
 	VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 public:

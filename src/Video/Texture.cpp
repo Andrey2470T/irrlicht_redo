@@ -178,7 +178,7 @@ u8 *GLTexture::downloadData(u8 mipLevel, u8 layer)
 	TEST_GL_ERROR(driver);
 
 	if (texSettings.isRenderTarget)
-		tmpImg->flipY();
+        tmpImg->flip(EFA_Y);
 
 	ctxt->setTextureUnit(0, prevTexture);
 #else
@@ -200,7 +200,7 @@ u8 *GLTexture::downloadData(u8 mipLevel, u8 layer)
 	tmpFBO->drop();
 
 	if (texSettings.isRenderTarget)
-		tmpImg2->flipY();
+        tmpImg2->flip(EFA_Y);
 
 	void *src = tmpImg2->getData();
 	void *dest = tmpImg->getData();
