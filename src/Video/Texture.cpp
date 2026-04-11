@@ -30,8 +30,8 @@ GLenum getTextureTarget(E_TEXTURE_TYPE type, u32 layer)
 }
 
 GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
-                     E_TEXTURE_TYPE type, VideoDriver *driver, const TextureSettings &settings) :
-    NamedPath(name), Type(type), Driver(driver), TexSettings(settings)
+                     E_TEXTURE_TYPE type, VideoDriver *Driver, const TextureSettings &settings) :
+    NamedPath(name), Type(type), Driver(Driver), TexSettings(settings)
 {
 	assert(!srcImages.empty() || Type != ETT_2D_MS);
 
@@ -95,10 +95,10 @@ GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImage
 }
 
 GLTexture::GLTexture(const io::path &name, const core::dimension2du &size,
-                     E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *driver,
+                     E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *Driver,
                      u8 msaa) :
     NamedPath(name), OriginalSize(size), Size(size), OriginalColorFormat(format),
-    ColorFormat(format), Type(type), Driver(driver), MSAA(msaa)
+    ColorFormat(format), Type(type), Driver(Driver), MSAA(msaa)
 {
     TexSettings.IsRenderTarget = true;
 
@@ -157,11 +157,9 @@ void GLTexture::unbind() const
     TEST_GL_ERROR(Driver);
 }
 
-void *GLTexture::lock(E_TEXTURE_LOCK_MODE mode, u32 mipLevel, u32 layer)
+void *GLTexture::lock(
+    E_TEXTURE_LOCK_MODE mode, u32 mipLevel, u32 layer)
 {
-	if (LockImage)
-		return LockImage->getData();
-
 	LockReadOnly |= (mode == ETLM_READ_ONLY);
 	LockLayer = layer;
     LockMipLevel = mipLevel;
@@ -280,6 +278,76 @@ void GLTexture::regenerateMipMaps()
 	TEST_GL_ERROR(Driver);
 
 	Driver->getContext()->setTextureUnit(0, prevTexture);
+}
+
+std::array<GLenum, ETC_COUNT> toGLWrapMode = {
+    GL_REPEAT,
+    GL_CLAMP_TO_EDGE,
+    GL_CLAMP_TO_EDGE,
+    GL_CLAMP_TO_EDGE,
+    GL_REPEAT,
+    GL_REPEAT,
+    GL_REPEAT,
+    GL_REPEAT
+};
+
+std::array<GLenum, ETMINF_COUNT> toGLMinMipmapFilter = {
+    GL_NEAREST_MIPMAP_NEAREST,
+    GL_LINEAR_MIPMAP_NEAREST,
+    GL_NEAREST_MIPMAP_LINEAR,
+    GL_LINEAR_MIPMAP_LINEAR
+};
+
+std::array<GLenum, ETMINF_COUNT> toGLMinFilter = {
+    GL_NEAREST,
+    GL_NEAREST,
+    GL_LINEAR,
+    GL_LINEAR
+};
+
+std::array<GLenum, ETMAGF_COUNT> toGLMagFilter = {
+    GL_NEAREST,
+    GL_LINEAR
+};
+
+void GLTexture::updateParameters(const TextureSettings &newTexSettings, bool force)
+{
+    if (force || TexSettings.WrapU != newTexSettings.WrapU) {
+        TexSettings.WrapU = newTexSettings.WrapU;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLWrapMode[TexSettings.WrapU]);
+        TEST_GL_ERROR(Driver);
+    }
+    if (force || TexSettings.WrapV != newTexSettings.WrapV) {
+        TexSettings.WrapV = newTexSettings.WrapV;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLWrapMode[TexSettings.WrapV]);
+        TEST_GL_ERROR(Driver);
+    }
+    if (force || TexSettings.MinF != newTexSettings.MinF) {
+        TexSettings.MinF = newTexSettings.MinF;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (newTexSettings.HasMipMaps && TexSettings.HasMipMaps) ?
+            toGLMinMipmapFilter[TexSettings.MinF] : toGLMinFilter[TexSettings.MinF]);
+        TEST_GL_ERROR(Driver);
+    }
+    if (force || TexSettings.MagF != newTexSettings.MagF) {
+        TexSettings.MagF = newTexSettings.MagF;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLMagFilter[TexSettings.MagF]);
+        TEST_GL_ERROR(Driver);
+    }
+
+    auto features = Driver->getFeatures();
+
+    if (features.LODBiasSupported && (force || TexSettings.LodBias != newTexSettings.LodBias)) {
+        f32 clampedBias = std::clamp<f32>(newTexSettings.LodBias * 0.125, -features.MaxTextureLODBias, features.MaxTextureLODBias);
+        TexSettings.LodBias = clampedBias;
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, clampedBias);
+        TEST_GL_ERROR(Driver);
+    }
+    if (features.AnisotropicFilterSupported && (force || TexSettings.AnisotropyFilter != newTexSettings.AnisotropyFilter)) {
+        u8 clampedAnisotropy = std::clamp<u8>(newTexSettings.AnisotropyFilter, 1, features.MaxAnisotropy);
+        TexSettings.AnisotropyFilter = clampedAnisotropy;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, clampedAnisotropy);
+        TEST_GL_ERROR(Driver);
+    }
 }
 
 core::dimension2du GLTexture::getMipMapsSize(u32 mipLevel)

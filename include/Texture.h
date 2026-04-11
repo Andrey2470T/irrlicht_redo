@@ -167,9 +167,9 @@ public:
     void unbind() const;
 
 	// Texture interface methods
-	void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE,
+    void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE,
             u32 mipLevel = 0,
-			u32 layer = 0);
+            u32 layer = 0);
 
 	void unlock();
 
@@ -194,6 +194,8 @@ public:
     bool hasAlpha() const { return pixelFormatsInfo[ColorFormat].hasAlpha; }
 
     const TextureSettings &getParameters() const { return TexSettings; }
+
+    void updateParameters(const TextureSettings &newTexSettings, bool force=false);
 
 protected:
     core::dimension2du getMipMapsSize(u32 mipLevel);

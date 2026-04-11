@@ -28,7 +28,8 @@ enum E_TEXTURE_CLAMP
 	//! Texture is mirrored once and then clamped to edge
 	ETC_MIRROR_CLAMP_TO_EDGE,
 	//! Texture is mirrored once and then clamped to border
-	ETC_MIRROR_CLAMP_TO_BORDER
+    ETC_MIRROR_CLAMP_TO_BORDER,
+    ETC_COUNT
 };
 static const char *const aTextureClampNames[] = {
 		"texture_clamp_repeat",
@@ -53,6 +54,7 @@ enum E_TEXTURE_MIN_FILTER : u8
 	ETMINF_NEAREST_MIPMAP_LINEAR,
 	//! Aka trilinear.
 	ETMINF_LINEAR_MIPMAP_LINEAR,
+    ETMINF_COUNT
 };
 
 //! Texture magnification filter.
@@ -65,6 +67,7 @@ enum E_TEXTURE_MAG_FILTER : u8
 	ETMAGF_NEAREST = 0,
 	//! Aka bilinear.
 	ETMAGF_LINEAR,
+    ETMAGF_COUNT
 };
 
 //! Struct for holding material parameters which exist per texture layer

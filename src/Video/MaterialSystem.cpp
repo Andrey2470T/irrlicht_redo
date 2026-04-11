@@ -440,100 +440,34 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 	setTextureRenderStates(material, resetAllRenderStates);
 }
 
-std::array<GLenum, EBF_COUNT> toGLWrapMode = {
-	GL_REPEAT,
-	GL_CLAMP_TO_EDGE,
-	GL_CLAMP_TO_EDGE,
-	GL_CLAMP_TO_EDGE,
-	GL_REPEAT,
-	GL_REPEAT,
-	GL_REPEAT,
-	GL_REPEAT
-};
-
-std::array<GLenum, ETT_COUNT> toGLTextureType = {
-    GL_TEXTURE_2D,
-    GL_TEXTURE_2D_MULTISAMPLE,
-    GL_TEXTURE_CUBE_MAP
-};
-
 //! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
 void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates)
 {
-	auto features = Driver->getFeatures();
+    auto features = Driver->getFeatures();
 
-	// Set textures to TU/TIU and apply filters to them
+    // Set textures to TU/TIU and apply filters to them
 
-	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
-        auto tmpTexture = Driver->Context->getTextureUnit(i);
+    for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
+        auto tex = const_cast<GLTexture *>(Driver->Context->getTextureUnit(i));
 
-		if (!tmpTexture)
-			continue;
+        if (!tex)
+            continue;
 
-        GLenum tmpTextureType = toGLTextureType[tmpTexture->getType()];
+        Driver->Context->activateUnit(i);
 
-		Driver->Context->activateUnit(i);
+        const auto &layer = material.TextureLayers[i];
 
-		const auto &layer = material.TextureLayers[i];
-        TextureSettings &params = const_cast<TextureSettings &>(tmpTexture->getParameters());
+        TextureSettings newSettings;
+        newSettings.HasMipMaps = material.UseMipMaps;
+        newSettings.WrapU = (video::E_TEXTURE_CLAMP)layer.TextureWrapU;
+        newSettings.WrapV = (video::E_TEXTURE_CLAMP)layer.TextureWrapV;
+        newSettings.MinF = layer.MinFilter;
+        newSettings.MagF = layer.MagFilter;
+        newSettings.LodBias = layer.LODBias;
+        newSettings.AnisotropyFilter = layer.AnisotropicFilter;
 
-        if (resetAllRenderstates || layer.MagFilter != params.MagF) {
-			E_TEXTURE_MAG_FILTER magFilter = layer.MagFilter;
-			glTexParameteri(tmpTextureType, GL_TEXTURE_MAG_FILTER,
-					magFilter == ETMAGF_NEAREST ? GL_NEAREST : (assert(magFilter == ETMAGF_LINEAR), GL_LINEAR));
-
-            params.MagF = magFilter;
-		}
-
-		if (material.UseMipMaps && tmpTexture->hasMipMaps()) {
-            if (resetAllRenderstates || layer.MinFilter != params.MinF) {
-				E_TEXTURE_MIN_FILTER minFilter = layer.MinFilter;
-				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-						minFilter == ETMINF_NEAREST_MIPMAP_NEAREST ? GL_NEAREST_MIPMAP_NEAREST : minFilter == ETMINF_LINEAR_MIPMAP_NEAREST ? GL_LINEAR_MIPMAP_NEAREST
-																						 : minFilter == ETMINF_NEAREST_MIPMAP_LINEAR       ? GL_NEAREST_MIPMAP_LINEAR
-																																		   : (assert(minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR_MIPMAP_LINEAR));
-
-                params.MinF = minFilter;
-			}
-		} else {
-            if (resetAllRenderstates || layer.MinFilter != params.MinF) {
-				E_TEXTURE_MIN_FILTER minFilter = layer.MinFilter;
-				glTexParameteri(tmpTextureType, GL_TEXTURE_MIN_FILTER,
-						(minFilter == ETMINF_NEAREST_MIPMAP_NEAREST || minFilter == ETMINF_NEAREST_MIPMAP_LINEAR) ? GL_NEAREST : (assert(minFilter == ETMINF_LINEAR_MIPMAP_NEAREST || minFilter == ETMINF_LINEAR_MIPMAP_LINEAR), GL_LINEAR));
-
-                params.MinF = minFilter;
-			}
-		}
-
-		if (features.LODBiasSupported &&
-            (resetAllRenderstates || layer.LODBias != params.LodBias)) {
-			if (layer.LODBias) {
-				const float tmp = core::clamp(layer.LODBias * 0.125f, -features.MaxTextureLODBias, features.MaxTextureLODBias);
-				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, tmp);
-			} else
-				glTexParameterf(tmpTextureType, GL_TEXTURE_LOD_BIAS, 0.f);
-
-            params.LodBias = layer.LODBias;
-		}
-
-		if (features.AnisotropicFilterSupported &&
-                (resetAllRenderstates || layer.AnisotropicFilter != params.AnisotropyFilter)) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_MAX_ANISOTROPY,
-					layer.AnisotropicFilter > 1 ? core::min_(features.MaxAnisotropy, layer.AnisotropicFilter) : 1);
-
-            params.AnisotropyFilter = layer.AnisotropicFilter;
-		}
-
-        if (resetAllRenderstates || layer.TextureWrapU != params.WrapU) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, toGLWrapMode[layer.TextureWrapU]);
-            params.WrapU = (E_TEXTURE_CLAMP)layer.TextureWrapU;
-		}
-
-        if (resetAllRenderstates || layer.TextureWrapV != params.WrapV) {
-			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, toGLWrapMode[layer.TextureWrapV]);
-            params.WrapV = (E_TEXTURE_CLAMP)layer.TextureWrapV;
-		}
-	}
+        tex->updateParameters(newSettings, resetAllRenderstates);
+    }
 }
 
 //! sets the needed renderstates
