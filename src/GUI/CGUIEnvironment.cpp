@@ -791,40 +791,18 @@ IGUIFont *CGUIEnvironment::getFont(const io::path &filename)
 		return 0;
 	}
 
-	IGUIFont *ifont = 0;
-#if 0
-		{
-			CGUIFont* font = new CGUIFont(this, filename);
-			ifont = (IGUIFont*)font;
-
-			// load the font
-			io::path directory;
-			core::splitFilename(filename, &directory);
-			if (!font->load(xml, directory))
-			{
-				font->drop();
-				font  = 0;
-				ifont = 0;
-			}
-		}
-#endif
-
-	if (!ifont) {
-
-		CGUIFont *font = new CGUIFont(this, f.NamedPath.getPath());
-		ifont = (IGUIFont *)font;
-		if (!font->load(f.NamedPath.getPath())) {
-			font->drop();
-			return 0;
-		}
+    CGUIFont *font =  new CGUIFont(this, f.NamedPath.getPath());
+    if (!font->load(f.NamedPath.getPath())) {
+        font->drop();
+        return 0;
 	}
 
 	// add to fonts.
 
-	f.Font = ifont;
+    f.Font = font;
 	Fonts.push_back(f);
 
-	return ifont;
+    return font;
 }
 
 //! add an externally loaded font

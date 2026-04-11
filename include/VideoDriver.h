@@ -173,9 +173,6 @@ public:
 		return Textures.size();
 	}
     GLTexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
-
-    bool checkImage(const std::vector<Image*> &image) const;
-
     GLTexture *addTexture(const io::path &name, Image *image);
 
     virtual GLTexture *addTextureCubemap(const io::path &name, Image *imagePosX, Image *imageNegX, Image *imagePosY,
@@ -504,9 +501,6 @@ public:
 
 private:
 	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
-
-	GLTexture *createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type,
-        const std::vector<Image*> &images);
 
 	//! opens the file and loads it into the surface
     GLTexture *loadTextureFromFile(io::IReadFile *file, const io::path &hashName = "");

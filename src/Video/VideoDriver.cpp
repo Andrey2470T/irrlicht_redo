@@ -809,11 +809,6 @@ void VideoDriver::endDraw(const VertexType &vertexType)
 		glDisableVertexAttribArray(attr.Index);
 }
 
-GLTexture *VideoDriver::createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type, const std::vector<Image*> &images)
-{
-	return new GLTexture(name, images, type, this);
-}
-
 //! prints error if an error happened.
 bool VideoDriver::testGLError(const char *file, int line)
 {
@@ -1111,16 +1106,14 @@ GLTexture *VideoDriver::findTexture(const io::path &filename)
 //! opens the file and loads it into the surface
 GLTexture *VideoDriver::loadTextureFromFile(io::IReadFile *file, const io::path &hashName)
 {
-    GLTexture *texture = nullptr;
-
     Image *image = createImageFromFile(file);
 	if (!image)
 		return nullptr;
 
 	std::vector tmp { image };
-	texture = createDeviceDependentTexture(hashName.size() ? hashName : file->getFileName(), ETT_2D, tmp);
-	if (texture)
-		g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
+    auto texture = new GLTexture(hashName.size() ? hashName : file->getFileName(), tmp, ETT_2D, this);
+
+    g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
 
 	image->drop();
 
@@ -1442,27 +1435,6 @@ GLTexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io:
 	return t;
 }
 
-bool VideoDriver::checkImage(const std::vector<Image*> &image) const
-{
-	if (image.empty())
-		return false;
-
-	ECOLOR_FORMAT lastFormat = image[0]->getColorFormat();
-	auto lastSize = image[0]->getDimension();
-
-	for (size_t i = 0; i < image.size(); ++i) {
-		if (!image[i])
-			return false;
-
-		ECOLOR_FORMAT format = image[i]->getColorFormat();
-		auto size = image[i]->getDimension();
-
-		if (format != lastFormat || size != lastSize)
-			return false;
-	}
-	return true;
-}
-
 GLTexture *VideoDriver::addTexture(const io::path &name, Image *image)
 {
 	if (0 == name.size()) {
@@ -1473,15 +1445,11 @@ GLTexture *VideoDriver::addTexture(const io::path &name, Image *image)
 	if (!image)
 		return 0;
 
-    GLTexture *t = 0;
-
 	std::vector tmp { image };
-	t = createDeviceDependentTexture(name, ETT_2D, tmp);
+    auto t = new GLTexture(name, tmp, ETT_2D, this);
 
-	if (t) {
-		addTexture(t);
-		t->drop();
-	}
+    addTexture(t);
+    t->drop();
 
 	return t;
 }
@@ -1492,8 +1460,6 @@ GLTexture *VideoDriver::addTextureCubemap(const io::path &name, Image *imagePosX
 	if (0 == name.size() || !imagePosX || !imageNegX || !imagePosY || !imageNegY || !imagePosZ || !imageNegZ)
 		return 0;
 
-    GLTexture *t = 0;
-
     std::vector<Image*> imageArray;
 	imageArray.push_back(imagePosX);
 	imageArray.push_back(imageNegX);
@@ -1502,14 +1468,10 @@ GLTexture *VideoDriver::addTextureCubemap(const io::path &name, Image *imagePosX
 	imageArray.push_back(imagePosZ);
 	imageArray.push_back(imageNegZ);
 
-	if (checkImage(imageArray)) {
-		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
-	}
+    auto t = new GLTexture(name, imageArray, ETT_CUBEMAP, this);
 
-	if (t) {
-		addTexture(t);
-		t->drop();
-	}
+    addTexture(t);
+    t->drop();
 
 	return t;
 }
@@ -1528,15 +1490,10 @@ GLTexture *VideoDriver::addTextureCubemap(const u32 sideLen, const io::path &nam
 	for (int i = 0; i < 6; ++i)
         imageArray.push_back(new Image(format, core::dimension2du(sideLen, sideLen)));
 
-    GLTexture *t = 0;
-	if (checkImage(imageArray)) {
-		t = createDeviceDependentTexture(name, ETT_CUBEMAP, imageArray);
+    auto t = new GLTexture(name, imageArray, ETT_CUBEMAP, this);
 
-		if (t) {
-			addTexture(t);
-			t->drop();
-		}
-	}
+    addTexture(t);
+    t->drop();
 
 	for (int i = 0; i < 6; ++i)
 		imageArray[i]->drop();
