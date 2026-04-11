@@ -4,7 +4,7 @@
 
 #include "Texture.h"
 #include "VideoDriver.h"
-#include "Image/CImage.h"
+#include "Image.h"
 #include "Image/CColorConverter.h"
 #include "GLSpecificInfo.h"
 #include "Logger.h"
@@ -29,8 +29,8 @@ GLenum getTextureTarget(E_TEXTURE_TYPE type, u32 layer)
 	return tmp;
 }
 
-GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
-                     E_TEXTURE_TYPE type, VideoDriver *Driver, const TextureSettings &settings) :
+GLTexture::GLTexture(const io::path &name, const std::vector<Image *> &srcImages,
+    E_TEXTURE_TYPE type, VideoDriver *Driver, const TextureSettings &settings) :
     NamedPath(name), Type(type), Driver(Driver), TexSettings(settings)
 {
 	assert(!srcImages.empty() || Type != ETT_2D_MS);
@@ -183,7 +183,7 @@ void *GLTexture::lock(
 			auto ctxt = Driver->getContext();
 
 #ifdef _IRR_COMPILE_WITH_OPENGL3_
-            IImage *tmpImage = LockImage;
+            Image *tmpImage = LockImage;
 
             ctxt->setTextureUnit(0, this);
             TEST_GL_ERROR(Driver);
@@ -399,7 +399,7 @@ ECOLOR_FORMAT GLTexture::getBestColorFormat(ECOLOR_FORMAT format)
 	return destFormat;
 }
 
-void GLTexture::getImageValues(const IImage *image)
+void GLTexture::getImageValues(const Image *image)
 {
 	OriginalColorFormat = image->getColorFormat();
 	ColorFormat = getBestColorFormat(OriginalColorFormat);
@@ -529,13 +529,13 @@ void GLTexture::uploadTexture(u32 layer, u32 level, void *data)
 
     core::dimension2du imageSize(getMipMapsSize(level));
 
-	CImage *tmpImage = nullptr;
+    Image *tmpImage = nullptr;
 	void *tmpData = data;
 
     auto &formatInfo = GLSpecificInfo::TextureFormats[ColorFormat];
 
     if (formatInfo.Converter) {
-        tmpImage = new CImage(ColorFormat, imageSize);
+        tmpImage = new Image(ColorFormat, imageSize);
 		tmpData = tmpImage->getData();
         formatInfo.Converter(data, imageSize.getArea(), tmpData);
 	}

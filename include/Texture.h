@@ -18,7 +18,7 @@
 namespace video
 {
 	class VideoDriver;
-	class IImage;
+	class Image;
 	class CImage;
 }
 
@@ -153,7 +153,7 @@ class GLTexture : public virtual IReferenceCounted
 {
 public:
 	// Constructor from images
-    GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
+    GLTexture(const io::path &name, const std::vector<Image *> &srcImages,
               E_TEXTURE_TYPE type, VideoDriver *driver, const TextureSettings &settings=TextureSettings());
 
 	// Constructor for render target
@@ -200,7 +200,7 @@ public:
 protected:
     core::dimension2du getMipMapsSize(u32 mipLevel);
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
-	void getImageValues(const IImage *image);
+    void getImageValues(const Image *image);
 
     void genTexture();
     void initTexture();
@@ -220,12 +220,12 @@ protected:
 	u8 MSAA = 0;
 
 	bool LockReadOnly = false;
-	IImage *LockImage = nullptr;
+    Image *LockImage = nullptr;
 	u32 LockLayer = 0;
     u8 LockMipLevel = 0;
 
 	bool KeepImage = false;
-	std::vector<IImage*> Images;
+    std::vector<Image*> Images;
 
     TextureSettings TexSettings;
 };

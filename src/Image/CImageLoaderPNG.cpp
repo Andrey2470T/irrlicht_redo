@@ -6,7 +6,7 @@
 
 #include <png.h> // use system lib png
 
-#include "CImage.h"
+#include "Image.h"
 #include "IReadFile.h"
 #include "coreutil.h"
 #include "Logger.h"
@@ -71,7 +71,7 @@ bool CImageLoaderPng::isALoadableFileFormat(io::IReadFile *file) const
 }
 
 // load in the image data
-IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
+Image *CImageLoaderPng::loadImage(io::IReadFile *file) const
 {
 	if (!file)
 		return 0;
@@ -200,11 +200,11 @@ IImage *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	}
 
 	// Create the image structure to be filled by png data
-	video::IImage *image = 0;
+	video::Image *image = 0;
 	if (ColorType == PNG_COLOR_TYPE_RGB_ALPHA)
-		image = new CImage(ECF_A8R8G8B8, core::dimension2d<u32>(Width, Height));
+        image = new Image(ECF_A8R8G8B8, core::dimension2d<u32>(Width, Height));
 	else
-		image = new CImage(ECF_R8G8B8, core::dimension2d<u32>(Width, Height));
+        image = new Image(ECF_R8G8B8, core::dimension2d<u32>(Width, Height));
 	if (!image) {
 		g_irrlogger->log("LOAD PNG: Internal PNG create image struct failure", file->getFileName(), ELL_ERROR);
 		png_destroy_read_struct(&png_ptr, NULL, NULL);

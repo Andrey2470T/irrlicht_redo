@@ -5,7 +5,7 @@
 #pragma once
 
 #include "irrTypes.h"
-#include "IImage.h"
+#include "Image.h"
 
 
 namespace video

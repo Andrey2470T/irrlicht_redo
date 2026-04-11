@@ -15,7 +15,7 @@
 namespace video
 {
 class VideoDriver;
-class IImage;
+class Image;
 }
 
 namespace gui
@@ -79,9 +79,9 @@ private:
 	};
 
 	//! load & prepare font from Texture
-	bool loadTexture(video::IImage *image, const io::path &name);
+	bool loadTexture(video::Image *image, const io::path &name);
 
-	void readPositions(video::IImage *texture, s32 &lowerRightPositions);
+	void readPositions(video::Image *texture, s32 &lowerRightPositions);
 
 	s32 getAreaFromCharacter(const wchar_t c) const;
 	void setMaxHeight();

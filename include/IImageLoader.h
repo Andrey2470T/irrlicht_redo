@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IReferenceCounted.h"
-#include "IImage.h"
+#include "Image.h"
 #include "path.h"
 
 
@@ -39,7 +39,7 @@ public:
 	//! Creates a surface from the file
 	/** \param file File handle to check.
 	\return Pointer to newly created image, or 0 upon error. */
-	virtual IImage *loadImage(io::IReadFile *file) const = 0;
+    virtual Image *loadImage(io::IReadFile *file) const = 0;
 };
 
 } // end namespace video

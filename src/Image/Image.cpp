@@ -2,10 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CImage.h"
+#include "Image.h"
+#include "IWriteFile.h"
 #include "irrString.h"
 #include "CColorConverter.h"
 #include "CBlit.h"
+#include "IFileSystem.h"
 #include "Logger.h"
 #include "SoftwareDriver2_helper.h"
 
@@ -17,15 +19,18 @@ namespace video
 {
 
 //! Constructor from raw data
-CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, void *data,
+Image::Image(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, void *data,
 		bool ownForeignMemory, bool deleteMemory) :
-		IImage(format, size, deleteMemory)
+        Format(format), Size(size), DeleteMemory(deleteMemory)
 {
+    BytesPerPixel = pixelFormatsInfo[Format].size / 8;
+    Pitch = BytesPerPixel * Size.Width;
+
 	if (ownForeignMemory) {
 		assert(data);
 		Data = reinterpret_cast<u8*>(data);
 		if (reinterpret_cast<uintptr_t>(data) % sizeof(u32) != 0)
-			g_irrlogger->log("CImage created with foreign memory that's not aligned", ELL_WARNING);
+            g_irrlogger->log("Image created with foreign memory that's not aligned", ELL_WARNING);
 	} else {
 		const u32 dataSize = getDataSizeFromFormat(Format, Size.Width, Size.Height);
 		const u32 allocSize = align_next(dataSize, 16);
@@ -38,18 +43,26 @@ CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, void *d
 }
 
 //! Constructor of empty image
-CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size) :
-		IImage(format, size, true)
+Image::Image(ECOLOR_FORMAT format, const core::dimension2d<u32> &size) :
+        Format(format), Size(size), DeleteMemory(true)
 {
+    BytesPerPixel = pixelFormatsInfo[Format].size / 8;
+    Pitch = BytesPerPixel * Size.Width;
+
 	const u32 dataSize = getDataSizeFromFormat(Format, Size.Width, Size.Height);
 	const u32 allocSize = align_next(dataSize, 16);
 
 	Data = reinterpret_cast<u8 *>(new u32[allocSize / 4]);
-	DeleteMemory = true;
+}
+
+Image::~Image()
+{
+    if (DeleteMemory)
+        delete[] Data;
 }
 
 //! sets a pixel
-void CImage::setPixel(u32 x, u32 y, const SColor &color, bool blend)
+void Image::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 {
 	if (x >= Size.Width || y >= Size.Height)
 		return;
@@ -78,7 +91,7 @@ void CImage::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 	} break;
 
 	case ECF_UNKNOWN:
-		g_irrlogger->log("IImage::setPixel unknown format.", ELL_WARNING);
+        g_irrlogger->log("IImage::setPixel unknown format.", ELL_WARNING);
 		return;
 
 	default:
@@ -87,7 +100,7 @@ void CImage::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 }
 
 //! returns a pixel
-SColor CImage::getPixel(u32 x, u32 y) const
+SColor Image::getPixel(u32 x, u32 y) const
 {
 	if (x >= Size.Width || y >= Size.Height)
 		return SColor(0);
@@ -107,7 +120,7 @@ SColor CImage::getPixel(u32 x, u32 y) const
 	}
 
 	case ECF_UNKNOWN:
-		g_irrlogger->log("IImage::getPixel unknown format.", ELL_WARNING);
+        g_irrlogger->log("IImage::getPixel unknown format.", ELL_WARNING);
 		break;
 
 	default:
@@ -118,7 +131,7 @@ SColor CImage::getPixel(u32 x, u32 y) const
 }
 
 //! copies this surface into another at given position
-void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
+void Image::copyTo(Image *target, const core::position2d<s32> &pos)
 {
 	if (!Blit(BLITTER_TEXTURE, target, 0, &pos, this, 0, 0) && target && pos.X == 0 && pos.Y == 0 &&
 			CColorConverter::canConvertFormat(Format, target->getColorFormat())) {
@@ -129,13 +142,13 @@ void CImage::copyTo(IImage *target, const core::position2d<s32> &pos)
 }
 
 //! copies this surface partially into another at given position
-void CImage::copyTo(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect)
+void Image::copyTo(Image *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect)
 {
 	Blit(BLITTER_TEXTURE, target, clipRect, &pos, this, &sourceRect, 0);
 }
 
 //! copies this surface into another, using the alpha mask, a cliprect and a color to add with
-void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const SColor &color, const core::rect<s32> *clipRect, bool combineAlpha)
+void Image::copyToWithAlpha(Image *target, const core::position2d<s32> &pos, const core::rect<s32> &sourceRect, const SColor &color, const core::rect<s32> *clipRect, bool combineAlpha)
 {
 	eBlitter op = combineAlpha ? BLITTER_TEXTURE_COMBINE_ALPHA : color.color == 0xFFFFFFFF ? BLITTER_TEXTURE_ALPHA_BLEND
 																						   : BLITTER_TEXTURE_ALPHA_COLOR_BLEND;
@@ -143,7 +156,7 @@ void CImage::copyToWithAlpha(IImage *target, const core::position2d<s32> &pos, c
 }
 
 //! copies this surface into another, if it has the exact same size and format.
-bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch) const
+bool Image::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch) const
 {
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return false;
@@ -177,7 +190,7 @@ bool CImage::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT 
 
 //! copies this surface into another, scaling it to the target image size
 // note: this is very very slow.
-void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch)
+void Image::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch)
 {
 	if (!target || !width || !height || !Size.Width || !Size.Height)
 		return;
@@ -229,7 +242,7 @@ void CImage::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT fo
 
 //! copies this surface into another, scaling it to the target image size
 // note: this is very very slow.
-void CImage::copyToScaling(IImage *target)
+void Image::copyToScaling(Image *target)
 {
 	if (!target)
 		return;
@@ -245,7 +258,7 @@ void CImage::copyToScaling(IImage *target)
 }
 
 //! copies this surface into another, scaling it to fit it.
-void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
+void Image::copyToScalingBoxFilter(Image *target, s32 bias, bool blend)
 {
 	const core::dimension2d<u32> destSize = target->getDimension();
 
@@ -270,7 +283,7 @@ void CImage::copyToScalingBoxFilter(IImage *target, s32 bias, bool blend)
 }
 
 //! fills the surface with given color
-void CImage::fill(const SColor &color)
+void Image::fill(const SColor &color)
 {
 	u32 c;
 
@@ -302,7 +315,7 @@ void CImage::fill(const SColor &color)
 	memset32(Data, c, getImageDataSizeInBytes());
 }
 
-void CImage::flip(E_FLIP_AXIS axis)
+void Image::flip(E_FLIP_AXIS axis)
 {
     if (axis == EFA_Y) {
         // Vertical flip
@@ -344,7 +357,7 @@ void CImage::flip(E_FLIP_AXIS axis)
 }
 
 //! get a filtered pixel
-inline SColor CImage::getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const
+inline SColor Image::getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const
 {
 	SColor c;
 	s32 a = 0, r = 0, g = 0, b = 0;

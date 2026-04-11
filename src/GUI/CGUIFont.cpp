@@ -105,14 +105,14 @@ bool CGUIFont::load(const io::path &filename)
 }
 
 //! load & prepare font from Texture
-bool CGUIFont::loadTexture(video::IImage *image, const io::path &name)
+bool CGUIFont::loadTexture(video::Image *image, const io::path &name)
 {
 	if (!image || !SpriteBank)
 		return false;
 
 	s32 lowerRightPositions = 0;
 
-	video::IImage *tmpImage = image;
+	video::Image *tmpImage = image;
 	bool deleteTmpImage = false;
 	switch (image->getColorFormat()) {
 	case video::ECF_R5G6B5:
@@ -161,7 +161,7 @@ bool CGUIFont::loadTexture(video::IImage *image, const io::path &name)
 	return ret;
 }
 
-void CGUIFont::readPositions(video::IImage *image, s32 &lowerRightPositions)
+void CGUIFont::readPositions(video::Image *image, s32 &lowerRightPositions)
 {
 	if (!SpriteBank)
 		return;

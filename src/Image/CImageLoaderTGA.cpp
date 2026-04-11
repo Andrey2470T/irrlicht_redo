@@ -9,7 +9,7 @@
 #include "Logger.h"
 #include "Device/byteswap.h"
 #include "CColorConverter.h"
-#include "CImage.h"
+#include "Image.h"
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -113,7 +113,7 @@ static void convert_BGRA8_to_SColor(const u8 *src, u32 n, u32 *dst)
 }
 
 //! creates a surface from the file
-IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
+Image *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 {
 	STGAHeader header;
 	u32 *palette = 0;
@@ -187,12 +187,12 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 		return 0;
 	}
 
-	IImage *image = 0;
+    Image *image = 0;
 
 	switch (header.PixelDepth) {
 	case 8: {
 		if (header.ImageType == 3) { // grey image
-			image = new CImage(ECF_R8G8B8,
+            image = new Image(ECF_R8G8B8,
 					core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
 			if (image)
 				CColorConverter::convert8BitTo24Bit((u8 *)data,
@@ -203,7 +203,7 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 			// Colormap is converted to A8R8G8B8 at this point – thus the code can handle all color formats.
 			// This wastes some texture memory, but is less of a third of the code that does this optimally.
 			// If you want to refactor this: The possible color formats here are A1R5G5B5, B8G8R8, B8G8R8A8.
-			image = new CImage(ECF_A8R8G8B8, core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
+            image = new Image(ECF_A8R8G8B8, core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
 			if (image)
 				CColorConverter::convert8BitTo32Bit((u8 *)data,
 						(u8 *)image->getData(),
@@ -213,21 +213,21 @@ IImage *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 		}
 	} break;
 	case 16:
-		image = new CImage(ECF_A1R5G5B5,
+        image = new Image(ECF_A1R5G5B5,
 				core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
 		if (image)
 			CColorConverter::convert16BitTo16Bit((s16 *)data,
 					(s16 *)image->getData(), header.ImageWidth, header.ImageHeight, 0, (header.ImageDescriptor & 0x20) == 0);
 		break;
 	case 24:
-		image = new CImage(ECF_R8G8B8,
+        image = new Image(ECF_R8G8B8,
 				core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
 		if (image)
 			CColorConverter::convert24BitTo24Bit(
 					(u8 *)data, (u8 *)image->getData(), header.ImageWidth, header.ImageHeight, 0, (header.ImageDescriptor & 0x20) == 0, true);
 		break;
 	case 32:
-		image = new CImage(ECF_A8R8G8B8,
+        image = new Image(ECF_A8R8G8B8,
 				core::dimension2d<u32>(header.ImageWidth, header.ImageHeight));
 		if (image)
 			CColorConverter::convert32BitTo32Bit((s32 *)data,

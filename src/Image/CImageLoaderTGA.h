@@ -54,7 +54,7 @@ public:
 	bool isALoadableFileFormat(io::IReadFile *file) const override;
 
 	//! creates a surface from the file
-	IImage *loadImage(io::IReadFile *file) const override;
+    Image *loadImage(io::IReadFile *file) const override;
 
 private:
 	//! loads a compressed tga. Was written and sent in by Jon Pry, thank you very much!

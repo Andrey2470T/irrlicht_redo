@@ -32,7 +32,7 @@ namespace video
 {
 class VideoDriver;
 class SMaterial;
-class IImage;
+class Image;
 class GLTexture;
 } // end namespace video
 

@@ -289,7 +289,7 @@ endif()
 
 set(IRRIMAGEOBJ
 	Image/CColorConverter.cpp
-	Image/CImage.cpp
+	Image/Image.cpp
 	Image/CImageLoaderJPG.cpp
 	Image/CImageLoaderPNG.cpp
 	Image/CImageLoaderTGA.cpp

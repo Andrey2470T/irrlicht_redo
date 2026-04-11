@@ -20,7 +20,7 @@ public:
 	bool isAWriteableFileExtension(const io::path &filename) const override;
 
 	//! write image to file
-	bool writeImage(io::IWriteFile *file, IImage *image, u32 param) const override;
+    bool writeImage(io::IWriteFile *file, Image *image, u32 param) const override;
 };
 
 } // namespace video

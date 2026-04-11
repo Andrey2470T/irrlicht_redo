@@ -24,7 +24,7 @@
 #include "DrawContext.h"
 #include "RenderTarget.h"
 #include "Texture.h"
-#include "IImage.h"
+#include "Image.h"
 #include <memory>
 
 namespace io
@@ -174,12 +174,12 @@ public:
 	}
     GLTexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
 
-	bool checkImage(const std::vector<IImage*> &image) const;
+    bool checkImage(const std::vector<Image*> &image) const;
 
-    GLTexture *addTexture(const io::path &name, IImage *image);
+    GLTexture *addTexture(const io::path &name, Image *image);
 
-    virtual GLTexture *addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
-			IImage *imageNegY, IImage *imagePosZ, IImage *imageNegZ);
+    virtual GLTexture *addTextureCubemap(const io::path &name, Image *imagePosX, Image *imageNegX, Image *imagePosY,
+            Image *imageNegY, Image *imagePosZ, Image *imageNegZ);
 
     GLTexture *addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
 
@@ -190,29 +190,29 @@ public:
 
 	bool queryTextureFormat(ECOLOR_FORMAT format) const;
 
-	IImage *createImageFromFile(const io::path &filename);
+    Image *createImageFromFile(const io::path &filename);
 
-	IImage *createImageFromFile(io::IReadFile *file);
+    Image *createImageFromFile(io::IReadFile *file);
 
 	//! Writes the provided image to disk file
-	bool writeImageToFile(IImage *image, const io::path &filename, u32 param = 0);
+    bool writeImageToFile(Image *image, const io::path &filename, u32 param = 0);
 
 	//! Writes the provided image to a file.
-	bool writeImageToFile(IImage *image, io::IWriteFile *file, u32 param = 0);
+    bool writeImageToFile(Image *image, io::IWriteFile *file, u32 param = 0);
 
 	//! Creates a software image from a byte array.
 	/** \param useForeignMemory: If true, the image will use the data pointer
 	directly and own it from now on, which means it will also try to delete [] the
 	data when the image will be destructed. If false, the memory will by copied. */
-	IImage *createImageFromData(ECOLOR_FORMAT format,
+    Image *createImageFromData(ECOLOR_FORMAT format,
 		const core::dimension2d<u32> &size, void *data, bool ownForeignMemory = false,
 		bool deleteMemory = true);
 
 	//! Creates an empty software image.
-	IImage *createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size);
+    Image *createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size);
 
 	//! Creates a software image from part of a texture.
-    IImage *createImage(GLTexture *texture,
+    Image *createImage(GLTexture *texture,
 		const core::position2d<s32> &pos,
 		const core::dimension2d<u32> &size);
 
@@ -483,7 +483,7 @@ public:
 	}
 
 	//! Returns an image created from the last rendered frame.
-	IImage *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER);
+    Image *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER);
 
 	//! checks if an OpenGL error has happened and prints it, use via testGLError().
 	// Does *nothing* unless in debug mode.
@@ -506,7 +506,7 @@ private:
 	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
 
 	GLTexture *createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type,
-		const std::vector<IImage*> &images);
+        const std::vector<Image*> &images);
 
 	//! opens the file and loads it into the surface
     GLTexture *loadTextureFromFile(io::IReadFile *file, const io::path &hashName = "");
@@ -566,8 +566,8 @@ private:
 	RenderTarget *CurrentRenderTarget;
 	core::dimension2d<u32> CurrentRenderTargetSize;
 
-	core::array<IImageLoader *> SurfaceLoader;
-	core::array<IImageWriter *> SurfaceWriter;
+    core::array<IImageLoader *> SurfaceLoader;
+    core::array<IImageWriter *> SurfaceWriter;
 
 	std::vector<SHWBufferLink *> HWBufferList;
 

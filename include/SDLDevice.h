@@ -42,7 +42,7 @@ class Logger;
 
 namespace video
 {
-class IImage;
+class Image;
 class GLTexture;
 class VideoDriver;
 }
@@ -129,7 +129,7 @@ public:
 	void setWindowCaption(const wchar_t *text);
 
 	//! Sets the window icon.
-	bool setWindowIcon(const video::IImage *img);
+	bool setWindowIcon(const video::Image *img);
 
 	//! returns if window is active. if not, nothing need to be drawn
 	bool isWindowActive() const;

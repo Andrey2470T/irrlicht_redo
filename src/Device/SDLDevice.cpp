@@ -1425,7 +1425,7 @@ void SDLDevice::setWindowCaption(const wchar_t *text)
 }
 
 //! Sets the window icon.
-bool SDLDevice::setWindowIcon(const video::IImage *img)
+bool SDLDevice::setWindowIcon(const video::Image *img)
 {
 	if (!Window)
 		return false;

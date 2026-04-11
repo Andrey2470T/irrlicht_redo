@@ -83,7 +83,7 @@ inline u32 GetClipCode(const AbsRectangle &r, const core::position2d<s32> &p)
 
 /*
  */
-inline void GetClip(AbsRectangle &clipping, video::IImage *t)
+inline void GetClip(AbsRectangle &clipping, video::Image *t)
 {
 	clipping.x0 = 0;
 	clipping.y0 = 0;
@@ -810,7 +810,7 @@ static const blitterTable blitTable[] = {
 		{BLITTER_INVALID,                   -1,                  -1,                  0},
 	};
 
-static inline tExecuteBlit getBlitter2(eBlitter operation, const video::IImage *dest, const video::IImage *source)
+static inline tExecuteBlit getBlitter2(eBlitter operation, const video::Image *dest, const video::Image *source)
 {
 	video::ECOLOR_FORMAT sourceFormat = (video::ECOLOR_FORMAT)(source ? source->getColorFormat() : -1);
 	video::ECOLOR_FORMAT destFormat = (video::ECOLOR_FORMAT)(dest ? dest->getColorFormat() : -1);
@@ -832,7 +832,7 @@ static inline tExecuteBlit getBlitter2(eBlitter operation, const video::IImage *
 
 // bounce clipping to texture
 inline void setClip(AbsRectangle &out, const core::rect<s32> *clip,
-		const video::IImage *tex, s32 passnative, const core::dimension2d<u32> *tex_org)
+        const video::Image *tex, s32 passnative, const core::dimension2d<u32> *tex_org)
 {
 	if (0 == tex) {
 		if (clip && passnative) {
@@ -876,10 +876,10 @@ inline void setClip(AbsRectangle &out, const core::rect<s32> *clip,
 	a generic 2D Blitter
 */
 static s32 Blit(eBlitter operation,
-		video::IImage *dest,
+        video::Image *dest,
 		const core::rect<s32> *destClipping,
 		const core::position2d<s32> *destPos,
-		video::IImage *const source,
+        video::Image *const source,
 		const core::rect<s32> *sourceClipping,
 		u32 argb)
 {

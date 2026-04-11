@@ -60,7 +60,7 @@ bool CImageWriterPNG::isAWriteableFileExtension(const io::path &filename) const
 	return core::hasFileExtension(filename, "png");
 }
 
-bool CImageWriterPNG::writeImage(io::IWriteFile *file, IImage *image, u32 param) const
+bool CImageWriterPNG::writeImage(io::IWriteFile *file, Image *image, u32 param) const
 {
 	if (!file || !image)
 		return false;
