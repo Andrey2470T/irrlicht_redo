@@ -302,19 +302,45 @@ void CImage::fill(const SColor &color)
 	memset32(Data, c, getImageDataSizeInBytes());
 }
 
-void CImage::flipY()
+void CImage::flip(E_FLIP_AXIS axis)
 {
-	u8 *srcA = static_cast<u8 *>(Data);
-	u8 *srcB = srcA + (Size.Height - 1) * Pitch;
+    if (axis == EFA_Y) {
+        // Vertical flip
+        u8 *srcA = static_cast<u8 *>(Data);
+        u8 *srcB = srcA + (Size.Height - 1) * Pitch;
 
-	std::vector<u8> tmpBuffer(Pitch);
-	for (u32 i = 0; i < Size.Height; i += 2) {
-		memcpy(tmpBuffer.data(), srcA, Pitch);
-		memcpy(srcA, srcB, Pitch);
-		memcpy(srcB, tmpBuffer.data(), Pitch);
-		srcA += Pitch;
-		srcB -= Pitch;
-	}
+        std::vector<u8> tmpBuffer(Pitch);
+        for (u32 i = 0; i < Size.Height; i += 2) {
+            memcpy(tmpBuffer.data(), srcA, Pitch);
+            memcpy(srcA, srcB, Pitch);
+            memcpy(srcB, tmpBuffer.data(), Pitch);
+            srcA += Pitch;
+            srcB -= Pitch;
+        }
+    }
+    else {
+        // Horizontal flip
+        const u32 bytesPerPixel = BytesPerPixel;
+        std::vector<u8> tmpBuffer(bytesPerPixel);
+
+        for (u32 y = 0; y < Size.Height; ++y)
+        {
+            u8 *rowStart = Data + (y * Pitch);
+            u8 *left = rowStart;
+            u8 *right = rowStart + (Size.Width - 1) * bytesPerPixel;
+
+            for (u32 x = 0; x < Size.Width / 2; ++x)
+            {
+                // Swap pixels
+                memcpy(tmpBuffer.data(), left, bytesPerPixel);
+                memcpy(left, right, bytesPerPixel);
+                memcpy(right, tmpBuffer.data(), bytesPerPixel);
+
+                left += bytesPerPixel;
+                right -= bytesPerPixel;
+            }
+        }
+    }
 }
 
 //! get a filtered pixel

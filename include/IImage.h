@@ -14,6 +14,12 @@
 namespace video
 {
 
+enum E_FLIP_AXIS
+{
+    EFA_X,
+    EFA_Y
+};
+
 //! Interface for software image data.
 /** Image loaders create these images from files. IVideoDrivers convert
 these images into their (hardware) textures.
@@ -89,34 +95,6 @@ public:
 		return Data;
 	}
 
-	//! Get the mipmap size for this image for a certain mipmap level
-	/** level 0 will be full image size. Every further level is half the size.
-		Doesn't care if the image actually has mipmaps, just which size would be needed. */
-	core::dimension2du getMipMapsSize(u32 mipmapLevel) const
-	{
-		return getMipMapsSize(Size, mipmapLevel);
-	}
-
-	//! Calculate mipmap size for a certain level
-	/** level 0 will be full image size. Every further level is half the size.      */
-	static core::dimension2du getMipMapsSize(const core::dimension2du &sizeLevel0, u32 mipmapLevel)
-	{
-		core::dimension2du result(sizeLevel0);
-		u32 i = 0;
-		while (i != mipmapLevel) {
-			if (result.Width > 1)
-				result.Width >>= 1;
-			if (result.Height > 1)
-				result.Height >>= 1;
-			++i;
-
-			if (result.Width == 1 && result.Height == 1 && i < mipmapLevel)
-				return core::dimension2du(0, 0);
-		}
-		return result;
-	}
-
-
 	//! Returns a pixel
 	virtual SColor getPixel(u32 x, u32 y) const = 0;
 
@@ -154,7 +132,7 @@ public:
 	//! fills the surface with given color
 	virtual void fill(const SColor &color) = 0;
 
-	virtual void flipY() = 0;
+    virtual void flip(E_FLIP_AXIS axis) = 0;
 
 protected:
 	ECOLOR_FORMAT Format;

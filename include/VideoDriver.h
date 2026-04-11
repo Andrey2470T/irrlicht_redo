@@ -63,7 +63,7 @@ class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 	friend class GLTexture;
 
 protected:
-	//! constructor (use createOpenGL3Driver instead)
+    //! constructor
 	VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 public:

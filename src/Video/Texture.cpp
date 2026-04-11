@@ -194,7 +194,7 @@ void *GLTexture::lock(
             TEST_GL_ERROR(Driver);
 
             if (TexSettings.IsRenderTarget)
-                tmpImage->flipY();
+                tmpImage->flip(EFA_Y);
 #else
             auto tmpFBO = new RenderTarget(Driver);
             auto prevFBO = ctxt->getRenderTarget();
@@ -214,7 +214,7 @@ void *GLTexture::lock(
             tmpFBO->drop();
 
             if (IsRenderTarget)
-                tmpImage->flipY();
+                tmpImage->flip(EFA_Y);
 
             void *src = tmpImage->getData();
             void *dest = LockImage->getData();
