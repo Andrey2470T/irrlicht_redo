@@ -30,14 +30,12 @@ GLenum getTextureTarget(E_TEXTURE_TYPE type, u32 layer)
 }
 
 GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
-                     E_TEXTURE_TYPE type, VideoDriver *driver) :
-	NamedPath(name),
-	Type(type),
-	Driver(driver)
+                     E_TEXTURE_TYPE type, VideoDriver *driver, const TextureSettings &settings) :
+    NamedPath(name), Type(type), Driver(driver), TexSettings(settings)
 {
 	assert(!srcImages.empty() || Type != ETT_2D_MS);
 
-	HasMipMaps = Driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
+    TexSettings.HasMipMaps = Driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS) || TexSettings.HasMipMaps;
 	KeepImage = Driver->getTextureCreationFlag(ETCF_ALLOW_MEMORY_COPY);
 
 	getImageValues(srcImages[0]);
@@ -49,7 +47,7 @@ GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImage
 		"GLTexture: Type = %d Size = %dx%d (%dx%d) ColorFormat = %d (%d)%s -> %#06x %#06x %#06x%s",
 		(int)Type, Size.Width, Size.Height, OriginalSize.Width, OriginalSize.Height,
 		(int)ColorFormat, (int)OriginalColorFormat,
-		HasMipMaps ? " +Mip" : "",
+        TexSettings.HasMipMaps ? " +Mip" : "",
 		formatInfo.InternalFormat, formatInfo.PixelFormat, formatInfo.PixelType, formatInfo.Converter ? " (c)" : ""
 	);
 	g_irrlogger->log(lbuf, ELL_DEBUG);
@@ -71,40 +69,20 @@ GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImage
 		tmpImages = &Images;
 	}
 
-	glGenTextures(1, &TexID);
-	TEST_GL_ERROR(Driver);
-
-	if (!TexID) {
-		g_irrlogger->log("GLTexture: texture not created", ELL_ERROR);
-		return;
-	}
+    genTexture();
 
 	auto ctxt = Driver->getContext();
 	auto prevTexture = ctxt->getTextureUnit(0);
 	ctxt->setTextureUnit(0, this);
 
-	glTexParameteri(toGLTexType[Type], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(toGLTexType[Type], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (HasMipMaps) {
-		if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_SPEED))
-			glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
-		else if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_QUALITY))
-			glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-		else
-			glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
-	}
-	TEST_GL_ERROR(Driver);
-
-	initTexture(tmpImages->size());
+    initTexture();
 
 	for (size_t i = 0; i < tmpImages->size(); ++i)
 		uploadTexture(i, 0, (*tmpImages)[i]->getData());
 
-	if (HasMipMaps) {
-		for (size_t i = 0; i < tmpImages->size(); ++i)
-			regenerateMipMapLevels(i);
-	}
+    if (TexSettings.HasMipMaps) {
+        regenerateMipMaps();
+    }
 
 	if (!KeepImage) {
 		for (size_t i = 0; i < Images.size(); ++i)
@@ -113,37 +91,19 @@ GLTexture::GLTexture(const io::path &name, const std::vector<IImage *> &srcImage
 		Images.clear();
 	}
 
-	if (!name.empty())
-        Driver->GLInfo->ObjectLabel(GL_TEXTURE, TexID, name.c_str());
-
 	ctxt->setTextureUnit(0, prevTexture);
-
-	TEST_GL_ERROR(Driver);
 }
 
 GLTexture::GLTexture(const io::path &name, const core::dimension2du &size,
                      E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *driver,
                      u8 msaa) :
-	NamedPath(name),
-	OriginalSize(size),
-	Size(size),
-	OriginalColorFormat(format),
-	Type(type),
-	Driver(driver),
-    MSAA(msaa)
+    NamedPath(name), OriginalSize(size), Size(size), OriginalColorFormat(format),
+    ColorFormat(format), Type(type), Driver(driver), MSAA(msaa)
 {
-	HasMipMaps = false;
-	IsRenderTarget = true;
+    TexSettings.IsRenderTarget = true;
 
-	OriginalColorFormat = format;
-
-	if (ECF_UNKNOWN == OriginalColorFormat)
+    if (OriginalColorFormat == ECF_UNKNOWN)
 		ColorFormat = getBestColorFormat(Driver->getColorFormat());
-	else
-		ColorFormat = OriginalColorFormat;
-
-	OriginalSize = size;
-	Size = OriginalSize;
 
 	Pitch = Size.Width * pixelFormatsInfo[ColorFormat].size / 8;
 
@@ -163,37 +123,15 @@ GLTexture::GLTexture(const io::path &name, const core::dimension2du &size,
 	);
 	g_irrlogger->log(lbuf, ELL_DEBUG);
 
-    glGenTextures(1, &TexID);
-	TEST_GL_ERROR(Driver);
-
-    if (!TexID) {
-		g_irrlogger->log("GLTexture: texture not created", ELL_ERROR);
-		return;
-	}
+    genTexture();
 
 	auto ctxt = Driver->getContext();
     auto prevTexture = ctxt->getTextureUnit(0);
 	ctxt->setTextureUnit(0, this);
 
-	if (Type != ETT_2D_MS) {
-        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-		StatesCache.WrapU = ETC_CLAMP_TO_EDGE;
-		StatesCache.WrapV = ETC_CLAMP_TO_EDGE;
-		StatesCache.WrapW = ETC_CLAMP_TO_EDGE;
-	}
-
-	initTexture(0);
-
-	if (!name.empty())
-        Driver->GLInfo->ObjectLabel(GL_TEXTURE, TexID, name.c_str());
+    initTexture();
 
 	ctxt->setTextureUnit(0, prevTexture);
-	TEST_GL_ERROR(Driver);
 }
 
 GLTexture::~GLTexture()
@@ -219,26 +157,26 @@ void GLTexture::unbind() const
     TEST_GL_ERROR(Driver);
 }
 
-void *GLTexture::lock(E_TEXTURE_LOCK_MODE mode, u32 mipmapLevel, u32 layer)
+void *GLTexture::lock(E_TEXTURE_LOCK_MODE mode, u32 mipLevel, u32 layer)
 {
 	if (LockImage)
 		return LockImage->getData();
 
 	LockReadOnly |= (mode == ETLM_READ_ONLY);
 	LockLayer = layer;
-	MipLevelStored = mipmapLevel;
+    LockMipLevel = mipLevel;
 
 	if (KeepImage) {
 		assert(LockLayer < Images.size());
 
-		if (mipmapLevel == 0) {
+        if (mipLevel == 0) {
 			LockImage = Images[LockLayer];
 			LockImage->grab();
 		}
 	}
 
 	if (!LockImage) {
-        core::dimension2du lockImageSize(getMipMapsSize(MipLevelStored));
+        core::dimension2du lockImageSize(getMipMapsSize(LockMipLevel));
 		assert(lockImageSize.Width > 0 && lockImageSize.Height > 0);
 
 		LockImage = Driver->createImage(ColorFormat, lockImageSize);
@@ -254,17 +192,17 @@ void *GLTexture::lock(E_TEXTURE_LOCK_MODE mode, u32 mipmapLevel, u32 layer)
 
             auto &formatInfo = GLSpecificInfo::TextureFormats[ColorFormat];
 
-            glGetTexImage(getTextureTarget(Type, layer), MipLevelStored, formatInfo.PixelFormat, formatInfo.PixelType, tmpImage->getData());
+            glGetTexImage(getTextureTarget(Type, layer), LockMipLevel, formatInfo.PixelFormat, formatInfo.PixelType, tmpImage->getData());
             TEST_GL_ERROR(Driver);
 
-            if (IsRenderTarget)
+            if (TexSettings.IsRenderTarget)
                 tmpImage->flipY();
 #else
             auto tmpFBO = new RenderTarget(Driver);
             auto prevFBO = ctxt->getRenderTarget();
             ctxt->setRenderTarget(tmpFBO);
 
-            tmpFBO->setColorTextures({this}, {}, mipmapLevel);
+            tmpFBO->setColorTextures({this}, {}, mipLevel);
 
             IImage *tmpImage = Driver->createImage(ECF_A8R8G8B8, lockImageSize);
 
@@ -318,7 +256,7 @@ void GLTexture::unlock()
         auto prevTexture = Driver->getContext()->getTextureUnit(0);
 		Driver->getContext()->setTextureUnit(0, this);
 
-		uploadTexture(LockLayer, MipLevelStored, LockImage->getData());
+        uploadTexture(LockLayer, LockMipLevel, LockImage->getData());
 
 		Driver->getContext()->setTextureUnit(0, prevTexture);
 	}
@@ -330,9 +268,9 @@ void GLTexture::unlock()
 	LockLayer = 0;
 }
 
-void GLTexture::regenerateMipMapLevels(u32 layer)
+void GLTexture::regenerateMipMaps()
 {
-	if (!HasMipMaps || (Size.Width <= 1 && Size.Height <= 1))
+    if (!TexSettings.HasMipMaps || (Size.Width <= 1 && Size.Height <= 1))
 		return;
 
     auto prevTexture = Driver->getContext()->getTextureUnit(0);
@@ -342,24 +280,6 @@ void GLTexture::regenerateMipMapLevels(u32 layer)
 	TEST_GL_ERROR(Driver);
 
 	Driver->getContext()->setTextureUnit(0, prevTexture);
-}
-
-u32 GLTexture::getID() const
-{
-    return TexID;
-}
-
-bool GLTexture::hasAlpha() const
-{
-	switch (ColorFormat) {
-	case ECF_A8R8G8B8:
-	case ECF_A1R5G5B5:
-	case ECF_A16B16G16R16F:
-	case ECF_A32B32G32R32F:
-		return true;
-	default:
-		return false;
-	}
 }
 
 core::dimension2du GLTexture::getMipMapsSize(u32 mipLevel)
@@ -441,28 +361,74 @@ void GLTexture::getImageValues(const IImage *image)
 	Pitch = Size.Width * pixelFormatsInfo[ColorFormat].size / 8;
 }
 
-void GLTexture::initTexture(u32 layers)
+void GLTexture::genTexture()
 {
-    u32 levels = 1;
-	if (HasMipMaps) {
-		levels = core::u32_log2(core::max_(Size.Width, Size.Height)) + 1;
-	}
+    glGenTextures(1, &TexID);
+    TEST_GL_ERROR(Driver);
+
+    if (!TexID) {
+        g_irrlogger->log("GLTexture: texture not created", ELL_ERROR);
+        return;
+    }
+}
+
+void GLTexture::initTexture()
+{
+    if (!TexSettings.IsRenderTarget) {
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        if (TexSettings.HasMipMaps) {
+            if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_SPEED))
+                glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+            else if (Driver->getTextureCreationFlag(ETCF_OPTIMIZED_FOR_QUALITY))
+                glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+            else
+                glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
+        }
+        TEST_GL_ERROR(Driver);
+    }
+    else if (Type != ETT_2D_MS) {
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        TexSettings.WrapU = ETC_CLAMP_TO_EDGE;
+        TexSettings.WrapV = ETC_CLAMP_TO_EDGE;
+        TexSettings.WrapW = ETC_CLAMP_TO_EDGE;
+    }
+
+    u8 levels = 1;
+    if (TexSettings.HasMipMaps) {
+        levels = core::max_(TexSettings.MaxMipLevel,
+            (u8)core::u32_log2(core::max_(Size.Width, Size.Height))) + 1;
+
+        glTexParameteri(toGLTexType[Type], GL_TEXTURE_MAX_LEVEL, (s32)(levels-1));
+        TEST_GL_ERROR(Driver);
+    }
 
     //if (InternalFormat == GL_BGRA && Driver->getVersion().Major >= 3)
     //	use_tex_storage = false;
 
     auto &formatInfo = GLSpecificInfo::TextureFormats[ColorFormat];
 
+    u8 layers = Type == ETT_CUBEMAP ? 6 : 1;
+
 	switch (Type) {
 	case ETT_2D:
+    case ETT_CUBEMAP:
+        for (u8 i = 0; i < layers; i++) {
 #ifdef _IRR_COMPILE_WITH_OPENGL3_
-            glTexStorage2D(toGLTexType[Type], levels, formatInfo.InternalFormat,
-				Size.Width, Size.Height);
+            glTexStorage2D(getTextureTarget(Type, i), levels, formatInfo.InternalFormat,
+                Size.Width, Size.Height);
 #else
-            glTexImage2D(toGLTexType[Type], 0, formatInfo.InternalFormat,
+            glTexImage2D(getTextureTarget(Type, i), 0, formatInfo.InternalFormat,
                 Size.Width, Size.Height, 0, formatInfo.PixelFormat, formatInfo.PixelType, nullptr);
 #endif
-		TEST_GL_ERROR(Driver);
+            TEST_GL_ERROR(Driver);
+        }
 		break;
 	case ETT_2D_MS: {
 		GLint max_samples = 0;
@@ -479,22 +445,13 @@ void GLTexture::initTexture(u32 layers)
 		TEST_GL_ERROR(Driver);
 		break;
 	}
-	case ETT_CUBEMAP:
-        for (u8 i = 0; i < 6; i++) {
-#ifdef _IRR_COMPILE_WITH_OPENGL3_
-            glTexStorage2D(getTextureTarget(Type, i), levels, formatInfo.InternalFormat,
-					Size.Width, Size.Height);
-#else
-            glTexImage2D(getTextureTarget(i), 0, formatInfo.InternalFormat,
-                    Size.Width, Size.Height, 0, formatInfo.PixelFormat, formatInfo.PixelType, nullptr);
-#endif
-			TEST_GL_ERROR(Driver);
-		}
-		break;
 	default:
 		assert(false);
 		break;
 	}
+
+    if (!NamedPath.getInternalName().empty())
+        Driver->GLInfo->ObjectLabel(GL_TEXTURE, TexID, NamedPath.getInternalName().c_str());
 }
 
 void GLTexture::uploadTexture(u32 layer, u32 level, void *data)

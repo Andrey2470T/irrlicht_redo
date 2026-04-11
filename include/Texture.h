@@ -132,25 +132,29 @@ enum E_TEXTURE_LOCK_MODE
 	ETLM_WRITE_ONLY
 };
 
+struct TextureSettings
+{
+    E_TEXTURE_CLAMP WrapU = ETC_REPEAT;
+    E_TEXTURE_CLAMP WrapV = ETC_REPEAT;
+    E_TEXTURE_CLAMP WrapW = ETC_REPEAT;
+
+    E_TEXTURE_MIN_FILTER MinF = ETMINF_NEAREST_MIPMAP_NEAREST;
+    E_TEXTURE_MAG_FILTER MagF = ETMAGF_NEAREST;
+
+    f32 LodBias = 0.0f;
+    u8 AnisotropyFilter = 0;
+
+    bool IsRenderTarget = false;
+    bool HasMipMaps = false;
+    u8 MaxMipLevel = 0;
+};
+
 class GLTexture : public virtual IReferenceCounted
 {
 public:
-	struct SStatesCache
-	{
-		E_TEXTURE_CLAMP WrapU = ETC_REPEAT;
-		E_TEXTURE_CLAMP WrapV = ETC_REPEAT;
-		E_TEXTURE_CLAMP WrapW = ETC_REPEAT;
-		u8 LODBias = 0;
-		u8 AnisotropicFilter = 0;
-		E_TEXTURE_MIN_FILTER MinFilter = ETMINF_NEAREST_MIPMAP_NEAREST;
-		E_TEXTURE_MAG_FILTER MagFilter = ETMAGF_NEAREST;
-		bool MipMapStatus = false;
-		bool IsCached = false;
-	};
-
 	// Constructor from images
-	GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
-			E_TEXTURE_TYPE type, VideoDriver *driver);
+    GLTexture(const io::path &name, const std::vector<IImage *> &srcImages,
+              E_TEXTURE_TYPE type, VideoDriver *driver, const TextureSettings &settings=TextureSettings());
 
 	// Constructor for render target
 	GLTexture(const io::path &name, const core::dimension2du &size,
@@ -164,14 +168,14 @@ public:
 
 	// Texture interface methods
 	void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE,
-			u32 mipmapLevel = 0,
+            u32 mipLevel = 0,
 			u32 layer = 0);
 
 	void unlock();
 
-	void regenerateMipMapLevels(u32 layer = 0);
+    void regenerateMipMaps();
 
-	u32 getID() const;
+    u32 getID() const { return TexID; }
 
 	// Getters
 	const core::dimension2du &getOriginalSize() const { return OriginalSize; }
@@ -181,22 +185,23 @@ public:
 	ECOLOR_FORMAT getOriginalColorFormat() const { return OriginalColorFormat; }
 
 	u32 getPitch() const { return Pitch; }
-	bool hasMipMaps() const { return HasMipMaps; }
-	bool isRenderTarget() const { return IsRenderTarget; }
+    bool hasMipMaps() const { return TexSettings.HasMipMaps; }
+    bool isRenderTarget() const { return TexSettings.IsRenderTarget; }
 
 	const io::SNamedPath &getName() const { return NamedPath; }
 	E_TEXTURE_TYPE getType() const { return Type; }
 
-	bool hasAlpha() const;
+    bool hasAlpha() const { return pixelFormatsInfo[ColorFormat].hasAlpha; }
 
-	SStatesCache &getStatesCache() const { return StatesCache; }
+    const TextureSettings &getParameters() const { return TexSettings; }
 
 protected:
     core::dimension2du getMipMapsSize(u32 mipLevel);
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
 	void getImageValues(const IImage *image);
 
-	void initTexture(u32 layers);
+    void genTexture();
+    void initTexture();
 	void uploadTexture(u32 layer, u32 level, void *data);
 
 	// Fields from Texture
@@ -206,8 +211,6 @@ protected:
 	ECOLOR_FORMAT OriginalColorFormat = ECF_UNKNOWN;
 	ECOLOR_FORMAT ColorFormat = ECF_UNKNOWN;
 	u32 Pitch = 0;
-	bool HasMipMaps = false;
-	bool IsRenderTarget = false;
 	E_TEXTURE_TYPE Type;
 
 	VideoDriver *Driver;
@@ -217,13 +220,12 @@ protected:
 	bool LockReadOnly = false;
 	IImage *LockImage = nullptr;
 	u32 LockLayer = 0;
+    u8 LockMipLevel = 0;
 
 	bool KeepImage = false;
 	std::vector<IImage*> Images;
 
-	u8 MipLevelStored = 0;
-
-	mutable SStatesCache StatesCache;
+    TextureSettings TexSettings;
 };
 
 } // end namespace video
