@@ -26,7 +26,7 @@ class IFileSystem;
 namespace video
 {
 class VideoDriver;
-class ITexture;
+class GLTexture;
 } // end namespace video
 
 namespace gui
@@ -151,7 +151,7 @@ public:
 	\return Pointer to the font. Returns 0 if the font could not be loaded.
 	This pointer should not be dropped. See IReferenceCounted::drop() for
 	more information. */
-	virtual IGUIImageList *createImageList(video::ITexture *texture,
+	virtual IGUIImageList *createImageList(video::GLTexture *texture,
 			core::dimension2d<s32> imageSize,
 			bool useAlphaChannel) = 0;
 
@@ -238,7 +238,7 @@ public:
 	\return Pointer to the created image element. Returns 0 if an error
 	occurred. This pointer should not be dropped. See
 	IReferenceCounted::drop() for more information. */
-	virtual IGUIImage *addImage(video::ITexture *image, core::position2d<s32> pos,
+	virtual IGUIImage *addImage(video::GLTexture *image, core::position2d<s32> pos,
 			bool useAlphaChannel = true, IGUIElement *parent = 0, s32 id = -1, const wchar_t *text = 0) = 0;
 
 	//! Adds an image element.

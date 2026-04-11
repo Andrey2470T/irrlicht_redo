@@ -11,7 +11,7 @@
 namespace video
 {
 class VideoDriver;
-class ITexture;
+class GLTexture;
 }
 
 namespace gui
@@ -30,12 +30,12 @@ public:
 	core::array<SGUISprite> &getSprites() override;
 
 	u32 getTextureCount() const override;
-	video::ITexture *getTexture(u32 index) const override;
-	void addTexture(video::ITexture *texture) override;
-	void setTexture(u32 index, video::ITexture *texture) override;
+	video::GLTexture *getTexture(u32 index) const override;
+	void addTexture(video::GLTexture *texture) override;
+	void setTexture(u32 index, video::GLTexture *texture) override;
 
 	//! Add the texture and use it for a single non-animated sprite.
-	s32 addTextureAsSprite(video::ITexture *texture) override;
+	s32 addTextureAsSprite(video::GLTexture *texture) override;
 
 	//! clears sprites, rectangles and textures
 	void clear() override;
@@ -71,7 +71,7 @@ protected:
 
 	core::array<SGUISprite> Sprites;
 	core::array<core::rect<s32>> Rectangles;
-	core::array<video::ITexture *> Textures;
+	core::array<video::GLTexture *> Textures;
 	IGUIEnvironment *Environment;
 	video::VideoDriver *Driver;
 };

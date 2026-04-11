@@ -7,7 +7,7 @@
 #include "IGUISkin.h"
 #include "irrString.h"
 #include <string>
-#include "ITexture.h"
+#include "Texture.h"
 
 
 namespace video

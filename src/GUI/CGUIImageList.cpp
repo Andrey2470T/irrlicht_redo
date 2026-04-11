@@ -35,7 +35,7 @@ CGUIImageList::~CGUIImageList()
 }
 
 //! Creates the image list from texture.
-bool CGUIImageList::createImageList(video::ITexture *texture,
+bool CGUIImageList::createImageList(video::GLTexture *texture,
 		core::dimension2d<s32> imageSize,
 		bool useAlphaChannel)
 {

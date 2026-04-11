@@ -162,7 +162,7 @@ private:
 
 	void chooseMaterial2D();
 
-	bool setMaterialTexture(u32 layerIdx, const video::ITexture *texture);
+    bool setMaterialTexture(u32 layerIdx, const GLTexture *texture);
 
 	void loadShaderData(const io::path &vertexShaderName, const io::path &fragmentShaderName, c8 **vertexShaderData, c8 **fragmentShaderData);
 

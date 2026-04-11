@@ -6,7 +6,7 @@
 
 #include "IGUIButton.h"
 #include "IGUISpriteBank.h"
-#include "ITexture.h"
+#include "Texture.h"
 #include "SColor.h"
 
 
@@ -54,28 +54,28 @@ public:
 	bool isOverrideColorEnabled(void) const override;
 
 	//! Sets an image which should be displayed on the button when it is in the given state.
-	void setImage(EGUI_BUTTON_IMAGE_STATE state, video::ITexture *image = 0, const core::rect<s32> &sourceRect = core::rect<s32>(0, 0, 0, 0)) override;
+    void setImage(EGUI_BUTTON_IMAGE_STATE state, video::GLTexture *image = 0, const core::rect<s32> &sourceRect = core::rect<s32>(0, 0, 0, 0)) override;
 
 	//! Sets an image which should be displayed on the button when it is in normal state.
-	void setImage(video::ITexture *image = 0) override
+    void setImage(video::GLTexture *image = 0) override
 	{
 		setImage(EGBIS_IMAGE_UP, image);
 	}
 
 	//! Sets an image which should be displayed on the button when it is in normal state.
-	void setImage(video::ITexture *image, const core::rect<s32> &pos) override
+    void setImage(video::GLTexture *image, const core::rect<s32> &pos) override
 	{
 		setImage(EGBIS_IMAGE_UP, image, pos);
 	}
 
 	//! Sets an image which should be displayed on the button when it is in pressed state.
-	void setPressedImage(video::ITexture *image = 0) override
+    void setPressedImage(video::GLTexture *image = 0) override
 	{
 		setImage(EGBIS_IMAGE_DOWN, image);
 	}
 
 	//! Sets an image which should be displayed on the button when it is in pressed state.
-	void setPressedImage(video::ITexture *image, const core::rect<s32> &pos) override
+    void setPressedImage(video::GLTexture *image, const core::rect<s32> &pos) override
 	{
 		setImage(EGBIS_IMAGE_DOWN, image, pos);
 	}
@@ -209,7 +209,7 @@ private:
 			return Texture == other.Texture && SourceRect == other.SourceRect;
 		}
 
-		video::ITexture *Texture;
+        video::GLTexture *Texture;
 		core::rect<s32> SourceRect;
 	};
 

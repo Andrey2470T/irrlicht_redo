@@ -9,8 +9,7 @@
 #include "VideoDriver.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
-
-#include "Video/COpenGLCoreTexture.h"
+#include "Texture.h"
 
 
 namespace video

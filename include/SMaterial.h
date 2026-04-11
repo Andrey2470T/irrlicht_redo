@@ -13,7 +13,7 @@
 
 namespace video
 {
-class ITexture;
+class GLTexture;
 
 //! Flag for MaterialTypeParam (in combination with EMT_ONETEXTURE_BLEND) or for BlendFactor
 //! BlendFunc = source * sourceFactor + dest * destFactor
@@ -380,7 +380,7 @@ public:
 	//! Gets the i-th texture
 	/** \param i The desired level.
 	\return Texture for texture level i, if defined, else 0. */
-	ITexture *getTexture(u32 i) const
+    GLTexture *getTexture(u32 i) const
 	{
 		return i < MATERIAL_MAX_TEXTURES ? TextureLayers[i].Texture : 0;
 	}
@@ -389,7 +389,7 @@ public:
 	/** If i>=MATERIAL_MAX_TEXTURES this setting will be ignored.
 	\param i The desired level.
 	\param tex Texture for texture level i. */
-	void setTexture(u32 i, ITexture *tex)
+    void setTexture(u32 i, GLTexture *tex)
 	{
 		if (i >= MATERIAL_MAX_TEXTURES)
 			return;
@@ -485,7 +485,7 @@ struct std::hash<video::SMaterial>
 	{
 		std::size_t ret = 0;
 		for (auto h : { // the three members most likely to differ
-			std::hash<video::ITexture*>{}(m.getTexture(0)),
+            std::hash<video::GLTexture*>{}(m.getTexture(0)),
 			std::hash<int>{}(m.MaterialType),
 			std::hash<u32>{}(m.ColorParam.color)
 		}) {

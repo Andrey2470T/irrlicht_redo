@@ -23,7 +23,7 @@
 #include "IMeshManipulator.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
-#include "ITexture.h"
+#include "Texture.h"
 #include "IImage.h"
 #include <memory>
 
@@ -60,7 +60,7 @@ struct SFrameStats {
 
 class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
 {
-	friend class COpenGLCoreTexture;
+	friend class GLTexture;
 
 protected:
 	//! constructor (use createOpenGL3Driver instead)
@@ -172,20 +172,18 @@ public:
 	{
 		return Textures.size();
 	}
-	ITexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
+    GLTexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
 
 	bool checkImage(const std::vector<IImage*> &image) const;
 
-	ITexture *addTexture(const io::path &name, IImage *image);
+    GLTexture *addTexture(const io::path &name, IImage *image);
 
-	ITexture *addArrayTexture(const io::path &name, IImage **images, u32 count);
-
-	virtual ITexture *addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
+    virtual GLTexture *addTextureCubemap(const io::path &name, IImage *imagePosX, IImage *imageNegX, IImage *imagePosY,
 			IImage *imageNegY, IImage *imagePosZ, IImage *imageNegZ);
 
-	ITexture *addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
+    GLTexture *addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
 
-	void addTexture(ITexture *surface);
+    void addTexture(GLTexture *surface);
 
 	void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled);
 	bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const;
@@ -214,7 +212,7 @@ public:
 	IImage *createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size);
 
 	//! Creates a software image from part of a texture.
-	IImage *createImage(ITexture *texture,
+    IImage *createImage(GLTexture *texture,
 		const core::position2d<s32> &pos,
 		const core::dimension2d<u32> &size);
 
@@ -351,21 +349,21 @@ public:
 	}
 
 	//! draws an 2d image
-	void draw2DImage(const video::ITexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture = false);
+    void draw2DImage(const GLTexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture = false);
 
-	void draw2DImage(const video::ITexture *texture,
+    void draw2DImage(const GLTexture *texture,
 			const core::position2d<s32> &destPos,
 			const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect = 0,
 			SColor color = SColor(255, 255, 255, 255), bool useAlphaChannelOfTexture = false);
 
-	void draw2DImage(const video::ITexture *texture, const core::rect<s32> &destRect,
+    void draw2DImage(const GLTexture *texture, const core::rect<s32> &destRect,
 			const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect = 0,
 			const video::SColor *const colors = 0, bool useAlphaChannelOfTexture = false);
 
 	// internally used
-	void draw2DImage(const video::ITexture *texture, u32 layer, bool flip);
+    void draw2DImage(const GLTexture *texture, u32 layer, bool flip);
 
-	void draw2DImageBatch(const video::ITexture *texture,
+    void draw2DImageBatch(const GLTexture *texture,
 			const core::array<core::position2d<s32>> &positions,
 			const core::array<core::rect<s32>> &sourceRects,
 			const core::rect<s32> *clipRect,
@@ -443,35 +441,35 @@ public:
 	//! Returns the maximum amount of primitives
 	u32 getMaximalPrimitiveCount() const;
 
-	virtual ITexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
+    virtual GLTexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
-	virtual ITexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
+    virtual GLTexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
 	//! Creates a render target texture for a cubemap
-	ITexture *addRenderTargetTextureCubemap(const u32 sideLen,
+    GLTexture *addRenderTargetTextureCubemap(const u32 sideLen,
 			const io::path &name, const ECOLOR_FORMAT format);
 
 	//! looks if the image is already loaded
-	video::ITexture *findTexture(const io::path &filename);
+    GLTexture *findTexture(const io::path &filename);
 
 	//! loads a Texture
-	ITexture *getTexture(const io::path &filename);
+    GLTexture *getTexture(const io::path &filename);
 
 	//! loads a Texture
-	ITexture *getTexture(io::IReadFile *file);
+    GLTexture *getTexture(io::IReadFile *file);
 
 	bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0);
 
-	bool setRenderTarget(ITexture *texture, u16 clearFlag = ECBF_COLOR | ECBF_DEPTH, SColor clearColor = SColor(255, 0, 0, 0),
+    bool setRenderTarget(GLTexture *texture, u16 clearFlag = ECBF_COLOR | ECBF_DEPTH, SColor clearColor = SColor(255, 0, 0, 0),
 		f32 clearDepth = 1.f, u8 clearStencil = 0);
 
 	//! Sets a new render target.
 	//! Prefer to use the setRenderTarget function taking flags as parameter as this one can't clear the stencil buffer.
 	//! It's still offered for backward compatibility.
-	bool setRenderTarget(ITexture *texture, bool clearBackBuffer, bool clearZBuffer, SColor color = SColor(255, 0, 0, 0))
+    bool setRenderTarget(GLTexture *texture, bool clearBackBuffer, bool clearZBuffer, SColor color = SColor(255, 0, 0, 0))
 	{
 		u16 flag = 0;
 
@@ -489,9 +487,9 @@ public:
 
 	//! checks if an OpenGL error has happened and prints it, use via testGLError().
 	// Does *nothing* unless in debug mode.
-	bool testGLError();
+	bool testGLError(const char *file, int line);
 
-	void removeTexture(ITexture *texture);
+    void removeTexture(GLTexture *texture);
 
 	//! Used by some SceneNodes to check if a material should be rendered in the transparent render pass
 	bool needsTransparentRenderPass(const video::SMaterial &material) const;
@@ -507,11 +505,11 @@ public:
 private:
 	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
 
-	ITexture *createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type,
+	GLTexture *createDeviceDependentTexture(const io::path &name, E_TEXTURE_TYPE type,
 		const std::vector<IImage*> &images);
 
 	//! opens the file and loads it into the surface
-	ITexture *loadTextureFromFile(io::IReadFile *file, const io::path &hashName = "");
+    GLTexture *loadTextureFromFile(io::IReadFile *file, const io::path &hashName = "");
 
 	bool uploadHardwareBuffer(OpenGLVBO &vbo, const void *buffer, size_t bufferSize, scene::E_HARDWARE_MAPPING hint);
 
@@ -552,7 +550,7 @@ private:
 	struct SSurface
 	{
 		io::path Name;
-		video::ITexture *Surface;
+        GLTexture *Surface;
 
 		bool operator<(const SSurface &other) const
 		{
@@ -564,7 +562,7 @@ private:
 
 	core::array<RenderTarget *> RenderTargets;
 	RenderTarget *SharedRenderTarget;
-	core::array<ITexture *> SharedDepthTextures;
+    core::array<GLTexture *> SharedDepthTextures;
 	RenderTarget *CurrentRenderTarget;
 	core::dimension2d<u32> CurrentRenderTargetSize;
 
@@ -593,7 +591,7 @@ private:
 	bool PixelFog;
 	bool RangeFog;
 
-	friend class COpenGLCoreTexture;
+	friend class GLTexture;
 	friend class MaterialRenderer;
 	friend class MaterialSystem;
 

@@ -43,7 +43,7 @@ class Logger;
 namespace video
 {
 class IImage;
-class ITexture;
+class GLTexture;
 class VideoDriver;
 }
 

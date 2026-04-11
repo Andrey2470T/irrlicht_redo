@@ -8,7 +8,7 @@
 
 namespace video
 {
-class ITexture;
+class GLTexture;
 
 //! Texture coord clamp mode outside [0.0, 1.0]
 enum E_TEXTURE_CLAMP
@@ -193,7 +193,7 @@ public:
 	}
 
 	//! Texture
-	ITexture *Texture;
+    GLTexture *Texture;
 
 	//! Texture Clamp Mode
 	/** Values are taken from E_TEXTURE_CLAMP. */

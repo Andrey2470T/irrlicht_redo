@@ -13,8 +13,7 @@
 #include "Renderer2D.h"
 #include "MaterialRenderer.h"
 #include "MaterialCallbacks.h"
-
-#include "Video/COpenGLCoreTexture.h"
+#include "Texture.h"
 
 namespace video
 {
@@ -452,6 +451,12 @@ std::array<GLenum, EBF_COUNT> toGLWrapMode = {
 	GL_REPEAT
 };
 
+std::array<GLenum, ETT_COUNT> toGLTextureType = {
+    GL_TEXTURE_2D,
+    GL_TEXTURE_2D_MULTISAMPLE,
+    GL_TEXTURE_CUBE_MAP
+};
+
 //! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
 void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates)
 {
@@ -460,12 +465,12 @@ void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool rese
 	// Set textures to TU/TIU and apply filters to them
 
 	for (s32 i = features.MaxTextureUnits - 1; i >= 0; --i) {
-		auto tmpTexture = static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(i));
+		auto tmpTexture = static_cast<const GLTexture *>(Driver->Context->getTextureUnit(i));
 
 		if (!tmpTexture)
 			continue;
 
-		GLenum tmpTextureType = tmpTexture->getOpenGLTextureType();
+        GLenum tmpTextureType = toGLTextureType[tmpTexture->getType()];
 
 		Driver->Context->activateUnit(i);
 
@@ -528,12 +533,12 @@ void MaterialSystem::setTextureRenderStates(const SMaterial &material, bool rese
 
 		if (!states.IsCached || layer.TextureWrapU != states.WrapU) {
 			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_S, toGLWrapMode[layer.TextureWrapU]);
-			states.WrapU = layer.TextureWrapU;
+            states.WrapU = (E_TEXTURE_CLAMP)layer.TextureWrapU;
 		}
 
 		if (!states.IsCached || layer.TextureWrapV != states.WrapV) {
 			glTexParameteri(tmpTextureType, GL_TEXTURE_WRAP_T, toGLWrapMode[layer.TextureWrapV]);
-			states.WrapV = layer.TextureWrapV;
+            states.WrapV = (E_TEXTURE_CLAMP)layer.TextureWrapV;
 		}
 
 		states.IsCached = true;
@@ -577,7 +582,7 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 		Driver->Context->setBlendOp(EBO_ADD);
 	}
 
-	Material.setTexture(0, const_cast<COpenGLCoreTexture *>(static_cast<const COpenGLCoreTexture *>(Driver->Context->getTextureUnit(0))));
+	Material.setTexture(0, const_cast<GLTexture *>(static_cast<const GLTexture *>(Driver->Context->getTextureUnit(0))));
 	Driver->setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
 
 	if (texture) {
@@ -668,9 +673,9 @@ void MaterialSystem::createMaterialRenderers()
 	delete[] fs2DData;
 }
 
-bool MaterialSystem::setMaterialTexture(u32 layerIdx, const video::ITexture *texture)
+bool MaterialSystem::setMaterialTexture(u32 layerIdx, const GLTexture *texture)
 {
-	Material.TextureLayers[layerIdx].Texture = const_cast<ITexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
+    Material.TextureLayers[layerIdx].Texture = const_cast<GLTexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
 	return Driver->Context->setTextureUnit(0, texture);
 }
 

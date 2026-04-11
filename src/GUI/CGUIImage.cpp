@@ -26,7 +26,7 @@ CGUIImage::~CGUIImage()
 }
 
 //! sets an image
-void CGUIImage::setImage(video::ITexture *image)
+void CGUIImage::setImage(video::GLTexture *image)
 {
 	if (image == Texture)
 		return;
@@ -41,7 +41,7 @@ void CGUIImage::setImage(video::ITexture *image)
 }
 
 //! Gets the image texture
-video::ITexture *CGUIImage::getImage() const
+video::GLTexture *CGUIImage::getImage() const
 {
 	return Texture;
 }

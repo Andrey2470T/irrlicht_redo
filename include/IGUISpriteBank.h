@@ -13,7 +13,7 @@
 
 namespace video
 {
-class ITexture;
+class GLTexture;
 } // end namespace video
 
 namespace gui
@@ -73,18 +73,18 @@ public:
 	virtual u32 getTextureCount() const = 0;
 
 	//! Gets the texture with the specified index
-	virtual video::ITexture *getTexture(u32 index) const = 0;
+	virtual video::GLTexture *getTexture(u32 index) const = 0;
 
 	//! Adds a texture to the sprite bank
-	virtual void addTexture(video::ITexture *texture) = 0;
+	virtual void addTexture(video::GLTexture *texture) = 0;
 
 	//! Changes one of the textures in the sprite bank
-	virtual void setTexture(u32 index, video::ITexture *texture) = 0;
+	virtual void setTexture(u32 index, video::GLTexture *texture) = 0;
 
 	//! Add the texture and use it for a single non-animated sprite.
 	/** The texture and the corresponding rectangle and sprite will all be added to the end of each array.
 	 \returns The index of the sprite or -1 on failure */
-	virtual s32 addTextureAsSprite(video::ITexture *texture) = 0;
+	virtual s32 addTextureAsSprite(video::GLTexture *texture) = 0;
 
 	//! Clears sprites, rectangles and textures
 	virtual void clear() = 0;

@@ -1,5 +1,5 @@
 #include "RenderTarget.h"
-#include "ITexture.h"
+#include "Texture.h"
 #include "VideoDriver.h"
 #include "DrawContext.h"
 #include "Common.h"
@@ -27,7 +27,7 @@ RenderTarget::RenderTarget(VideoDriver *_driver)
 
 	glGenFramebuffers(1, &fboID);
 
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 RenderTarget::~RenderTarget()
@@ -42,23 +42,23 @@ RenderTarget::~RenderTarget()
 	if (depthStencilTexture)
 		depthStencilTexture->drop();
 
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 void RenderTarget::bind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 void RenderTarget::unbind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 void RenderTarget::setColorTextures(
-	const std::vector<ITexture*> &textures,
+    const std::vector<GLTexture*> &textures,
 	const std::vector<E_CUBEMAP_FACE> &cubeMapFaceMappings,
 	u8 mipLevel)
 {
@@ -72,12 +72,12 @@ void RenderTarget::setColorTextures(
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 
 	u8 maxTextureCount = std::min((u8)textures.size(), maxColorAttachments);
 
 	for (u8 i = 0; i < maxTextureCount; i++) {
-		ITexture *tex = textures[i];
+        GLTexture *tex = textures[i];
 
 		if (tex) {
 			if (colorTextures[i] != nullptr) {
@@ -125,7 +125,7 @@ void RenderTarget::setColorTextures(
 		}
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, textureID, mipLevel);
-		driver->testGLError();
+        TEST_GL_ERROR(driver);
 	}
 
 	width = colorTextures[0]->getSize().Width;
@@ -159,7 +159,7 @@ void RenderTarget::setColorTextures(
 			glDrawBuffers(bufferCount, colorTexturesEnums.data());
 		}
 
-		driver->testGLError();
+        TEST_GL_ERROR(driver);
 	}
 
 #ifdef _DEBUG_
@@ -168,14 +168,14 @@ void RenderTarget::setColorTextures(
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 void RenderTarget::setDepthStencilTexture(
-	ITexture *texture, E_CUBEMAP_FACE dsCubeMapFace, u8 mipLevel)
+    GLTexture *texture, E_CUBEMAP_FACE dsCubeMapFace, u8 mipLevel)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 
 	bool already_attached = false;
 
@@ -236,7 +236,7 @@ void RenderTarget::setDepthStencilTexture(
 		if (textureFormat == ECF_D24S8)
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, textarget, textureID, mipLevel);
 #endif
-		driver->testGLError();
+        TEST_GL_ERROR(driver);
 	}
 
 #ifdef _DEBUG_
@@ -245,7 +245,7 @@ void RenderTarget::setDepthStencilTexture(
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 void RenderTarget::blitTo(RenderTarget *target)
@@ -259,24 +259,24 @@ void RenderTarget::blitTo(RenderTarget *target)
 	auto prev_rt = driver->getContext()->getRenderTarget();
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, getID());
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->getID());
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 	glBlitFramebuffer(
 			0, 0, getSize().Width, getSize().Height,
 			0, 0, target->getSize().Width, target->getSize().Height,
 			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 
 	// This resets both read and draw framebuffer. Note that we bypass CacheHandler here.
 	glBindFramebuffer(GL_FRAMEBUFFER, prev_rt->getID());
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 }
 
 bool RenderTarget::checkStatus() const
 {
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	driver->testGLError();
+    TEST_GL_ERROR(driver);
 
 	switch (status) {
 		case GL_FRAMEBUFFER_COMPLETE:

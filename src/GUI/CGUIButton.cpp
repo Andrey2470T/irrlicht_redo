@@ -430,7 +430,7 @@ bool CGUIButton::isOverrideColorEnabled() const
 	return OverrideColorEnabled;
 }
 
-void CGUIButton::setImage(EGUI_BUTTON_IMAGE_STATE state, video::ITexture *image, const core::rect<s32> &sourceRect)
+void CGUIButton::setImage(EGUI_BUTTON_IMAGE_STATE state, video::GLTexture *image, const core::rect<s32> &sourceRect)
 {
 	if (state >= EGBIS_COUNT)
 		return;

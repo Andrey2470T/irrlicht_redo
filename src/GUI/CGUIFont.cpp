@@ -104,7 +104,7 @@ bool CGUIFont::load(const io::path &filename)
 			filename);
 }
 
-//! load & prepare font from ITexture
+//! load & prepare font from Texture
 bool CGUIFont::loadTexture(video::IImage *image, const io::path &name)
 {
 	if (!image || !SpriteBank)

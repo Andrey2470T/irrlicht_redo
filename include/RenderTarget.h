@@ -4,7 +4,7 @@
 #include "EDriverTypes.h"
 #include "irrArray.h"
 #include "dimension2d.h"
-#include "ITexture.h"
+#include "Texture.h"
 
 namespace video
 {
@@ -22,10 +22,10 @@ class RenderTarget : public virtual IReferenceCounted
 
 	VideoDriver *driver;
 
-	std::vector<ITexture*> colorTextures;
+    std::vector<GLTexture*> colorTextures;
 	std::vector<E_CUBEMAP_FACE> colorCubeMapFaces;
 
-	ITexture* depthStencilTexture = nullptr;
+    GLTexture* depthStencilTexture = nullptr;
 	E_CUBEMAP_FACE depthStencilCubeMapFace;
 public:
 	RenderTarget(video::VideoDriver *_driver);
@@ -46,25 +46,25 @@ public:
 		return {width, height};
 	}
 
-	std::vector<ITexture*> getColorTextures() const
+    std::vector<GLTexture*> getColorTextures() const
 	{
 		return colorTextures;
 	}
 
-	ITexture *getDepthStencilTexture() const
+    GLTexture *getDepthStencilTexture() const
 	{
 		return depthStencilTexture;
 	}
 
 	void setColorTextures(
-		const std::vector<ITexture*> &textures,
+        const std::vector<GLTexture*> &textures,
 		const std::vector<E_CUBEMAP_FACE> &cubeMapFaceMappings={},
 		u8 mipLevel=0);
 	void setDepthStencilTexture(
-		ITexture *texture, E_CUBEMAP_FACE dsCubeMapFace=ECMF_POS_X, u8 mipLevel=0);
+        GLTexture *texture, E_CUBEMAP_FACE dsCubeMapFace=ECMF_POS_X, u8 mipLevel=0);
 
 	void setTextures(
-		const std::vector<ITexture*> &_colorTextures, ITexture *_depthStencilTexture, u8 mipLevel=0)
+        const std::vector<GLTexture*> &_colorTextures, GLTexture *_depthStencilTexture, u8 mipLevel=0)
 	{
 		setColorTextures(_colorTextures, {}, mipLevel);
 		setDepthStencilTexture(_depthStencilTexture, ECMF_POS_X, mipLevel);

@@ -25,7 +25,7 @@ public:
 	//! \param useAlphaChannel: true if the alpha channel from the texture should be used
 	//! \return
 	//! true if the image list was created
-	bool createImageList(video::ITexture *texture,
+	bool createImageList(video::GLTexture *texture,
 			core::dimension2d<s32> imageSize,
 			bool useAlphaChannel);
 
@@ -53,7 +53,7 @@ public:
 
 private:
 	video::VideoDriver *Driver;
-	video::ITexture *Texture;
+	video::GLTexture *Texture;
 	s32 ImageCount;
 	core::dimension2d<s32> ImageSize;
 	s32 ImagesPerRow;

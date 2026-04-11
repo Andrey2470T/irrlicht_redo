@@ -78,7 +78,7 @@ private:
 		u32 spriteno;
 	};
 
-	//! load & prepare font from ITexture
+	//! load & prepare font from Texture
 	bool loadTexture(video::IImage *image, const io::path &name);
 
 	void readPositions(video::IImage *texture, s32 &lowerRightPositions);

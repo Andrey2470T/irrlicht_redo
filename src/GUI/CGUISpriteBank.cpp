@@ -6,7 +6,7 @@
 
 #include "IGUIEnvironment.h"
 #include "VideoDriver.h"
-#include "ITexture.h"
+#include "Texture.h"
 
 
 namespace gui
@@ -46,7 +46,7 @@ u32 CGUISpriteBank::getTextureCount() const
 	return Textures.size();
 }
 
-video::ITexture *CGUISpriteBank::getTexture(u32 index) const
+video::GLTexture *CGUISpriteBank::getTexture(u32 index) const
 {
 	if (index < Textures.size())
 		return Textures[index];
@@ -54,7 +54,7 @@ video::ITexture *CGUISpriteBank::getTexture(u32 index) const
 		return 0;
 }
 
-void CGUISpriteBank::addTexture(video::ITexture *texture)
+void CGUISpriteBank::addTexture(video::GLTexture *texture)
 {
 	if (texture)
 		texture->grab();
@@ -62,7 +62,7 @@ void CGUISpriteBank::addTexture(video::ITexture *texture)
 	Textures.push_back(texture);
 }
 
-void CGUISpriteBank::setTexture(u32 index, video::ITexture *texture)
+void CGUISpriteBank::setTexture(u32 index, video::GLTexture *texture)
 {
 	while (index >= Textures.size())
 		Textures.push_back(0);
@@ -90,7 +90,7 @@ void CGUISpriteBank::clear()
 }
 
 //! Add the texture and use it for a single non-animated sprite.
-s32 CGUISpriteBank::addTextureAsSprite(video::ITexture *texture)
+s32 CGUISpriteBank::addTextureAsSprite(video::GLTexture *texture)
 {
 	if (!texture)
 		return -1;
@@ -145,7 +145,7 @@ void CGUISpriteBank::draw2DSprite(u32 index, const core::position2di &pos,
 	if (!getFrameNr(frame, index, currenttime - starttime, loop))
 		return;
 
-	const video::ITexture *tex = getTexture(Sprites[index].Frames[frame].textureNumber);
+	const video::GLTexture *tex = getTexture(Sprites[index].Frames[frame].textureNumber);
 	if (!tex)
 		return;
 
@@ -169,7 +169,7 @@ void CGUISpriteBank::draw2DSprite(u32 index, const core::rect<s32> &destRect,
 	if (!getFrameNr(frame, index, timeTicks, loop))
 		return;
 
-	const video::ITexture *tex = getTexture(Sprites[index].Frames[frame].textureNumber);
+	const video::GLTexture *tex = getTexture(Sprites[index].Frames[frame].textureNumber);
 	if (!tex)
 		return;
 
