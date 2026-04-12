@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IReferenceCounted.h"
 #include "Image.h"
 #include "path.h"
+#include <memory>
 
 
 namespace io
@@ -21,7 +21,7 @@ namespace video
 currently unsupported file formats (e.g .gif), then implement
 this and add your new Surface loader with
 IVideoDriver::addExternalImageLoader() to the engine. */
-class IImageLoader : public virtual IReferenceCounted
+class IImageLoader
 {
 public:
 	//! Check if the file might be loaded by this class

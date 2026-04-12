@@ -126,14 +126,10 @@ CGUIEnvironment::~CGUIEnvironment()
 
 void CGUIEnvironment::loadBuiltInFont()
 {
-	io::IReadFile *file = FileSystem->createMemoryReadFile(BuiltInFontData,
-			BuiltInFontDataSize, DefaultFontName, false);
-
 	CGUIFont *font = new CGUIFont(this, DefaultFontName);
-	if (!font->load(file)) {
+    if (!font->load(BuiltInFontData, BuiltInFontDataSize, DefaultFontName)) {
 		g_irrlogger->log("Error: Could not load built-in Font.", ELL_ERROR);
 		font->drop();
-		file->drop();
 		return;
 	}
 
@@ -141,8 +137,6 @@ void CGUIEnvironment::loadBuiltInFont()
 	f.NamedPath.setPath(DefaultFontName);
 	f.Font = font;
 	Fonts.push_back(f);
-
-	file->drop();
 }
 
 //! draws all gui elements

@@ -17,6 +17,8 @@
 namespace video
 {
 
+std::unique_ptr<CImageLoaderTGA> ImgTGALoader{std::make_unique<CImageLoaderTGA>()};
+
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".tga")
 bool CImageLoaderTGA::isALoadableFileExtension(const io::path &filename) const
@@ -242,12 +244,6 @@ Image *CImageLoaderTGA::loadImage(io::IReadFile *file) const
 	delete[] palette;
 
 	return image;
-}
-
-//! creates a loader which is able to load tgas
-IImageLoader *createImageLoaderTGA()
-{
-	return new CImageLoaderTGA();
 }
 
 } // end namespace video

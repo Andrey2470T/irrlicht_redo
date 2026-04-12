@@ -15,15 +15,7 @@
 namespace video
 {
 
-//! constructor
-CImageLoaderJPG::CImageLoaderJPG()
-{
-}
-
-//! destructor
-CImageLoaderJPG::~CImageLoaderJPG()
-{
-}
+std::unique_ptr<CImageLoaderJPG> ImgJPGLoader{std::make_unique<CImageLoaderJPG>()};
 
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".tga")
@@ -249,12 +241,6 @@ Image *CImageLoaderJPG::loadImage(io::IReadFile *file) const
 	delete[] input;
 
 	return image;
-}
-
-//! creates a loader which is able to load jpeg images
-IImageLoader *createImageLoaderJPG()
-{
-	return new CImageLoaderJPG();
 }
 
 } // end namespace video

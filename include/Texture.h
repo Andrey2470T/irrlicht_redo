@@ -197,6 +197,10 @@ public:
 
     void updateParameters(const TextureSettings &newTexSettings, bool force=false);
 
+    Image *createImage(
+        const core::position2di &targetPos,
+        const core::dimension2du &targetSize);
+
 protected:
     core::dimension2du getMipMapsSize(u32 mipLevel);
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);

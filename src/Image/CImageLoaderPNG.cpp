@@ -15,6 +15,8 @@
 namespace video
 {
 
+std::unique_ptr<CImageLoaderPng> ImgPNGLoader{std::make_unique<CImageLoaderPng>()};
+
 // PNG function for error handling
 static void png_cpexcept_error(png_structp png_ptr, png_const_charp msg)
 {
@@ -243,11 +245,6 @@ Image *CImageLoaderPng::loadImage(io::IReadFile *file) const
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0); // Clean up memory
 
 	return image;
-}
-
-IImageLoader *createImageLoaderPNG()
-{
-	return new CImageLoaderPng();
 }
 
 } // end namespace video

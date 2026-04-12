@@ -23,11 +23,6 @@
 #include "Image.h"
 #include "Logger.h"
 #include "Mesh/CMeshManipulator.h"
-#include "Image/CImageLoaderJPG.h"
-#include "Image/CImageLoaderPNG.h"
-#include "Image/CImageLoaderTGA.h"
-#include "Image/CImageWriterJPG.h"
-#include "Image/CImageWriterPNG.h"
 #include "Image/CColorConverter.h"
 #include "IO/CWriteFile.h"
 
@@ -58,13 +53,6 @@ VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io,
 	if (FileSystem)
 		FileSystem->grab();
 
-    SurfaceLoader.push_back(new CImageLoaderTGA());
-    SurfaceLoader.push_back(new CImageLoaderPng());
-    SurfaceLoader.push_back(new CImageLoaderJPG());
-
-    SurfaceWriter.push_back(new CImageWriterJPG());
-    SurfaceWriter.push_back(new CImageWriterPNG());
-
 	Device->grab();
 
     TEST_GL_ERROR(this);
@@ -82,13 +70,6 @@ VideoDriver::~VideoDriver()
 
 	removeAllRenderTargets();
 	deleteAllTextures();
-
-	u32 i;
-	for (i = 0; i < SurfaceLoader.size(); ++i)
-		SurfaceLoader[i]->drop();
-
-	for (i = 0; i < SurfaceWriter.size(); ++i)
-		SurfaceWriter[i]->drop();
 
 	removeAllHardwareBuffers();
 
@@ -1034,60 +1015,31 @@ GLTexture *VideoDriver::getTexture(const io::path &filename)
 	if (texture)
 		return texture;
 
-	// Now try to open the file using the complete path.
-	io::IReadFile *file = FileSystem->createAndOpenFile(absolutePath);
+    // Now try to create the image using the complete path.
+    auto img = Image::createFromFile(absolutePath, FileSystem);
 
-	if (!file) {
-		// Try to open it using the raw filename.
-		file = FileSystem->createAndOpenFile(filename);
+    if (!img) {
+        // Try to create it using the raw filename.
+        img = Image::createFromFile(filename, FileSystem);
 	}
 
-	if (file) {
-		// Re-check name for actual archive names
-		texture = findTexture(file->getFileName());
-		if (texture) {
-			file->drop();
-			return texture;
-		}
+    if (!img) {
+        g_irrlogger->log("Could not open image file of texture", filename, ELL_WARNING);
+        return nullptr;
+    }
 
-		texture = loadTextureFromFile(file);
-		file->drop();
+    // Re-check name for actual archive names
+    /*texture = findTexture(file->getFileName());
+    if (texture) {
+        file->drop();
+        return texture;
+     }*/
 
-		if (texture) {
-			addTexture(texture);
-			texture->drop(); // drop it because we created it, one grab too much
-		} else
-			g_irrlogger->log("Could not load texture", filename, ELL_ERROR);
-		return texture;
-	} else {
-		g_irrlogger->log("Could not open file of texture", filename, ELL_WARNING);
-		return 0;
-	}
-}
+    texture = new GLTexture(filename, {img}, ETT_2D, this);
+    addTexture(texture);
+    texture->drop(); // drop it because we created it, one grab too much
 
-//! loads a Texture
-GLTexture *VideoDriver::getTexture(io::IReadFile *file)
-{
-    GLTexture *texture = 0;
-
-	if (file) {
-		texture = findTexture(file->getFileName());
-
-		if (texture)
-			return texture;
-
-		texture = loadTextureFromFile(file);
-
-		if (texture) {
-			addTexture(texture);
-			texture->drop(); // drop it because we created it, one grab too much
-		}
-
-		if (!texture)
-			g_irrlogger->log("Could not load texture", file->getFileName(), ELL_WARNING);
-	}
-
-	return texture;
+    return texture;
 }
 
 //! looks if the image is already loaded
@@ -1101,23 +1053,6 @@ GLTexture *VideoDriver::findTexture(const io::path &filename)
 		return Textures[index].Surface;
 
 	return 0;
-}
-
-//! opens the file and loads it into the surface
-GLTexture *VideoDriver::loadTextureFromFile(io::IReadFile *file, const io::path &hashName)
-{
-    Image *image = createImageFromFile(file);
-	if (!image)
-		return nullptr;
-
-	std::vector tmp { image };
-    auto texture = new GLTexture(hashName.size() ? hashName : file->getFileName(), tmp, ETT_2D, this);
-
-    g_irrlogger->log("Loaded texture", file->getFileName(), ELL_DEBUG);
-
-	image->drop();
-
-	return texture;
 }
 
 //! Returns the maximum amount of primitives
@@ -1538,137 +1473,6 @@ bool VideoDriver::queryTextureFormat(ECOLOR_FORMAT format) const
 	return GLSpecificInfo::TextureFormats[format].InternalFormat != 0;
 }
 
-Image *VideoDriver::createImageFromFile(const io::path &filename)
-{
-	if (!filename.size())
-		return nullptr;
-
-	io::IReadFile *file = FileSystem->createAndOpenFile(filename);
-	if (!file) {
-		g_irrlogger->log("Could not open file of image", filename, ELL_WARNING);
-		return nullptr;
-	}
-
-    Image *image = createImageFromFile(file);
-	file->drop();
-	return image;
-}
-
-Image *VideoDriver::createImageFromFile(io::IReadFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// try to load file based on file extension
-	for (int i = SurfaceLoader.size() - 1; i >= 0; --i) {
-		if (!SurfaceLoader[i]->isALoadableFileExtension(file->getFileName()))
-			continue;
-
-		file->seek(0); // reset file position which might have changed due to previous loadImage calls
-		// avoid warnings if extension is wrong
-		if (!SurfaceLoader[i]->isALoadableFileFormat(file))
-			continue;
-
-		file->seek(0);
-        if (Image *image = SurfaceLoader[i]->loadImage(file))
-			return image;
-	}
-
-	// try to load file based on what is in it
-	for (int i = SurfaceLoader.size() - 1; i >= 0; --i) {
-		if (SurfaceLoader[i]->isALoadableFileExtension(file->getFileName()))
-			continue;  // extension was tried above already
-		file->seek(0); // dito
-		if (!SurfaceLoader[i]->isALoadableFileFormat(file))
-			continue;
-
-		file->seek(0);
-        if (Image *image = SurfaceLoader[i]->loadImage(file))
-			return image;
-	}
-
-	return nullptr;
-}
-
-//! Writes the provided image to disk file
-bool VideoDriver::writeImageToFile(Image *image, const io::path &filename, u32 param)
-{
-	io::IWriteFile *file = FileSystem->createAndWriteFile(filename);
-	if (!file)
-		return false;
-
-	bool result = writeImageToFile(image, file, param);
-	file->drop();
-
-	return result;
-}
-
-//! Writes the provided image to a file.
-bool VideoDriver::writeImageToFile(Image *image, io::IWriteFile *file, u32 param)
-{
-	if (!file)
-		return false;
-
-	for (s32 i = SurfaceWriter.size() - 1; i >= 0; --i) {
-		if (SurfaceWriter[i]->isAWriteableFileExtension(file->getFileName())) {
-			bool written = SurfaceWriter[i]->writeImage(file, image, param);
-			if (written)
-				return true;
-		}
-	}
-	return false; // failed to write
-}
-
-//! Creates a software image from a byte array.
-Image *VideoDriver::createImageFromData(ECOLOR_FORMAT format,
-		const core::dimension2d<u32> &size, void *data, bool ownForeignMemory,
-		bool deleteMemory)
-{
-    return new Image(format, size, data, ownForeignMemory, deleteMemory);
-}
-
-//! Creates an empty software image.
-Image *VideoDriver::createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size)
-{
-    return new Image(format, size);
-}
-
-//! Creates a software image from part of a texture.
-Image *VideoDriver::createImage(GLTexture *texture, const core::position2d<s32> &pos, const core::dimension2d<u32> &size)
-{
-	if ((pos == core::position2di(0, 0)) && (size == texture->getSize())) {
-		void *data = texture->lock(ETLM_READ_ONLY);
-		if (!data)
-			return 0;
-        Image *image = new Image(texture->getColorFormat(), size, data, false, false);
-		texture->unlock();
-		return image;
-	} else {
-		// make sure to avoid buffer overruns
-		// make the vector a separate variable for g++ 3.x
-		const core::vector2d<u32> leftUpper(core::clamp(static_cast<u32>(pos.X), 0u, texture->getSize().Width),
-				core::clamp(static_cast<u32>(pos.Y), 0u, texture->getSize().Height));
-		const core::rect<u32> clamped(leftUpper,
-				core::dimension2du(core::clamp(static_cast<u32>(size.Width), 0u, texture->getSize().Width),
-						core::clamp(static_cast<u32>(size.Height), 0u, texture->getSize().Height)));
-		if (!clamped.isValid())
-			return 0;
-		u8 *src = static_cast<u8 *>(texture->lock(ETLM_READ_ONLY));
-		if (!src)
-			return 0;
-        Image *image = new Image(texture->getColorFormat(), clamped.getSize());
-		u8 *dst = static_cast<u8 *>(image->getData());
-		src += clamped.UpperLeftCorner.Y * texture->getPitch() + image->getBytesPerPixel() * clamped.UpperLeftCorner.X;
-		for (u32 i = 0; i < clamped.getHeight(); ++i) {
-			video::CColorConverter::convert_viaFormat(src, texture->getColorFormat(), clamped.getWidth(), dst, image->getColorFormat());
-			src += texture->getPitch();
-			dst += image->getPitch();
-		}
-		texture->unlock();
-		return image;
-	}
-}
-
 //! Draws the normals of a mesh buffer
 void VideoDriver::drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length, SColor color)
 {
@@ -1700,11 +1504,6 @@ void VideoDriver::getFog(SColor &color, E_FOG_TYPE &fogType, f32 &start, f32 &en
 	density = FogDensity;
 	pixelFog = PixelFog;
 	rangeFog = RangeFog;
-}
-
-scene::IMeshManipulator *VideoDriver::getMeshManipulator()
-{
-	return MeshManipulator;
 }
 
 bool VideoDriver::checkPrimitiveCount(u32 prmCount) const

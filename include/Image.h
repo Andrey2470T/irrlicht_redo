@@ -64,6 +64,12 @@ public:
     //! destructor
     ~Image();
 
+    static Image *createFromFile(const io::path &filename, io::IFileSystem *fs);
+    static Image *createFromMemory(const void *data, s32 len, const io::path &filename, io::IFileSystem *fs);
+
+    //! Writes the provided image to disk file
+    static bool writeImageToFile(Image *image, const io::path &filename, io::IFileSystem *fs, u32 param = 0);
+
     //! Returns the color format
     ECOLOR_FORMAT getColorFormat() const
     {
@@ -152,6 +158,10 @@ public:
 
 private:
 	inline SColor getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const;
+
+    static Image *createImageFromFile(io::IReadFile *file, io::IFileSystem *fs);
+    //! Writes the provided image to a file.
+    static bool writeImageToFile(Image *image, io::IWriteFile *file, io::IFileSystem *fs, u32 param = 0);
 };
 
 } // end namespace video

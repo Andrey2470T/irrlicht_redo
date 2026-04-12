@@ -34,9 +34,7 @@ public:
 
 	//! loads a font from a texture file
 	bool load(const io::path &filename);
-
-	//! loads a font from a texture file
-	bool load(io::IReadFile *file);
+    bool load(const void *data, s32 len, const io::path &filename);
 
 	//! draws an text and clips it to the specified rectangle if wanted
 	virtual void draw(const core::stringw &text, const core::rect<s32> &position,

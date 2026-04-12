@@ -58,7 +58,7 @@ GLTexture::GLTexture(const io::path &name, const std::vector<Image *> &srcImages
 		Images.resize(srcImages.size());
 
 		for (size_t i = 0; i < srcImages.size(); ++i) {
-			Images[i] = Driver->createImage(ColorFormat, Size);
+            Images[i] = new Image(ColorFormat, Size);
 
 			if (srcImages[i]->getDimension() == Size)
 				srcImages[i]->copyTo(Images[i]);
@@ -177,7 +177,7 @@ void *GLTexture::lock(
         core::dimension2du lockImageSize(getMipMapsSize(LockMipLevel));
 		assert(lockImageSize.Width > 0 && lockImageSize.Height > 0);
 
-		LockImage = Driver->createImage(ColorFormat, lockImageSize);
+        LockImage = new Image(ColorFormat, lockImageSize);
 
 		if (LockImage && mode != ETLM_WRITE_ONLY) {
 			auto ctxt = Driver->getContext();
@@ -202,7 +202,7 @@ void *GLTexture::lock(
 
             tmpFBO->setColorTextures({this}, {}, mipLevel);
 
-            IImage *tmpImage = Driver->createImage(ECF_A8R8G8B8, lockImageSize);
+            IImage *tmpImage = new Image(ECF_A8R8G8B8, lockImageSize);
 
             glReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
                 GL_RGBA, GL_UNSIGNED_BYTE, tmpImage->getData());
@@ -347,6 +347,47 @@ void GLTexture::updateParameters(const TextureSettings &newTexSettings, bool for
         TexSettings.AnisotropyFilter = clampedAnisotropy;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, clampedAnisotropy);
         TEST_GL_ERROR(Driver);
+    }
+}
+
+Image *GLTexture::createImage(
+    const core::position2di &targetPos,
+    const core::dimension2du &targetSize)
+{
+    if ((targetPos == core::position2di(0, 0)) && (targetSize == Size)) {
+        void *data = lock(ETLM_READ_ONLY);
+        if (!data)
+            return nullptr;
+        Image *image = new Image(ColorFormat, targetSize, data, false, false);
+        unlock();
+        return image;
+    } else {
+        // make sure to avoid buffer overruns
+        // make the vector a separate variable for g++ 3.x
+        const core::vector2d<u32> leftUpper(
+            core::clamp(static_cast<u32>(targetPos.X), 0u, Size.Width),
+            core::clamp(static_cast<u32>(targetPos.Y), 0u, Size.Height));
+        const core::dimension2du clampedSize(
+            core::clamp(static_cast<u32>(targetSize.Width), 0u, Size.Width),
+            core::clamp(static_cast<u32>(targetSize.Height), 0u, Size.Height));
+
+        const core::rect<u32> clamped(leftUpper, clampedSize);
+        if (!clamped.isValid())
+            return nullptr;
+        u8 *src = static_cast<u8 *>(lock(ETLM_READ_ONLY));
+        if (!src)
+            return nullptr;
+
+        Image *image = new Image(ColorFormat, clamped.getSize());
+        u8 *dst = static_cast<u8 *>(image->getData());
+        src += clamped.UpperLeftCorner.Y * Pitch + image->getBytesPerPixel() * clamped.UpperLeftCorner.X;
+        for (u32 i = 0; i < clamped.getHeight(); ++i) {
+            video::CColorConverter::convert_viaFormat(src, ColorFormat, clamped.getWidth(), dst, image->getColorFormat());
+            src += Pitch;
+            dst += image->getPitch();
+        }
+        unlock();
+        return image;
     }
 }
 

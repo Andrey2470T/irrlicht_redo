@@ -11,6 +11,12 @@
 #include "Logger.h"
 #include "SoftwareDriver2_helper.h"
 
+#include "CImageLoaderJPG.h"
+#include "CImageLoaderPNG.h"
+#include "CImageLoaderTGA.h"
+#include "CImageWriterJPG.h"
+#include "CImageWriterPNG.h"
+
 #include <vector>
 #include <cassert>
 
@@ -59,6 +65,48 @@ Image::~Image()
 {
     if (DeleteMemory)
         delete[] Data;
+}
+
+Image *Image::createFromFile(const io::path &filename, io::IFileSystem *fs)
+{
+    if (!filename.size())
+        return nullptr;
+
+    auto file = fs->createAndOpenFile(filename);
+    if (!file) {
+        g_irrlogger->log("Could not open file of image", filename, ELL_WARNING);
+        return nullptr;
+    }
+
+    auto image = createImageFromFile(file, fs);
+    file->drop();
+    return image;
+}
+
+Image *Image::createFromMemory(const void *data, s32 len, const io::path &filename, io::IFileSystem *fs)
+{
+    auto file = fs->createMemoryReadFile(data, len, filename.c_str());
+    if (!file) {
+        g_irrlogger->log("Could not create memory file of image", filename, ELL_WARNING);
+        return nullptr;
+    }
+
+    auto image = createImageFromFile(file, fs);
+    file->drop();
+    return image;
+}
+
+//! Writes the provided image to disk file
+bool Image::writeImageToFile(Image *image, const io::path &filename, io::IFileSystem *fs, u32 param)
+{
+    auto file = fs->createAndWriteFile(filename);
+    if (!file)
+        return false;
+
+    bool result = writeImageToFile(image, file, fs, param);
+    file->drop();
+
+    return result;
 }
 
 //! sets a pixel
@@ -383,6 +431,66 @@ inline SColor Image::getPixelBox(s32 x, s32 y, s32 fx, s32 fy, s32 bias) const
 
 	c.set(a, r, g, b);
 	return c;
+}
+
+IImageLoader *selectLoader(io::IReadFile *file)
+{
+    std::vector<IImageLoader *> loaders;
+    loaders.push_back(ImgJPGLoader.get());
+    loaders.push_back(ImgPNGLoader.get());
+    loaders.push_back(ImgTGALoader.get());
+
+    for (auto &loader : loaders) {
+        if (!loader->isALoadableFileExtension(file->getFileName()))
+            continue;
+
+        file->seek(0); // reset file position which might have changed due to previous loadImage calls
+        // avoid warnings if extension is wrong
+        if (!loader->isALoadableFileFormat(file))
+            continue;
+
+        file->seek(0);
+
+        return loader;
+    }
+
+    return nullptr;
+}
+
+IImageWriter *selectWriter(io::IWriteFile *file)
+{
+    std::vector<IImageWriter *> writers;
+    writers.push_back(ImgJPGWriter.get());
+    writers.push_back(ImgPNGWriter.get());
+
+    for (auto &writer : writers) {
+        if (writer->isAWriteableFileExtension(file->getFileName()))
+            return writer;
+    }
+
+    return nullptr;
+}
+
+Image *Image::createImageFromFile(io::IReadFile *file, io::IFileSystem *fs)
+{
+    if (!file)
+        return nullptr;
+
+    if (auto reader = selectLoader(file))
+        return reader->loadImage(file);
+    return nullptr;
+}
+
+//! Writes the provided image to a file.
+bool Image::writeImageToFile(Image *image, io::IWriteFile *file, io::IFileSystem *fs, u32 param)
+{
+    if (!file)
+        return false;
+
+    bool written = false;
+    if (auto writer = selectWriter(file))
+        written = writer->writeImage(file, image, param);
+    return written;
 }
 
 } // end namespace video

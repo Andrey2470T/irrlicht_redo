@@ -35,8 +35,6 @@ class IReadFile;
 class SDLDevice;
 namespace video
 {
-class IImageLoader;
-class IImageWriter;
 struct VertexType;
 class GLSpecificInfo;
 
@@ -58,7 +56,7 @@ struct SFrameStats {
 	u32 HWBuffersActive = 0;
 };
 
-class VideoDriver : public virtual IReferenceCounted, public MaterialSystem
+class VideoDriver : public IReferenceCounted, public MaterialSystem
 {
 	friend class GLTexture;
 
@@ -68,7 +66,7 @@ protected:
 
 public:
 	//! destructor
-	virtual ~VideoDriver();
+    ~VideoDriver();
 
 	static VideoDriver *create(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
@@ -120,7 +118,7 @@ public:
 			}
 		}
 
-		virtual ~SHWBufferLink()
+        ~SHWBufferLink()
 		{
 			if (IsVertex && VertexBuffer) {
 				VertexBuffer->setHWBuffer(nullptr);
@@ -175,7 +173,7 @@ public:
     GLTexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
     GLTexture *addTexture(const io::path &name, Image *image);
 
-    virtual GLTexture *addTextureCubemap(const io::path &name, Image *imagePosX, Image *imageNegX, Image *imagePosY,
+    GLTexture *addTextureCubemap(const io::path &name, Image *imagePosX, Image *imageNegX, Image *imagePosY,
             Image *imageNegY, Image *imagePosZ, Image *imageNegZ);
 
     GLTexture *addTextureCubemap(const u32 sideLen, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
@@ -186,32 +184,6 @@ public:
 	bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const;
 
 	bool queryTextureFormat(ECOLOR_FORMAT format) const;
-
-    Image *createImageFromFile(const io::path &filename);
-
-    Image *createImageFromFile(io::IReadFile *file);
-
-	//! Writes the provided image to disk file
-    bool writeImageToFile(Image *image, const io::path &filename, u32 param = 0);
-
-	//! Writes the provided image to a file.
-    bool writeImageToFile(Image *image, io::IWriteFile *file, u32 param = 0);
-
-	//! Creates a software image from a byte array.
-	/** \param useForeignMemory: If true, the image will use the data pointer
-	directly and own it from now on, which means it will also try to delete [] the
-	data when the image will be destructed. If false, the memory will by copied. */
-    Image *createImageFromData(ECOLOR_FORMAT format,
-		const core::dimension2d<u32> &size, void *data, bool ownForeignMemory = false,
-		bool deleteMemory = true);
-
-	//! Creates an empty software image.
-    Image *createImage(ECOLOR_FORMAT format, const core::dimension2d<u32> &size);
-
-	//! Creates a software image from part of a texture.
-    Image *createImage(GLTexture *texture,
-		const core::position2d<s32> &pos,
-		const core::dimension2d<u32> &size);
 
 	void drawMeshBuffer(const scene::IMeshBuffer *mb)
 	{
@@ -233,7 +205,14 @@ public:
 			f32 &start, f32 &end, f32 &density,
 			bool &pixelFog, bool &rangeFog);
 
-	scene::IMeshManipulator *getMeshManipulator();
+    scene::IMeshManipulator *getMeshManipulator() const
+    {
+        return MeshManipulator;
+    }
+    io::IFileSystem *getFileSystem() const
+    {
+        return FileSystem;
+    }
 
 	bool checkPrimitiveCount(u32 prmcnt) const;
 
@@ -438,10 +417,10 @@ public:
 	//! Returns the maximum amount of primitives
 	u32 getMaximalPrimitiveCount() const;
 
-    virtual GLTexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
+    GLTexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
-    virtual GLTexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
+    GLTexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
 	//! Creates a render target texture for a cubemap
@@ -453,9 +432,6 @@ public:
 
 	//! loads a Texture
     GLTexture *getTexture(const io::path &filename);
-
-	//! loads a Texture
-    GLTexture *getTexture(io::IReadFile *file);
 
 	bool setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0),
 			f32 clearDepth = 1.f, u8 clearStencil = 0);
@@ -500,10 +476,7 @@ public:
 	}
 
 private:
-	virtual bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
-
-	//! opens the file and loads it into the surface
-    GLTexture *loadTextureFromFile(io::IReadFile *file, const io::path &hashName = "");
+    bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
 
 	bool uploadHardwareBuffer(OpenGLVBO &vbo, const void *buffer, size_t bufferSize, scene::E_HARDWARE_MAPPING hint);
 
@@ -519,7 +492,7 @@ private:
 	}
 
 	//! Same as `CacheHandler->setViewport`, but also sets `ViewPort`
-	virtual void setViewPortRaw(u32 width, u32 height);
+    void setViewPortRaw(u32 width, u32 height);
 
 	void drawQuad(const VertexType &vertexType, const S3DVertex (&vertices)[4]);
 	void drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount);
@@ -559,9 +532,6 @@ private:
     core::array<GLTexture *> SharedDepthTextures;
 	RenderTarget *CurrentRenderTarget;
 	core::dimension2d<u32> CurrentRenderTargetSize;
-
-    core::array<IImageLoader *> SurfaceLoader;
-    core::array<IImageWriter *> SurfaceWriter;
 
 	std::vector<SHWBufferLink *> HWBufferList;
 

@@ -61,4 +61,6 @@ private:
 	u8 *loadCompressedImage(io::IReadFile *file, const STGAHeader &header) const;
 };
 
+extern std::unique_ptr<CImageLoaderTGA> ImgTGALoader;
+
 } // end namespace video

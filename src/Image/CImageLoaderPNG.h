@@ -29,4 +29,6 @@ public:
     Image *loadImage(io::IReadFile *file) const override;
 };
 
+extern std::unique_ptr<CImageLoaderPng> ImgPNGLoader;
+
 } // end namespace video

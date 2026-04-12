@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IReferenceCounted.h"
 #include "path.h"
+#include <memory>
 
 
 namespace io
@@ -18,7 +18,7 @@ namespace video
 class Image;
 
 //! Interface for writing software image data.
-class IImageWriter : public IReferenceCounted
+class IImageWriter
 {
 public:
 	//! Check if this writer can write a file with the given extension

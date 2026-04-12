@@ -85,23 +85,20 @@ void CGUIFont::popTextureCreationFlags(const bool (&flags)[3])
 }
 
 //! loads a font file, native file needed, for texture parsing
-bool CGUIFont::load(io::IReadFile *file)
-{
-	if (!Driver)
-		return false;
-
-	return loadTexture(Driver->createImageFromFile(file),
-			file->getFileName());
-}
-
-//! loads a font file, native file needed, for texture parsing
 bool CGUIFont::load(const io::path &filename)
 {
 	if (!Driver)
 		return false;
 
-	return loadTexture(Driver->createImageFromFile(filename),
-			filename);
+    return loadTexture(video::Image::createFromFile(filename, Driver->getFileSystem()), filename);
+}
+
+bool CGUIFont::load(const void *data, s32 len, const io::path &filename)
+{
+    if (!Driver)
+        return false;
+
+    return loadTexture(video::Image::createFromMemory(data, len, filename, Driver->getFileSystem()), filename);
 }
 
 //! load & prepare font from Texture
@@ -116,7 +113,7 @@ bool CGUIFont::loadTexture(video::Image *image, const io::path &name)
 	bool deleteTmpImage = false;
 	switch (image->getColorFormat()) {
 	case video::ECF_R5G6B5:
-		tmpImage = Driver->createImage(video::ECF_A1R5G5B5, image->getDimension());
+        tmpImage = new video::Image(video::ECF_A1R5G5B5, image->getDimension());
 		image->copyTo(tmpImage);
 		deleteTmpImage = true;
 		break;
@@ -124,7 +121,7 @@ bool CGUIFont::loadTexture(video::Image *image, const io::path &name)
 	case video::ECF_A8R8G8B8:
 		break;
 	case video::ECF_R8G8B8:
-		tmpImage = Driver->createImage(video::ECF_A8R8G8B8, image->getDimension());
+        tmpImage = new video::Image(video::ECF_A8R8G8B8, image->getDimension());
 		image->copyTo(tmpImage);
 		deleteTmpImage = true;
 		break;

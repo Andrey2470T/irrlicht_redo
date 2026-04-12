@@ -13,14 +13,13 @@ namespace video
 class CImageWriterJPG : public IImageWriter
 {
 public:
-	//! constructor
-	CImageWriterJPG();
-
 	//! return true if this writer can write a file with the given extension
 	bool isAWriteableFileExtension(const io::path &filename) const override;
 
 	//! write image to file
     bool writeImage(io::IWriteFile *file, Image *image, u32 param) const override;
 };
+
+extern std::unique_ptr<CImageWriterJPG> ImgJPGWriter;
 
 }

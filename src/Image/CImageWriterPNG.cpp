@@ -16,10 +16,7 @@
 namespace video
 {
 
-IImageWriter *createImageWriterPNG()
-{
-	return new CImageWriterPNG;
-}
+std::unique_ptr<CImageWriterPNG> ImgPNGWriter{std::make_unique<CImageWriterPNG>()};
 
 // PNG function for error handling
 static void png_cpexcept_error(png_structp png_ptr, png_const_charp msg)
@@ -51,9 +48,6 @@ void PNGAPI user_write_data_fcn(png_structp png_ptr, png_bytep data, png_size_t 
 	if (check != length)
 		png_error(png_ptr, "Write Error");
 }
-
-CImageWriterPNG::CImageWriterPNG()
-{}
 
 bool CImageWriterPNG::isAWriteableFileExtension(const io::path &filename) const
 {

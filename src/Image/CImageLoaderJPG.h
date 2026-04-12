@@ -17,12 +17,6 @@ namespace video
 class CImageLoaderJPG : public IImageLoader
 {
 public:
-	//! constructor
-	CImageLoaderJPG();
-
-	//! destructor
-	virtual ~CImageLoaderJPG();
-
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".tga")
 	bool isALoadableFileExtension(const io::path &filename) const override;
@@ -80,5 +74,7 @@ private:
 	data has been read. Often a no-op. */
 	static void term_source(j_decompress_ptr cinfo);
 };
+
+extern std::unique_ptr<CImageLoaderJPG> ImgJPGLoader;
 
 } // end namespace video

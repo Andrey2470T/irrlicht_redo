@@ -18,6 +18,8 @@
 namespace video
 {
 
+std::unique_ptr<CImageWriterJPG> ImgJPGWriter{std::make_unique<CImageWriterJPG>()};
+
 // The writer uses a 4k buffer and flushes to disk each time it's filled
 #define OUTPUT_BUF_SIZE 4096
 typedef struct
@@ -154,21 +156,6 @@ static bool writeJPEGFile(io::IWriteFile *file, Image *image, u32 quality)
 
 	return true;
 }
-
-} // namespace video
-
-
-
-namespace video
-{
-
-IImageWriter *createImageWriterJPG()
-{
-	return new CImageWriterJPG;
-}
-
-CImageWriterJPG::CImageWriterJPG()
-{}
 
 bool CImageWriterJPG::isAWriteableFileExtension(const io::path &filename) const
 {
