@@ -219,9 +219,8 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 	if (vertexShaderProgram) {
 		const long size = vertexShaderProgram->getSize();
 		if (size) {
-			vs = new c8[size + 1];
+            vs.resize(size);
             vertexShaderProgram->read((void *)vs.c_str(), size);
-			vs[size] = 0;
 		}
 	}
 
@@ -231,9 +230,8 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 			// if both handles are the same we must reset the file
 			if (pixelShaderProgram == vertexShaderProgram)
 				pixelShaderProgram->seek(0);
-			ps = new c8[size + 1];
+            ps.resize(size);
             pixelShaderProgram->read((void *)ps.c_str(), size);
-			ps[size] = 0;
 		}
 	}
 
@@ -244,9 +242,8 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 			if ((geometryShaderProgram == vertexShaderProgram) ||
 					(geometryShaderProgram == pixelShaderProgram))
 				geometryShaderProgram->seek(0);
-			gs = new c8[size + 1];
+            gs.resize(size);
             geometryShaderProgram->read((void *)gs.c_str(), size);
-			gs[size] = 0;
 		}
 	}
 

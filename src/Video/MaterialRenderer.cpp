@@ -30,9 +30,6 @@ Shader::Shader(
     if (!geometryShaderCode.empty())
         GeometryShaderID = createShader(EST_GEOMETRY, geometryShaderCode);
 
-    //for (size_t i = 0; i < EVA_COUNT; ++i)
-    //    glBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
-
     createProgram();
 }
 
@@ -47,12 +44,18 @@ Shader::~Shader()
     glDeleteProgram(ProgramID);
 }
 
+std::array<GLenum, 3> toGLShaderType = {
+    GL_VERTEX_SHADER,
+    GL_GEOMETRY_SHADER,
+    GL_FRAGMENT_SHADER
+};
+
 u32 Shader::createShader(E_SHADER_TYPE shaderType, const std::string &code)
 {
     if (code.empty())
         return 0;
 
-    GLuint shader = glCreateShader(shaderType);
+    GLuint shader = glCreateShader(toGLShaderType[shaderType]);
     const char *cstr_code = code.c_str();
     glShaderSource(shader, 1, &cstr_code, nullptr);
     glCompileShader(shader);
@@ -85,6 +88,9 @@ void Shader::createProgram()
 
     if (GeometryShaderID != 0)
         glAttachShader(program, GeometryShaderID);
+
+    for (size_t i = 0; i < EVA_COUNT; ++i)
+        glBindAttribLocation(program, i, sBuiltInVertexAttributeNames[i]);
 
     glLinkProgram(program);
 
@@ -297,7 +303,12 @@ void MaterialRenderer::setUniform4x4Matrix(const std::string &name, core::matrix
     glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());
 }
 
-void MaterialRenderer::setUniformColorf(const std::string &name, const SColorf &colorf)
+void MaterialRenderer::setUniformColorfRGB(const std::string &name, const SColorf &colorf)
+{
+    glUniform3f(ShaderObj->getUniformLocation(name), colorf.r, colorf.g, colorf.b);
+}
+
+void MaterialRenderer::setUniformColorfRGBA(const std::string &name, const SColorf &colorf)
 {
     glUniform4f(ShaderObj->getUniformLocation(name), colorf.r, colorf.g, colorf.b, colorf.a);
 }

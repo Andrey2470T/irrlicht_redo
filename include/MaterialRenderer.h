@@ -14,6 +14,7 @@
 #include "irrArray.h"
 #include "SOverrideMaterial.h"
 #include <memory>
+#include <unordered_map>
 
 namespace video
 {
@@ -31,10 +32,10 @@ enum E_SHADER_TYPE
 
 class Shader
 {
-    u32 ProgramID;
-    u32 VertexShaderID;
-    u32 GeometryShaderID;
-    u32 FragmentShaderID;
+    u32 ProgramID = 0;
+    u32 VertexShaderID = 0;
+    u32 GeometryShaderID = 0;
+    u32 FragmentShaderID = 0;
 
     std::unordered_map<std::string, u32> Uniforms;
 public:
@@ -100,7 +101,8 @@ public:
 
     void setUniform4x4Matrix(const std::string &name, core::matrix4 value);
 
-    void setUniformColorf(const std::string &name, const SColorf &colorf);
+    void setUniformColorfRGB(const std::string &name, const SColorf &colorf);
+    void setUniformColorfRGBA(const std::string &name, const SColorf &colorf);
 
 	//! Get pointer to the IVideoDriver interface.
     VideoDriver *getVideoDriver();
@@ -116,7 +118,7 @@ protected:
 
     void init(
         s32 &outMaterialTypeNr, const std::string &vertexShaderCode,
-        const std::string &pixelShaderCode, const std::string &debugName = nullptr,
+        const std::string &pixelShaderCode, const std::string &debugName = "",
 		bool addMaterial = true);
 
 	VideoDriver *Driver;

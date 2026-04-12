@@ -10,7 +10,7 @@
 #include "SkinnedMesh.h"
 #include "IDummyTransformationSceneNode.h"
 #include "IBoneSceneNode.h"
-#include "IMaterialRenderer.h"
+#include "MaterialRenderer.h"
 #include "IMesh.h"
 #include "IMeshCache.h"
 #include "IAnimatedMesh.h"

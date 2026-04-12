@@ -48,7 +48,7 @@ void MaterialBaseCB::OnSetConstants(MaterialRenderer *renderer, s32 userData)
 		SColorf FogColor(TempColor);
 
         renderer->setUniformInt("uFogType", FogType);
-        renderer->setUniformColorf("uFogColor", FogColor);
+        renderer->setUniformColorfRGBA("uFogColor", FogColor);
         renderer->setUniformFloat("uFogStart", FogStart);
         renderer->setUniformFloat("uFogEnd", FogEnd);
         renderer->setUniformFloat("uFogDensity", FogDensity);

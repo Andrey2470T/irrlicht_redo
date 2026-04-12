@@ -202,7 +202,7 @@ void *GLTexture::lock(
 
             tmpFBO->setColorTextures({this}, {}, mipLevel);
 
-            IImage *tmpImage = new Image(ECF_A8R8G8B8, lockImageSize);
+            Image *tmpImage = new Image(ECF_A8R8G8B8, lockImageSize);
 
             glReadPixels(0, 0, lockImageSize.Width, lockImageSize.Height,
                 GL_RGBA, GL_UNSIGNED_BYTE, tmpImage->getData());
@@ -213,7 +213,7 @@ void *GLTexture::lock(
 
             tmpFBO->drop();
 
-            if (IsRenderTarget)
+            if (TexSettings.IsRenderTarget)
                 tmpImage->flip(EFA_Y);
 
             void *src = tmpImage->getData();

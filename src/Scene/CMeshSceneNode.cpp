@@ -7,7 +7,7 @@
 #include "ISceneManager.h"
 #include "IMeshCache.h"
 #include "IMeshBuffer.h"
-#include "IMaterialRenderer.h"
+#include "MaterialRenderer.h"
 #include "IFileSystem.h"
 
 

@@ -11,7 +11,7 @@
 #include "SAnimatedMesh.h"
 #include "Mesh/CMeshCache.h"
 #include "IGUIEnvironment.h"
-#include "IMaterialRenderer.h"
+#include "MaterialRenderer.h"
 #include "IReadFile.h"
 #include "IWriteFile.h"
 
