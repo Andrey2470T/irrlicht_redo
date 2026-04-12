@@ -5,7 +5,7 @@
 #include "EMaterialTypes.h"
 #include "EPrimitiveTypes.h"
 #include "IReadFile.h"
-#include "IMaterialRenderer.h"
+#include "MaterialRenderer.h"
 
 #include "irrArray.h"
 #include "SOverrideMaterial.h"
@@ -39,7 +39,7 @@ class MaterialSystem
 
 	SMaterial Material, LastMaterial;
 
-	core::array<IMaterialRenderer *> MaterialRenderers;
+    core::array<MaterialRenderer *> MaterialRenderers;
 
 	SOverrideMaterial OverrideMaterial;
 	SMaterial OverrideMaterial2D;
@@ -61,8 +61,8 @@ public:
 	MaterialSystem(VideoDriver *driver, io::IFileSystem *filesys, const io::path &shadersPath);
 	~MaterialSystem();
 
-	IMaterialRenderer *getMaterialRenderer(u32 idx) const;
-	s32 addMaterialRenderer(IMaterialRenderer *renderer, const char *name = 0);
+    MaterialRenderer *getMaterialRenderer(u32 idx) const;
+    s32 addMaterialRenderer(MaterialRenderer *renderer, const char *name = 0);
 
 	SOverrideMaterial &getOverrideMaterial();
 	SMaterial &getMaterial2D();
@@ -78,10 +78,10 @@ public:
 
 	//! Adds a new material renderer to the VideoDriver
 	s32 addHighLevelShaderMaterial(
-			const c8 *vertexShaderProgram,
-			const c8 *pixelShaderProgram,
-			const c8 *geometryShaderProgram = nullptr,
-			const c8 *shaderName = nullptr,
+            const std::string &vertexShaderProgram,
+            const std::string &fragmentShaderProgram,
+            const std::string &geometryShaderProgram = "",
+            const std::string &shaderName = "",
 			scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
 			scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
 			u32 verticesOut = 0,
@@ -90,15 +90,15 @@ public:
 			s32 userData = 0);
 
 	s32 addHighLevelShaderMaterial(
-				const c8 *vertexShaderProgram,
-				const c8 *pixelShaderProgram = nullptr,
-				const c8 *shaderName = nullptr,
+                const std::string &vertexShaderProgram,
+                const std::string &fragmentShaderProgram = "",
+                const std::string &shaderName = "",
 				IShaderConstantSetCallBack *callback = nullptr,
 				E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 				s32 userData = 0)
 	{
 		return addHighLevelShaderMaterial(
-			vertexShaderProgram, pixelShaderProgram,
+            vertexShaderProgram, fragmentShaderProgram,
 			nullptr, shaderName,
 			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0,
 			callback, baseMaterial, userData);

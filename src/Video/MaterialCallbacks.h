@@ -6,7 +6,7 @@
 #pragma once
 
 #include "IShaderConstantSetCallBack.h"
-#include "IMaterialRenderer.h"
+#include "MaterialRenderer.h"
 
 
 namespace video
@@ -15,70 +15,36 @@ namespace video
 class MaterialBaseCB : public IShaderConstantSetCallBack
 {
 public:
-	MaterialBaseCB();
-
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
+	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
 
 protected:
-	bool FirstUpdateBase;
-
-	s32 WVPMatrixID;
-	s32 WVMatrixID;
-
-	s32 FogEnableID;
-	s32 FogTypeID;
-	s32 FogColorID;
-	s32 FogStartID;
-	s32 FogEndID;
-	s32 FogDensityID;
-
-	s32 ThicknessID;
-
-	f32 Thickness;
-	bool FogEnable;
+    f32 Thickness = 1.0f;
+    bool FogEnable = false;
 };
 
 class MaterialSolidCB : public MaterialBaseCB
 {
 public:
-	MaterialSolidCB();
-
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
+	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
 
 protected:
-	bool FirstUpdate;
-
-	s32 TMatrix0ID;
-	s32 AlphaRefID;
-	s32 TextureUsage0ID;
-	s32 TextureUnit0ID;
-
-	f32 AlphaRef;
-	s32 TextureUsage0;
-	s32 TextureUnit0;
+    f32 AlphaRef = 0.5f;
+    s32 TextureUsage0 = 0;
+    s32 TextureUnit0 = 0;
 };
 
 class MaterialOneTextureBlendCB : public MaterialBaseCB
 {
 public:
-	MaterialOneTextureBlendCB();
-
 	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData);
+	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
 
 protected:
-	bool FirstUpdate;
-
-	s32 TMatrix0ID;
-	s32 BlendTypeID;
-	s32 TextureUsage0ID;
-	s32 TextureUnit0ID;
-
-	s32 BlendType;
-	s32 TextureUsage0;
-	s32 TextureUnit0;
+    s32 BlendType = 0;
+    s32 TextureUsage0 = 0;
+    s32 TextureUnit0 = 0;
 };
 
 }

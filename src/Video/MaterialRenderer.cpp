@@ -8,8 +8,7 @@
 #include "IShaderConstantSetCallBack.h"
 #include "VideoDriver.h"
 #include "Logger.h"
-
-#include "VideoDriver.h"
+#include "Common.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
 #include "Renderer2D.h"
@@ -20,16 +19,118 @@
 namespace video
 {
 
-MaterialRenderer::MaterialRenderer(VideoDriver *driver,
-		s32 &outMaterialTypeNr,
-		const c8 *vertexShaderProgram,
-		const c8 *pixelShaderProgram,
-		const c8 *debugName,
-		IShaderConstantSetCallBack *callback,
-		E_MATERIAL_TYPE baseMaterial,
-		s32 userData) :
-		Driver(driver),
-		CallBack(callback), Alpha(false), Blending(false), Program(0), UserData(userData)
+Shader::Shader(
+    const std::string &vertexShaderCode,
+    const std::string &fragmentShaderCode,
+    const std::string &geometryShaderCode)
+{
+    VertexShaderID = createShader(EST_VERTEX, vertexShaderCode);
+    FragmentShaderID = createShader(EST_FRAGMENT, fragmentShaderCode);
+
+    if (!geometryShaderCode.empty())
+        GeometryShaderID = createShader(EST_GEOMETRY, geometryShaderCode);
+
+    //for (size_t i = 0; i < EVA_COUNT; ++i)
+    //    glBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
+
+    createProgram();
+}
+
+Shader::~Shader()
+{
+    glDeleteShader(VertexShaderID);
+    glDeleteShader(FragmentShaderID);
+
+    if (GeometryShaderID)
+        glDeleteShader(GeometryShaderID);
+
+    glDeleteProgram(ProgramID);
+}
+
+u32 Shader::createShader(E_SHADER_TYPE shaderType, const std::string &code)
+{
+    if (code.empty())
+        return 0;
+
+    GLuint shader = glCreateShader(shaderType);
+    const char *cstr_code = code.c_str();
+    glShaderSource(shader, 1, &cstr_code, nullptr);
+    glCompileShader(shader);
+
+    GLint success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+    if (!success) {
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        GLchar *infoLog = new GLchar[maxLength];
+        glGetShaderInfoLog(shader, maxLength, nullptr, infoLog);
+
+        g_irrlogger->log("GLSL shader failed to compile: ", infoLog, ELL_ERROR);
+
+        delete[] infoLog;
+        glDeleteShader(shader);
+        return 0;
+    }
+
+    return shader;
+}
+
+void Shader::createProgram()
+{
+    GLuint program = glCreateProgram();
+    glAttachShader(program, VertexShaderID);
+    glAttachShader(program, FragmentShaderID);
+
+    if (GeometryShaderID != 0)
+        glAttachShader(program, GeometryShaderID);
+
+    glLinkProgram(program);
+
+    GLint success;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+    if (!success) {
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        GLchar *infoLog = new GLchar[maxLength];
+        glGetProgramInfoLog(program, maxLength, nullptr, infoLog);
+
+        g_irrlogger->log("GLSL program failed to link: ", infoLog, ELL_ERROR);
+
+        return;
+    }
+
+    ProgramID = program;
+}
+
+s32 Shader::getUniformLocation(const std::string &name)
+{
+    auto found = Uniforms.find(name);
+
+    if (found != Uniforms.end())
+        return found->second;
+    else {
+        s32 location = glGetUniformLocation(ProgramID, name.c_str());
+
+        if (location >= 0)
+            Uniforms[name] = location;
+        return location;
+    }
+}
+
+MaterialRenderer::MaterialRenderer(
+    VideoDriver *driver,
+    s32 &outMaterialTypeNr,
+    const std::string &vertexShaderProgram,
+    const std::string &fragmentShaderProgram,
+    const std::string &debugName,
+    IShaderConstantSetCallBack *callback,
+    E_MATERIAL_TYPE baseMaterial,
+    s32 userData) :
+        Driver(driver), CallBack(callback), Alpha(false), Blending(false), UserData(userData)
 {
 	switch (baseMaterial) {
 	case EMT_TRANSPARENT_VERTEX_ALPHA:
@@ -46,14 +147,14 @@ MaterialRenderer::MaterialRenderer(VideoDriver *driver,
 	if (CallBack)
 		CallBack->grab();
 
-	init(outMaterialTypeNr, vertexShaderProgram, pixelShaderProgram, debugName);
+    init(outMaterialTypeNr, vertexShaderProgram, fragmentShaderProgram, debugName);
 }
 
 MaterialRenderer::MaterialRenderer(VideoDriver *driver,
 		IShaderConstantSetCallBack *callback,
 		E_MATERIAL_TYPE baseMaterial, s32 userData) :
 		Driver(driver),
-		CallBack(callback), Alpha(false), Blending(false), Program(0), UserData(userData)
+        CallBack(callback), Alpha(false), Blending(false), UserData(userData)
 {
 	switch (baseMaterial) {
 	case EMT_TRANSPARENT_VERTEX_ALPHA:
@@ -75,64 +176,29 @@ MaterialRenderer::~MaterialRenderer()
 {
 	if (CallBack)
 		CallBack->drop();
-
-	if (Program) {
-		GLuint shaders[8];
-		GLint count;
-		glGetAttachedShaders(Program, 8, &count, shaders);
-
-		count = core::min_(count, 8);
-		for (GLint i = 0; i < count; ++i)
-			glDeleteShader(shaders[i]);
-		glDeleteProgram(Program);
-		Program = 0;
-	}
-
-	UniformInfo.clear();
-}
-
-GLuint MaterialRenderer::getProgram() const
-{
-	return Program;
 }
 
 void MaterialRenderer::init(s32 &outMaterialTypeNr,
-		const c8 *vertexShaderProgram,
-		const c8 *pixelShaderProgram,
-		const c8 *debugName,
-		bool addMaterial)
+    const std::string &vertexShaderCode,
+    const std::string &fragmentShaderCode,
+    const std::string &debugName,
+    bool addMaterial)
 {
 	outMaterialTypeNr = -1;
 
-	Program = glCreateProgram();
+    ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode);
 
-	if (!Program)
-		return;
-
-	if (vertexShaderProgram)
-		if (!createShader(GL_VERTEX_SHADER, vertexShaderProgram))
-			return;
-
-	if (pixelShaderProgram)
-		if (!createShader(GL_FRAGMENT_SHADER, pixelShaderProgram))
-			return;
-
-	for (size_t i = 0; i < EVA_COUNT; ++i)
-		glBindAttribLocation(Program, i, sBuiltInVertexAttributeNames[i]);
-
-	if (!linkProgram())
-		return;
-
-	if (debugName)
-		Driver->GLInfo->ObjectLabel(GL_PROGRAM, Program, debugName);
+    if (!debugName.empty()) {
+        Driver->GLInfo->ObjectLabel(GL_PROGRAM, ShaderObj->ProgramID, debugName.c_str());
+    }
 
 	if (addMaterial)
-		outMaterialTypeNr = Driver->addMaterialRenderer(this);
+        outMaterialTypeNr = Driver->addMaterialRenderer(this);
 }
 
 bool MaterialRenderer::OnRender(E_VERTEX_TYPE vtxtype)
 {
-	if (CallBack && Program)
+    if (CallBack)
 		CallBack->OnSetConstants(this, UserData);
 
 	return true;
@@ -144,7 +210,7 @@ void MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 {
 	auto ctxt = Driver->getContext();
 
-	ctxt->setProgram(Program);
+    ctxt->setProgram(ShaderObj->ProgramID);
 
 	materialSys->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
 
@@ -174,236 +240,66 @@ bool MaterialRenderer::isTransparent() const
 	return (Alpha || Blending);
 }
 
-s32 MaterialRenderer::getRenderCapability() const
+void MaterialRenderer::setUniformFloat(const std::string &name, f32 value)
 {
-	return 0;
+    glUniform1f(ShaderObj->getUniformLocation(name), value);
+}
+void MaterialRenderer::setUniformInt(const std::string &name, s32 value)
+{
+    glUniform1i(ShaderObj->getUniformLocation(name), value);
+}
+void MaterialRenderer::setUniformUInt(const std::string &name, u32 value)
+{
+    glUniform1ui(ShaderObj->getUniformLocation(name), value);
 }
 
-bool MaterialRenderer::createShader(GLenum shaderType, const char *shader)
+void MaterialRenderer::setUniformFloatArray(const std::string &name, std::vector<f32> values)
 {
-	if (Program) {
-		GLuint shaderHandle = glCreateShader(shaderType);
-		glShaderSource(shaderHandle, 1, &shader, NULL);
-		glCompileShader(shaderHandle);
-
-		GLint status = 0;
-
-		glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &status);
-
-		if (status != GL_TRUE) {
-			g_irrlogger->log("GLSL shader failed to compile", ELL_ERROR);
-
-			GLint maxLength = 0;
-			GLint length;
-
-			glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH,
-					&maxLength);
-
-			if (maxLength) {
-				GLchar *infoLog = new GLchar[maxLength];
-				glGetShaderInfoLog(shaderHandle, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
-				delete[] infoLog;
-			}
-
-			return false;
-		}
-
-		glAttachShader(Program, shaderHandle);
-	}
-
-	return true;
+    glUniform1fv(ShaderObj->getUniformLocation(name), values.size(), values.data());
+}
+void MaterialRenderer::setUniformIntArray(const std::string &name, std::vector<s32> values)
+{
+    glUniform1iv(ShaderObj->getUniformLocation(name), values.size(), values.data());
+}
+void MaterialRenderer::setUniformUIntArray(const std::string &name, std::vector<u32> values)
+{
+    glUniform1uiv(ShaderObj->getUniformLocation(name), values.size(), values.data());
 }
 
-bool MaterialRenderer::linkProgram()
+void MaterialRenderer::setUniform2Float(const std::string &name, core::vector2df value)
 {
-	if (Program) {
-		glLinkProgram(Program);
-
-		GLint status = 0;
-
-		glGetProgramiv(Program, GL_LINK_STATUS, &status);
-
-		if (!status) {
-			g_irrlogger->log("GLSL shader program failed to link", ELL_ERROR);
-
-			GLint maxLength = 0;
-			GLsizei length;
-
-			glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			if (maxLength) {
-				GLchar *infoLog = new GLchar[maxLength];
-				glGetProgramInfoLog(Program, maxLength, &length, infoLog);
-				g_irrlogger->log(reinterpret_cast<const c8 *>(infoLog), ELL_ERROR);
-				delete[] infoLog;
-			}
-
-			return false;
-		}
-
-		GLint num = 0;
-
-		glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num);
-
-		if (num == 0)
-			return true;
-
-		GLint maxlen = 0;
-
-		glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxlen);
-
-		if (maxlen == 0) {
-			g_irrlogger->log("GLSL: failed to retrieve uniform information", ELL_ERROR);
-			return false;
-		}
-
-		// seems that some implementations use an extra null terminator.
-		++maxlen;
-		std::vector<c8> buf(maxlen);
-
-		UniformInfo.clear();
-		UniformInfo.reserve(num);
-
-		for (GLint i = 0; i < num; ++i) {
-			SUniformInfo ui;
-			memset(buf.data(), 0, buf.size());
-
-			GLint size;
-			glGetActiveUniform(Program, i, maxlen, 0, &size, &ui.type, reinterpret_cast<GLchar *>(buf.data()));
-
-			// array support, workaround for some bugged drivers.
-			for (s32 i = 0; i < maxlen; ++i) {
-				if (buf[i] == '[' || buf[i] == '\0')
-					break;
-
-				ui.name += buf[i];
-			}
-
-			ui.location = glGetUniformLocation(Program, buf.data());
-
-			UniformInfo.push_back(std::move(ui));
-		}
-	}
-
-	return true;
+    glUniform2f(ShaderObj->getUniformLocation(name), value.X, value.Y);
+}
+void MaterialRenderer::setUniform2Int(const std::string &name, core::vector2di value)
+{
+    glUniform2i(ShaderObj->getUniformLocation(name), value.X, value.Y);
+}
+void MaterialRenderer::setUniform2UInt(const std::string &name, core::vector2du value)
+{
+    glUniform2ui(ShaderObj->getUniformLocation(name), value.X, value.Y);
 }
 
-s32 MaterialRenderer::getVertexShaderConstantID(const c8 *name)
+void MaterialRenderer::setUniform3Float(const std::string &name, core::vector3df value)
 {
-	return getPixelShaderConstantID(name);
+    glUniform3f(ShaderObj->getUniformLocation(name), value.X, value.Y, value.Z);
+}
+void MaterialRenderer::setUniform3Int(const std::string &name, core::vector3di value)
+{
+    glUniform3i(ShaderObj->getUniformLocation(name), value.X, value.Y, value.Z);
+}
+void MaterialRenderer::setUniform3UInt(const std::string &name, core::vector3du value)
+{
+    glUniform3ui(ShaderObj->getUniformLocation(name), value.X, value.Y, value.Z);
 }
 
-s32 MaterialRenderer::getPixelShaderConstantID(const c8 *name)
+void MaterialRenderer::setUniform4x4Matrix(const std::string &name, core::matrix4 value)
 {
-	for (u32 i = 0; i < UniformInfo.size(); ++i) {
-		if (UniformInfo[i].name == name)
-			return i;
-	}
-
-	return -1;
+    glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());
 }
 
-bool MaterialRenderer::setVertexShaderConstant(s32 index, const f32 *floats, int count)
+void MaterialRenderer::setUniformColorf(const std::string &name, const SColorf &colorf)
 {
-	return setPixelShaderConstant(index, floats, count);
-}
-
-bool MaterialRenderer::setVertexShaderConstant(s32 index, const s32 *ints, int count)
-{
-	return setPixelShaderConstant(index, ints, count);
-}
-
-bool MaterialRenderer::setVertexShaderConstant(s32 index, const u32 *ints, int count)
-{
-	return setPixelShaderConstant(index, ints, count);
-}
-
-bool MaterialRenderer::setPixelShaderConstant(s32 index, const f32 *floats, int count)
-{
-	if (index < 0 || UniformInfo[index].location < 0)
-		return false;
-
-	bool status = true;
-
-	switch (UniformInfo[index].type) {
-	case GL_FLOAT:
-		glUniform1fv(UniformInfo[index].location, count, floats);
-		break;
-	case GL_FLOAT_VEC2:
-		glUniform2fv(UniformInfo[index].location, count / 2, floats);
-		break;
-	case GL_FLOAT_VEC3:
-		glUniform3fv(UniformInfo[index].location, count / 3, floats);
-		break;
-	case GL_FLOAT_VEC4:
-		glUniform4fv(UniformInfo[index].location, count / 4, floats);
-		break;
-	case GL_FLOAT_MAT2:
-		glUniformMatrix2fv(UniformInfo[index].location, count / 4, false, floats);
-		break;
-	case GL_FLOAT_MAT3:
-		glUniformMatrix3fv(UniformInfo[index].location, count / 9, false, floats);
-		break;
-	case GL_FLOAT_MAT4:
-		glUniformMatrix4fv(UniformInfo[index].location, count / 16, false, floats);
-		break;
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_CUBE: {
-		if (floats) {
-			const GLint id = (GLint)(*floats);
-			glUniform1iv(UniformInfo[index].location, 1, &id);
-		} else
-			status = false;
-	} break;
-	default:
-		status = false;
-		break;
-	}
-
-	return status;
-}
-
-bool MaterialRenderer::setPixelShaderConstant(s32 index, const s32 *ints, int count)
-{
-	if (index < 0 || UniformInfo[index].location < 0)
-		return false;
-
-	bool status = true;
-
-	switch (UniformInfo[index].type) {
-	case GL_INT:
-	case GL_BOOL:
-		glUniform1iv(UniformInfo[index].location, count, ints);
-		break;
-	case GL_INT_VEC2:
-	case GL_BOOL_VEC2:
-		glUniform2iv(UniformInfo[index].location, count / 2, ints);
-		break;
-	case GL_INT_VEC3:
-	case GL_BOOL_VEC3:
-		glUniform3iv(UniformInfo[index].location, count / 3, ints);
-		break;
-	case GL_INT_VEC4:
-	case GL_BOOL_VEC4:
-		glUniform4iv(UniformInfo[index].location, count / 4, ints);
-		break;
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_CUBE:
-		glUniform1iv(UniformInfo[index].location, 1, ints);
-		break;
-	default:
-		status = false;
-		break;
-	}
-
-	return status;
-}
-
-bool MaterialRenderer::setPixelShaderConstant(s32 index, const u32 *ints, int count)
-{
-	g_irrlogger->log("Unsigned int support is unimplemented", ELL_WARNING);
-	return false;
+    glUniform4f(ShaderObj->getUniformLocation(name), colorf.r, colorf.g, colorf.b, colorf.a);
 }
 
 VideoDriver *MaterialRenderer::getVideoDriver()

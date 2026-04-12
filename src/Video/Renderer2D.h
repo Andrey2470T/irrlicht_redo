@@ -14,7 +14,6 @@ class COpenGL3Renderer2D : public MaterialRenderer
 {
 public:
 	COpenGL3Renderer2D(const c8 *vertexShaderProgram, const c8 *pixelShaderProgram, VideoDriver *driver, bool withTexture);
-	~COpenGL3Renderer2D();
 
 	virtual void OnSetMaterial(const SMaterial &material, const SMaterial &lastMaterial,
 			bool resetAllRenderstates);
@@ -23,9 +22,6 @@ public:
 
 protected:
 	bool WithTexture;
-	s32 ProjectionID;
-	s32 ThicknessID;
-	s32 TextureUsageID;
 };
 
 }

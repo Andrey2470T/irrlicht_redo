@@ -9,7 +9,7 @@
 
 namespace video
 {
-class IMaterialRenderer;
+class MaterialRenderer;
 class SMaterial;
 
 //! Interface making it possible to set constants for gpu programs every frame.
@@ -71,7 +71,7 @@ public:
 	\param services: Pointer to an interface providing methods to set the constants for the shader.
 	\param userData: Userdata int which can be specified when creating the shader.
 	*/
-	virtual void OnSetConstants(IMaterialRenderer *renderer, s32 userData) = 0;
+	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData) = 0;
 };
 
 } // end namespace video

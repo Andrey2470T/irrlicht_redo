@@ -13,51 +13,28 @@ namespace video
 {
 
 // Base callback
-
-MaterialBaseCB::MaterialBaseCB() :
-		FirstUpdateBase(true), WVPMatrixID(-1), WVMatrixID(-1),
-		FogEnableID(-1), FogTypeID(-1), FogColorID(-1), FogStartID(-1),
-		FogEndID(-1), FogDensityID(-1), ThicknessID(-1), Thickness(1.f), FogEnable(false)
-{
-}
-
 void MaterialBaseCB::OnSetMaterial(const SMaterial &material)
 {
 	FogEnable = material.FogEnable;
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
 }
 
-void MaterialBaseCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
+void MaterialBaseCB::OnSetConstants(MaterialRenderer *renderer, s32 userData)
 {
 	VideoDriver *driver = renderer->getVideoDriver();
-
-	if (FirstUpdateBase) {
-		WVPMatrixID = renderer->getVertexShaderConstantID("uWVPMatrix");
-		WVMatrixID = renderer->getVertexShaderConstantID("uWVMatrix");
-
-		FogEnableID = renderer->getVertexShaderConstantID("uFogEnable");
-		FogTypeID = renderer->getVertexShaderConstantID("uFogType");
-		FogColorID = renderer->getVertexShaderConstantID("uFogColor");
-		FogStartID = renderer->getVertexShaderConstantID("uFogStart");
-		FogEndID = renderer->getVertexShaderConstantID("uFogEnd");
-		FogDensityID = renderer->getVertexShaderConstantID("uFogDensity");
-		ThicknessID = renderer->getVertexShaderConstantID("uThickness");
-
-		FirstUpdateBase = false;
-	}
 
 	const core::matrix4 &W = driver->getTransform(ETS_WORLD);
 	const core::matrix4 &V = driver->getTransform(ETS_VIEW);
 	const core::matrix4 &P = driver->getTransform(ETS_PROJECTION);
 
 	core::matrix4 Matrix = V * W;
-	renderer->setPixelShaderConstant(WVMatrixID, Matrix.pointer(), 16);
+    renderer->setUniform4x4Matrix("uWVMatrix", Matrix);
 
 	Matrix = P * Matrix;
-	renderer->setPixelShaderConstant(WVPMatrixID, Matrix.pointer(), 16);
+    renderer->setUniform4x4Matrix("uWVPMatrix", Matrix);
 
 	s32 TempEnable = FogEnable ? 1 : 0;
-	renderer->setPixelShaderConstant(FogEnableID, &TempEnable, 1);
+    renderer->setUniformInt("uFogEnable", TempEnable);
 
 	if (FogEnable) {
 		SColor TempColor(0);
@@ -70,22 +47,17 @@ void MaterialBaseCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
 		s32 FogType = (s32)TempType;
 		SColorf FogColor(TempColor);
 
-		renderer->setPixelShaderConstant(FogTypeID, &FogType, 1);
-		renderer->setPixelShaderConstant(FogColorID, reinterpret_cast<f32 *>(&FogColor), 4);
-		renderer->setPixelShaderConstant(FogStartID, &FogStart, 1);
-		renderer->setPixelShaderConstant(FogEndID, &FogEnd, 1);
-		renderer->setPixelShaderConstant(FogDensityID, &FogDensity, 1);
+        renderer->setUniformInt("uFogType", FogType);
+        renderer->setUniformColorf("uFogColor", FogColor);
+        renderer->setUniformFloat("uFogStart", FogStart);
+        renderer->setUniformFloat("uFogEnd", FogEnd);
+        renderer->setUniformFloat("uFogDensity", FogDensity);
 	}
 
-	renderer->setPixelShaderConstant(ThicknessID, &Thickness, 1);
+    renderer->setUniformFloat("uThickness", Thickness);
 }
 
 // EMT_SOLID + EMT_TRANSPARENT_ALPHA_CHANNEL + EMT_TRANSPARENT_VERTEX_ALPHA
-
-MaterialSolidCB::MaterialSolidCB() :
-		FirstUpdate(true), TMatrix0ID(-1), AlphaRefID(-1), TextureUsage0ID(-1), TextureUnit0ID(-1), AlphaRef(0.5f), TextureUsage0(0), TextureUnit0(0)
-{
-}
 
 void MaterialSolidCB::OnSetMaterial(const SMaterial &material)
 {
@@ -95,35 +67,21 @@ void MaterialSolidCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void MaterialSolidCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
+void MaterialSolidCB::OnSetConstants(MaterialRenderer *renderer, s32 userData)
 {
 	MaterialBaseCB::OnSetConstants(renderer, userData);
 
-	VideoDriver *driver = renderer->getVideoDriver();
-
-	if (FirstUpdate) {
-		TMatrix0ID = renderer->getVertexShaderConstantID("uTMatrix0");
-		AlphaRefID = renderer->getVertexShaderConstantID("uAlphaRef");
-		TextureUsage0ID = renderer->getVertexShaderConstantID("uTextureUsage0");
-		TextureUnit0ID = renderer->getVertexShaderConstantID("uTextureUnit0");
-
-		FirstUpdate = false;
-	}
+    VideoDriver *driver = renderer->getVideoDriver();
 
 	core::matrix4 Matrix = driver->getTransform(ETS_TEXTURE_0);
-	renderer->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
+    renderer->setUniform4x4Matrix("uTMatrix0", Matrix);
 
-	renderer->setPixelShaderConstant(AlphaRefID, &AlphaRef, 1);
-	renderer->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
-	renderer->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
+    renderer->setUniformFloat("uAlphaRef", AlphaRef);
+    renderer->setUniformInt("uTextureUsage0", TextureUsage0);
+    renderer->setUniformInt("uTextureUnit0", TextureUnit0);
 }
 
 // EMT_ONETEXTURE_BLEND
-
-MaterialOneTextureBlendCB::MaterialOneTextureBlendCB() :
-		FirstUpdate(true), TMatrix0ID(-1), BlendTypeID(-1), TextureUsage0ID(-1), TextureUnit0ID(-1), BlendType(0), TextureUsage0(0), TextureUnit0(0)
-{
-}
 
 void MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial &material)
 {
@@ -147,27 +105,18 @@ void MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void MaterialOneTextureBlendCB::OnSetConstants(IMaterialRenderer *renderer, s32 userData)
+void MaterialOneTextureBlendCB::OnSetConstants(MaterialRenderer *renderer, s32 userData)
 {
 	MaterialBaseCB::OnSetConstants(renderer, userData);
 
 	VideoDriver *driver = renderer->getVideoDriver();
 
-	if (FirstUpdate) {
-		TMatrix0ID = renderer->getVertexShaderConstantID("uTMatrix0");
-		BlendTypeID = renderer->getVertexShaderConstantID("uBlendType");
-		TextureUsage0ID = renderer->getVertexShaderConstantID("uTextureUsage0");
-		TextureUnit0ID = renderer->getVertexShaderConstantID("uTextureUnit0");
-
-		FirstUpdate = false;
-	}
-
 	core::matrix4 Matrix = driver->getTransform(ETS_TEXTURE_0);
-	renderer->setPixelShaderConstant(TMatrix0ID, Matrix.pointer(), 16);
+    renderer->setUniform4x4Matrix("uTMatrix0", Matrix);
 
-	renderer->setPixelShaderConstant(BlendTypeID, &BlendType, 1);
-	renderer->setPixelShaderConstant(TextureUsage0ID, &TextureUsage0, 1);
-	renderer->setPixelShaderConstant(TextureUnit0ID, &TextureUnit0, 1);
+    renderer->setUniformInt("uBlendType", BlendType);
+    renderer->setUniformInt("uTextureUsage0", TextureUsage0);
+    renderer->setUniformInt("uTextureUnit0", TextureUnit0);
 }
 
 }

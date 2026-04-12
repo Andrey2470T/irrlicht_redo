@@ -45,7 +45,7 @@ MaterialSystem::~MaterialSystem()
 		delete MaterialRenderer2DNoTexture;
 }
 
-IMaterialRenderer *MaterialSystem::getMaterialRenderer(u32 idx) const
+MaterialRenderer *MaterialSystem::getMaterialRenderer(u32 idx) const
 {
 	if (idx < MaterialRenderers.size())
 		return MaterialRenderers[idx];
@@ -53,12 +53,12 @@ IMaterialRenderer *MaterialSystem::getMaterialRenderer(u32 idx) const
 		return nullptr;
 }
 
-s32 MaterialSystem::addMaterialRenderer(IMaterialRenderer *renderer, const char *name)
+s32 MaterialSystem::addMaterialRenderer(MaterialRenderer *renderer, const char *name)
 {
 	if (!renderer)
 		return -1;
 
-	IMaterialRenderer *r = renderer;
+    MaterialRenderer *r = renderer;
 	r->grab();
 	MaterialRenderers.push_back(r);
 	return MaterialRenderers.size() - 1;
@@ -124,22 +124,21 @@ void MaterialSystem::setMaterial(const SMaterial &material)
 }
 
 //! Adds a new material renderer to the VideoDriver, using GLSL to render geometry.
-s32 MaterialSystem::addHighLevelShaderMaterial(
-		const c8 *vertexShaderProgram,
-		const c8 *pixelShaderProgram,
-		const c8 *geometryShaderProgram,
-		const c8 *shaderName,
-		scene::E_PRIMITIVE_TYPE inType,
-		scene::E_PRIMITIVE_TYPE outType,
-		u32 verticesOut,
-		IShaderConstantSetCallBack *callback,
-		E_MATERIAL_TYPE baseMaterial,
-		s32 userData)
+s32 MaterialSystem::addHighLevelShaderMaterial(const std::string &vertexShaderProgram,
+    const std::string &fragmentShaderProgram,
+    const std::string &geometryShaderProgram,
+    const std::string &shaderName,
+    scene::E_PRIMITIVE_TYPE inType,
+    scene::E_PRIMITIVE_TYPE outType,
+    u32 verticesOut,
+    IShaderConstantSetCallBack *callback,
+    E_MATERIAL_TYPE baseMaterial,
+    s32 userData)
 {
 	s32 nr = -1;
 	MaterialRenderer *r = new MaterialRenderer(
 			Driver, nr, vertexShaderProgram,
-			pixelShaderProgram, shaderName,
+            fragmentShaderProgram, shaderName,
 			callback, baseMaterial, userData);
 
 	r->drop();
@@ -147,15 +146,15 @@ s32 MaterialSystem::addHighLevelShaderMaterial(
 }
 
 s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
-		const io::path &vertexShaderProgramFileName,
-		const io::path &pixelShaderProgramFileName,
-		const io::path &geometryShaderProgramFileName,
-		const c8 *shaderName,
-		scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
-		u32 verticesOut,
-		IShaderConstantSetCallBack *callback,
-		E_MATERIAL_TYPE baseMaterial,
-		s32 userData)
+    const io::path &vertexShaderProgramFileName,
+    const io::path &pixelShaderProgramFileName,
+    const io::path &geometryShaderProgramFileName,
+    const c8 *shaderName,
+    scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
+    u32 verticesOut,
+    IShaderConstantSetCallBack *callback,
+    E_MATERIAL_TYPE baseMaterial,
+    s32 userData)
 {
 	io::IReadFile *vsfile = 0;
 	io::IReadFile *psfile = 0;
@@ -213,15 +212,15 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 		E_MATERIAL_TYPE baseMaterial,
 		s32 userData)
 {
-	c8 *vs = 0;
-	c8 *ps = 0;
-	c8 *gs = 0;
+    std::string vs = "";
+    std::string ps = "";
+    std::string gs = "";
 
 	if (vertexShaderProgram) {
 		const long size = vertexShaderProgram->getSize();
 		if (size) {
 			vs = new c8[size + 1];
-			vertexShaderProgram->read(vs, size);
+            vertexShaderProgram->read((void *)vs.c_str(), size);
 			vs[size] = 0;
 		}
 	}
@@ -233,7 +232,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 			if (pixelShaderProgram == vertexShaderProgram)
 				pixelShaderProgram->seek(0);
 			ps = new c8[size + 1];
-			pixelShaderProgram->read(ps, size);
+            pixelShaderProgram->read((void *)ps.c_str(), size);
 			ps[size] = 0;
 		}
 	}
@@ -246,7 +245,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 					(geometryShaderProgram == pixelShaderProgram))
 				geometryShaderProgram->seek(0);
 			gs = new c8[size + 1];
-			geometryShaderProgram->read(gs, size);
+            geometryShaderProgram->read((void *)gs.c_str(), size);
 			gs[size] = 0;
 		}
 	}
@@ -255,10 +254,6 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 			vs, ps, gs, shaderName,
 			inType, outType, verticesOut,
 			callback, baseMaterial, userData);
-
-	delete[] vs;
-	delete[] ps;
-	delete[] gs;
 
 	return result;
 }
@@ -323,7 +318,7 @@ void MaterialSystem::setRenderStates3DMode()
 	CurrentRenderMode = ERM_3D;
 }
 
-//! Can be called by an IMaterialRenderer to make its work easier.
+//! Can be called by an MaterialRenderer to make its work easier.
 void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMaterial &lastmaterial, bool resetAllRenderStates)
 {
 	// ZBuffer
