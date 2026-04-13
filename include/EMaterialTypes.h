@@ -56,17 +56,4 @@ enum E_MATERIAL_TYPE
 	EMT_FORCE_32BIT = 0x7fffffff
 };
 
-//! Array holding the built in material type names
-const char *const sBuiltInMaterialTypeNames[] = {
-		"solid",
-		"trans_alphach",
-		"trans_alphach_ref",
-		"trans_vertex_alpha",
-		"onetexture_blend",
-		0,
-	};
-
-constexpr u32 numBuiltInMaterials =
-		sizeof(sBuiltInMaterialTypeNames) / sizeof(char *) - 1;
-
 } // end namespace video

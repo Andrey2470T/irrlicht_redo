@@ -279,7 +279,6 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 		Video/MaterialCallbacks.cpp
 		Video/MaterialRenderer.cpp
 		Video/MaterialSystem.cpp
-		Video/Renderer2D.cpp
 		Video/RenderTarget.cpp
 		Video/Texture.cpp
 		Video/VBO.cpp

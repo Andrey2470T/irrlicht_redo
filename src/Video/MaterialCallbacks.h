@@ -15,8 +15,8 @@ namespace video
 class MaterialBaseCB : public IShaderConstantSetCallBack
 {
 public:
-	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
+	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetConstants(MaterialRenderer *renderer, s32 userData) override;
 
 protected:
     f32 Thickness = 1.0f;
@@ -26,8 +26,8 @@ protected:
 class MaterialSolidCB : public MaterialBaseCB
 {
 public:
-	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
+	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetConstants(MaterialRenderer *renderer, s32 userData) override;
 
 protected:
     f32 AlphaRef = 0.5f;
@@ -38,13 +38,24 @@ protected:
 class MaterialOneTextureBlendCB : public MaterialBaseCB
 {
 public:
-	virtual void OnSetMaterial(const SMaterial &material);
-	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData);
+	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetConstants(MaterialRenderer *renderer, s32 userData) override;
 
 protected:
     s32 BlendType = 0;
     s32 TextureUsage0 = 0;
     s32 TextureUnit0 = 0;
+};
+
+class Material2DCB : public IShaderConstantSetCallBack
+{
+public:
+	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetConstants(MaterialRenderer *renderer, s32 userData) override;
+
+private:
+	f32 Thickness = 1.0f;
+	s32 TextureUsage0 = 0;
 };
 
 }

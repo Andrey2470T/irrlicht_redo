@@ -72,16 +72,16 @@ public:
 
 	//! Called by the IVideoDriver implementation to set needed render states.
     void OnSetMaterial(const SMaterial &material, const SMaterial &lastMaterial,
-			bool resetAllRenderstates, MaterialSystem *materialSys);
+			bool resetAllRenderstates);
 
 	//! Called every time before a new bunch of geometry is drawn.
     bool OnRender(E_VERTEX_TYPE vtxtype);
 
-	//! Called by the IVideoDriver to unset this material.
-    void OnUnsetMaterial();
-
 	//! Returns if the material is transparent.
-    bool isTransparent() const;
+	bool isTransparent() const
+	{
+		return (Alpha || Blending);
+	}
 
     void setUniformFloat(const std::string &name, f32 value);
     void setUniformInt(const std::string &name, s32 value);
@@ -111,14 +111,9 @@ public:
     IShaderConstantSetCallBack *getShaderConstantSetCallBack() const;
 
 protected:
-	MaterialRenderer(VideoDriver *driver,
-			IShaderConstantSetCallBack *callback = 0,
-			E_MATERIAL_TYPE baseMaterial = EMT_SOLID,
-			s32 userData = 0);
-
     void init(
         s32 &outMaterialTypeNr, const std::string &vertexShaderCode,
-        const std::string &pixelShaderCode, const std::string &debugName = "",
+		const std::string &fragmentShaderCode, const std::string &debugName = "",
 		bool addMaterial = true);
 
 	VideoDriver *Driver;

@@ -10,7 +10,6 @@
 #include "VideoDriver.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
-#include "Renderer2D.h"
 #include "MaterialRenderer.h"
 #include "MaterialCallbacks.h"
 #include "Texture.h"
@@ -18,19 +17,21 @@
 namespace video
 {
 
+u32 MaterialSystem::BuiltinMaterialsNum = 6;
+
 MaterialSystem::MaterialSystem(VideoDriver *driver, io::IFileSystem *filesys, const io::path &shadersPath)
 	: Driver(driver), FileSystem(filesys), ShadersPath(shadersPath)
 {
-	InitMaterial2D.AntiAliasing = video::EAAM_OFF;
-	InitMaterial2D.ZWriteEnable = video::EZW_OFF;
-	InitMaterial2D.ZBuffer = video::ECFN_DISABLED;
+	InitMaterial2D.AntiAliasing = EAAM_OFF;
+	InitMaterial2D.ZWriteEnable = EZW_OFF;
+	InitMaterial2D.ZBuffer = ECFN_DISABLED;
 	InitMaterial2D.UseMipMaps = false;
 	InitMaterial2D.forEachTexture([](auto &tex) {
-		tex.MinFilter = video::ETMINF_NEAREST_MIPMAP_NEAREST;
-		tex.MagFilter = video::ETMAGF_NEAREST;
-		tex.TextureWrapU = video::ETC_REPEAT;
-		tex.TextureWrapV = video::ETC_REPEAT;
-		tex.TextureWrapW = video::ETC_REPEAT;
+		tex.MinFilter = ETMINF_NEAREST_MIPMAP_NEAREST;
+		tex.MagFilter = ETMAGF_NEAREST;
+		tex.TextureWrapU = ETC_REPEAT;
+		tex.TextureWrapV = ETC_REPEAT;
+		tex.TextureWrapW = ETC_REPEAT;
 	});
 	OverrideMaterial2D = InitMaterial2D;
 }
@@ -38,11 +39,6 @@ MaterialSystem::MaterialSystem(VideoDriver *driver, io::IFileSystem *filesys, co
 MaterialSystem::~MaterialSystem()
 {
 	deleteMaterialRenders();
-
-	if (MaterialRenderer2DTexture)
-		delete MaterialRenderer2DTexture;
-	if (MaterialRenderer2DNoTexture)
-		delete MaterialRenderer2DNoTexture;
 }
 
 MaterialRenderer *MaterialSystem::getMaterialRenderer(u32 idx) const
@@ -53,7 +49,7 @@ MaterialRenderer *MaterialSystem::getMaterialRenderer(u32 idx) const
 		return nullptr;
 }
 
-s32 MaterialSystem::addMaterialRenderer(MaterialRenderer *renderer, const char *name)
+s32 MaterialSystem::addMaterialRenderer(MaterialRenderer *renderer)
 {
 	if (!renderer)
 		return -1;
@@ -257,8 +253,9 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 
 void MaterialSystem::deleteShaderMaterial(s32 material)
 {
+	// Only custom materials are allowed to be deleted
 	const u32 idx = (u32)material;
-	if (idx < numBuiltInMaterials || idx >= MaterialRenderers.size())
+	if (idx < MaterialSystem::BuiltinMaterialsNum || idx >= MaterialRenderers.size())
 		return;
 
 	// if this is the last material we can drop it without consequence
@@ -289,23 +286,13 @@ void MaterialSystem::setRenderStates3DMode()
 	}
 
 	if (ResetRenderStates || LastMaterial != Material) {
-		// unset old material
-
-		// unset last 3d material
-		if (CurrentRenderMode == ERM_2D && MaterialRenderer2DActive) {
-			MaterialRenderer2DActive->OnUnsetMaterial();
-			MaterialRenderer2DActive = 0;
-		} else if (LastMaterial.MaterialType != Material.MaterialType &&
-				   static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
-			MaterialRenderers[LastMaterial.MaterialType]->OnUnsetMaterial();
-
 		// set new material.
 		if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[Material.MaterialType]->OnSetMaterial(
-					Material, LastMaterial, ResetRenderStates, this);
+					Material, LastMaterial, ResetRenderStates);
 
 		LastMaterial = Material;
-		//CacheHandler->correctCacheMaterial(LastMaterial);
+
 		ResetRenderStates = false;
 	}
 
@@ -468,25 +455,10 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 	if (LockRenderStateMode)
 		return;
 
-	COpenGL3Renderer2D *nextActiveRenderer = texture ? MaterialRenderer2DTexture : MaterialRenderer2DNoTexture;
+	CurrentRenderMode = ERM_2D;
 
-	if (CurrentRenderMode != ERM_2D) {
-		// unset last 3d material
-		if (CurrentRenderMode == ERM_3D) {
-			if (static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
-				MaterialRenderers[LastMaterial.MaterialType]->OnUnsetMaterial();
-		}
-
-		CurrentRenderMode = ERM_2D;
-	} else if (MaterialRenderer2DActive && MaterialRenderer2DActive != nextActiveRenderer) {
-		MaterialRenderer2DActive->OnUnsetMaterial();
-	}
-
-	MaterialRenderer2DActive = nextActiveRenderer;
-
-	MaterialRenderer2DActive->OnSetMaterial(Material, LastMaterial, true);
+	MaterialRenderers[MaterialRenderer2DIdx]->OnSetMaterial(Material, LastMaterial, true);
 	LastMaterial = Material;
-	//CacheHandler->correctCacheMaterial(LastMaterial);
 
 	// no alphaChannel without texture
 	alphaChannel &= texture;
@@ -499,7 +471,7 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 		Driver->Context->setBlendOp(EBO_ADD);
 	}
 
-	Material.setTexture(0, const_cast<GLTexture *>(static_cast<const GLTexture *>(Driver->Context->getTextureUnit(0))));
+	Material.setTexture(0, const_cast<GLTexture *>(Driver->Context->getTextureUnit(0)));
 	Driver->setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
 
 	if (texture) {
@@ -509,7 +481,7 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 			setTextureRenderStates(InitMaterial2D, false);
 	}
 
-	MaterialRenderer2DActive->OnRender(video::EVT_STANDARD);
+	MaterialRenderers[MaterialRenderer2DIdx]->OnRender(video::EVT_STANDARD);
 }
 
 void MaterialSystem::chooseMaterial2D()
@@ -534,11 +506,12 @@ void MaterialSystem::createMaterialRenderers()
 	MaterialSolidCB *TransparentAlphaChannelRefCB = new MaterialSolidCB();
 	MaterialSolidCB *TransparentVertexAlphaCB = new MaterialSolidCB();
 	MaterialOneTextureBlendCB *OneTextureBlendCB = new MaterialOneTextureBlendCB();
+	Material2DCB *Renderer2DCB = new Material2DCB();
 
 	// Create built-in materials.
 	// The addition order must be the same as in the E_MATERIAL_TYPE enumeration. Thus the
 
-	const core::stringc VertexShader = ShadersPath + "Solid.vsh";
+	core::stringc VertexShader = ShadersPath + "Solid.vsh";
 
 	// EMT_SOLID
 	core::stringc FragmentShader = ShadersPath + "Solid.fsh";
@@ -565,6 +538,12 @@ void MaterialSystem::createMaterialRenderers()
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "OneTextureBlend",
 			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND, 0);
 
+	// EMT_2D
+	VertexShader = ShadersPath + "Renderer2D.vsh";
+	FragmentShader = ShadersPath + "Renderer2D.fsh";
+	MaterialRenderer2DIdx = addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Renderer2D",
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Renderer2DCB, EMT_SOLID, 0);
+
 	// Drop callbacks.
 
 	SolidCB->drop();
@@ -572,22 +551,7 @@ void MaterialSystem::createMaterialRenderers()
 	TransparentAlphaChannelRefCB->drop();
 	TransparentVertexAlphaCB->drop();
 	OneTextureBlendCB->drop();
-
-	// Create 2D material renderers
-
-	c8 *vs2DData = 0;
-	c8 *fs2DData = 0;
-	loadShaderData(io::path("Renderer2D.vsh"), io::path("Renderer2D.fsh"), &vs2DData, &fs2DData);
-	MaterialRenderer2DTexture = new COpenGL3Renderer2D(vs2DData, fs2DData, Driver, true);
-	delete[] vs2DData;
-	delete[] fs2DData;
-	vs2DData = 0;
-	fs2DData = 0;
-
-	loadShaderData(io::path("Renderer2D.vsh"), io::path("Renderer2D_noTex.fsh"), &vs2DData, &fs2DData);
-	MaterialRenderer2DNoTexture = new COpenGL3Renderer2D(vs2DData, fs2DData, Driver, false);
-	delete[] vs2DData;
-	delete[] fs2DData;
+	Renderer2DCB->drop();
 }
 
 bool MaterialSystem::setMaterialTexture(u32 layerIdx, const GLTexture *texture)

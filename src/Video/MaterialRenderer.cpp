@@ -11,7 +11,6 @@
 #include "Common.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
-#include "Renderer2D.h"
 #include "GLSpecificInfo.h"
 #include "Texture.h"
 
@@ -156,28 +155,6 @@ MaterialRenderer::MaterialRenderer(
     init(outMaterialTypeNr, vertexShaderProgram, fragmentShaderProgram, debugName);
 }
 
-MaterialRenderer::MaterialRenderer(VideoDriver *driver,
-		IShaderConstantSetCallBack *callback,
-		E_MATERIAL_TYPE baseMaterial, s32 userData) :
-		Driver(driver),
-        CallBack(callback), Alpha(false), Blending(false), UserData(userData)
-{
-	switch (baseMaterial) {
-	case EMT_TRANSPARENT_VERTEX_ALPHA:
-	case EMT_TRANSPARENT_ALPHA_CHANNEL:
-		Alpha = true;
-		break;
-	case EMT_ONETEXTURE_BLEND:
-		Blending = true;
-		break;
-	default:
-		break;
-	}
-
-	if (CallBack)
-		CallBack->grab();
-}
-
 MaterialRenderer::~MaterialRenderer()
 {
 	if (CallBack)
@@ -192,7 +169,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
 {
 	outMaterialTypeNr = -1;
 
-    ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode);
+	ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode);
 
     if (!debugName.empty()) {
         Driver->GLInfo->ObjectLabel(GL_PROGRAM, ShaderObj->ProgramID, debugName.c_str());
@@ -212,13 +189,12 @@ bool MaterialRenderer::OnRender(E_VERTEX_TYPE vtxtype)
 
 void MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 		const video::SMaterial &lastMaterial,
-		bool resetAllRenderstatess, MaterialSystem *materialSys)
+		bool resetAllRenderstatess)
 {
 	auto ctxt = Driver->getContext();
 
     ctxt->setProgram(ShaderObj->ProgramID);
-
-	materialSys->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
+	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
 
 	if (Alpha) {
 		ctxt->enableBlend(true);
@@ -235,15 +211,6 @@ void MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
 
 	if (CallBack)
 		CallBack->OnSetMaterial(material);
-}
-
-void MaterialRenderer::OnUnsetMaterial()
-{
-}
-
-bool MaterialRenderer::isTransparent() const
-{
-	return (Alpha || Blending);
 }
 
 void MaterialRenderer::setUniformFloat(const std::string &name, f32 value)

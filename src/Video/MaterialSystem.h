@@ -19,7 +19,6 @@ namespace video
 {
 
 class VideoDriver;
-class COpenGL3Renderer2D;
 class DrawContext;
 
 class MaterialSystem
@@ -40,15 +39,14 @@ class MaterialSystem
 	SMaterial Material, LastMaterial;
 
     core::array<MaterialRenderer *> MaterialRenderers;
+	s32 MaterialRenderer2DIdx;
+
+	static u32 BuiltinMaterialsNum;
 
 	SOverrideMaterial OverrideMaterial;
 	SMaterial OverrideMaterial2D;
 	SMaterial InitMaterial2D;
 	bool OverrideMaterial2DEnabled = false;
-
-	COpenGL3Renderer2D *MaterialRenderer2DActive = nullptr;
-	COpenGL3Renderer2D *MaterialRenderer2DTexture = nullptr;
-	COpenGL3Renderer2D *MaterialRenderer2DNoTexture = nullptr;
 
 	//! bool to make all renderstates reset if set to true.
 	bool ResetRenderStates = true;
@@ -62,7 +60,7 @@ public:
 	~MaterialSystem();
 
     MaterialRenderer *getMaterialRenderer(u32 idx) const;
-    s32 addMaterialRenderer(MaterialRenderer *renderer, const char *name = 0);
+	s32 addMaterialRenderer(MaterialRenderer *renderer);
 
 	SOverrideMaterial &getOverrideMaterial();
 	SMaterial &getMaterial2D();
@@ -116,6 +114,15 @@ public:
 			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 			s32 userData = 0);
 
+	void deleteShaderMaterial(s32 material);
+
+	void setBasicRenderStates(const SMaterial &material, const SMaterial &lastMaterial, bool resetAllRenderStates);
+
+	//! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
+	void setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates);
+
+	friend class VideoDriver;
+private:
 	s32 addHighLevelShaderMaterialFromFiles(
 			io::IReadFile *vertexShaderProgram,
 			io::IReadFile *pixelShaderProgram = 0,
@@ -128,15 +135,6 @@ public:
 			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 			s32 userData = 0);
 
-	void deleteShaderMaterial(s32 material);
-
-	void setBasicRenderStates(const SMaterial &material, const SMaterial &lastMaterial, bool resetAllRenderStates);
-
-	//! Compare in SMaterial doesn't check texture parameters, so we should call this on each OnRender call.
-	void setTextureRenderStates(const SMaterial &material, bool resetAllRenderstates);
-
-	friend class VideoDriver;
-private:
 	//! sets the needed renderstates
 	void setRenderStates3DMode();
 

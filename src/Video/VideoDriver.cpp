@@ -10,7 +10,6 @@
 
 #include "MaterialRenderer.h"
 #include "MaterialCallbacks.h"
-#include "Renderer2D.h"
 #include "VertexType.h"
 #include "Common.h"
 

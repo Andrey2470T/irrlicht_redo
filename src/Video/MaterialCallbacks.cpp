@@ -119,4 +119,28 @@ void MaterialOneTextureBlendCB::OnSetConstants(MaterialRenderer *renderer, s32 u
     renderer->setUniformInt("uTextureUnit0", TextureUnit0);
 }
 
+void Material2DCB::OnSetMaterial(const SMaterial &material)
+{
+	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
+	TextureUsage0 = material.TextureLayers[0].Texture ? 1 : 0;
+}
+
+void Material2DCB::OnSetConstants(MaterialRenderer *renderer, s32 userData)
+{
+	renderer->setUniformFloat("uThickness", Thickness);
+
+	// Update projection matrix
+	VideoDriver *driver = renderer->getVideoDriver();
+	const core::dimension2d<u32> renderTargetSize = driver->getCurrentRenderTargetSize();
+	core::matrix4 proj;
+	float xInv2 = 2.0f / renderTargetSize.Width;
+	float yInv2 = 2.0f / renderTargetSize.Height;
+	proj.setScale({ xInv2, -yInv2, 0.0f });
+	proj.setTranslation({ -1.0f, 1.0f, 0.0f });
+	renderer->setUniform4x4Matrix("uProjection", proj);
+
+	renderer->setUniformInt("uTextureUnit", 0);
+	renderer->setUniformInt("uTextureUsage", TextureUsage0);
+}
+
 }
