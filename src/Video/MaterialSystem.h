@@ -55,6 +55,8 @@ class MaterialSystem
 	bool AllowZWriteOnTransparent = false;
 
 	io::path ShadersPath;
+
+	friend class Drawer;
 public:
 	MaterialSystem(VideoDriver *driver, io::IFileSystem *filesys, const io::path &shadersPath);
 	~MaterialSystem();

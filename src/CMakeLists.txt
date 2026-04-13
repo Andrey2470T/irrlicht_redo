@@ -275,6 +275,7 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 	set(IRRDRVROBJ
 		${IRRDRVROBJ}
 		Video/DrawContext.cpp
+		Video/Drawer.cpp
 		Video/GLSpecificInfo.cpp
 		Video/MaterialCallbacks.cpp
 		Video/MaterialRenderer.cpp

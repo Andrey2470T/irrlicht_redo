@@ -9,6 +9,7 @@
 #include "SDLDeviceParameters.h"
 #include "../src/Video/VBO.h"
 #include "../src/Video/MaterialSystem.h"
+#include "../src/Video/Drawer.h"
 #include "IFileSystem.h"
 #include "irrArray.h"
 #include "irrString.h"
@@ -56,7 +57,7 @@ struct SFrameStats {
 	u32 HWBuffersActive = 0;
 };
 
-class VideoDriver : public IReferenceCounted, public MaterialSystem
+class VideoDriver : public IReferenceCounted, public MaterialSystem, public Drawer
 {
 	friend class GLTexture;
 
@@ -74,18 +75,9 @@ public:
 			core::rect<s32> *sourceRect = 0);
 
 	//! Alternative beginScene implementation. Can't clear stencil buffer, but otherwise identical to other beginScene
-	bool beginScene(bool backBuffer, bool zBuffer, SColor color = SColor(255, 0, 0, 0),
-			core::rect<s32> *sourceRect = 0)
+	bool beginScene(SColor clearColor = SColor(255, 0, 0, 0))
 	{
-		u16 flag = 0;
-
-		if (backBuffer)
-			flag |= ECBF_COLOR;
-
-		if (zBuffer)
-			flag |= ECBF_DEPTH;
-
-		return beginScene(flag, color, 1.f, 0, sourceRect);
+		return beginScene(ECBF_COLOR | ECBF_DEPTH, clearColor);
 	}
 
 	bool endScene();
@@ -185,17 +177,6 @@ public:
 
 	bool queryTextureFormat(ECOLOR_FORMAT format) const;
 
-	void drawMeshBuffer(const scene::IMeshBuffer *mb)
-	{
-		if (!mb)
-			return;
-		drawBuffers(mb->getVertexBuffer(), mb->getIndexBuffer(),
-			mb->getPrimitiveCount(), mb->getPrimitiveType());
-	}
-
-	void drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length = 10.f,
-		SColor color = 0xffffffff);
-
 	void setFog(SColor color = SColor(0, 255, 255, 255),
 			E_FOG_TYPE fogType = EFT_FOG_LINEAR,
 			f32 start = 50.0f, f32 end = 100.0f, f32 density = 0.01f,
@@ -214,160 +195,7 @@ public:
         return FileSystem;
     }
 
-	bool checkPrimitiveCount(u32 prmcnt) const;
-
-	void drawBuffers(const scene::IVertexBuffer *vb,
-		const scene::IIndexBuffer *ib, u32 primCount,
-		scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES);
-
 	RenderTarget *addRenderTarget();
-
-	//! draws a vertex primitive list
-	void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
-			const void *indexList, u32 primitiveCount,
-			E_VERTEX_TYPE vType = EVT_STANDARD, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
-			E_INDEX_TYPE iType = EIT_16BIT);
-
-	//! draws a vertex primitive list in 2d
-	void draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
-			const void *indexList, u32 primitiveCount,
-			E_VERTEX_TYPE vType = EVT_STANDARD, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
-			E_INDEX_TYPE iType = EIT_16BIT);
-
-	//! Draws an indexed triangle list.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertex *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLES, EIT_16BIT);
-	}
-
-	//! Draws an indexed triangle list.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertex2TCoords *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
-	}
-
-	//! Draws an indexed triangle list.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertexTangents *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
-	}
-
-	//! Draws an indexed triangle fan.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertex *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
-	}
-
-	//! Draws an indexed triangle fan.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertex2TCoords *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
-	}
-
-	//! Draws an indexed triangle fan.
-	/** Note that there may be at maximum 65536 vertices, because
-	the index list is an array of 16 bit values each with a maximum
-	value of 65536. If there are more than 65536 vertices in the
-	list, results of this operation are not defined.
-	\param vertices Pointer to array of vertices.
-	\param vertexCount Amount of vertices in the array.
-	\param indexList Pointer to array of indices.
-	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertexTangents *vertices,
-			u32 vertexCount, const u16 *indexList, u32 triangleCount)
-	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
-	}
-
-	//! draws an 2d image
-    void draw2DImage(const GLTexture *texture, const core::position2d<s32> &destPos, bool useAlphaChannelOfTexture = false);
-
-    void draw2DImage(const GLTexture *texture,
-			const core::position2d<s32> &destPos,
-			const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect = 0,
-			SColor color = SColor(255, 255, 255, 255), bool useAlphaChannelOfTexture = false);
-
-    void draw2DImage(const GLTexture *texture, const core::rect<s32> &destRect,
-			const core::rect<s32> &sourceRect, const core::rect<s32> *clipRect = 0,
-			const video::SColor *const colors = 0, bool useAlphaChannelOfTexture = false);
-
-	// internally used
-    void draw2DImage(const GLTexture *texture, u32 layer, bool flip);
-
-    void draw2DImageBatch(const GLTexture *texture,
-			const core::array<core::position2d<s32>> &positions,
-			const core::array<core::rect<s32>> &sourceRects,
-			const core::rect<s32> *clipRect,
-			SColor color,
-			bool useAlphaChannelOfTexture);
-
-	//! draw an 2d rectangle
-	void draw2DRectangle(SColor color, const core::rect<s32> &pos,
-			const core::rect<s32> *clip = 0);
-
-	//! Draws an 2d rectangle with a gradient.
-	void draw2DRectangle(const core::rect<s32> &pos,
-			SColor colorLeftUp, SColor colorRightUp, SColor colorLeftDown, SColor colorRightDown,
-			const core::rect<s32> *clip = 0);
-
-	//! Draws a 2d line.
-	void draw2DLine(const core::position2d<s32> &start,
-			const core::position2d<s32> &end,
-			SColor color = SColor(255, 255, 255, 255));
-
-	//! Draws a 3d line.
-	void draw3DLine(const core::vector3df &start,
-			const core::vector3df &end,
-			SColor color = SColor(255, 255, 255, 255));
-
-	//! Draws a 3d axis aligned box.
-	void draw3DBox(const core::aabbox3d<f32> &box,
-			SColor color = SColor(255, 255, 255, 255));
 
 	const std::string &getName();
 	const std::string &getVendorInfo();
@@ -408,14 +236,8 @@ public:
 	//! Only used internally by the engine
 	void OnResize(const core::dimension2d<u32> &size);
 
-	//! get color format of the current color buffer
-	ECOLOR_FORMAT getColorFormat() const;
-
 	//! Returns the transformation set by setTransform
 	const core::matrix4 &getTransform(E_TRANSFORMATION_STATE state) const;
-
-	//! Returns the maximum amount of primitives
-	u32 getMaximalPrimitiveCount() const;
 
     GLTexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
@@ -442,18 +264,7 @@ public:
 	//! Sets a new render target.
 	//! Prefer to use the setRenderTarget function taking flags as parameter as this one can't clear the stencil buffer.
 	//! It's still offered for backward compatibility.
-    bool setRenderTarget(GLTexture *texture, bool clearBackBuffer, bool clearZBuffer, SColor color = SColor(255, 0, 0, 0))
-	{
-		u16 flag = 0;
-
-		if (clearBackBuffer)
-			flag |= ECBF_COLOR;
-
-		if (clearZBuffer)
-			flag |= ECBF_DEPTH;
-
-		return setRenderTarget(texture, flag, color);
-	}
+	bool setRenderTarget(GLTexture *texture, bool clearBackBuffer, bool clearZBuffer, SColor color = SColor(255, 0, 0, 0));
 
 	//! Returns an image created from the last rendered frame.
     Image *createScreenShot(video::ECOLOR_FORMAT format = video::ECF_UNKNOWN, video::E_RENDER_TARGET target = video::ERT_FRAME_BUFFER);
@@ -493,17 +304,6 @@ private:
 
 	//! Same as `CacheHandler->setViewport`, but also sets `ViewPort`
     void setViewPortRaw(u32 width, u32 height);
-
-	void drawQuad(const VertexType &vertexType, const S3DVertex (&vertices)[4]);
-	void drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount);
-	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount);
-	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, uintptr_t vertices, uintptr_t indices, int indexCount);
-
-	void drawGeneric(const void *vertices, const void *indexList, u32 primitiveCount,
-		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType);
-
-	void beginDraw(const VertexType &vertexType, uintptr_t verticesBase);
-	void endDraw(const VertexType &vertexType);
 
 	E_DRIVER_TYPE DriverType;
 	std::unique_ptr<GLSpecificInfo> GLInfo;
@@ -555,24 +355,18 @@ private:
 	bool PixelFog;
 	bool RangeFog;
 
-	friend class GLTexture;
 	friend class MaterialRenderer;
 	friend class MaterialSystem;
+	friend class Drawer;
 
 	core::matrix4 Matrices[ETS_COUNT];
 
 	bool Transformation3DChanged;
 	io::path OGLES2ShaderPath;
 
-	//! Color buffer format
-	ECOLOR_FORMAT ColorFormat;
-
 	SDLDevice *Device;
 
 	bool EnableErrorTest;
-
-	OpenGLVBO QuadIndexVBO;
-	void initQuadsIndices(u32 max_vertex_count = 65536);
 };
 
 } // end namespace video

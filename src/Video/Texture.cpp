@@ -103,7 +103,7 @@ GLTexture::GLTexture(const io::path &name, const core::dimension2du &size,
     TexSettings.IsRenderTarget = true;
 
     if (OriginalColorFormat == ECF_UNKNOWN)
-		ColorFormat = getBestColorFormat(Driver->getColorFormat());
+		ColorFormat = getBestColorFormat(ECF_R8G8B8);
 
 	Pitch = Size.Width * pixelFormatsInfo[ColorFormat].size / 8;
 
