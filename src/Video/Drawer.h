@@ -1,12 +1,12 @@
 #pragma once
 
-#include "IMeshBuffer.h"
-#include "S3DVertex.h"
-#include "SVertexIndex.h"
-#include "matrix4.h"
-#include "DrawContext.h"
-#include "Texture.h"
-#include "irrArray.h"
+#include "Mesh/IMeshBuffer.h"
+#include "Mesh/S3DVertex.h"
+#include "Mesh/SVertexIndex.h"
+#include "Utils/matrix4.h"
+#include "Video/DrawContext.h"
+#include "Video/Texture.h"
+#include "Utils/irrArray.h"
 #include <memory>
 
 namespace video

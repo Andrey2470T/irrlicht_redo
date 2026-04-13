@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IBillboardSceneNode.h"
-#include "SMeshBuffer.h"
+#include "Scene/IBillboardSceneNode.h"
+#include "Mesh/SMeshBuffer.h"
 
 
 namespace scene

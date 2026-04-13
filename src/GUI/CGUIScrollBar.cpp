@@ -4,13 +4,13 @@
 
 #include "CGUIScrollBar.h"
 
-#include "IGUISkin.h"
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
+#include "GUI/IGUISkin.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
 #include "CGUIButton.h"
-#include "IGUIFont.h"
-#include "IGUIFontBitmap.h"
-#include "Logger.h"
+#include "GUI/IGUIFont.h"
+#include "GUI/IGUIFontBitmap.h"
+#include "Device/Logger.h"
 
 
 namespace gui

@@ -1,6 +1,6 @@
 #include "Common.h"
-#include "S3DVertex.h"
-#include "EVertexAttributes.h"
+#include "Mesh/S3DVertex.h"
+#include "Enums/EVertexAttributes.h"
 
 namespace video
 {

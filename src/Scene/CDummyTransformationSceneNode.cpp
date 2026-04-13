@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CDummyTransformationSceneNode.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 
 
 namespace scene

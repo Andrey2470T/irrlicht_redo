@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IImageWriter.h"
+#include "Image/IImageWriter.h"
 
 
 namespace video

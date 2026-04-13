@@ -4,9 +4,9 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "MaterialCallbacks.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 
-#include "VideoDriver.h"
+#include "Video/VideoDriver.h"
 
 
 namespace video

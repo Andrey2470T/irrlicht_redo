@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CEmptySceneNode.h"
-#include "ISceneManager.h"
+#include "Scene/ISceneManager.h"
 
 
 namespace scene

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IGUIScrollBar.h"
-#include "IGUIButton.h"
+#include "GUI/IGUIScrollBar.h"
+#include "GUI/IGUIButton.h"
 
 
 namespace gui

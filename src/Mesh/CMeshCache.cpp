@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMeshCache.h"
-#include "IAnimatedMesh.h"
-#include "IMesh.h"
+#include "Mesh/IAnimatedMesh.h"
+#include "Mesh/IMesh.h"
 
 
 namespace scene

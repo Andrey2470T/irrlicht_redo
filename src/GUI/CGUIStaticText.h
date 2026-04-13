@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IGUIStaticText.h"
-#include "irrArray.h"
+#include "GUI/IGUIStaticText.h"
+#include "Utils/irrArray.h"
 
 
 namespace gui

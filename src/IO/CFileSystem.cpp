@@ -3,15 +3,15 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CFileSystem.h"
-#include "IReadFile.h"
-#include "IWriteFile.h"
+#include "IO/IReadFile.h"
+#include "IO/IWriteFile.h"
 #include "CZipReader.h"
 #include "CFileList.h"
 #include "CReadFile.h"
 #include "CMemoryFile.h"
 #include "CLimitReadFile.h"
 #include "CWriteFile.h"
-#include "coreutil.h"
+#include "Utils/coreutil.h"
 #include <list>
 
 #if defined(__STRICT_ANSI__)

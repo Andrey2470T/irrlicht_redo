@@ -5,9 +5,9 @@
 #pragma once
 
 #include <vector>
-#include "IReadFile.h"
-#include "irrString.h"
-#include "IFileSystem.h"
+#include "IO/IReadFile.h"
+#include "Utils/irrString.h"
+#include "IO/IFileSystem.h"
 #include "CFileList.h"
 
 
@@ -18,7 +18,7 @@ namespace io
 static constexpr s16 ZIP_INFO_IN_DATA_DESCRIPTOR = 0x0008;
 
 // byte-align structures
-#include "irrpack.h"
+#include "Utils/irrpack.h"
 
 struct SZIPFileDataDescriptor
 {
@@ -82,7 +82,7 @@ struct SZIPFileCentralDirEnd
 } PACK_STRUCT;
 
 // Default alignment
-#include "irrunpack.h"
+#include "Utils/irrunpack.h"
 
 //! Contains extended info about zip files in the archive
 struct SZipFileEntry

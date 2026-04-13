@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "Clipboard.h"
+#include "Device/Clipboard.h"
 
 // "SDL_version.h" for SDL_VERSION_ATLEAST
 #ifdef _IRR_USE_SDL3_

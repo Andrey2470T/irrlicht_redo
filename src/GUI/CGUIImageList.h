@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "IGUIImageList.h"
-#include "VideoDriver.h"
+#include "GUI/IGUIImageList.h"
+#include "Video/VideoDriver.h"
 
 
 namespace gui

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IMeshSceneNode.h"
-#include "IMesh.h"
+#include "Scene/IMeshSceneNode.h"
+#include "Mesh/IMesh.h"
 
 
 namespace scene

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "IGUIComboBox.h"
-#include "IGUIStaticText.h"
-#include "irrString.h"
-#include "irrArray.h"
+#include "GUI/IGUIComboBox.h"
+#include "GUI/IGUIStaticText.h"
+#include "Utils/irrString.h"
+#include "Utils/irrArray.h"
 
 
 namespace gui

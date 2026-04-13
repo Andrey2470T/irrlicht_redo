@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IMeshCache.h"
-#include "irrArray.h"
+#include "Mesh/IMeshCache.h"
+#include "Utils/irrArray.h"
 
 
 

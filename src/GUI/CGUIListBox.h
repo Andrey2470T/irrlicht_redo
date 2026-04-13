@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IGUIListBox.h"
-#include "irrArray.h"
+#include "GUI/IGUIListBox.h"
+#include "Utils/irrArray.h"
 
 
 namespace gui

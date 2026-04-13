@@ -3,16 +3,16 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CXMeshFileLoader.h"
-#include "SkinnedMesh.h"
-#include "Logger.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Device/Logger.h"
 #include "Device/byteswap.h"
-#include "Timer.h"
+#include "Device/Timer.h"
 
-#include "fast_atof.h"
-#include "coreutil.h"
-#include "ISceneManager.h"
-#include "VideoDriver.h"
-#include "IReadFile.h"
+#include "Utils/fast_atof.h"
+#include "Utils/coreutil.h"
+#include "Scene/ISceneManager.h"
+#include "Video/VideoDriver.h"
+#include "IO/IReadFile.h"
 
 #ifdef _DEBUG
 #define _XREADER_DEBUG

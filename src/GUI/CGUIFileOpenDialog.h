@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "IGUIFileOpenDialog.h"
-#include "IGUIButton.h"
-#include "IGUIListBox.h"
-#include "IGUIEditBox.h"
-#include "IFileSystem.h"
+#include "GUI/IGUIFileOpenDialog.h"
+#include "GUI/IGUIButton.h"
+#include "GUI/IGUIListBox.h"
+#include "GUI/IGUIEditBox.h"
+#include "IO/IFileSystem.h"
 
 
 namespace gui

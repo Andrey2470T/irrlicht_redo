@@ -8,11 +8,11 @@
 
 #include "CB3DMeshFileLoader.h"
 
-#include "VideoDriver.h"
-#include "IFileSystem.h"
-#include "SkinnedMesh.h"
-#include "coreutil.h"
-#include "Logger.h"
+#include "Video/VideoDriver.h"
+#include "IO/IFileSystem.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
 #include "Device/byteswap.h"
 
 #include <algorithm>

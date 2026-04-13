@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "SMaterial.h"
-#include "irrMath.h"
+#include "Video/SMaterial.h"
+#include "Utils/irrMath.h"
 
 
 namespace scene

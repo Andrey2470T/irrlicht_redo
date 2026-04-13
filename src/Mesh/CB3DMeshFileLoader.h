@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "IMeshLoader.h"
-#include "ISceneManager.h"
-#include "SkinnedMesh.h"
-#include "SB3DStructs.h"
-#include "IReadFile.h"
+#include "Mesh/IMeshLoader.h"
+#include "Scene/ISceneManager.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Mesh/SB3DStructs.h"
+#include "IO/IReadFile.h"
 
 
 

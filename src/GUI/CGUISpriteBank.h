@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IGUISpriteBank.h"
+#include "GUI/IGUISpriteBank.h"
 
 
 

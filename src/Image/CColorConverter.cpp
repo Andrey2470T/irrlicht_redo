@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CColorConverter.h"
-#include "SColor.h"
+#include "Image/SColor.h"
 #include "Device/byteswap.h"
-#include "irrString.h"
+#include "Utils/irrString.h"
 
 // Warning: The naming of Irrlicht color formats
 // is not consistent regarding actual component order in memory.

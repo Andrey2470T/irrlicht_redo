@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cstdio>
-#include "IWriteFile.h"
-#include "irrString.h"
+#include "IO/IWriteFile.h"
+#include "Utils/irrString.h"
 
 
 

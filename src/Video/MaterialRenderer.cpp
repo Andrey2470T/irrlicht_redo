@@ -2,17 +2,17 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "MaterialRenderer.h"
+#include "Video/MaterialRenderer.h"
 
-#include "EVertexAttributes.h"
-#include "IShaderConstantSetCallBack.h"
-#include "VideoDriver.h"
-#include "Logger.h"
+#include "Enums/EVertexAttributes.h"
+#include "Video/IShaderConstantSetCallBack.h"
+#include "Video/VideoDriver.h"
+#include "Device/Logger.h"
 #include "Common.h"
-#include "DrawContext.h"
-#include "RenderTarget.h"
+#include "Video/DrawContext.h"
+#include "Video/RenderTarget.h"
 #include "GLSpecificInfo.h"
-#include "Texture.h"
+#include "Video/Texture.h"
 
 
 namespace video

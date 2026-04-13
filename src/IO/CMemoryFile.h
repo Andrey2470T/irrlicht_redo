@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IMemoryReadFile.h"
-#include "IWriteFile.h"
-#include "irrString.h"
+#include "IO/IMemoryReadFile.h"
+#include "IO/IWriteFile.h"
+#include "Utils/irrString.h"
 
 
 

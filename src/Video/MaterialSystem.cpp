@@ -1,18 +1,18 @@
 #include "MaterialSystem.h"
 
-#include "EVertexAttributes.h"
-#include "IShaderConstantSetCallBack.h"
-#include "VideoDriver.h"
-#include "Logger.h"
-#include "IFileSystem.h"
+#include "Enums/EVertexAttributes.h"
+#include "Video/IShaderConstantSetCallBack.h"
+#include "Video/VideoDriver.h"
+#include "Device/Logger.h"
+#include "IO/IFileSystem.h"
 
 #include "Common.h"
-#include "VideoDriver.h"
-#include "DrawContext.h"
-#include "RenderTarget.h"
-#include "MaterialRenderer.h"
+#include "Video/VideoDriver.h"
+#include "Video/DrawContext.h"
+#include "Video/RenderTarget.h"
+#include "Video/MaterialRenderer.h"
 #include "MaterialCallbacks.h"
-#include "Texture.h"
+#include "Video/Texture.h"
 
 namespace video
 {

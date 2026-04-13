@@ -4,9 +4,9 @@
 
 #include "CGUISpriteBank.h"
 
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
-#include "Texture.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
+#include "Video/Texture.h"
 
 
 namespace gui

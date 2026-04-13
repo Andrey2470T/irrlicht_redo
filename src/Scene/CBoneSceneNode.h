@@ -6,7 +6,7 @@
 
 // Used with SkinnedMesh and IAnimatedMeshSceneNode, for boned meshes
 
-#include "IBoneSceneNode.h"
+#include "Scene/IBoneSceneNode.h"
 
 #include <optional>
 

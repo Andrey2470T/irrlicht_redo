@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IImageLoader.h"
+#include "Image/IImageLoader.h"
 
 #include <cstdio>    // IWYU pragma: keep (required for jpeglib.h)
 #include <jpeglib.h> // use system lib

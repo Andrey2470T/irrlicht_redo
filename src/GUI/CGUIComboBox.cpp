@@ -4,14 +4,14 @@
 
 #include "CGUIComboBox.h"
 
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
-#include "IGUISkin.h"
-#include "IGUIEnvironment.h"
-#include "IGUIFont.h"
-#include "IGUIButton.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
+#include "GUI/IGUISkin.h"
+#include "GUI/IGUIEnvironment.h"
+#include "GUI/IGUIFont.h"
+#include "GUI/IGUIButton.h"
 #include "CGUIListBox.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 
 
 namespace gui

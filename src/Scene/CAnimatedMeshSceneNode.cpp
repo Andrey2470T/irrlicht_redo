@@ -3,19 +3,19 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CAnimatedMeshSceneNode.h"
-#include "VideoDriver.h"
-#include "ISceneManager.h"
-#include "S3DVertex.h"
-#include "Logger.h"
-#include "SkinnedMesh.h"
-#include "IDummyTransformationSceneNode.h"
-#include "IBoneSceneNode.h"
-#include "MaterialRenderer.h"
-#include "IMesh.h"
-#include "IMeshCache.h"
-#include "IAnimatedMesh.h"
-#include "IFileSystem.h"
-#include "quaternion.h"
+#include "Video/VideoDriver.h"
+#include "Scene/ISceneManager.h"
+#include "Mesh/S3DVertex.h"
+#include "Device/Logger.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Scene/IDummyTransformationSceneNode.h"
+#include "Scene/IBoneSceneNode.h"
+#include "Video/MaterialRenderer.h"
+#include "Mesh/IMesh.h"
+#include "Mesh/IMeshCache.h"
+#include "Mesh/IAnimatedMesh.h"
+#include "IO/IFileSystem.h"
+#include "Utils/quaternion.h"
 #include <algorithm>
 
 

@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "IImageLoader.h"
+#include "Image/IImageLoader.h"
 
 
 namespace video
 {
 
 // byte-align structures
-#include "irrpack.h"
+#include "Utils/irrpack.h"
 
 // these structs are also used in the TGA writer
 struct STGAHeader
@@ -38,7 +38,7 @@ struct STGAFooter
 } PACK_STRUCT;
 
 // Default alignment
-#include "irrunpack.h"
+#include "Utils/irrunpack.h"
 
 /*!
 	Surface Loader for targa images

@@ -1,9 +1,9 @@
-#include "RenderTarget.h"
-#include "Texture.h"
-#include "VideoDriver.h"
-#include "DrawContext.h"
+#include "Video/RenderTarget.h"
+#include "Video/Texture.h"
+#include "Video/VideoDriver.h"
+#include "Video/DrawContext.h"
 #include "Common.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 
 #include <stdexcept>
 

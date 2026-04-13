@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CFileList.h"
-#include "irrArray.h"
-#include "coreutil.h"
+#include "Utils/irrArray.h"
+#include "Utils/coreutil.h"
 
-#include "Logger.h"
+#include "Device/Logger.h"
 
 
 namespace io

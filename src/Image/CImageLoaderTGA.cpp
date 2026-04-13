@@ -4,12 +4,12 @@
 
 #include "CImageLoaderTGA.h"
 
-#include "IReadFile.h"
-#include "coreutil.h"
-#include "Logger.h"
+#include "IO/IReadFile.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
 #include "Device/byteswap.h"
 #include "CColorConverter.h"
-#include "Image.h"
+#include "Image/Image.h"
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 

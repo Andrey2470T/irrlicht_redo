@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "IGUISkin.h"
-#include "irrString.h"
+#include "GUI/IGUISkin.h"
+#include "Utils/irrString.h"
 #include <string>
-#include "Texture.h"
+#include "Video/Texture.h"
 
 
 namespace video

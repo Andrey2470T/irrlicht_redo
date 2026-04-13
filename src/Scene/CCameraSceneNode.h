@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "ICameraSceneNode.h"
-#include "SViewFrustum.h"
+#include "Scene/ICameraSceneNode.h"
+#include "Video/SViewFrustum.h"
 
 
 namespace scene

@@ -6,10 +6,10 @@
 
 #include "GLSpecificInfo.h"
 
-#include "SMaterial.h"
-#include "fast_atof.h"
+#include "Video/SMaterial.h"
+#include "Utils/fast_atof.h"
 #include "Image/CColorConverter.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 #include <sstream>
 
 

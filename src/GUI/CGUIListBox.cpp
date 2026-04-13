@@ -5,13 +5,13 @@
 #include "CGUIListBox.h"
 
 #include "CGUIListBox.h"
-#include "IGUISkin.h"
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
-#include "IGUIFont.h"
-#include "IGUISpriteBank.h"
+#include "GUI/IGUISkin.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
+#include "GUI/IGUIFont.h"
+#include "GUI/IGUISpriteBank.h"
 #include "CGUIScrollBar.h"
-#include "Timer.h"
+#include "Device/Timer.h"
 
 
 namespace gui

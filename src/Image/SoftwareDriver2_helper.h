@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "irrMath.h"
-#include "SMaterial.h"
+#include "Utils/irrMath.h"
+#include "Video/SMaterial.h"
 
 #ifndef REALINLINE
 #ifdef _MSC_VER

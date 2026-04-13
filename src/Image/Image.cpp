@@ -2,13 +2,13 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "Image.h"
-#include "IWriteFile.h"
-#include "irrString.h"
+#include "Image/Image.h"
+#include "IO/IWriteFile.h"
+#include "Utils/irrString.h"
 #include "CColorConverter.h"
 #include "CBlit.h"
-#include "IFileSystem.h"
-#include "Logger.h"
+#include "IO/IFileSystem.h"
+#include "Device/Logger.h"
 #include "SoftwareDriver2_helper.h"
 
 #include "CImageLoaderJPG.h"

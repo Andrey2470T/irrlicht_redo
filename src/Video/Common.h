@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "irrTypes.h"
+#include "Utils/irrTypes.h"
 
 #include <GL/glew.h>
 

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "IGUIButton.h"
-#include "IGUISpriteBank.h"
-#include "Texture.h"
-#include "SColor.h"
+#include "GUI/IGUIButton.h"
+#include "GUI/IGUISpriteBank.h"
+#include "Video/Texture.h"
+#include "Image/SColor.h"
 
 
 namespace gui

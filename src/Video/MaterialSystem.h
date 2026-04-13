@@ -2,13 +2,13 @@
 
 #include <string>
 #include <vector>
-#include "EMaterialTypes.h"
-#include "EPrimitiveTypes.h"
-#include "IReadFile.h"
-#include "MaterialRenderer.h"
+#include "Enums/EMaterialTypes.h"
+#include "Enums/EPrimitiveTypes.h"
+#include "IO/IReadFile.h"
+#include "Video/MaterialRenderer.h"
 
-#include "irrArray.h"
-#include "SOverrideMaterial.h"
+#include "Utils/irrArray.h"
+#include "Video/SOverrideMaterial.h"
 
 namespace io
 {

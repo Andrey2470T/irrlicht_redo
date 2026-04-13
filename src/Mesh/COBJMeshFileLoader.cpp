@@ -3,15 +3,15 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COBJMeshFileLoader.h"
-#include "MeshManipulator.h"
-#include "VideoDriver.h"
-#include "SMesh.h"
-#include "SMeshBuffer.h"
-#include "SAnimatedMesh.h"
-#include "IReadFile.h"
-#include "fast_atof.h"
-#include "coreutil.h"
-#include "Logger.h"
+#include "Mesh/MeshManipulator.h"
+#include "Video/VideoDriver.h"
+#include "Mesh/SMesh.h"
+#include "Mesh/SMeshBuffer.h"
+#include "Mesh/SAnimatedMesh.h"
+#include "IO/IReadFile.h"
+#include "Utils/fast_atof.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
 
 
 namespace scene

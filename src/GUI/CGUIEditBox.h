@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IGUIEditBox.h"
-#include "irrArray.h"
-#include "Clipboard.h"
+#include "GUI/IGUIEditBox.h"
+#include "Utils/irrArray.h"
+#include "Device/Clipboard.h"
 
 
 namespace gui

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "IShaderConstantSetCallBack.h"
-#include "MaterialRenderer.h"
+#include "Video/IShaderConstantSetCallBack.h"
+#include "Video/MaterialRenderer.h"
 
 
 namespace video

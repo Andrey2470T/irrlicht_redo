@@ -4,21 +4,21 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
-#include "VideoDriver.h"
+#include "Video/VideoDriver.h"
 #include <cassert>
-#include "SDLDevice.h"
+#include "Device/SDLDevice.h"
 
-#include "MaterialRenderer.h"
+#include "Video/MaterialRenderer.h"
 #include "Common.h"
 
 #include "GLSpecificInfo.h"
-#include "RenderTarget.h"
-#include "DrawContext.h"
-#include "Texture.h"
+#include "Video/RenderTarget.h"
+#include "Video/DrawContext.h"
+#include "Video/Texture.h"
 
-#include "Image.h"
-#include "Logger.h"
-#include "MeshManipulator.h"
+#include "Image/Image.h"
+#include "Device/Logger.h"
+#include "Mesh/MeshManipulator.h"
 
 namespace video
 {

@@ -1,5 +1,5 @@
-#include "CursorControl.h"
-#include "SDLDevice.h"
+#include "Device/CursorControl.h"
+#include "Device/SDLDevice.h"
 
 namespace gui
 {

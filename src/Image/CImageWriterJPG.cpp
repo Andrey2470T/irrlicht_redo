@@ -5,9 +5,9 @@
 #include "CImageWriterJPG.h"
 
 #include "CColorConverter.h"
-#include "IWriteFile.h"
-#include "coreutil.h"
-#include "Logger.h"
+#include "IO/IWriteFile.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
 
 #include <cstdio> // IWYU pragma: keep (required for jpeglib.h)
 #include <memory>

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IFileList.h"
-#include "irrString.h"
-#include "irrArray.h"
+#include "IO/IFileList.h"
+#include "Utils/irrString.h"
+#include "Utils/irrArray.h"
 
 
 namespace io

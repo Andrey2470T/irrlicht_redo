@@ -1,5 +1,5 @@
-#include "SMaterial.h"
-#include "matrix4.h"
+#include "Video/SMaterial.h"
+#include "Utils/matrix4.h"
 
 namespace video
 {

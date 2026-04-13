@@ -1,5 +1,5 @@
 #include "Drawer.h"
-#include "VideoDriver.h"
+#include "Video/VideoDriver.h"
 #include "Common.h"
 #include "MaterialSystem.h"
 #include "VBO.h"

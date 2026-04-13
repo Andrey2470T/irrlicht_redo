@@ -2,12 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "SkinnedMesh.h"
-#include "IBoneSceneNode.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Scene/IBoneSceneNode.h"
 #include "Scene/CBoneSceneNode.h"
-#include "IAnimatedMeshSceneNode.h"
-#include "SSkinMeshBuffer.h"
-#include "Logger.h"
+#include "Scene/IAnimatedMeshSceneNode.h"
+#include "Mesh/SSkinMeshBuffer.h"
+#include "Device/Logger.h"
 #include <vector>
 #include <cassert>
 

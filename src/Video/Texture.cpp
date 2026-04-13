@@ -2,12 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "Texture.h"
-#include "VideoDriver.h"
-#include "Image.h"
+#include "Video/Texture.h"
+#include "Video/VideoDriver.h"
+#include "Image/Image.h"
 #include "Image/CColorConverter.h"
 #include "GLSpecificInfo.h"
-#include "Logger.h"
+#include "Device/Logger.h"
 
 
 namespace video

@@ -6,10 +6,10 @@
 
 #include "CGUISkin.h"
 
-#include "IGUIFont.h"
-#include "IGUISpriteBank.h"
-#include "IGUIElement.h"
-#include "VideoDriver.h"
+#include "GUI/IGUIFont.h"
+#include "GUI/IGUISpriteBank.h"
+#include "GUI/IGUIElement.h"
+#include "Video/VideoDriver.h"
 
 
 namespace gui

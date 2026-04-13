@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "IImageLoader.h"
+#include "Image/IImageLoader.h"
 
 
 namespace video

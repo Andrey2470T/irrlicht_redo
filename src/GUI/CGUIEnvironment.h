@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "IGUIEnvironment.h"
-#include "IGUIElement.h"
-#include "irrArray.h"
-#include "IFileSystem.h"
-#include "Clipboard.h"
+#include "GUI/IGUIEnvironment.h"
+#include "GUI/IGUIElement.h"
+#include "Utils/irrArray.h"
+#include "IO/IFileSystem.h"
+#include "Device/Clipboard.h"
 
 
 

@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CSceneCollisionManager.h"
-#include "ICameraSceneNode.h"
-#include "SViewFrustum.h"
+#include "Scene/ICameraSceneNode.h"
+#include "Video/SViewFrustum.h"
 
-#include "irrMath.h"
+#include "Utils/irrMath.h"
 
 
 namespace scene

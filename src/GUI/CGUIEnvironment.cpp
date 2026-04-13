@@ -5,7 +5,7 @@
 
 #include "CGUIEnvironment.h"
 
-#include "VideoDriver.h"
+#include "Video/VideoDriver.h"
 
 #include "CGUISkin.h"
 #include "CGUIButton.h"
@@ -22,10 +22,10 @@
 #include "CGUITabControl.h"
 #include "CGUIComboBox.h"
 
-#include "IWriteFile.h"
+#include "IO/IWriteFile.h"
 #include "BuiltInFont.h"
-#include "Logger.h"
-#include "Timer.h"
+#include "Device/Logger.h"
+#include "Device/Timer.h"
 
 
 namespace gui

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "ISceneCollisionManager.h"
-#include "ISceneManager.h"
-#include "VideoDriver.h"
+#include "Scene/ISceneCollisionManager.h"
+#include "Scene/ISceneManager.h"
+#include "Video/VideoDriver.h"
 
 
 namespace scene

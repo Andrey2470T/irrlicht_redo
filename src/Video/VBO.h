@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "irrTypes.h"
-#include "EHardwareBufferFlags.h"
+#include "Utils/irrTypes.h"
+#include "Enums/EHardwareBufferFlags.h"
 #include <cstddef>
 
 

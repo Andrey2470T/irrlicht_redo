@@ -4,12 +4,12 @@
 
 #include "CZipReader.h"
 
-#include "Logger.h"
+#include "Device/Logger.h"
 #include "Device/byteswap.h"
 
 #include "CFileList.h"
 #include "CReadFile.h"
-#include "coreutil.h"
+#include "Utils/coreutil.h"
 
 #include <zlib.h> // use system lib
 

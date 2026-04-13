@@ -1,10 +1,10 @@
-#include "DrawContext.h"
-#include "RenderTarget.h"
-#include "VideoDriver.h"
-#include "Texture.h"
+#include "Video/DrawContext.h"
+#include "Video/RenderTarget.h"
+#include "Video/VideoDriver.h"
+#include "Video/Texture.h"
 #include "Common.h"
-#include "OpenGLFeatures.h"
-#include "Logger.h"
+#include "Video/OpenGLFeatures.h"
+#include "Device/Logger.h"
 
 namespace video
 {

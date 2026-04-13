@@ -2,12 +2,12 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "MeshManipulator.h"
-#include "SkinnedMesh.h"
-#include "SMesh.h"
-#include "SMeshBuffer.h"
-#include "SAnimatedMesh.h"
-#include "Logger.h"
+#include "Mesh/MeshManipulator.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Mesh/SMesh.h"
+#include "Mesh/SMeshBuffer.h"
+#include "Mesh/SAnimatedMesh.h"
+#include "Device/Logger.h"
 
 #include <cassert>
 

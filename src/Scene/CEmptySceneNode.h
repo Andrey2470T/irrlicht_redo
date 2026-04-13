@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ISceneNode.h"
+#include "Scene/ISceneNode.h"
 
 
 namespace scene

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IGUICheckBox.h"
+#include "GUI/IGUICheckBox.h"
 
 
 namespace gui

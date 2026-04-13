@@ -5,10 +5,10 @@
 #pragma once
 
 #include <map>
-#include "IMeshLoader.h"
-#include "ISceneManager.h"
-#include "irrString.h"
-#include "SMeshBuffer.h"
+#include "Mesh/IMeshLoader.h"
+#include "Scene/ISceneManager.h"
+#include "Utils/irrString.h"
+#include "Mesh/SMeshBuffer.h"
 
 
 namespace scene

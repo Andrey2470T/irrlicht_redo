@@ -6,10 +6,10 @@
 
 #include <png.h> // use system lib png
 
-#include "Image.h"
-#include "IReadFile.h"
-#include "coreutil.h"
-#include "Logger.h"
+#include "Image/Image.h"
+#include "IO/IReadFile.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
 
 
 namespace video

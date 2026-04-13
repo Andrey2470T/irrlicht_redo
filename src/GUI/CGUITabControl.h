@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IGUITabControl.h"
-#include "irrArray.h"
-#include "IGUISkin.h"
+#include "GUI/IGUITabControl.h"
+#include "Utils/irrArray.h"
+#include "GUI/IGUISkin.h"
 
 
 namespace gui

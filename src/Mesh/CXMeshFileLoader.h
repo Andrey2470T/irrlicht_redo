@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IMeshLoader.h"
-#include "irrString.h"
-#include "SkinnedMesh.h"
+#include "Mesh/IMeshLoader.h"
+#include "Utils/irrString.h"
+#include "Mesh/SkinnedMesh.h"
 
 
 namespace io

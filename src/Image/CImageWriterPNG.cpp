@@ -5,9 +5,9 @@
 #include "CImageWriterPNG.h"
 
 #include "CColorConverter.h"
-#include "IWriteFile.h"
-#include "coreutil.h"
-#include "Logger.h" // for logging
+#include "IO/IWriteFile.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h" // for logging
 
 #include <png.h> // use system lib png
 #include <memory>

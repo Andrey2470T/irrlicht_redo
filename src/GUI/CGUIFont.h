@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "IGUIFontBitmap.h"
-#include "irrString.h"
-#include "IReadFile.h"
-#include "irrArray.h"
+#include "GUI/IGUIFontBitmap.h"
+#include "Utils/irrString.h"
+#include "IO/IReadFile.h"
+#include "Utils/irrArray.h"
 #include <map>
 
 

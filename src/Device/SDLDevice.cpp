@@ -2,15 +2,15 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "SDLDevice.h"
-#include "IGUIElement.h"
-#include "IGUIEnvironment.h"
-#include "IImageLoader.h"
-#include "IFileSystem.h"
-#include "VideoDriver.h"
-#include "irrString.h"
-#include "Keycodes.h"
-#include "ISceneManager.h"
+#include "Device/SDLDevice.h"
+#include "GUI/IGUIElement.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Image/IImageLoader.h"
+#include "IO/IFileSystem.h"
+#include "Video/VideoDriver.h"
+#include "Utils/irrString.h"
+#include "Device/Keycodes.h"
+#include "Scene/ISceneManager.h"
 
 #include "Video/Common.h"
 #ifdef _IRR_USE_SDL3_

@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CBillboardSceneNode.h"
-#include "VideoDriver.h"
-#include "ISceneManager.h"
-#include "ICameraSceneNode.h"
-#include "Logger.h"
+#include "Video/VideoDriver.h"
+#include "Scene/ISceneManager.h"
+#include "Scene/ICameraSceneNode.h"
+#include "Device/Logger.h"
 
 
 namespace scene

@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "SkinnedMesh.h"
-#include "ISceneManager.h"
-#include "ISceneNode.h"
-#include "CursorControl.h"
-#include "irrString.h"
-#include "irrArray.h"
-#include "IMeshLoader.h"
+#include "Mesh/SkinnedMesh.h"
+#include "Scene/ISceneManager.h"
+#include "Scene/ISceneNode.h"
+#include "Device/CursorControl.h"
+#include "Utils/irrString.h"
+#include "Utils/irrArray.h"
+#include "Mesh/IMeshLoader.h"
 
 
 namespace io

@@ -3,12 +3,12 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMeshSceneNode.h"
-#include "VideoDriver.h"
-#include "ISceneManager.h"
-#include "IMeshCache.h"
-#include "IMeshBuffer.h"
-#include "MaterialRenderer.h"
-#include "IFileSystem.h"
+#include "Video/VideoDriver.h"
+#include "Scene/ISceneManager.h"
+#include "Mesh/IMeshCache.h"
+#include "Mesh/IMeshBuffer.h"
+#include "Video/MaterialRenderer.h"
+#include "IO/IFileSystem.h"
 
 
 namespace scene

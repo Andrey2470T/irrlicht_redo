@@ -4,9 +4,9 @@
 
 #include "CGUIImage.h"
 
-#include "IGUISkin.h"
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
+#include "GUI/IGUISkin.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
 
 
 namespace gui

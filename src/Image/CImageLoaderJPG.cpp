@@ -4,11 +4,11 @@
 
 #include "CImageLoaderJPG.h"
 
-#include "IReadFile.h"
-#include "Image.h"
-#include "coreutil.h"
-#include "Logger.h"
-#include "irrString.h"
+#include "IO/IReadFile.h"
+#include "Image/Image.h"
+#include "Utils/coreutil.h"
+#include "Device/Logger.h"
+#include "Utils/irrString.h"
 #include <csetjmp>
 
 

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "IAnimatedMeshSceneNode.h"
-#include "IAnimatedMesh.h"
+#include "Scene/IAnimatedMeshSceneNode.h"
+#include "Mesh/IAnimatedMesh.h"
 
-#include "matrix4.h"
+#include "Utils/matrix4.h"
 
 
 namespace scene

@@ -9,8 +9,8 @@
 #include <unordered_set>
 
 #include "Common.h"
-#include "OpenGLFeatures.h"
-#include "PixelFormats.h"
+#include "Video/OpenGLFeatures.h"
+#include "Image/PixelFormats.h"
 #include <string>
 #include <array>
 

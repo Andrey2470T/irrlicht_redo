@@ -4,11 +4,11 @@
 
 #include "CGUICheckBox.h"
 
-#include "IGUISkin.h"
-#include "IGUIEnvironment.h"
-#include "VideoDriver.h"
-#include "IGUIFont.h"
-#include "Timer.h"
+#include "GUI/IGUISkin.h"
+#include "GUI/IGUIEnvironment.h"
+#include "Video/VideoDriver.h"
+#include "GUI/IGUIFont.h"
+#include "Device/Timer.h"
 
 
 namespace gui

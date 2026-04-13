@@ -1,5 +1,5 @@
 #include "byteswap.h"
-#include "irrMath.h"
+#include "Utils/irrMath.h"
 
 #ifdef _IRR_USE_SDL3_
 	#include <SDL3/SDL_endian.h>

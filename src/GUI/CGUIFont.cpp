@@ -4,12 +4,12 @@
 
 #include "CGUIFont.h"
 
-#include "Logger.h"
-#include "coreutil.h"
-#include "IGUIEnvironment.h"
-#include "IReadFile.h"
-#include "VideoDriver.h"
-#include "IGUISpriteBank.h"
+#include "Device/Logger.h"
+#include "Utils/coreutil.h"
+#include "GUI/IGUIEnvironment.h"
+#include "IO/IReadFile.h"
+#include "Video/VideoDriver.h"
+#include "GUI/IGUISpriteBank.h"
 
 
 namespace gui
