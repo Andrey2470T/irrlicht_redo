@@ -5,7 +5,7 @@
 #include "MeshManipulator.h"
 #include "SkinnedMesh.h"
 #include "SMesh.h"
-#include "CMeshBuffer.h"
+#include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"
 #include "Logger.h"
 
