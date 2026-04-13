@@ -18,7 +18,7 @@
 
 #include "Image.h"
 #include "Logger.h"
-#include "Mesh/CMeshManipulator.h"
+#include "MeshManipulator.h"
 
 namespace video
 {
@@ -42,7 +42,7 @@ VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io,
 
 	ViewPort = core::rect<s32>(core::position2d<s32>(0, 0), core::dimension2di(params.WindowSize));
 
-	MeshManipulator = new scene::CMeshManipulator();
+	MeshManipulator = new scene::MeshManipulator();
 
 	if (FileSystem)
 		FileSystem->grab();

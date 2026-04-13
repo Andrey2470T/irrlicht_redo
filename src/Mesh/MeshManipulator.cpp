@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "CMeshManipulator.h"
+#include "MeshManipulator.h"
 #include "SkinnedMesh.h"
 #include "SMesh.h"
 #include "CMeshBuffer.h"
@@ -83,7 +83,7 @@ void recalculateNormalsT(IMeshBuffer *buffer, bool smooth, bool angleWeighted)
 
 //! Recalculates all normals of the mesh buffer.
 /** \param buffer: Mesh buffer on which the operation is performed. */
-void CMeshManipulator::recalculateNormals(IMeshBuffer *buffer, bool smooth, bool angleWeighted) const
+void MeshManipulator::recalculateNormals(IMeshBuffer *buffer, bool smooth, bool angleWeighted) const
 {
 	if (!buffer)
 		return;
@@ -96,7 +96,7 @@ void CMeshManipulator::recalculateNormals(IMeshBuffer *buffer, bool smooth, bool
 
 //! Recalculates all normals of the mesh.
 //! \param mesh: Mesh on which the operation is performed.
-void CMeshManipulator::recalculateNormals(scene::IMesh *mesh, bool smooth, bool angleWeighted) const
+void MeshManipulator::recalculateNormals(scene::IMesh *mesh, bool smooth, bool angleWeighted) const
 {
 	if (!mesh)
 		return;
@@ -133,7 +133,7 @@ static void copyIndices(const scene::IIndexBuffer *src, scene::SIndexBuffer *dst
 
 //! Clones a static IMesh into a modifyable SMesh.
 // not yet 32bit
-SMesh *CMeshManipulator::createMeshCopy(scene::IMesh *mesh) const
+SMesh *MeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 {
 	if (!mesh)
 		return 0;
@@ -178,7 +178,7 @@ SMesh *CMeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 }
 
 //! Returns amount of polygons in mesh.
-s32 CMeshManipulator::getPolyCount(scene::IMesh *mesh) const
+s32 MeshManipulator::getPolyCount(scene::IMesh *mesh) const
 {
 	if (!mesh)
 		return 0;
@@ -192,7 +192,7 @@ s32 CMeshManipulator::getPolyCount(scene::IMesh *mesh) const
 }
 
 //! Returns amount of polygons in mesh.
-s32 CMeshManipulator::getPolyCount(scene::IAnimatedMesh *mesh) const
+s32 MeshManipulator::getPolyCount(scene::IAnimatedMesh *mesh) const
 {
 	if (mesh && mesh->getMaxFrameNumber() != 0)
 		return getPolyCount(mesh->getMesh(0));
@@ -201,7 +201,7 @@ s32 CMeshManipulator::getPolyCount(scene::IAnimatedMesh *mesh) const
 }
 
 //! create a new AnimatedMesh and adds the mesh to it
-IAnimatedMesh *CMeshManipulator::createAnimatedMesh(scene::IMesh *mesh, scene::E_ANIMATED_MESH_TYPE type) const
+IAnimatedMesh *MeshManipulator::createAnimatedMesh(scene::IMesh *mesh, scene::E_ANIMATED_MESH_TYPE type) const
 {
 	return new SAnimatedMesh(mesh, type);
 }

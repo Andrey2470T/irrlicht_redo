@@ -129,7 +129,7 @@ public:
 	ISceneCollisionManager *getSceneCollisionManager() override;
 
 	//! Returns a pointer to the mesh manipulator.
-	IMeshManipulator *getMeshManipulator() override;
+	MeshManipulator *getMeshManipulator() override;
 
 	//! Adds a scene node to the deletion queue.
 	void addToDeletionQueue(ISceneNode *node) override;

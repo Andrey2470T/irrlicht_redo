@@ -9,36 +9,35 @@
 #include "aabbox3d.h"
 #include "IAnimatedMesh.h"
 #include "IMeshBuffer.h"
+#include "SMesh.h"
 #include "SVertexManipulator.h"
-
 
 namespace scene
 {
 
-struct SMesh;
-
-//! An interface for easy manipulation of meshes.
-/** Scale, set alpha value, flip surfaces, and so on. This exists for
+//! Unified MeshManipulator class (merged MeshManipulator + MeshManipulator)
+/** An interface for easy manipulation of meshes.
+Scale, set alpha value, flip surfaces, and so on. This exists for
 fixing problems with wrong imported or exported meshes quickly after
 loading. It is not intended for doing mesh modifications and/or
 animations during runtime.
 */
-class IMeshManipulator : public virtual IReferenceCounted
+class MeshManipulator : public virtual IReferenceCounted
 {
 public:
 	//! Recalculates all normals of the mesh.
 	/** \param mesh: Mesh on which the operation is performed.
 	\param smooth: If the normals shall be smoothed.
 	\param angleWeighted: If the normals shall be smoothed in relation to their angles. More expensive, but also higher precision. */
-	virtual void recalculateNormals(IMesh *mesh, bool smooth = false,
-			bool angleWeighted = false) const = 0;
+	void recalculateNormals(IMesh *mesh, bool smooth = false,
+			bool angleWeighted = false) const;
 
 	//! Recalculates all normals of the mesh buffer.
 	/** \param buffer: Mesh buffer on which the operation is performed.
 	\param smooth: If the normals shall be smoothed.
 	\param angleWeighted: If the normals shall be smoothed in relation to their angles. More expensive, but also higher precision. */
-	virtual void recalculateNormals(IMeshBuffer *buffer,
-			bool smooth = false, bool angleWeighted = false) const = 0;
+	void recalculateNormals(IMeshBuffer *buffer,
+			bool smooth = false, bool angleWeighted = false) const;
 
 	//! Scales the actual mesh, not a scene node.
 	/** \param mesh Mesh on which the operation is performed.
@@ -63,17 +62,17 @@ public:
 	\return Cloned mesh. If you no longer need the
 	cloned mesh, you should call SMesh::drop(). See
 	IReferenceCounted::drop() for more information. */
-	virtual SMesh *createMeshCopy(IMesh *mesh) const = 0;
+	SMesh *createMeshCopy(IMesh *mesh) const;
 
 	//! Get amount of polygons in mesh.
 	/** \param mesh Input mesh
 	\return Number of polygons in mesh. */
-	virtual s32 getPolyCount(IMesh *mesh) const = 0;
+	s32 getPolyCount(IMesh *mesh) const;
 
 	//! Get amount of polygons in mesh.
 	/** \param mesh Input mesh
 	\return Number of polygons in mesh. */
-	virtual s32 getPolyCount(IAnimatedMesh *mesh) const = 0;
+	s32 getPolyCount(IAnimatedMesh *mesh) const;
 
 	//! Create a new AnimatedMesh and adds the mesh to it
 	/** \param mesh Input mesh
@@ -82,8 +81,8 @@ public:
 	content. When you don't need the animated mesh anymore, you
 	should call IAnimatedMesh::drop(). See
 	IReferenceCounted::drop() for more information. */
-	virtual IAnimatedMesh *createAnimatedMesh(IMesh *mesh,
-			scene::E_ANIMATED_MESH_TYPE type = scene::EAMT_UNKNOWN) const = 0;
+	IAnimatedMesh *createAnimatedMesh(IMesh *mesh,
+			E_ANIMATED_MESH_TYPE type = EAMT_UNKNOWN) const;
 
 	//! Apply a manipulator on the Meshbuffer
 	/** \param func A functor defining the mesh manipulation.

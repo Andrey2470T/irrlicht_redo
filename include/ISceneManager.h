@@ -94,7 +94,7 @@ class IMeshBuffer;
 class IMeshCache;
 class ISceneCollisionManager;
 class IMeshLoader;
-class IMeshManipulator;
+class MeshManipulator;
 class IMeshSceneNode;
 class ISceneNode;
 class ISceneNodeFactory;
@@ -348,7 +348,7 @@ public:
 	//! Get pointer to the mesh manipulator.
 	/** \return Pointer to the mesh manipulator
 	This pointer should not be dropped. See IReferenceCounted::drop() for more information. */
-	virtual IMeshManipulator *getMeshManipulator() = 0;
+	virtual MeshManipulator *getMeshManipulator() = 0;
 
 	//! Adds a scene node to the deletion queue.
 	/** The scene node is immediately

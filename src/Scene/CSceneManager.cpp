@@ -591,7 +591,7 @@ ISceneCollisionManager *CSceneManager::getSceneCollisionManager()
 }
 
 //! Returns a pointer to the mesh manipulator.
-IMeshManipulator *CSceneManager::getMeshManipulator()
+MeshManipulator *CSceneManager::getMeshManipulator()
 {
 	return Driver->getMeshManipulator();
 }

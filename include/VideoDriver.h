@@ -21,7 +21,7 @@
 #include "fast_atof.h"
 #include "EVideoTypes.h"
 #include "matrix4.h"
-#include "IMeshManipulator.h"
+#include "MeshManipulator.h"
 #include "DrawContext.h"
 #include "RenderTarget.h"
 #include "Texture.h"
@@ -186,7 +186,7 @@ public:
 			f32 &start, f32 &end, f32 &density,
 			bool &pixelFog, bool &rangeFog);
 
-    scene::IMeshManipulator *getMeshManipulator() const
+	scene::MeshManipulator *getMeshManipulator() const
     {
         return MeshManipulator;
     }
@@ -336,7 +336,7 @@ private:
 	std::vector<SHWBufferLink *> HWBufferList;
 
 	io::IFileSystem *FileSystem;
-	scene::IMeshManipulator *MeshManipulator;
+	scene::MeshManipulator *MeshManipulator;
 
 	core::rect<s32> ViewPort;
 	core::dimension2d<u32> ScreenSize;

@@ -364,7 +364,7 @@ add_library(IrrlichtRedo STATIC
 	Scene/CCameraSceneNode.cpp
 	Scene/CDummyTransformationSceneNode.cpp
 	Scene/CEmptySceneNode.cpp
-	Mesh/CMeshManipulator.cpp
+	Mesh/MeshManipulator.cpp
 	Scene/CSceneCollisionManager.cpp
 	Scene/CSceneManager.cpp
 	Mesh/CMeshCache.cpp

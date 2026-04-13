@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COBJMeshFileLoader.h"
-#include "IMeshManipulator.h"
+#include "MeshManipulator.h"
 #include "VideoDriver.h"
 #include "SMesh.h"
 #include "SMeshBuffer.h"
