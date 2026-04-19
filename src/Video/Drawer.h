@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh/IMeshBuffer.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 #include "Mesh/SVertexIndex.h"
 #include "Utils/matrix4.h"
 #include "Video/DrawContext.h"
@@ -37,13 +37,13 @@ public:
 	//! draws a vertex primitive list
 	void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 			const void *indexList, u32 primitiveCount,
-			E_VERTEX_TYPE vType = EVT_STANDARD, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
+			scene::E_VERTEX_TYPE vType = scene::EVT_3D, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
 			E_INDEX_TYPE iType = EIT_16BIT);
 
 	//! draws a vertex primitive list in 2d
 	void draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
 			const void *indexList, u32 primitiveCount,
-			E_VERTEX_TYPE vType = EVT_STANDARD, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
+			scene::E_VERTEX_TYPE vType = scene::EVT_3D, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
 			E_INDEX_TYPE iType = EIT_16BIT);
 
 	//! Draws an indexed triangle list.
@@ -55,10 +55,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertex *vertices,
+	void drawIndexedTriangleList(const scene::Vertex3D *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_3D, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle list.
@@ -70,10 +70,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertex2TCoords *vertices,
+	void drawIndexedTriangleList(const scene::Vertex2TCoords *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle list.
@@ -85,10 +85,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
-	void drawIndexedTriangleList(const S3DVertexTangents *vertices,
+	void drawIndexedTriangleList(const scene::VertexTangents *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -100,10 +100,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertex *vertices,
+	void drawIndexedTriangleFan(const scene::Vertex3D *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_3D, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -115,10 +115,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertex2TCoords *vertices,
+	void drawIndexedTriangleFan(const scene::Vertex2TCoords *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -130,10 +130,10 @@ public:
 	\param vertexCount Amount of vertices in the array.
 	\param indexList Pointer to array of indices.
 	\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
-	void drawIndexedTriangleFan(const S3DVertexTangents *vertices,
+	void drawIndexedTriangleFan(const scene::VertexTangents *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! draws an 2d image
@@ -186,16 +186,16 @@ protected:
 	void destroyQuadIndices();
 
 private:
-	void drawQuad(const VertexType &vertexType, const S3DVertex (&vertices)[4]);
-	void drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount);
-	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount);
-	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, uintptr_t vertices, uintptr_t indices, int indexCount);
+	void drawQuad(const scene::Vertex2D (&vertices)[4]);
+	void drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount);
+	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount, const u16 *indices, int indexCount);
+	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, uintptr_t vertices, uintptr_t indices, int indexCount);
 
 	void drawGeneric(const void *vertices, const void *indexList, u32 primitiveCount,
-		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType);
+		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType);
 
-	void beginDraw(const VertexType &vertexType, uintptr_t verticesBase);
-	void endDraw(const VertexType &vertexType);
+	void beginDraw(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase);
+	void endDraw(const scene::VertexDescriptor &vertexDesc);
 
 	bool checkPrimitiveCount(u32 prmcnt) const;
 

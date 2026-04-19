@@ -168,7 +168,7 @@ bool VideoDriver::updateVertexHardwareBuffer(SHWBufferLink *HWBuffer)
 	const auto *vb = HWBuffer->VertexBuffer;
 	assert(vb);
 
-	const u32 vertexSize = getVertexPitchFromType(vb->getType());
+	const u32 vertexSize = getVertexTypeSize(vb->getType());
 	const size_t bufferSize = vertexSize * vb->getCount();
 
 	return uploadHardwareBuffer(HWBuffer->Vbo, vb->getData(),

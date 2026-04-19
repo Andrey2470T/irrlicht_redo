@@ -137,18 +137,20 @@ protected:
 		core::aabbox3df bufferbox{{0, 0, 0}};
 		for (u32 i = 0; i < buffer->getVertexCount(); ++i) {
 			switch (buffer->getVertexType()) {
-			case video::EVT_STANDARD: {
-				video::S3DVertex *verts = (video::S3DVertex *)buffer->getVertices();
+			case scene::EVT_3D: {
+				scene::Vertex3D *verts = (scene::Vertex3D *)buffer->getVertices();
 				func(verts[i]);
 			} break;
-			case video::EVT_2TCOORDS: {
-				video::S3DVertex2TCoords *verts = (video::S3DVertex2TCoords *)buffer->getVertices();
+			case scene::EVT_2TCOORDS: {
+				scene::Vertex2TCoords *verts = (scene::Vertex2TCoords *)buffer->getVertices();
 				func(verts[i]);
 			} break;
-			case video::EVT_TANGENTS: {
-				video::S3DVertexTangents *verts = (video::S3DVertexTangents *)buffer->getVertices();
+			case scene::EVT_TANGENTS: {
+				scene::VertexTangents *verts = (scene::VertexTangents *)buffer->getVertices();
 				func(verts[i]);
 			} break;
+			default:
+				break;
 			}
 			if (boundingBoxUpdate) {
 				if (0 == i)

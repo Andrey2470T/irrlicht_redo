@@ -139,9 +139,9 @@ public:
 };
 
 //! Standard meshbuffer
-typedef CMeshBuffer<video::S3DVertex> SMeshBuffer;
+typedef CMeshBuffer<scene::Vertex3D> SMeshBuffer;
 //! Meshbuffer with two texture coords per vertex, e.g. for lightmaps
-typedef CMeshBuffer<video::S3DVertex2TCoords> SMeshBufferLightMap;
+typedef CMeshBuffer<scene::Vertex2TCoords> SMeshBufferLightMap;
 //! Meshbuffer with vertices having tangents stored, e.g. for normal mapping
-typedef CMeshBuffer<video::S3DVertexTangents> SMeshBufferTangents;
+typedef CMeshBuffer<scene::VertexTangents> SMeshBufferTangents;
 } // end namespace scene

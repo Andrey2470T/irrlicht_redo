@@ -269,7 +269,7 @@ bool CXMeshFileLoader::load(io::IReadFile *file)
 				if (mesh->TCoords2.size()) {
 					for (i = 0; i != mesh->Buffers.size(); ++i) {
 						mesh->Buffers[i]->Vertices_2TCoords->Data.reserve(vCountArray[i]);
-						mesh->Buffers[i]->VertexType = video::EVT_2TCOORDS;
+						mesh->Buffers[i]->VertexType = scene::EVT_2TCOORDS;
 					}
 				} else {
 					for (i = 0; i != mesh->Buffers.size(); ++i)
@@ -286,7 +286,9 @@ bool CXMeshFileLoader::load(io::IReadFile *file)
 
 					if (mesh->TCoords2.size()) {
 						verticesLinkIndex[i] = buffer->Vertices_2TCoords->getCount();
-						buffer->Vertices_2TCoords->Data.emplace_back(mesh->Vertices[i]);
+						buffer->Vertices_2TCoords->Data.push_back(
+							{{mesh->Vertices[i].Pos, mesh->Vertices[i].Normal, mesh->Vertices[i].Color,
+							 mesh->Vertices[i].TCoords}, {}});
 						// We have a problem with correct tcoord2 handling here
 						// crash fixed for now by checking the values
 						buffer->Vertices_2TCoords->Data.back().TCoords2 = (i < mesh->TCoords2.size()) ? mesh->TCoords2[i] : mesh->Vertices[i].TCoords;

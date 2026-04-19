@@ -297,7 +297,7 @@ void MaterialSystem::setRenderStates3DMode()
 	}
 
 	if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
-		MaterialRenderers[Material.MaterialType]->OnRender(video::EVT_STANDARD);
+		MaterialRenderers[Material.MaterialType]->OnRender(scene::EVT_3D);
 
 	CurrentRenderMode = ERM_3D;
 }
@@ -481,7 +481,7 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 			setTextureRenderStates(InitMaterial2D, false);
 	}
 
-	MaterialRenderers[MaterialRenderer2DIdx]->OnRender(video::EVT_STANDARD);
+	MaterialRenderers[MaterialRenderer2DIdx]->OnRender(scene::EVT_3D);
 }
 
 void MaterialSystem::chooseMaterial2D()

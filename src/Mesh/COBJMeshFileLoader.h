@@ -53,7 +53,7 @@ private:
 			Meshbuffer->Material = o.Meshbuffer->Material;
 		}
 
-		std::map<video::S3DVertex, int> VertMap;
+		std::map<scene::Vertex3D, int, scene::CompareVertex3D> VertMap;
 		scene::SMeshBuffer *Meshbuffer;
 		core::stringc Name;
 		core::stringc Group;

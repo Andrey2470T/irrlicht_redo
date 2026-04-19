@@ -82,7 +82,7 @@ public:
 
 	//! Get type of vertex data which is stored in this meshbuffer.
 	/** \return Vertex type of this buffer. */
-	inline video::E_VERTEX_TYPE getVertexType() const
+	inline scene::E_VERTEX_TYPE getVertexType() const
 	{
 		return getVertexBuffer()->getType();
 	}
@@ -217,14 +217,16 @@ public:
 	{
 		size_t ret = 0;
 		switch (getVertexType()) {
-			case video::EVT_STANDARD:
-				ret += sizeof(video::S3DVertex) * getVertexCount();
+			case scene::EVT_3D:
+				ret += sizeof(scene::Vertex3D) * getVertexCount();
 				break;
-			case video::EVT_2TCOORDS:
-				ret += sizeof(video::S3DVertex2TCoords) * getVertexCount();
+			case scene::EVT_2TCOORDS:
+				ret += sizeof(scene::Vertex2TCoords) * getVertexCount();
 				break;
-			case video::EVT_TANGENTS:
-				ret += sizeof(video::S3DVertexTangents) * getVertexCount();
+			case scene::EVT_TANGENTS:
+				ret += sizeof(scene::VertexTangents) * getVertexCount();
+				break;
+			default:
 				break;
 		}
 		switch (getIndexType()) {

@@ -10,7 +10,7 @@
 #include "Enums/EMaterialTypes.h"
 #include "Utils/IReferenceCounted.h"
 #include "Video/SMaterial.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 #include "Utils/irrArray.h"
 #include "SOverrideMaterial.h"
 #include <memory>
@@ -75,7 +75,7 @@ public:
 			bool resetAllRenderstates);
 
 	//! Called every time before a new bunch of geometry is drawn.
-    bool OnRender(E_VERTEX_TYPE vtxtype);
+	bool OnRender(scene::E_VERTEX_TYPE vtxtype);
 
 	//! Returns if the material is transparent.
 	bool isTransparent() const

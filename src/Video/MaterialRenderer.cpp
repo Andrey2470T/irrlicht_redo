@@ -179,7 +179,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
         outMaterialTypeNr = Driver->addMaterialRenderer(this);
 }
 
-bool MaterialRenderer::OnRender(E_VERTEX_TYPE vtxtype)
+bool MaterialRenderer::OnRender(scene::E_VERTEX_TYPE vtxtype)
 {
     if (CallBack)
 		CallBack->OnSetConstants(this, UserData);

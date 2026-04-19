@@ -145,7 +145,7 @@ SMesh *MeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 	for (u32 b = 0; b < meshBufferCount; ++b) {
 		const IMeshBuffer *const mb = mesh->getMeshBuffer(b);
 		switch (mb->getVertexType()) {
-		case video::EVT_STANDARD: {
+		case scene::EVT_3D: {
 			SMeshBuffer *buffer = new SMeshBuffer();
 			buffer->Material = mb->getMaterial();
 			copyVertices(mb->getVertexBuffer(), buffer->Vertices);
@@ -153,7 +153,7 @@ SMesh *MeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 			clone->addMeshBuffer(buffer);
 			buffer->drop();
 		} break;
-		case video::EVT_2TCOORDS: {
+		case scene::EVT_2TCOORDS: {
 			SMeshBufferLightMap *buffer = new SMeshBufferLightMap();
 			buffer->Material = mb->getMaterial();
 			copyVertices(mb->getVertexBuffer(), buffer->Vertices);
@@ -161,7 +161,7 @@ SMesh *MeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 			clone->addMeshBuffer(buffer);
 			buffer->drop();
 		} break;
-		case video::EVT_TANGENTS: {
+		case scene::EVT_TANGENTS: {
 			SMeshBufferTangents *buffer = new SMeshBufferTangents();
 			buffer->Material = mb->getMaterial();
 			copyVertices(mb->getVertexBuffer(), buffer->Vertices);
@@ -169,6 +169,8 @@ SMesh *MeshManipulator::createMeshCopy(scene::IMesh *mesh) const
 			clone->addMeshBuffer(buffer);
 			buffer->drop();
 		} break;
+		default:
+			break;
 		} // end switch
 
 	} // end for all mesh buffers

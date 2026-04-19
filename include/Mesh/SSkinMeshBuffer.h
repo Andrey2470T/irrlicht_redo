@@ -7,17 +7,17 @@
 #include "Mesh/IMeshBuffer.h"
 #include "CVertexBuffer.h"
 #include "CIndexBuffer.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 #include <cassert>
 
 namespace scene
 {
 
-//! A mesh buffer able to choose between S3DVertex2TCoords, S3DVertex and S3DVertexTangents at runtime
+//! A mesh buffer able to choose between Vertex2TCoords, Vertex3D and VertexTangents at runtime
 struct SSkinMeshBuffer final : public IMeshBuffer
 {
 	//! Default constructor
-	SSkinMeshBuffer(video::E_VERTEX_TYPE vt = video::EVT_STANDARD) :
+	SSkinMeshBuffer(scene::E_VERTEX_TYPE vt = scene::EVT_3D) :
 			VertexType(vt), PrimitiveType(EPT_TRIANGLES),
 			BoundingBoxNeedsRecalculated(true)
 	{
@@ -28,7 +28,7 @@ struct SSkinMeshBuffer final : public IMeshBuffer
 	}
 
 	//! Constructor for standard vertices
-	SSkinMeshBuffer(std::vector<video::S3DVertex> &&vertices, std::vector<u16> &&indices) :
+	SSkinMeshBuffer(std::vector<scene::Vertex3D> &&vertices, std::vector<u16> &&indices) :
 			SSkinMeshBuffer()
 	{
 		Vertices_Standard->Data = std::move(vertices);
@@ -58,9 +58,9 @@ struct SSkinMeshBuffer final : public IMeshBuffer
 	const scene::IVertexBuffer *getVertexBuffer() const override
 	{
 		switch (VertexType) {
-		case video::EVT_2TCOORDS:
+		case scene::EVT_2TCOORDS:
 			return Vertices_2TCoords;
-		case video::EVT_TANGENTS:
+		case scene::EVT_TANGENTS:
 			return Vertices_Tangents;
 		default:
 			return Vertices_Standard;
@@ -70,9 +70,9 @@ struct SSkinMeshBuffer final : public IMeshBuffer
 	scene::IVertexBuffer *getVertexBuffer() override
 	{
 		switch (VertexType) {
-		case video::EVT_2TCOORDS:
+		case scene::EVT_2TCOORDS:
 			return Vertices_2TCoords;
-		case video::EVT_TANGENTS:
+		case scene::EVT_TANGENTS:
 			return Vertices_Tangents;
 		default:
 			return Vertices_Standard;
@@ -90,12 +90,12 @@ struct SSkinMeshBuffer final : public IMeshBuffer
 	}
 
 	//! Get standard vertex at given index
-	virtual video::S3DVertex *getVertex(u32 index)
+	virtual scene::Vertex3D *getVertex(u32 index)
 	{
 		switch (VertexType) {
-		case video::EVT_2TCOORDS:
+		case scene::EVT_2TCOORDS:
 			return &Vertices_2TCoords->Data[index];
-		case video::EVT_TANGENTS:
+		case scene::EVT_TANGENTS:
 			return &Vertices_Tangents->Data[index];
 		default:
 			return &Vertices_Standard->Data[index];
@@ -145,54 +145,56 @@ public:
 		BoundingBoxNeedsRecalculated = false;
 
 		switch (VertexType) {
-		case video::EVT_STANDARD: {
+		case scene::EVT_3D: {
 			recalculateBoundingBox(Vertices_Standard);
 			break;
 		}
-		case video::EVT_2TCOORDS: {
+		case scene::EVT_2TCOORDS: {
 			recalculateBoundingBox(Vertices_2TCoords);
 			break;
 		}
-		case video::EVT_TANGENTS: {
+		case scene::EVT_TANGENTS: {
 			recalculateBoundingBox(Vertices_Tangents);
 			break;
 		}
+		default:
+			break;
 		}
 	}
 
 	//! Convert to 2tcoords vertex type
 	void convertTo2TCoords()
 	{
-		if (VertexType == video::EVT_STANDARD) {
-			video::S3DVertex2TCoords Vertex;
+		if (VertexType == scene::EVT_3D) {
+			scene::Vertex2TCoords Vertex;
 			for (const auto &Vertex_Standard : Vertices_Standard->Data) {
 				copyVertex(Vertex_Standard, Vertex);
 				Vertices_2TCoords->Data.push_back(Vertex);
 			}
 			Vertices_Standard->Data.clear();
-			VertexType = video::EVT_2TCOORDS;
+			VertexType = scene::EVT_2TCOORDS;
 		}
 	}
 
 	//! Convert to tangents vertex type
 	void convertToTangents()
 	{
-		if (VertexType == video::EVT_STANDARD) {
-			video::S3DVertexTangents Vertex;
+		if (VertexType == scene::EVT_3D) {
+			scene::VertexTangents Vertex;
 			for (const auto &Vertex_Standard : Vertices_Standard->Data) {
 				copyVertex(Vertex_Standard, Vertex);
 				Vertices_Tangents->Data.push_back(Vertex);
 			}
 			Vertices_Standard->Data.clear();
-			VertexType = video::EVT_TANGENTS;
-		} else if (VertexType == video::EVT_2TCOORDS) {
-			video::S3DVertexTangents Vertex;
+			VertexType = scene::EVT_TANGENTS;
+		} else if (VertexType == scene::EVT_2TCOORDS) {
+			scene::VertexTangents Vertex;
 			for (const auto &Vertex_2TCoords : Vertices_2TCoords->Data) {
 				copyVertex(Vertex_2TCoords, Vertex);
 				Vertices_Tangents->Data.push_back(Vertex);
 			}
 			Vertices_2TCoords->Data.clear();
-			VertexType = video::EVT_TANGENTS;
+			VertexType = scene::EVT_TANGENTS;
 		}
 	}
 
@@ -225,7 +227,7 @@ public:
 	core::matrix4 Transformation;
 
 	video::SMaterial Material;
-	video::E_VERTEX_TYPE VertexType;
+	scene::E_VERTEX_TYPE VertexType;
 
 	core::aabbox3d<f32> BoundingBox{{0, 0, 0}};
 

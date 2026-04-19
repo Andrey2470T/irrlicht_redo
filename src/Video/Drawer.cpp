@@ -4,7 +4,6 @@
 #include "MaterialSystem.h"
 #include "VBO.h"
 #include "GLSpecificInfo.h"
-#include "VertexType.h"
 
 namespace video
 {
@@ -68,7 +67,7 @@ void Drawer::drawBuffers(const scene::IVertexBuffer *vb,
 //! draws a vertex primitive list
 void Drawer::drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 		const void *indexList, u32 primitiveCount,
-		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	if (!primitiveCount || !vertexCount)
 		return;
@@ -89,7 +88,7 @@ void Drawer::drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 //! draws a vertex primitive list in 2d
 void Drawer::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
 		const void *indexList, u32 primitiveCount,
-		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	if (!primitiveCount || !vertexCount)
 		return;
@@ -191,13 +190,13 @@ void Drawer::draw2DImage(const GLTexture *texture, const core::rect<s32> &destRe
 	f32 down  = (f32)destRect.LowerRightCorner.Y;
 	f32 top   = (f32)destRect.UpperLeftCorner.Y;
 
-	S3DVertex vertices[4];
-	vertices[0] = S3DVertex(left, top, 0, 0, 0, 1, useColor[0], tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
-	vertices[1] = S3DVertex(right, top, 0, 0, 0, 1, useColor[3], tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
-	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, useColor[2], tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
-	vertices[3] = S3DVertex(left, down, 0, 0, 0, 1, useColor[1], tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
+	scene::Vertex2D vertices[4];
+	vertices[0] = {{left, top}, useColor[0], {tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y}};
+	vertices[1] = {{right, top}, useColor[3], {tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y}};
+	vertices[2] = {{right, down}, useColor[2], {tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y}};
+	vertices[3] = {{left, down}, useColor[1], {tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y}};
 
-	drawQuad(vt2DImage, vertices);
+	drawQuad(vertices);
 
 	if (clipRect)
 		glDisable(GL_SCISSOR_TEST);
@@ -216,12 +215,12 @@ void Drawer::draw2DImage(const GLTexture *texture, u32 layer, bool flip)
 
 	Driver->setRenderStates2DMode(false, true, true);
 
-	S3DVertex quad2DVertices[4];
+	scene::Vertex2D quad2DVertices[4];
 
-	quad2DVertices[0].Pos = core::vector3df(-1.f, 1.f, 0.f);
-	quad2DVertices[1].Pos = core::vector3df(1.f, 1.f, 0.f);
-	quad2DVertices[2].Pos = core::vector3df(1.f, -1.f, 0.f);
-	quad2DVertices[3].Pos = core::vector3df(-1.f, -1.f, 0.f);
+	quad2DVertices[0].Pos = core::vector2df(-1.f, 1.f);
+	quad2DVertices[1].Pos = core::vector2df(1.f, 1.f);
+	quad2DVertices[2].Pos = core::vector2df(1.f, -1.f);
+	quad2DVertices[3].Pos = core::vector2df(-1.f, -1.f);
 
 	f32 modificator = (flip) ? 1.f : 0.f;
 
@@ -235,7 +234,7 @@ void Drawer::draw2DImage(const GLTexture *texture, u32 layer, bool flip)
 	quad2DVertices[2].Color = SColor(0xFFFFFFFF);
 	quad2DVertices[3].Color = SColor(0xFFFFFFFF);
 
-	drawQuad(vt2DImage, quad2DVertices);
+	drawQuad(quad2DVertices);
 }
 
 void Drawer::draw2DImageBatch(const GLTexture *texture,
@@ -267,7 +266,7 @@ void Drawer::draw2DImageBatch(const GLTexture *texture,
 	const u32 drawCount = core::min_<u32>(positions.size(), sourceRects.size());
 	assert(6 * drawCount * sizeof(u16) <= QuadIndexVBO->getSize()); // FIXME split the batch? or let it crash?
 
-	std::vector<S3DVertex> vtx;
+	std::vector<scene::Vertex2D> vtx;
 	vtx.reserve(drawCount * 4);
 
 	// texcoords need to be flipped horizontally for RTTs
@@ -295,22 +294,18 @@ void Drawer::draw2DImageBatch(const GLTexture *texture,
 		f32 down  = (f32)poss.LowerRightCorner.Y;
 		f32 top   = (f32)poss.UpperLeftCorner.Y;
 
-		vtx.emplace_back(left, top, 0.0f,
-				0.0f, 0.0f, 0.0f, color,
-				tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
-		vtx.emplace_back(right, top, 0.0f,
-				0.0f, 0.0f, 0.0f, color,
-				tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
-		vtx.emplace_back(right, down, 0.0f,
-				0.0f, 0.0f, 0.0f, color,
-				tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
-		vtx.emplace_back(left, down, 0.0f,
-				0.0f, 0.0f, 0.0f, color,
-				tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
+		vtx.push_back({{left, top}, color,
+			{tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y}});
+		vtx.push_back({{right, top}, color,
+			{tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y}});
+		vtx.push_back({{right, down}, color,
+			{tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y}});
+		vtx.push_back({{left, down}, color,
+			{tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y}});
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, QuadIndexVBO->getName());
-	drawElements(scene::EPT_TRIANGLES, vt2DImage, vtx.data(), vtx.size(), 0, 6 * drawCount);
+	drawElements(scene::EPT_TRIANGLES, scene::Vertex2D::FORMAT, vtx.data(), vtx.size(), 0, 6 * drawCount);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (clipRect)
@@ -353,13 +348,13 @@ void Drawer::draw2DRectangle(const core::rect<s32> &position,
 	f32 down  = (f32)pos.LowerRightCorner.Y;
 	f32 top   = (f32)pos.UpperLeftCorner.Y;
 
-	S3DVertex vertices[4];
-	vertices[0] = S3DVertex(left,   top, 0, 0, 0, 1, colorLeftUp, 0, 0);
-	vertices[1] = S3DVertex(right,  top, 0, 0, 0, 1, colorRightUp, 0, 0);
-	vertices[2] = S3DVertex(right, down, 0, 0, 0, 1, colorRightDown, 0, 0);
-	vertices[3] = S3DVertex(left,  down, 0, 0, 0, 1, colorLeftDown, 0, 0);
+	scene::Vertex2D vertices[4];
+	vertices[0] = {{left, top}, colorLeftUp, {0, 0}};
+	vertices[1] = {{right, top}, colorRightUp, {0, 0}};
+	vertices[2] = {{right, down}, colorRightDown, {0, 0}};
+	vertices[3] = {{left, down}, colorLeftDown, {0, 0}};
 
-	drawQuad(vtPrimitive, vertices);
+	drawQuad(vertices);
 }
 
 //! Draws a 2d line.
@@ -377,11 +372,11 @@ void Drawer::draw2DLine(const core::position2d<s32> &start,
 		f32 startY = (f32)start.Y;
 		f32 endY   = (f32)end.Y;
 
-		S3DVertex vertices[2];
-		vertices[0] = S3DVertex(startX, startY, 0, 0, 0, 1, color, 0, 0);
-		vertices[1] = S3DVertex(endX, endY, 0, 0, 0, 1, color, 1, 1);
+		scene::Vertex2D vertices[2];
+		vertices[0] = {{startX, startY}, color, {0, 0}};
+		vertices[1] = {{endX, endY}, color, {1, 1}};
 
-		drawArrays(scene::EPT_LINES, vtPrimitive, vertices, 2);
+		drawArrays(scene::EPT_LINES, scene::Vertex2D::FORMAT, vertices, 2);
 	}
 }
 
@@ -391,11 +386,11 @@ void Drawer::draw3DLine(const core::vector3df &start,
 {
 	Driver->setRenderStates3DMode();
 
-	S3DVertex vertices[2];
-	vertices[0] = S3DVertex(start.X, start.Y, start.Z, 0, 0, 1, color, 0, 0);
-	vertices[1] = S3DVertex(end.X, end.Y, end.Z, 0, 0, 1, color, 0, 0);
+	scene::Vertex3D vertices[2];
+	vertices[0] = {{start.X, start.Y, start.Z}, {0, 0, 1}, color, {0, 0}};
+	vertices[1] = {{end.X, end.Y, end.Z}, {0, 0, 1}, color, {0, 0}};
 
-	drawArrays(scene::EPT_LINES, vtPrimitive, vertices, 2);
+	drawArrays(scene::EPT_LINES, scene::Vertex2D::FORMAT, vertices, 2);
 }
 
 //! Draws a 3d axis aligned box.
@@ -404,7 +399,7 @@ void Drawer::draw3DBox(const core::aabbox3d<f32> &box, SColor color)
 	core::vector3df edges[8];
 	box.getEdges(edges);
 
-	video::S3DVertex v[8];
+	scene::Vertex3D v[8];
 	for (u32 i = 0; i < 8; i++) {
 		v[i].Pos = edges[i];
 		v[i].Color = color;
@@ -414,12 +409,12 @@ void Drawer::draw3DBox(const core::aabbox3d<f32> &box, SColor color)
 		5, 1, 1, 3, 3, 7, 7, 5, 0, 2, 2, 6, 6, 4, 4, 0, 1, 0, 3, 2, 7, 6, 5, 4
 	};
 
-	drawVertexPrimitiveList(v, 8, box_indices, 12, EVT_STANDARD, scene::EPT_LINES, EIT_16BIT);
+	drawVertexPrimitiveList(v, 8, box_indices, 12, scene::EVT_3D, scene::EPT_LINES, EIT_16BIT);
 }
 
-void Drawer::drawQuad(const VertexType &vertexType, const S3DVertex (&vertices)[4])
+void Drawer::drawQuad(const scene::Vertex2D (&vertices)[4])
 {
-	drawArrays(scene::EPT_TRIANGLE_FAN, vertexType, vertices, 4);
+	drawArrays(scene::EPT_TRIANGLE_FAN, scene::Vertex2D::FORMAT, vertices, 4);
 }
 
 std::array<GLenum, scene::EPT_COUNT> toGLPrimType = {
@@ -433,23 +428,23 @@ std::array<GLenum, scene::EPT_COUNT> toGLPrimType = {
 	GL_POINTS
 };
 
-void Drawer::drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount)
+void Drawer::drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount)
 {
-	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
+	beginDraw(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
 	glDrawArrays(toGLPrimType[primitiveType], 0, vertexCount);
-	endDraw(vertexType);
+	endDraw(vertexDesc);
 }
 
-void Drawer::drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const VertexType &vertexType, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
+void Drawer::drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
 {
-	beginDraw(vertexType, reinterpret_cast<uintptr_t>(vertices));
+	beginDraw(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
 	glDrawRangeElements(toGLPrimType[primitiveType], 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
-	endDraw(vertexType);
+	endDraw(vertexDesc);
 }
 
 void Drawer::drawGeneric(const void *vertices, const void *indexList,
 		u32 primitiveCount,
-		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
 	auto &vTypeDesc = getVertexTypeDescription(vType);
 	beginDraw(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
@@ -494,27 +489,33 @@ void Drawer::drawGeneric(const void *vertices, const void *indexList,
 	endDraw(vTypeDesc);
 }
 
-void Drawer::beginDraw(const VertexType &vertexType, uintptr_t verticesBase)
+std::array<GLenum, (u32)scene::VertexAttribute::Type::COUNT> toGLType = {
+	GL_FLOAT,
+	GL_UNSIGNED_BYTE,
+	GL_INT
+};
+
+void Drawer::beginDraw(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase)
 {
-	for (auto &attr : vertexType) {
+	for (auto &attr : vertexDesc.Attributes) {
 		glEnableVertexAttribArray(attr.Index);
 		switch (attr.mode) {
-		case VertexAttribute::Mode::Regular:
-			glVertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_FALSE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+		case scene::VertexAttribute::Mode::REGULAR:
+			glVertexAttribPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], GL_FALSE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
-		case VertexAttribute::Mode::Normalized:
-			glVertexAttribPointer(attr.Index, attr.ComponentCount, attr.ComponentType, GL_TRUE, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+		case scene::VertexAttribute::Mode::NORMALIZED:
+			glVertexAttribPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], GL_TRUE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
-		case VertexAttribute::Mode::Integer:
-			glVertexAttribIPointer(attr.Index, attr.ComponentCount, attr.ComponentType, vertexType.VertexSize, reinterpret_cast<void *>(verticesBase + attr.Offset));
+		case scene::VertexAttribute::Mode::INTEGER:
+			glVertexAttribIPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		}
 	}
 }
 
-void Drawer::endDraw(const VertexType &vertexType)
+void Drawer::endDraw(const scene::VertexDescriptor &vertexDesc)
 {
-	for (auto &attr : vertexType)
+	for (auto &attr : vertexDesc.Attributes)
 		glDisableVertexAttribArray(attr.Index);
 }
 

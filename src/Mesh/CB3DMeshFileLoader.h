@@ -60,7 +60,7 @@ private:
 
 	core::array<s32> AnimatedVertices_BufferID;
 
-	core::array<video::S3DVertex2TCoords> BaseVertices;
+	core::array<scene::Vertex2TCoords> BaseVertices;
 
 	SkinnedMeshBuilder *AnimatedMesh;
 	io::IReadFile *B3DFile;

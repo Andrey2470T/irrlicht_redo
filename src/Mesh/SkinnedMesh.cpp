@@ -760,8 +760,8 @@ void SkinnedMesh::convertMeshToTangents()
 			const s32 idxCnt = LocalBuffers[b]->getIndexCount();
 
 			u16 *idx = LocalBuffers[b]->getIndices();
-			video::S3DVertexTangents *v =
-					(video::S3DVertexTangents *)LocalBuffers[b]->getVertices();
+			scene::VertexTangents *v =
+					(scene::VertexTangents *)LocalBuffers[b]->getVertices();
 
 			for (s32 i = 0; i < idxCnt; i += 3) {
 				calculateTangents(

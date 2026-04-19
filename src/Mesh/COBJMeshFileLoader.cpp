@@ -150,7 +150,7 @@ IAnimatedMesh *COBJMeshFileLoader::createMesh(io::IReadFile *file)
 		case 'f': // face
 		{
 			c8 vertexWord[WORD_BUFFER_LENGTH]; // for retrieving vertex data
-			video::S3DVertex v;
+			scene::Vertex3D v;
 			// Assign vertex color from currently active material's diffuse color
 			if (mtlChanged) {
 				// retrieve the material

@@ -6,7 +6,7 @@
 
 #include "Utils/IReferenceCounted.h"
 #include "Enums/EHardwareBufferFlags.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 
 
 namespace scene
@@ -17,7 +17,7 @@ class IVertexBuffer : public virtual IReferenceCounted
 public:
 	//! Get type of vertex data which is stored in this meshbuffer.
 	/** \return Vertex type of this buffer. */
-	virtual video::E_VERTEX_TYPE getType() const = 0;
+	virtual scene::E_VERTEX_TYPE getType() const = 0;
 
 	//! Get access to vertex data. The data is an array of vertices.
 	/** Which vertex type is used can be determined by getVertexType().

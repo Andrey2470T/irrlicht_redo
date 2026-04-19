@@ -40,7 +40,7 @@ public:
 		return static_cast<u32>(Data.size());
 	}
 
-	video::E_VERTEX_TYPE getType() const override
+	scene::E_VERTEX_TYPE getType() const override
 	{
 		return T::getType();
 	}
@@ -120,10 +120,10 @@ public:
 };
 
 //! Standard buffer
-typedef CVertexBuffer<video::S3DVertex> SVertexBuffer;
+typedef CVertexBuffer<scene::Vertex3D> SVertexBuffer;
 //! Buffer with two texture coords per vertex, e.g. for lightmaps
-typedef CVertexBuffer<video::S3DVertex2TCoords> SVertexBufferLightMap;
+typedef CVertexBuffer<scene::Vertex2TCoords> SVertexBufferLightMap;
 //! Buffer with vertices having tangents stored, e.g. for normal mapping
-typedef CVertexBuffer<video::S3DVertexTangents> SVertexBufferTangents;
+typedef CVertexBuffer<scene::VertexTangents> SVertexBufferTangents;
 
 } // end namespace scene

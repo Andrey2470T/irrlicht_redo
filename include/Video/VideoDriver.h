@@ -16,7 +16,7 @@
 #include "Video/OpenGLFeatures.h"
 #include "Mesh/IMesh.h"
 #include "Mesh/IMeshBuffer.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 #include "Mesh/SVertexIndex.h"
 #include "Utils/fast_atof.h"
 #include "Enums/EVideoTypes.h"

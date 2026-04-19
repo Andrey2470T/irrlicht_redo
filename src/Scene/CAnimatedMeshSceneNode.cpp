@@ -5,7 +5,7 @@
 #include "CAnimatedMeshSceneNode.h"
 #include "Video/VideoDriver.h"
 #include "Scene/ISceneManager.h"
-#include "Mesh/S3DVertex.h"
+#include "Mesh/VertexTypes.h"
 #include "Device/Logger.h"
 #include "Mesh/SkinnedMesh.h"
 #include "Scene/IDummyTransformationSceneNode.h"

@@ -14,6 +14,7 @@ enum E_VERTEX_ATTRIBUTES
 	EVA_TCOORD1,
 	EVA_TANGENT,
 	EVA_BINORMAL,
+	EVA_AUX,
 	EVA_COUNT
 };
 
@@ -26,6 +27,7 @@ const char *const sBuiltInVertexAttributeNames[] = {
 		"inTexCoord1",
 		"inVertexTangent",
 		"inVertexBinormal",
+		"inVertexAux",
 		0,
 	};
 

@@ -368,6 +368,7 @@ add_library(IrrlichtRedo STATIC
 	Scene/CSceneCollisionManager.cpp
 	Scene/CSceneManager.cpp
 	Mesh/CMeshCache.cpp
+	Mesh/VertexTypes.cpp
 )
 
 foreach(object_lib

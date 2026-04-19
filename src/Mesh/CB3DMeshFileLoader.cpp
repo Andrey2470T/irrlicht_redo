@@ -380,10 +380,13 @@ bool CB3DMeshFileLoader::readChunkVRTS(SkinnedMesh::SJoint *inJoint)
 		}
 
 		// Create Vertex...
-		video::S3DVertex2TCoords Vertex(position[0], position[1], position[2],
-				normal[0], normal[1], normal[2],
-				video::SColorf(color[0], color[1], color[2], color[3]).toSColor(),
-				tu, tv, tu2, tv2);
+		scene::Vertex2TCoords Vertex = {{
+			{position[0], position[1], position[2]},  // Pos (vector3df)
+			{normal[0], normal[1], normal[2]},        // Normal (vector3df)
+			video::SColorf(color[0], color[1], color[2], color[3]).toSColor(),  // Color
+			{tu, tv}},                                  // TCoords (vector2df)
+			{tu2, tv2}                                 // TCoords2 (vector2df)
+		};
 
 		// Transform the Vertex position by nested node...
 		inJoint->GlobalMatrix.transformVect(Vertex.Pos);
@@ -470,7 +473,7 @@ bool CB3DMeshFileLoader::readChunkTRIS(scene::SSkinMeshBuffer *meshBuffer, u32 m
 					meshBuffer->convertTo2TCoords(); // Will only affect the meshbuffer the first time this is called
 
 				// Add the vertex to the meshbuffer:
-				if (meshBuffer->VertexType == video::EVT_STANDARD)
+				if (meshBuffer->VertexType == scene::EVT_3D)
 					meshBuffer->Vertices_Standard->Data.push_back(BaseVertices[vertex_id[i]]);
 				else
 					meshBuffer->Vertices_2TCoords->Data.push_back(BaseVertices[vertex_id[i]]);
@@ -481,7 +484,7 @@ bool CB3DMeshFileLoader::readChunkTRIS(scene::SSkinMeshBuffer *meshBuffer, u32 m
 
 				if (B3dMaterial) {
 					// Apply Material/Color/etc...
-					video::S3DVertex *Vertex = meshBuffer->getVertex(meshBuffer->getVertexCount() - 1);
+					scene::Vertex3D *Vertex = meshBuffer->getVertex(meshBuffer->getVertexCount() - 1);
 
 					if (!HasVertexColors)
 						Vertex->Color = video::SColorf(B3dMaterial->red, B3dMaterial->green,
