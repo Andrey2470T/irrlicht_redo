@@ -6,27 +6,33 @@
 
 #include "Utils/irrTypes.h"
 #include "Enums/EHardwareBufferFlags.h"
+#include "Enums/EPrimitiveTypes.h"
+#include "Mesh/VertexTypes.h"
+#include "Video/HWBuffer.h"
 #include <cstddef>
-
 
 namespace video
 {
 
-class OpenGLVBO
+class VideoDriver;
+
+class VAO
 {
 public:
 	/// @note does not create on GL side
-	OpenGLVBO() = default;
+	VAO()
+	  : vbo(HWBT_VERTEX), ibo(HWBT_INDEX)
+	{}
 	/// @note does not free on GL side
-	~OpenGLVBO() = default;
+	~VAO() = default;
 
-	/// @return "name" (ID) of this buffer in GL
-	u32 getName() const { return m_name; }
-	/// @return does this refer to an existing GL buffer?
-	bool exists() const { return m_name != 0; }
+	/// @return ID of the VAO
+	u32 getID() const { return ID; }
+	/// @return does this refer to an existing VAO?
+	bool exists() const { return ID != 0; }
 
-	/// @return size of this buffer in bytes
-	size_t getSize() const { return m_size; }
+	void bind() const;
+	void unbind() const;
 
 	/**
 	 * Upload buffer data to GL.
@@ -39,8 +45,15 @@ public:
 	 * @param mustShrink force re-create of buffer if it became smaller
 	 * @note modifies GL_ARRAY_BUFFER binding
 	 */
-	void upload(const void *data, size_t size, size_t offset,
-		scene::E_HARDWARE_MAPPING usage, bool mustShrink = false);
+	bool upload(
+		VideoDriver *driver,
+		const void *vertexData, size_t vertexCount,
+		const void *indexData, size_t indexCount,
+		const scene::VertexDescriptor &vertexDesc=scene::Vertex3D::FORMAT,
+		size_t vertexOffset=0, size_t indexOffset=0,
+		scene::E_HARDWARE_MAPPING vertexUsage=scene::EHM_STATIC,
+		scene::E_HARDWARE_MAPPING indexUsage=scene::EHM_STATIC,
+		bool mustShrink=false);
 
 	/**
 	 * Free buffer in GL.
@@ -49,8 +62,10 @@ public:
 	void destroy();
 
 private:
-	u32 m_name = 0;
-	size_t m_size = 0;
+	u32 ID = 0;
+
+	HWBuffer vbo;
+	HWBuffer ibo;
 };
 
 }

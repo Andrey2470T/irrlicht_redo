@@ -33,23 +33,6 @@ public:
 	/** \return Number of indices in this buffer. */
 	virtual u32 getCount() const = 0;
 
-	//! get the current hardware mapping hint
-	virtual E_HARDWARE_MAPPING getHardwareMappingHint() const = 0;
-
-	//! set the hardware mapping hint, for driver
-	virtual void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint) = 0;
-
-	//! flags the meshbuffer as changed, reloads hardware buffers
-	virtual void setDirty() = 0;
-
-	//! Get the currently used ID for identification of changes.
-	/** This shouldn't be used for anything outside the VideoDriver. */
-	virtual u32 getChangedID() const = 0;
-
-	//! Used by the VideoDriver to remember the buffer link.
-	virtual void setHWBuffer(void *ptr) const = 0;
-	virtual void *getHWBuffer() const = 0;
-
 	//! Calculate how many geometric primitives would be drawn
 	u32 getPrimitiveCount(E_PRIMITIVE_TYPE primitiveType) const
 	{

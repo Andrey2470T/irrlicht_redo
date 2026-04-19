@@ -7,7 +7,6 @@
 #pragma once
 
 #include "Device/SDLDeviceParameters.h"
-#include "../src/Video/VBO.h"
 #include "../src/Video/MaterialSystem.h"
 #include "../src/Video/Drawer.h"
 #include "IO/IFileSystem.h"
@@ -40,21 +39,10 @@ struct VertexType;
 class GLSpecificInfo;
 
 const c8 *const FogTypeNames[] = {
-		"FogExp",
-		"FogLinear",
-		"FogExp2",
-		0,
-	};
-
-struct SFrameStats {
-	//! Number of draw calls
-	u32 Drawcalls = 0;
-	//! Count of primitives drawn
-	u32 PrimitivesDrawn = 0;
-	//! Number of hardware buffers uploaded (new or updated)
-	u32 HWBuffersUploaded = 0;
-	//! Number of active hardware buffers
-	u32 HWBuffersActive = 0;
+	"FogExp",
+	"FogLinear",
+	"FogExp2",
+	0,
 };
 
 class VideoDriver : public IReferenceCounted, public MaterialSystem, public Drawer
@@ -90,73 +78,9 @@ public:
 	//! sets transformation
 	void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4 &mat);
 
-	/// Links a hardware buffer to either a vertex or index buffer
-	struct SHWBufferLink
-	{
-		SHWBufferLink(const scene::IVertexBuffer *vb) :
-				VertexBuffer(vb), IsVertex(true)
-		{
-			if (VertexBuffer) {
-				VertexBuffer->grab();
-				VertexBuffer->setHWBuffer(this);
-			}
-		}
-		SHWBufferLink(const scene::IIndexBuffer *ib) :
-				IndexBuffer(ib), IsVertex(false)
-		{
-			if (IndexBuffer) {
-				IndexBuffer->grab();
-				IndexBuffer->setHWBuffer(this);
-			}
-		}
-
-        ~SHWBufferLink()
-		{
-			if (IsVertex && VertexBuffer) {
-				VertexBuffer->setHWBuffer(nullptr);
-				VertexBuffer->drop();
-			} else if (!IsVertex && IndexBuffer) {
-				IndexBuffer->setHWBuffer(nullptr);
-				IndexBuffer->drop();
-			}
-		}
-
-		union {
-			const scene::IVertexBuffer *VertexBuffer;
-			const scene::IIndexBuffer *IndexBuffer;
-		};
-		size_t ListPosition = static_cast<size_t>(-1);
-		u32 ChangedID = 0;
-		bool IsVertex;
-
-		OpenGLVBO Vbo;
-	};
-
-	bool updateVertexHardwareBuffer(SHWBufferLink *HWBuffer);
-	bool updateIndexHardwareBuffer(SHWBufferLink *HWBuffer);
-
-	//! updates hardware buffer if needed
-	bool updateHardwareBuffer(SHWBufferLink *HWBuffer);
-
-	void updateHardwareBuffer(const scene::IVertexBuffer *vb);
-
-	void updateHardwareBuffer(const scene::IIndexBuffer *ib);
-
-	//! Create hardware buffer from vertex buffer
-	SHWBufferLink *createHardwareBuffer(const scene::IVertexBuffer *vb);
-
-	//! Create hardware buffer from index buffer
-	SHWBufferLink *createHardwareBuffer(const scene::IIndexBuffer *ib);
-
-	//! Delete hardware buffer (only some drivers can)
-	void deleteHardwareBuffer(SHWBufferLink *HWBuffer);
-
 	void deleteAllTextures();
 	void removeAllRenderTargets();
 	void removeRenderTarget(RenderTarget *renderTarget);
-	void removeAllHardwareBuffers();
-	bool isHardwareBufferRecommend(const scene::IVertexBuffer *mb);
-	bool isHardwareBufferRecommend(const scene::IIndexBuffer *mb);
 
 	u32 getTextureCount() const
 	{
@@ -289,19 +213,6 @@ public:
 private:
     bool genericDriverInit(const core::dimension2d<u32> &screenSize, bool stencilBuffer);
 
-	bool uploadHardwareBuffer(OpenGLVBO &vbo, const void *buffer, size_t bufferSize, scene::E_HARDWARE_MAPPING hint);
-
-	SHWBufferLink *getBufferLink(const scene::IVertexBuffer *mb);
-	SHWBufferLink *getBufferLink(const scene::IIndexBuffer *mb);
-	void registerHardwareBuffer(SHWBufferLink *HWBuffer);
-	void expireHardwareBuffers();
-
-	inline void accountHWBufferUpload(u32 size)
-	{
-		FrameStats.HWBuffersUploaded++;
-		(void)size;
-	}
-
 	//! Same as `CacheHandler->setViewport`, but also sets `ViewPort`
     void setViewPortRaw(u32 width, u32 height);
 
@@ -333,15 +244,11 @@ private:
 	RenderTarget *CurrentRenderTarget;
 	core::dimension2d<u32> CurrentRenderTargetSize;
 
-	std::vector<SHWBufferLink *> HWBufferList;
-
 	io::IFileSystem *FileSystem;
 	scene::MeshManipulator *MeshManipulator;
 
 	core::rect<s32> ViewPort;
 	core::dimension2d<u32> ScreenSize;
-
-	SFrameStats FrameStats;
 
 	u32 MinVertexCountForVBO;
 	u32 TextureCreationFlags;

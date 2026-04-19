@@ -2,18 +2,40 @@
 #include "Video/VideoDriver.h"
 #include "Common.h"
 #include "MaterialSystem.h"
-#include "VBO.h"
+#include "Video/HWBuffer.h"
+#include "Mesh/IIndexBuffer.h"
 #include "GLSpecificInfo.h"
 
 namespace video
 {
 
-void Drawer::drawMeshBuffer(const scene::IMeshBuffer *mb)
+void Drawer::drawMeshBuffer(const scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> indices)
 {
 	if (!mb)
 		return;
-	drawBuffers(mb->getVertexBuffer(), mb->getIndexBuffer(),
-		mb->getPrimitiveCount(), mb->getPrimitiveType());
+
+	FrameStats.HWBuffersUploaded += mb->reload(Driver);
+
+	u32 primitiveCount = mb->getPrimitiveCount();
+	u32 vertexCount = mb->getVertexCount();
+	if (!primitiveCount || !vertexCount)
+		return;
+
+	if (!checkPrimitiveCount(primitiveCount))
+		return;
+
+	if (vertexCount > 65536)
+		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
+	FrameStats.Drawcalls++;
+	FrameStats.PrimitivesDrawn += primitiveCount;
+
+	Driver->setRenderStates3DMode();
+
+	mb->bind();
+
+	drawGeneric((void*)0, primitiveCount, mb->getPrimitiveType(), EIT_16BIT);
+
+	mb->unbind();
 }
 
 //! Draws the normals of a mesh buffer
@@ -25,43 +47,6 @@ void Drawer::drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length, SCo
 		const core::vector3df &pos = mb->getPosition(i);
 		draw3DLine(pos, pos + (normal * length), color);
 	}
-}
-
-void Drawer::drawBuffers(const scene::IVertexBuffer *vb,
-	const scene::IIndexBuffer *ib, u32 PrimitiveCount,
-	scene::E_PRIMITIVE_TYPE PrimitiveType)
-{
-	if (!vb || !ib)
-		return;
-
-	auto *hwvert = Driver->getBufferLink(vb);
-	auto *hwidx = Driver->getBufferLink(ib);
-	Driver->updateHardwareBuffer(hwvert);
-	Driver->updateHardwareBuffer(hwidx);
-
-	const void *vertices = vb->getData();
-	if (hwvert) {
-		assert(hwvert->IsVertex);
-		assert(hwvert->Vbo.exists());
-		glBindBuffer(GL_ARRAY_BUFFER, hwvert->Vbo.getName());
-		vertices = nullptr;
-	}
-
-	const void *indexList = ib->getData();
-	if (hwidx) {
-		assert(!hwidx->IsVertex);
-		assert(hwidx->Vbo.exists());
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, hwidx->Vbo.getName());
-		indexList = nullptr;
-	}
-
-	drawVertexPrimitiveList(vertices, vb->getCount(), indexList,
-		PrimitiveCount, vb->getType(), PrimitiveType, ib->getType());
-
-	if (hwvert)
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	if (hwidx)
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 //! draws a vertex primitive list
@@ -82,7 +67,12 @@ void Drawer::drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
 
 	Driver->setRenderStates3DMode();
 
-	drawGeneric(vertices, indexList, primitiveCount, vType, pType, iType);
+	auto &vTypeDesc = getVertexTypeDescription(vType);
+	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
+
+	drawGeneric(indexList, primitiveCount, pType, iType);
+
+	disableAttributeArrays(vTypeDesc);
 }
 
 //! draws a vertex primitive list in 2d
@@ -110,7 +100,12 @@ void Drawer::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
 		Driver->Material.MaterialType == EMT_TRANSPARENT_ALPHA_CHANNEL
 	);
 
-	drawGeneric(vertices, indexList, primitiveCount, vType, pType, iType);
+	auto &vTypeDesc = getVertexTypeDescription(vType);
+	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
+
+	drawGeneric(indexList, primitiveCount, pType, iType);
+
+	disableAttributeArrays(vTypeDesc);
 }
 
 //! draws an 2d image
@@ -304,9 +299,9 @@ void Drawer::draw2DImageBatch(const GLTexture *texture,
 			{tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y}});
 	}
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, QuadIndexVBO->getName());
+	QuadIndexVBO->bind();
 	drawElements(scene::EPT_TRIANGLES, scene::Vertex2D::FORMAT, vtx.data(), vtx.size(), 0, 6 * drawCount);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	QuadIndexVBO->unbind();
 
 	if (clipRect)
 		glDisable(GL_SCISSOR_TEST);
@@ -430,24 +425,22 @@ std::array<GLenum, scene::EPT_COUNT> toGLPrimType = {
 
 void Drawer::drawArrays(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount)
 {
-	beginDraw(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
+	enableAttributeArrays(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
 	glDrawArrays(toGLPrimType[primitiveType], 0, vertexCount);
-	endDraw(vertexDesc);
+	disableAttributeArrays(vertexDesc);
 }
 
 void Drawer::drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount, const u16 *indices, int indexCount)
 {
-	beginDraw(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
+	enableAttributeArrays(vertexDesc, reinterpret_cast<uintptr_t>(vertices));
 	glDrawRangeElements(toGLPrimType[primitiveType], 0, vertexCount - 1, indexCount, GL_UNSIGNED_SHORT, indices);
-	endDraw(vertexDesc);
+	disableAttributeArrays(vertexDesc);
 }
 
-void Drawer::drawGeneric(const void *vertices, const void *indexList,
-		u32 primitiveCount,
-		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+void Drawer::drawGeneric(
+	const void *indexList, u32 primitiveCount,
+	scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
-	auto &vTypeDesc = getVertexTypeDescription(vType);
-	beginDraw(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
 	GLenum indexSize = 0;
 
 	switch (iType) {
@@ -485,17 +478,15 @@ void Drawer::drawGeneric(const void *vertices, const void *indexList,
 	default:
 		break;
 	}
-
-	endDraw(vTypeDesc);
 }
 
-std::array<GLenum, (u32)scene::VertexAttribute::Type::COUNT> toGLType = {
+std::array<GLenum, (u8)scene::VertexAttribute::Type::COUNT> toGLType = {
 	GL_FLOAT,
 	GL_UNSIGNED_BYTE,
 	GL_INT
 };
 
-void Drawer::beginDraw(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase)
+void Drawer::enableAttributeArrays(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase)
 {
 	for (auto &attr : vertexDesc.Attributes) {
 		glEnableVertexAttribArray(attr.Index);
@@ -513,7 +504,7 @@ void Drawer::beginDraw(const scene::VertexDescriptor &vertexDesc, uintptr_t vert
 	}
 }
 
-void Drawer::endDraw(const scene::VertexDescriptor &vertexDesc)
+void Drawer::disableAttributeArrays(const scene::VertexDescriptor &vertexDesc)
 {
 	for (auto &attr : vertexDesc.Attributes)
 		glDisableVertexAttribArray(attr.Index);
@@ -521,7 +512,7 @@ void Drawer::endDraw(const scene::VertexDescriptor &vertexDesc)
 
 void Drawer::initQuadsIndices(u32 max_vertex_count)
 {
-	QuadIndexVBO = std::make_unique<OpenGLVBO>();
+	QuadIndexVBO = std::make_unique<HWBuffer>(HWBT_INDEX);
 
 	u32 max_quad_count = max_vertex_count / 4;
 	u32 indices_size = 6 * max_quad_count;

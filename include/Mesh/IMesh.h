@@ -109,13 +109,13 @@ public:
 	hardware. This enables, e.g., the use of hardware buffers on
 	platforms that support this feature. This can lead to noticeable
 	performance gains. */
-	virtual void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) = 0;
+	virtual void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX) = 0;
 
 	//! Flag the meshbuffer as changed, reloads hardware buffers
 	/** This method has to be called every time the vertices or
 	indices have changed. Otherwise, changes won't be updated
 	on the GPU in the next render cycle. */
-	virtual void setDirty(E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) = 0;
+	virtual void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX) = 0;
 
 	//! Returns the type of the meshes.
 	/** This is useful for making a safe downcast. For example,

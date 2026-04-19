@@ -98,10 +98,10 @@ public:
 	}
 
 	//! set the hardware mapping hint, for driver
-	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override;
+	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX) override;
 
 	//! flags the meshbuffer as changed, reloads hardware buffers
-	void setDirty(E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override;
+	void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX) override;
 
 	//! Returns the type of the animated mesh.
 	E_ANIMATED_MESH_TYPE getMeshType() const override {

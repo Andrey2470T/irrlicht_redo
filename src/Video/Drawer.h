@@ -8,13 +8,29 @@
 #include "Video/Texture.h"
 #include "Utils/irrArray.h"
 #include <memory>
+#include <optional>
+
+namespace scene
+{
+struct VertexDescriptor;
+}
 
 namespace video
 {
 
 class VideoDriver;
-class OpenGLVBO;
-struct VertexType;
+class HWBuffer;
+
+struct SFrameStats {
+	//! Number of draw calls
+	u32 Drawcalls = 0;
+	//! Count of primitives drawn
+	u32 PrimitivesDrawn = 0;
+	//! Number of hardware buffers uploaded (new or updated)
+	u32 HWBuffersUploaded = 0;
+	//! Number of active hardware buffers
+	u32 HWBuffersActive = 0;
+};
 
 class Drawer
 {
@@ -25,14 +41,10 @@ public:
 		: Driver(_Driver)
 	{}
 
-	void drawMeshBuffer(const scene::IMeshBuffer *mb);
+	void drawMeshBuffer(const scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> indices=std::nullopt);
 
 	void drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length = 10.f,
 		SColor color = 0xffffffff);
-
-	void drawBuffers(const scene::IVertexBuffer *vb,
-		const scene::IIndexBuffer *ib, u32 primCount,
-		scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES);
 
 	//! draws a vertex primitive list
 	void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
@@ -181,9 +193,14 @@ public:
 	void draw3DBox(const core::aabbox3d<f32> &box,
 			SColor color = SColor(255, 255, 255, 255));
 
+	void enableAttributeArrays(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase);
+	void disableAttributeArrays(const scene::VertexDescriptor &vertexDesc);
+
 protected:
 	void initQuadsIndices(u32 max_vertex_count = 65536);
 	void destroyQuadIndices();
+
+	SFrameStats FrameStats;
 
 private:
 	void drawQuad(const scene::Vertex2D (&vertices)[4]);
@@ -191,15 +208,11 @@ private:
 	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, const void *vertices, int vertexCount, const u16 *indices, int indexCount);
 	void drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::VertexDescriptor &vertexDesc, uintptr_t vertices, uintptr_t indices, int indexCount);
 
-	void drawGeneric(const void *vertices, const void *indexList, u32 primitiveCount,
-		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType);
-
-	void beginDraw(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase);
-	void endDraw(const scene::VertexDescriptor &vertexDesc);
+	void drawGeneric(const void *indexList, u32 primitiveCount, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType);
 
 	bool checkPrimitiveCount(u32 prmcnt) const;
 
-	std::unique_ptr<OpenGLVBO> QuadIndexVBO;
+	std::unique_ptr<HWBuffer> QuadIndexVBO;
 };
 
 }

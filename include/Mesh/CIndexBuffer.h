@@ -46,46 +46,6 @@ public:
 		return static_cast<u32>(Data.size());
 	}
 
-	E_HARDWARE_MAPPING getHardwareMappingHint() const override
-	{
-		return MappingHint;
-	}
-
-	void setHardwareMappingHint(E_HARDWARE_MAPPING NewMappingHint) override
-	{
-		MappingHint = NewMappingHint;
-	}
-
-	void setDirty() override
-	{
-		++ChangedID;
-#ifdef INDEXBUFFER_HINT_DEBUG
-		if (MappingHint == EHM_STATIC && HWBuffer) {
-			char buf[100];
-			snprintf_irr(buf, sizeof(buf), "CIndexBuffer @ %p modified, but it has a static hint", this);
-			g_irrlogger->log(buf, ELL_WARNING);
-		}
-#endif
-	}
-
-	u32 getChangedID() const override { return ChangedID; }
-
-	void setHWBuffer(void *ptr) const override
-	{
-		HWBuffer = ptr;
-	}
-
-	void *getHWBuffer() const override
-	{
-		return HWBuffer;
-	}
-
-	u32 ChangedID = 1;
-
-	//! hardware mapping hint
-	E_HARDWARE_MAPPING MappingHint = EHM_NEVER;
-	mutable void *HWBuffer = nullptr;
-
 	//! Indices of this buffer
 	std::vector<T> Data;
 };

@@ -277,12 +277,13 @@ if(ENABLE_OPENGL3 OR ENABLE_GLES2)
 		Video/DrawContext.cpp
 		Video/Drawer.cpp
 		Video/GLSpecificInfo.cpp
+		Video/HWBuffer.cpp
 		Video/MaterialCallbacks.cpp
 		Video/MaterialRenderer.cpp
 		Video/MaterialSystem.cpp
 		Video/RenderTarget.cpp
 		Video/Texture.cpp
-		Video/VBO.cpp
+		Video/VAO.cpp
 		Video/VideoDriver.cpp
 	)
 endif()

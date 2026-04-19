@@ -207,7 +207,7 @@ void SkinnedMesh::skinMesh()
 			skinJoint(rootJoint, 0);
 
 		for (auto *buffer : *SkinningBuffers)
-			buffer->setDirty(EBT_VERTEX);
+			buffer->setDirty(EBF_VERTEX);
 	}
 	updateBoundingBox();
 }
@@ -322,15 +322,14 @@ void SkinnedMesh::setTextureSlot(u32 meshbufNr, u32 textureSlot) {
 }
 
 //! set the hardware mapping hint, for driver
-void SkinnedMesh::setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint,
-		E_BUFFER_TYPE buffer)
+void SkinnedMesh::setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer)
 {
 	for (u32 i = 0; i < LocalBuffers.size(); ++i)
 		LocalBuffers[i]->setHardwareMappingHint(newMappingHint, buffer);
 }
 
 //! flags the meshbuffer as changed, reloads hardware buffers
-void SkinnedMesh::setDirty(E_BUFFER_TYPE buffer)
+void SkinnedMesh::setDirty(u8 buffer)
 {
 	for (u32 i = 0; i < LocalBuffers.size(); ++i)
 		LocalBuffers[i]->setDirty(buffer);

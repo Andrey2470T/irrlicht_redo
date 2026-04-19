@@ -24,16 +24,12 @@ enum E_HARDWARE_MAPPING
 	EHM_COUNT
 };
 
-enum E_BUFFER_TYPE
+enum E_BUFFER_FLAG
 {
-	//! Does not change anything
-	EBT_NONE = 0,
 	//! Change the vertex mapping
-	EBT_VERTEX,
+	EBF_VERTEX = 0x01,
 	//! Change the index mapping
-	EBT_INDEX,
-	//! Change both vertex and index mapping to the same value
-	EBT_VERTEX_AND_INDEX
+	EBF_INDEX = 0x02
 };
 
 } // end namespace scene

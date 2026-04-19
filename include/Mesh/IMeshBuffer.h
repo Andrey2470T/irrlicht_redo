@@ -11,6 +11,7 @@
 #include "Mesh/IIndexBuffer.h"
 #include "Enums/EHardwareBufferFlags.h"
 #include "Enums/EPrimitiveTypes.h"
+#include "../../src/Video/VAO.h"
 #include <cassert>
 
 
@@ -177,21 +178,50 @@ public:
 	}
 
 	//! set the hardware mapping hint, for driver
-	inline void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX)
+	inline void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX)
 	{
-		if (buffer == EBT_VERTEX_AND_INDEX || buffer == EBT_VERTEX)
-			getVertexBuffer()->setHardwareMappingHint(newMappingHint);
-		if (buffer == EBT_VERTEX_AND_INDEX || buffer == EBT_INDEX)
-			getIndexBuffer()->setHardwareMappingHint(newMappingHint);
+		if (buffer & EBF_VERTEX)
+			VertexUsage = newMappingHint;
+		if (buffer & EBF_INDEX)
+			IndexUsage = newMappingHint;
 	}
 
 	//! flags the meshbuffer as changed, reloads hardware buffers
-	inline void setDirty(E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX)
+	inline void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX)
 	{
-		if (buffer == EBT_VERTEX_AND_INDEX || buffer == EBT_VERTEX)
-			getVertexBuffer()->setDirty();
-		if (buffer == EBT_VERTEX_AND_INDEX || buffer == EBT_INDEX)
-			getIndexBuffer()->setDirty();
+		ChangedBuffers |= buffer;
+	}
+
+	void bind() const
+	{
+		HWObj.bind();
+	}
+	void unbind() const
+	{
+		HWObj.unbind();
+	}
+
+	bool reload(video::VideoDriver *driver) const
+	{
+		if (ChangedBuffers == 0)
+			return false;
+
+		const void *vertices = nullptr;
+		const u16 *indices = nullptr;
+		size_t vertexCount = 0, indexCount = 0;
+
+		if (ChangedBuffers & EBF_VERTEX) {
+			vertices = getVertices();
+			vertexCount = getVertexCount();
+		}
+		if (ChangedBuffers & EBF_INDEX) {
+			indices = getIndices();
+			indexCount = getIndexCount();
+		}
+
+		ChangedBuffers = 0;
+		return HWObj.upload(driver, vertices, vertexCount, indices, indexCount,
+			getVertexTypeDescription(getVertexType()), 0, 0, VertexUsage, IndexUsage);
 	}
 
 	/* End helpers */
@@ -239,6 +269,12 @@ public:
 		}
 		return ret;
 	}
+
+private:
+	mutable u8 ChangedBuffers = 0;
+	scene::E_HARDWARE_MAPPING VertexUsage;
+	scene::E_HARDWARE_MAPPING IndexUsage;
+	mutable video::VAO HWObj;
 };
 
 } // end namespace scene

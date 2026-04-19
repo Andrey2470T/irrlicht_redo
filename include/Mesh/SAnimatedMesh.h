@@ -135,14 +135,14 @@ struct SAnimatedMesh final : public IAnimatedMesh
 	}
 
 	//! set the hardware mapping hint, for driver
-	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override
+	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX) override
 	{
 		for (u32 i = 0; i < Meshes.size(); ++i)
 			Meshes[i]->setHardwareMappingHint(newMappingHint, buffer);
 	}
 
 	//! flags the meshbuffer as changed, reloads hardware buffers
-	void setDirty(E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override
+	void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX) override
 	{
 		for (u32 i = 0; i < Meshes.size(); ++i)
 			Meshes[i]->setDirty(buffer);

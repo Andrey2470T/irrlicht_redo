@@ -65,8 +65,6 @@ VideoDriver::~VideoDriver()
 	removeAllRenderTargets();
 	deleteAllTextures();
 
-	removeAllHardwareBuffers();
-
 	Device->drop();
 }
 
@@ -130,7 +128,6 @@ bool VideoDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u
 
 bool VideoDriver::endScene()
 {
-	expireHardwareBuffers();
 
 	glFlush();
 
@@ -148,152 +145,6 @@ void VideoDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matrix4
 {
 	Matrices[state] = mat;
 	Transformation3DChanged = true;
-}
-
-bool VideoDriver::uploadHardwareBuffer(OpenGLVBO &vbo,
-	const void *buffer, size_t bufferSize, scene::E_HARDWARE_MAPPING hint)
-{
-	accountHWBufferUpload(bufferSize);
-	vbo.upload(buffer, bufferSize, 0, hint);
-
-    return (!TEST_GL_ERROR(this));
-}
-
-bool VideoDriver::updateVertexHardwareBuffer(SHWBufferLink *HWBuffer)
-{
-	if (!HWBuffer)
-		return false;
-
-	assert(HWBuffer->IsVertex);
-	const auto *vb = HWBuffer->VertexBuffer;
-	assert(vb);
-
-	const u32 vertexSize = getVertexTypeSize(vb->getType());
-	const size_t bufferSize = vertexSize * vb->getCount();
-
-	return uploadHardwareBuffer(HWBuffer->Vbo, vb->getData(),
-		bufferSize, vb->getHardwareMappingHint());
-}
-
-bool VideoDriver::updateIndexHardwareBuffer(SHWBufferLink *HWBuffer)
-{
-	if (!HWBuffer)
-		return false;
-
-	assert(!HWBuffer->IsVertex);
-	const auto *ib = HWBuffer->IndexBuffer;
-	assert(ib);
-
-	u32 indexSize;
-	switch (ib->getType()) {
-	case EIT_16BIT:
-		indexSize = sizeof(u16);
-		break;
-	case EIT_32BIT:
-		indexSize = sizeof(u32);
-		break;
-	default:
-		return false;
-	}
-
-	const size_t bufferSize = ib->getCount() * indexSize;
-
-	return uploadHardwareBuffer(HWBuffer->Vbo, ib->getData(),
-		bufferSize, ib->getHardwareMappingHint());
-}
-
-bool VideoDriver::updateHardwareBuffer(SHWBufferLink *HWBuffer)
-{
-	if (!HWBuffer)
-		return false;
-
-	if (HWBuffer->IsVertex) {
-		assert(HWBuffer->VertexBuffer);
-		if (HWBuffer->ChangedID != HWBuffer->VertexBuffer->getChangedID() || !HWBuffer->Vbo.exists()) {
-			if (!updateVertexHardwareBuffer(HWBuffer))
-				return false;
-			HWBuffer->ChangedID = HWBuffer->VertexBuffer->getChangedID();
-		}
-	} else {
-		assert(HWBuffer->IndexBuffer);
-		if (HWBuffer->ChangedID != HWBuffer->IndexBuffer->getChangedID() || !HWBuffer->Vbo.exists()) {
-			if (!updateIndexHardwareBuffer(HWBuffer))
-				return false;
-			HWBuffer->ChangedID = HWBuffer->IndexBuffer->getChangedID();
-		}
-	}
-	return true;
-}
-
-void VideoDriver::updateHardwareBuffer(const scene::IVertexBuffer *vb)
-{
-	if (!vb)
-		return;
-	auto *link = getBufferLink(vb);
-	if (link)
-		updateHardwareBuffer(link);
-}
-
-void VideoDriver::updateHardwareBuffer(const scene::IIndexBuffer *ib)
-{
-	if (!ib)
-		return;
-	auto *link = getBufferLink(ib);
-	if (link)
-		updateHardwareBuffer(link);
-}
-
-VideoDriver::SHWBufferLink *VideoDriver::createHardwareBuffer(const scene::IVertexBuffer *vb)
-{
-	if (!vb || vb->getHardwareMappingHint() == scene::EHM_NEVER)
-		return 0;
-
-	auto *HWBuffer = new SHWBufferLink(vb);
-	registerHardwareBuffer(HWBuffer);
-
-	if (!updateVertexHardwareBuffer(HWBuffer)) {
-		deleteHardwareBuffer(HWBuffer);
-		return 0;
-	}
-
-	return HWBuffer;
-}
-
-VideoDriver::SHWBufferLink *VideoDriver::createHardwareBuffer(const scene::IIndexBuffer *ib)
-{
-	if (!ib || ib->getHardwareMappingHint() == scene::EHM_NEVER)
-		return 0;
-
-	auto *HWBuffer = new SHWBufferLink(ib);
-	registerHardwareBuffer(HWBuffer);
-
-	if (!updateIndexHardwareBuffer(HWBuffer)) {
-		deleteHardwareBuffer(HWBuffer);
-		return 0;
-	}
-
-	return HWBuffer;
-}
-
-void VideoDriver::deleteHardwareBuffer(SHWBufferLink *HWBuffer)
-{
-	if (!HWBuffer)
-		return;
-
-	HWBuffer->Vbo.destroy();
-
-	if (!HWBuffer)
-		return;
-	const size_t pos = HWBuffer->ListPosition;
-	assert(HWBufferList.at(pos) == HWBuffer);
-	if (HWBufferList.size() < 2 || pos == HWBufferList.size() - 1) {
-		HWBufferList.erase(HWBufferList.begin() + pos);
-	} else {
-		std::swap(HWBufferList[pos], HWBufferList.back());
-		HWBufferList.pop_back();
-		HWBufferList[pos]->ListPosition = pos;
-	}
-	delete HWBuffer;
 }
 
 RenderTarget *VideoDriver::addRenderTarget()
@@ -728,56 +579,6 @@ DrawContext *VideoDriver::getContext() const
 	return Context.get();
 }
 
-VideoDriver::SHWBufferLink *VideoDriver::getBufferLink(const scene::IVertexBuffer *vb)
-{
-	if (!vb || !isHardwareBufferRecommend(vb))
-		return 0;
-
-	SHWBufferLink *HWBuffer = reinterpret_cast<SHWBufferLink *>(vb->getHWBuffer());
-	if (HWBuffer)
-		return HWBuffer;
-
-	return createHardwareBuffer(vb);
-}
-
-VideoDriver::SHWBufferLink *VideoDriver::getBufferLink(const scene::IIndexBuffer *ib)
-{
-	if (!ib || !isHardwareBufferRecommend(ib))
-		return 0;
-
-	SHWBufferLink *HWBuffer = reinterpret_cast<SHWBufferLink *>(ib->getHWBuffer());
-	if (HWBuffer)
-		return HWBuffer;
-
-	return createHardwareBuffer(ib);
-}
-
-void VideoDriver::registerHardwareBuffer(SHWBufferLink *HWBuffer)
-{
-	assert(HWBuffer);
-	HWBuffer->ListPosition = HWBufferList.size();
-	HWBufferList.push_back(HWBuffer);
-}
-
-void VideoDriver::expireHardwareBuffers()
-{
-	for (size_t i = 0; i < HWBufferList.size(); ) {
-		auto *Link = HWBufferList[i];
-
-		bool del;
-		if (Link->IsVertex)
-			del = !Link->VertexBuffer || Link->VertexBuffer->getReferenceCount() == 1;
-		else
-			del = !Link->IndexBuffer || Link->IndexBuffer->getReferenceCount() == 1;
-		if (del)
-			deleteHardwareBuffer(Link);
-		else
-			i++;
-	}
-
-	FrameStats.HWBuffersActive = HWBufferList.size();
-}
-
 void VideoDriver::deleteAllTextures()
 {
 	setMaterial(SMaterial());
@@ -815,34 +616,6 @@ void VideoDriver::removeAllRenderTargets()
 	RenderTargets.clear();
 
 	SharedRenderTarget = nullptr;
-}
-
-void VideoDriver::removeAllHardwareBuffers()
-{
-	while (!HWBufferList.empty())
-		deleteHardwareBuffer(HWBufferList.front());
-}
-
-bool VideoDriver::isHardwareBufferRecommend(const scene::IVertexBuffer *vb)
-{
-	if (!vb || vb->getHardwareMappingHint() == scene::EHM_NEVER)
-		return false;
-
-	if (vb->getCount() < MinVertexCountForVBO)
-		return false;
-
-	return true;
-}
-
-bool VideoDriver::isHardwareBufferRecommend(const scene::IIndexBuffer *ib)
-{
-	if (!ib || ib->getHardwareMappingHint() == scene::EHM_NEVER)
-		return false;
-
-	if (ib->getCount() < MinVertexCountForVBO * 3)
-		return false;
-
-	return true;
 }
 
 GLTexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format)

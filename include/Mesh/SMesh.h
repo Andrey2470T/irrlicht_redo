@@ -112,14 +112,14 @@ struct SMesh final : public IMesh
 	}
 
 	//! set the hardware mapping hint, for driver
-	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override
+	void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX) override
 	{
 		for (auto *buf : MeshBuffers)
 			buf->setHardwareMappingHint(newMappingHint, buffer);
 	}
 
 	//! flags the meshbuffer as changed, reloads hardware buffers
-	void setDirty(E_BUFFER_TYPE buffer = EBT_VERTEX_AND_INDEX) override
+	void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX) override
 	{
 		for (auto *buf : MeshBuffers)
 			buf->setDirty(buffer);
