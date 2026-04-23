@@ -454,6 +454,18 @@ IImageLoader *selectLoader(io::IReadFile *file)
         return loader;
     }
 
+	// try to load file based on what is in it
+	for (auto &loader : loaders) {
+		if (loader->isALoadableFileExtension(file->getFileName()))
+			continue;  // extension was tried above already
+		file->seek(0); // dito
+		if (!loader->isALoadableFileFormat(file))
+			continue;
+
+		file->seek(0);
+		return loader;
+	}
+
     return nullptr;
 }
 
