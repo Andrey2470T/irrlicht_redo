@@ -13,6 +13,7 @@
 #include "Enums/EPrimitiveTypes.h"
 #include "../../src/Video/VAO.h"
 #include <cassert>
+#include <optional>
 
 
 namespace scene
@@ -39,6 +40,11 @@ the current code block anymore.
 class IMeshBuffer : public virtual IReferenceCounted
 {
 public:
+	~IMeshBuffer()
+	{
+		VAObj.destroy();
+	}
+
 	//! Get the material of this meshbuffer
 	/** \return Material of this buffer. */
 	virtual video::SMaterial &getMaterial() = 0;
@@ -181,47 +187,41 @@ public:
 	inline void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint, u8 buffer = EBF_VERTEX | EBF_INDEX)
 	{
 		if (buffer & EBF_VERTEX)
-			VertexUsage = newMappingHint;
+			getVertexBuffer()->setHardwareMappingHint(newMappingHint);
 		if (buffer & EBF_INDEX)
-			IndexUsage = newMappingHint;
+			getIndexBuffer()->setHardwareMappingHint(newMappingHint);
 	}
 
 	//! flags the meshbuffer as changed, reloads hardware buffers
 	inline void setDirty(u8 buffer = EBF_VERTEX | EBF_INDEX)
 	{
-		ChangedBuffers |= buffer;
+		if (buffer & EBF_VERTEX)
+			getVertexBuffer()->setDirty();
+		if (buffer & EBF_INDEX)
+			getIndexBuffer()->setDirty();
 	}
 
 	void bind() const
 	{
-		HWObj.bind();
+		VAObj.bind();
 	}
 	void unbind() const
 	{
-		HWObj.unbind();
+		VAObj.unbind();
 	}
 
-	bool reload(video::VideoDriver *driver) const
+	bool reload(video::VideoDriver *driver, std::optional<scene::IIndexBuffer *> indexes=std::nullopt)
 	{
-		if (ChangedBuffers == 0)
-			return false;
+		bool updated = getVertexBuffer()->reload(driver);
 
-		const void *vertices = nullptr;
-		const u16 *indices = nullptr;
-		size_t vertexCount = 0, indexCount = 0;
+		auto ibo = indexes ? *indexes : getIndexBuffer();
+		updated = ibo->reload(driver);
 
-		if (ChangedBuffers & EBF_VERTEX) {
-			vertices = getVertices();
-			vertexCount = getVertexCount();
-		}
-		if (ChangedBuffers & EBF_INDEX) {
-			indices = getIndices();
-			indexCount = getIndexCount();
-		}
+		VAObj.update(
+			driver, getVertexTypeDescription(getVertexType()),
+			getVertexBuffer()->getVBO(), ibo->getIBO());
 
-		ChangedBuffers = 0;
-		return HWObj.upload(driver, vertices, vertexCount, indices, indexCount,
-			getVertexTypeDescription(getVertexType()), 0, 0, VertexUsage, IndexUsage);
+		return updated;
 	}
 
 	/* End helpers */
@@ -239,7 +239,7 @@ public:
 	//! Calculate how many geometric primitives are used by this meshbuffer
 	u32 getPrimitiveCount() const
 	{
-		return getIndexBuffer()->getPrimitiveCount(getPrimitiveType());
+		return video::getPrimitiveCount(getPrimitiveType(), getIndexCount());
 	}
 
 	//! Calculate size of vertices and indices in memory
@@ -270,11 +270,8 @@ public:
 		return ret;
 	}
 
-private:
-	mutable u8 ChangedBuffers = 0;
-	scene::E_HARDWARE_MAPPING VertexUsage;
-	scene::E_HARDWARE_MAPPING IndexUsage;
-	mutable video::VAO HWObj;
+protected:
+	mutable video::VAO VAObj;
 };
 
 } // end namespace scene

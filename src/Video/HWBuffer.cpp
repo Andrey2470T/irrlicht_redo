@@ -42,7 +42,7 @@ void HWBuffer::bindToPoint()
 	glBindBufferBase(GL_UNIFORM_BUFFER, bindPoint, ID);
 }
 
-void HWBuffer::upload(const void *data, size_t size, size_t offset,
+bool HWBuffer::upload(const void *data, size_t size, size_t offset,
 		scene::E_HARDWARE_MAPPING usage, bool mustShrink)
 {
 	bool reallocate = false;
@@ -51,7 +51,7 @@ void HWBuffer::upload(const void *data, size_t size, size_t offset,
 		glGenBuffers(1, &ID);
 
 		if (!ID)
-			return;
+			return false;
 
 		if (type == HWBT_UNIFORM)
 			bindToPoint();
@@ -72,6 +72,8 @@ void HWBuffer::upload(const void *data, size_t size, size_t offset,
 	}
 
 	unbind();
+
+	return true;
 }
 
 void HWBuffer::destroy()

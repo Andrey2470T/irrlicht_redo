@@ -16,7 +16,7 @@
 #include "Mesh/IMesh.h"
 #include "Mesh/IMeshBuffer.h"
 #include "Mesh/VertexTypes.h"
-#include "Mesh/SVertexIndex.h"
+#include "Mesh/VertexIndex.h"
 #include "Utils/fast_atof.h"
 #include "Enums/EVideoTypes.h"
 #include "Utils/matrix4.h"
@@ -127,6 +127,11 @@ public:
 	const OpenGLFeatures &getFeatures() const;
 
 	void setMinHardwareBufferVertexCount(u32 count);
+
+	u32 getMinHardwareBufferVertexCount() const
+	{
+		return MinVertexCountForVBO;
+	}
 
 	//! returns screen size
 	const core::dimension2d<u32> &getScreenSize() const

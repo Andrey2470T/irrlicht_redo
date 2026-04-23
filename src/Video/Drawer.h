@@ -2,11 +2,12 @@
 
 #include "Mesh/IMeshBuffer.h"
 #include "Mesh/VertexTypes.h"
-#include "Mesh/SVertexIndex.h"
+#include "Mesh/VertexIndex.h"
 #include "Utils/matrix4.h"
 #include "Video/DrawContext.h"
 #include "Video/Texture.h"
 #include "Utils/irrArray.h"
+#include "Video/HWBuffer.h"
 #include <memory>
 #include <optional>
 
@@ -19,7 +20,6 @@ namespace video
 {
 
 class VideoDriver;
-class HWBuffer;
 
 struct SFrameStats {
 	//! Number of draw calls
@@ -41,20 +41,20 @@ public:
 		: Driver(_Driver)
 	{}
 
-	void drawMeshBuffer(const scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> indices=std::nullopt);
+	void drawMeshBuffer(scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> replaceIndices=std::nullopt);
 
 	void drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length = 10.f,
 		SColor color = 0xffffffff);
 
 	//! draws a vertex primitive list
 	void drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
-			const void *indexList, u32 primitiveCount,
+			const void *indexList, u32 indexCount,
 			scene::E_VERTEX_TYPE vType = scene::EVT_3D, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
 			E_INDEX_TYPE iType = EIT_16BIT);
 
 	//! draws a vertex primitive list in 2d
 	void draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
-			const void *indexList, u32 primitiveCount,
+			const void *indexList, u32 indexCount,
 			scene::E_VERTEX_TYPE vType = scene::EVT_3D, scene::E_PRIMITIVE_TYPE pType = scene::EPT_TRIANGLES,
 			E_INDEX_TYPE iType = EIT_16BIT);
 
@@ -70,7 +70,7 @@ public:
 	void drawIndexedTriangleList(const scene::Vertex3D *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_3D, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_3D, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle list.
@@ -85,7 +85,7 @@ public:
 	void drawIndexedTriangleList(const scene::Vertex2TCoords *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle list.
@@ -100,7 +100,7 @@ public:
 	void drawIndexedTriangleList(const scene::VertexTangents *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -115,7 +115,7 @@ public:
 	void drawIndexedTriangleFan(const scene::Vertex3D *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_3D, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_3D, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -130,7 +130,7 @@ public:
 	void drawIndexedTriangleFan(const scene::Vertex2TCoords *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! Draws an indexed triangle fan.
@@ -145,7 +145,7 @@ public:
 	void drawIndexedTriangleFan(const scene::VertexTangents *vertices,
 			u32 vertexCount, const u16 *indexList, u32 triangleCount)
 	{
-		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, scene::EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
+		drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount*3, scene::EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 	}
 
 	//! draws an 2d image

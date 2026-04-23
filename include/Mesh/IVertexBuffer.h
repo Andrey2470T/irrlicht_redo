@@ -8,6 +8,11 @@
 #include "Enums/EHardwareBufferFlags.h"
 #include "Mesh/VertexTypes.h"
 
+namespace video
+{
+class VideoDriver;
+class HWBuffer;
+}
 
 namespace scene
 {
@@ -50,6 +55,23 @@ public:
 
 	//! returns texture coord of vertex i
 	virtual core::vector2df &getTCoords(u32 i) = 0;
+
+	//! get the current hardware mapping hint
+	virtual E_HARDWARE_MAPPING getHardwareMappingHint() const = 0;
+
+	//! set the hardware mapping hint, for driver
+	virtual void setHardwareMappingHint(E_HARDWARE_MAPPING newMappingHint) = 0;
+
+	//! flags the meshbuffer as changed, reloads hardware buffers
+	virtual void setDirty() = 0;
+
+	//! Get the currently used ID for identification of changes.
+	/** This shouldn't be used for anything outside the VideoDriver. */
+	virtual bool getDirty() const = 0;
+
+	virtual const video::HWBuffer &getVBO() const = 0;
+
+	virtual bool reload(video::VideoDriver *driver) = 0;
 };
 
 } // end namespace scene

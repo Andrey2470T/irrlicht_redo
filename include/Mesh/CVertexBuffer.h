@@ -6,14 +6,7 @@
 
 #include <vector>
 #include "IVertexBuffer.h"
-
-// Define to receive warnings when violating the hw mapping hints
-//#define VERTEXBUFFER_HINT_DEBUG
-
-#ifdef VERTEXBUFFER_HINT_DEBUG
-#include "../src/os.h"
-#endif
-
+#include "Video/HWBuffer.h"
 
 namespace scene
 {
@@ -23,7 +16,14 @@ class CVertexBuffer final : public IVertexBuffer
 {
 public:
 	//! Default constructor for empty buffer
-	CVertexBuffer() {}
+	CVertexBuffer()
+		: VBO(video::HWBT_VERTEX)
+	{}
+
+	~CVertexBuffer()
+	{
+		VBO.destroy();
+	}
 
 	const void *getData() const override
 	{
@@ -75,8 +75,49 @@ public:
 		return Data[i].TCoords;
 	}
 
+	E_HARDWARE_MAPPING getHardwareMappingHint() const override
+	{
+		return MappingHint;
+	}
+
+	void setHardwareMappingHint(E_HARDWARE_MAPPING NewMappingHint) override
+	{
+		MappingHint = NewMappingHint;
+	}
+
+	void setDirty() override
+	{
+		Dirty = true;
+	}
+
+	bool getDirty() const override
+	{
+		return Dirty;
+	}
+
+	const video::HWBuffer &getVBO() const override
+	{
+		return VBO;
+	}
+
+	bool reload(video::VideoDriver *driver) override
+	{
+		if (!Dirty || MappingHint == EHM_NEVER)
+			return false;
+
+		Dirty = false;
+
+		return VBO.upload(Data.data(), T::FORMAT.Size * Data.size(), 0, MappingHint);
+	}
+
 	//! Vertices of this buffer
 	std::vector<T> Data;
+
+private:
+	bool Dirty = true;
+	//! hardware mapping hint
+	E_HARDWARE_MAPPING MappingHint = EHM_NEVER;
+	mutable video::HWBuffer VBO;
 };
 
 //! Standard buffer

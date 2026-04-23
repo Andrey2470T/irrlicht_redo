@@ -56,7 +56,7 @@ public:
 	 * @param mustShrink force re-create of buffer if it became smaller
 	 * @note modifies GL_ARRAY_BUFFER binding
 	 */
-	void upload(const void *data, size_t size, size_t offset=0,
+	bool upload(const void *data, size_t size, size_t offset=0,
 		scene::E_HARDWARE_MAPPING usage=scene::EHM_STATIC, bool mustShrink=false);
 
 	/**

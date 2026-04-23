@@ -117,6 +117,7 @@ struct Vertex3DExt : public Vertex3D
 const VertexDescriptor &getVertexTypeDescription(E_VERTEX_TYPE type);
 u32 getVertexTypeSize(E_VERTEX_TYPE type);
 
+bool operator==(const Vertex3D &a, const Vertex3D &b);
 bool operator<(const Vertex3D &a, const Vertex3D &b);
 
 struct CompareVertex3D {

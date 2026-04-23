@@ -8,21 +8,19 @@
 #include "Enums/EHardwareBufferFlags.h"
 #include "Enums/EPrimitiveTypes.h"
 #include "Mesh/VertexTypes.h"
-#include "Video/HWBuffer.h"
 #include <cstddef>
 
 namespace video
 {
 
+class HWBuffer;
 class VideoDriver;
 
 class VAO
 {
 public:
 	/// @note does not create on GL side
-	VAO()
-	  : vbo(HWBT_VERTEX), ibo(HWBT_INDEX)
-	{}
+	VAO() = default;
 	/// @note does not free on GL side
 	~VAO() = default;
 
@@ -34,38 +32,19 @@ public:
 	void bind() const;
 	void unbind() const;
 
-	/**
-	 * Upload buffer data to GL.
-	 *
-	 * Changing the size of the buffer is only possible when `offset == 0`.
-	 * @param data data pointer
-	 * @param size number of bytes
-	 * @param offset offset to upload at
-	 * @param usage usage pattern passed to GL (only if buffer is new)
-	 * @param mustShrink force re-create of buffer if it became smaller
-	 * @note modifies GL_ARRAY_BUFFER binding
-	 */
-	bool upload(
-		VideoDriver *driver,
-		const void *vertexData, size_t vertexCount,
-		const void *indexData, size_t indexCount,
-		const scene::VertexDescriptor &vertexDesc=scene::Vertex3D::FORMAT,
-		size_t vertexOffset=0, size_t indexOffset=0,
-		scene::E_HARDWARE_MAPPING vertexUsage=scene::EHM_STATIC,
-		scene::E_HARDWARE_MAPPING indexUsage=scene::EHM_STATIC,
-		bool mustShrink=false);
+	// Update the VAO internal state (the current bound VBO + IBO and enabled attribute arrays)
+	void update(
+		VideoDriver *driver, const scene::VertexDescriptor &vertexDesc,
+		const HWBuffer &newVBO, const HWBuffer &newIBO);
 
-	/**
-	 * Free buffer in GL.
-	 * @note modifies GL_ARRAY_BUFFER binding
-	 */
+	// Free buffer in GL
 	void destroy();
 
 private:
 	u32 ID = 0;
 
-	HWBuffer vbo;
-	HWBuffer ibo;
+	u32 VBO = 0;
+	u32 IBO = 0;
 };
 
 }

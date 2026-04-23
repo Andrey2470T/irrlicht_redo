@@ -2,21 +2,21 @@
 #include "Video/VideoDriver.h"
 #include "Common.h"
 #include "MaterialSystem.h"
-#include "Video/HWBuffer.h"
 #include "Mesh/IIndexBuffer.h"
 #include "GLSpecificInfo.h"
 
 namespace video
 {
 
-void Drawer::drawMeshBuffer(const scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> indices)
+void Drawer::drawMeshBuffer(scene::IMeshBuffer *mb, std::optional<scene::IIndexBuffer *> replaceIndices)
 {
 	if (!mb)
 		return;
 
-	FrameStats.HWBuffersUploaded += mb->reload(Driver);
+	FrameStats.HWBuffersUploaded += mb->reload(Driver, replaceIndices);
 
-	u32 primitiveCount = mb->getPrimitiveCount();
+	u32 indexCount = replaceIndices ? (*replaceIndices)->getCount() : mb->getIndexCount();
+	u32 primitiveCount = getPrimitiveCount(mb->getPrimitiveType(), indexCount);
 	u32 vertexCount = mb->getVertexCount();
 	if (!primitiveCount || !vertexCount)
 		return;
@@ -32,8 +32,17 @@ void Drawer::drawMeshBuffer(const scene::IMeshBuffer *mb, std::optional<scene::I
 	Driver->setRenderStates3DMode();
 
 	mb->bind();
+	/*mb->getVertexBuffer()->getVBO().bind();
+	auto ibo = replaceIndices ? (*replaceIndices)->getIBO() : mb->getIndexBuffer()->getIBO();
+	ibo.bind();
+	auto &vTypeDesc = getVertexTypeDescription(mb->getVertexType());
+	enableAttributeArrays(vTypeDesc, 0);*/
 
 	drawGeneric((void*)0, primitiveCount, mb->getPrimitiveType(), EIT_16BIT);
+
+	/*disableAttributeArrays(vTypeDesc);
+	ibo.unbind();
+	mb->getVertexBuffer()->getVBO().unbind();*/
 
 	mb->unbind();
 }
@@ -50,49 +59,53 @@ void Drawer::drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length, SCo
 }
 
 //! draws a vertex primitive list
-void Drawer::drawVertexPrimitiveList(const void *vertices, u32 vertexCount,
-		const void *indexList, u32 primitiveCount,
-		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+void Drawer::drawVertexPrimitiveList(
+	const void *vertices, u32 vertexCount,
+	const void *indexList, u32 indexCount,
+	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
-	if (!primitiveCount || !vertexCount)
+	if (!indexCount || !vertexCount)
 		return;
 
-	if (!checkPrimitiveCount(primitiveCount))
+	u32 primCount = video::getPrimitiveCount(pType, indexCount);
+	if (!checkPrimitiveCount(primCount))
 		return;
 
 	if ((iType == EIT_16BIT) && (vertexCount > 65536))
 		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
 	Driver->FrameStats.Drawcalls++;
-	Driver->FrameStats.PrimitivesDrawn += primitiveCount;
+	Driver->FrameStats.PrimitivesDrawn += primCount;
 
 	Driver->setRenderStates3DMode();
 
 	auto &vTypeDesc = getVertexTypeDescription(vType);
 	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
 
-	drawGeneric(indexList, primitiveCount, pType, iType);
+	drawGeneric(indexList, primCount, pType, iType);
 
 	disableAttributeArrays(vTypeDesc);
 }
 
 //! draws a vertex primitive list in 2d
-void Drawer::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
-		const void *indexList, u32 primitiveCount,
-		scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+void Drawer::draw2DVertexPrimitiveList(
+	const void *vertices, u32 vertexCount,
+	const void *indexList, u32 indexCount,
+	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
 {
-	if (!primitiveCount || !vertexCount)
+	if (!indexCount || !vertexCount)
 		return;
 
 	if (!vertices)
 		return;
 
-	if (!checkPrimitiveCount(primitiveCount))
+	u32 primCount = video::getPrimitiveCount(pType, indexCount);
+	if (!checkPrimitiveCount(primCount))
 		return;
 
 	if ((iType == EIT_16BIT) && (vertexCount > 65536))
 		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
 	Driver->FrameStats.Drawcalls++;
-	Driver->FrameStats.PrimitivesDrawn += primitiveCount;
+	Driver->FrameStats.PrimitivesDrawn += primCount;
 
 	Driver->setRenderStates2DMode(
 		Driver->Material.MaterialType == EMT_TRANSPARENT_VERTEX_ALPHA,
@@ -103,7 +116,7 @@ void Drawer::draw2DVertexPrimitiveList(const void *vertices, u32 vertexCount,
 	auto &vTypeDesc = getVertexTypeDescription(vType);
 	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
 
-	drawGeneric(indexList, primitiveCount, pType, iType);
+	drawGeneric(indexList, primCount, pType, iType);
 
 	disableAttributeArrays(vTypeDesc);
 }
@@ -404,7 +417,7 @@ void Drawer::draw3DBox(const core::aabbox3d<f32> &box, SColor color)
 		5, 1, 1, 3, 3, 7, 7, 5, 0, 2, 2, 6, 6, 4, 4, 0, 1, 0, 3, 2, 7, 6, 5, 4
 	};
 
-	drawVertexPrimitiveList(v, 8, box_indices, 12, scene::EVT_3D, scene::EPT_LINES, EIT_16BIT);
+	drawVertexPrimitiveList(v, 8, box_indices, 24, scene::EVT_3D, scene::EPT_LINES, EIT_16BIT);
 }
 
 void Drawer::drawQuad(const scene::Vertex2D (&vertices)[4])

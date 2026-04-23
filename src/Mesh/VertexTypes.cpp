@@ -86,6 +86,13 @@ u32 getVertexTypeSize(E_VERTEX_TYPE type)
 
 }
 
+bool operator==(const Vertex3D &a, const Vertex3D &b)
+{
+	return ((a.Pos == b.Pos) &&
+		(a.Normal == b.Normal) &&
+		(a.Color == b.Color) &&
+		(a.TCoords == b.TCoords));
+}
 bool operator<(const Vertex3D &a, const Vertex3D &b)
 {
 	return ((a.Pos < b.Pos) ||

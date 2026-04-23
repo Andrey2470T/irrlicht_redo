@@ -6,14 +6,7 @@
 
 #include <vector>
 #include "IIndexBuffer.h"
-
-// Define to receive warnings when violating the hw mapping hints
-//#define INDEXBUFFER_HINT_DEBUG
-
-#ifdef INDEXBUFFER_HINT_DEBUG
-#include "../src/os.h"
-#endif
-
+#include "Video/HWBuffer.h"
 
 namespace scene
 {
@@ -23,7 +16,14 @@ class CIndexBuffer final : public IIndexBuffer
 {
 public:
 	//! Default constructor for empty buffer
-	CIndexBuffer() {}
+	CIndexBuffer()
+		: IBO(video::HWBT_INDEX)
+	{}
+
+	~CIndexBuffer()
+	{
+		IBO.destroy();
+	}
 
 	video::E_INDEX_TYPE getType() const override
 	{
@@ -46,8 +46,49 @@ public:
 		return static_cast<u32>(Data.size());
 	}
 
+	E_HARDWARE_MAPPING getHardwareMappingHint() const override
+	{
+		return MappingHint;
+	}
+
+	void setHardwareMappingHint(E_HARDWARE_MAPPING NewMappingHint) override
+	{
+		MappingHint = NewMappingHint;
+	}
+
+	void setDirty() override
+	{
+		Dirty = true;
+	}
+
+	bool getDirty() const override
+	{
+		return Dirty;
+	}
+
+	const video::HWBuffer &getIBO() const override
+	{
+		return IBO;
+	}
+
+	bool reload(video::VideoDriver *driver) override
+	{
+		if (!Dirty || MappingHint == EHM_NEVER)
+			return false;
+
+		Dirty = false;
+
+		return IBO.upload(Data.data(), sizeof(T) * Data.size(), 0, MappingHint);
+	}
+
 	//! Indices of this buffer
 	std::vector<T> Data;
+
+private:
+	bool Dirty = true;
+	//! hardware mapping hint
+	E_HARDWARE_MAPPING MappingHint = EHM_NEVER;
+	mutable video::HWBuffer IBO;
 };
 
 //! Standard 16-bit buffer

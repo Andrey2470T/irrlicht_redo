@@ -311,7 +311,7 @@ void CAnimatedMeshSceneNode::render()
 			driver->setMaterial(debug_mat);
 
 			for (u32 g = 0; g < m->getMeshBufferCount(); ++g) {
-				const IMeshBuffer *mb = m->getMeshBuffer(g);
+				IMeshBuffer *mb = m->getMeshBuffer(g);
 				if (RenderFromIdentity)
 					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix);
 				else if (Mesh->getMeshType() == EAMT_SKINNED)

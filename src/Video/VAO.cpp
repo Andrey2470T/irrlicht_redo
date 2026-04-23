@@ -5,6 +5,7 @@
 #include "VAO.h"
 #include "Common.h"
 #include "Video/VideoDriver.h"
+#include "Video/HWBuffer.h"
 
 #include <cassert>
 
@@ -25,52 +26,34 @@ void VAO::unbind() const
 	glBindVertexArray(0);
 }
 
-bool VAO::upload(
-	VideoDriver *driver,
-	const void *vertexData, size_t vertexCount,
-	const void *indexData, size_t indexCount,
-	const scene::VertexDescriptor &vertexDesc,
-	size_t vertexOffset, size_t indexOffset,
-	scene::E_HARDWARE_MAPPING vertexUsage,
-	scene::E_HARDWARE_MAPPING indexUsage,
-	bool mustShrink)
+void VAO::update(
+	VideoDriver *driver, const scene::VertexDescriptor &vertexDesc,
+	const HWBuffer &newVBO, const HWBuffer &newIBO)
 {
-	u32 vertexDataSize = vertexCount * vertexDesc.Size;
-	u32 indexDataSize = indexCount * sizeof(u16);
-	u32 vertexDataOffset = vertexOffset * vertexDesc.Size;
-	u32 indexDataOffset = indexOffset * sizeof(u16);
-
-	bool uploaded = false;
-
-	if (vertexCount > 0) {
-		vbo.upload(vertexData, vertexDataSize, vertexDataOffset, vertexUsage, mustShrink);
-		uploaded = true;
-	}
-
-	if (indexCount > 0) {
-		ibo.upload(indexData, indexDataSize, indexDataOffset, indexUsage, mustShrink);
-		uploaded = true;
-	}
+	if (newVBO.getID() == VBO && newIBO.getID() == IBO)
+		return;
 
 	if (!ID) {
 		glGenVertexArrays(1, &ID);
 
 		if (!ID)
-			return false;
-
-		bind();
-
-		vbo.bind();
-
-		if (ibo.exists())
-			ibo.bind();
-
-		driver->enableAttributeArrays(vertexDesc, 0);
-
-		unbind();
+			return;
 	}
 
-	return uploaded;
+	bind();
+
+	if (newVBO.exists() && newVBO.getID() != VBO) {
+		newVBO.bind();
+		VBO = newVBO.getID();
+
+		driver->enableAttributeArrays(vertexDesc, 0);
+	}
+	if (newIBO.exists() && newIBO.getID() != IBO) {
+		newIBO.bind();
+		IBO = newIBO.getID();
+	}
+
+	unbind();
 }
 
 void VAO::destroy()
@@ -79,8 +62,8 @@ void VAO::destroy()
 		glDeleteVertexArrays(1, &ID);
 	ID = 0;
 
-	vbo.destroy();
-	ibo.destroy();
+	VBO = 0;
+	IBO = 0;
 }
 
 }
