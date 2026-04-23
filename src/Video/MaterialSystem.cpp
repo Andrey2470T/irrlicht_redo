@@ -142,108 +142,69 @@ s32 MaterialSystem::addHighLevelShaderMaterial(const std::string &vertexShaderPr
 }
 
 s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
-    const io::path &vertexShaderProgramFileName,
-    const io::path &pixelShaderProgramFileName,
-    const io::path &geometryShaderProgramFileName,
-    const c8 *shaderName,
-    scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
-    u32 verticesOut,
-    IShaderConstantSetCallBack *callback,
-    E_MATERIAL_TYPE baseMaterial,
-    s32 userData)
+	const io::path &vertexShaderProgramFileName,
+	const io::path &pixelShaderProgramFileName,
+	const io::path &geometryShaderProgramFileName,
+	const std::string &shaderName,
+	scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
+	u32 verticesOut,
+	IShaderConstantSetCallBack *callback,
+	E_MATERIAL_TYPE baseMaterial,
+	s32 userData)
 {
-	io::IReadFile *vsfile = 0;
-	io::IReadFile *psfile = 0;
-	io::IReadFile *gsfile = 0;
+	std::string vs = "";
+	std::string ps = "";
+	std::string gs = "";
 
 	if (vertexShaderProgramFileName.size()) {
-		vsfile = FileSystem->createAndOpenFile(vertexShaderProgramFileName);
+		auto vsfile = FileSystem->createAndOpenFile(vertexShaderProgramFileName);
 		if (!vsfile) {
 			g_irrlogger->log("Could not open vertex shader program file",
 					vertexShaderProgramFileName, ELL_WARNING);
 		}
+		else {
+			const long size = vsfile->getSize();
+			if (size) {
+				vs.resize(size);
+				vsfile->read((void *)vs.c_str(), size);
+			}
+			vsfile->drop();
+		}
 	}
 
 	if (pixelShaderProgramFileName.size()) {
-		psfile = FileSystem->createAndOpenFile(pixelShaderProgramFileName);
+		auto psfile = FileSystem->createAndOpenFile(pixelShaderProgramFileName);
 		if (!psfile) {
 			g_irrlogger->log("Could not open pixel shader program file",
 					pixelShaderProgramFileName, ELL_WARNING);
 		}
+		else {
+			const long size = psfile->getSize();
+			if (size) {
+				ps.resize(size);
+				psfile->read((void *)ps.c_str(), size);
+			}
+			psfile->drop();
+		}
 	}
 
 	if (geometryShaderProgramFileName.size()) {
-		gsfile = FileSystem->createAndOpenFile(geometryShaderProgramFileName);
+		auto gsfile = FileSystem->createAndOpenFile(geometryShaderProgramFileName);
 		if (!gsfile) {
 			g_irrlogger->log("Could not open geometry shader program file",
 					geometryShaderProgramFileName, ELL_WARNING);
 		}
-	}
-
-	s32 result = addHighLevelShaderMaterialFromFiles(
-			vsfile, psfile, gsfile, shaderName,
-			inType, outType, verticesOut,
-			callback, baseMaterial, userData);
-
-	if (psfile)
-		psfile->drop();
-
-	if (vsfile)
-		vsfile->drop();
-
-	if (gsfile)
-		gsfile->drop();
-
-	return result;
-}
-
-s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
-		io::IReadFile *vertexShaderProgram,
-		io::IReadFile *pixelShaderProgram,
-		io::IReadFile *geometryShaderProgram,
-		const c8 *shaderName,
-		scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
-		u32 verticesOut,
-		IShaderConstantSetCallBack *callback,
-		E_MATERIAL_TYPE baseMaterial,
-		s32 userData)
-{
-    std::string vs = "";
-    std::string ps = "";
-    std::string gs = "";
-
-	if (vertexShaderProgram) {
-		const long size = vertexShaderProgram->getSize();
-		if (size) {
-            vs.resize(size);
-            vertexShaderProgram->read((void *)vs.c_str(), size);
+		else {
+			const long size = gsfile->getSize();
+			if (size) {
+				gs.resize(size);
+				gsfile->read((void *)gs.c_str(), size);
+			}
+			gsfile->drop();
 		}
 	}
 
-	if (pixelShaderProgram) {
-		const long size = pixelShaderProgram->getSize();
-		if (size) {
-			// if both handles are the same we must reset the file
-			if (pixelShaderProgram == vertexShaderProgram)
-				pixelShaderProgram->seek(0);
-            ps.resize(size);
-            pixelShaderProgram->read((void *)ps.c_str(), size);
-		}
-	}
-
-	if (geometryShaderProgram) {
-		const long size = geometryShaderProgram->getSize();
-		if (size) {
-			// if both handles are the same we must reset the file
-			if ((geometryShaderProgram == vertexShaderProgram) ||
-					(geometryShaderProgram == pixelShaderProgram))
-				geometryShaderProgram->seek(0);
-            gs.resize(size);
-            geometryShaderProgram->read((void *)gs.c_str(), size);
-		}
-	}
-
-	s32 result = this->addHighLevelShaderMaterial(
+	s32 result = addHighLevelShaderMaterial(
 			vs, ps, gs, shaderName,
 			inType, outType, verticesOut,
 			callback, baseMaterial, userData);

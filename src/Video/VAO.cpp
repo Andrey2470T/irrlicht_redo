@@ -24,6 +24,8 @@ void VAO::unbind() const
 	if (!ID)
 		return;
 	glBindVertexArray(0);
+	// This call is necessary since the VAO doesn't bind own VBO after itself
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void VAO::update(

@@ -265,6 +265,19 @@ void MaterialRenderer::setUniform3UInt(const std::string &name, core::vector3du 
     glUniform3ui(ShaderObj->getUniformLocation(name), value.X, value.Y, value.Z);
 }
 
+void MaterialRenderer::setUniform4Float(const std::string &name, f32 value[4])
+{
+	glUniform4f(ShaderObj->getUniformLocation(name), value[0], value[1], value[2], value[3]);
+}
+void MaterialRenderer::setUniform4Int(const std::string &name, s32 value[4])
+{
+	glUniform4i(ShaderObj->getUniformLocation(name), value[0], value[1], value[2], value[3]);
+}
+void MaterialRenderer::setUniform4UInt(const std::string &name, u32 value[4])
+{
+	glUniform4ui(ShaderObj->getUniformLocation(name), value[0], value[1], value[2], value[3]);
+}
+
 void MaterialRenderer::setUniform4x4Matrix(const std::string &name, core::matrix4 value)
 {
     glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());

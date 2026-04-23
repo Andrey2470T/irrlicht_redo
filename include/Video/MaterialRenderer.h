@@ -99,6 +99,10 @@ public:
     void setUniform3Int(const std::string &name, core::vector3di value);
     void setUniform3UInt(const std::string &name, core::vector3du value);
 
+	void setUniform4Float(const std::string &name, f32 value[4]);
+	void setUniform4Int(const std::string &name, s32 value[4]);
+	void setUniform4UInt(const std::string &name, u32 value[4]);
+
     void setUniform4x4Matrix(const std::string &name, core::matrix4 value);
 
     void setUniformColorfRGB(const std::string &name, const SColorf &colorf);

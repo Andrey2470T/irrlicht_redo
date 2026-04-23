@@ -90,16 +90,16 @@ public:
 			s32 userData = 0);
 
 	s32 addHighLevelShaderMaterial(
-                const std::string &vertexShaderProgram,
-                const std::string &fragmentShaderProgram = "",
-                const std::string &shaderName = "",
-				IShaderConstantSetCallBack *callback = nullptr,
-				E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
-				s32 userData = 0)
+			const std::string &vertexShaderProgram,
+			const std::string &fragmentShaderProgram = "",
+			const std::string &shaderName = "",
+			IShaderConstantSetCallBack *callback = nullptr,
+			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
+			s32 userData = 0)
 	{
 		return addHighLevelShaderMaterial(
             vertexShaderProgram, fragmentShaderProgram,
-			nullptr, shaderName,
+			"", shaderName,
 			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0,
 			callback, baseMaterial, userData);
 	}
@@ -108,7 +108,7 @@ public:
 			const io::path &vertexShaderProgramFileName,
 			const io::path &pixelShaderProgramFileName,
 			const io::path &geometryShaderProgramFileName,
-			const c8 *shaderName = nullptr,
+			const  std::string &shaderName = "",
 			scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
 			scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
 			u32 verticesOut = 0,
@@ -125,18 +125,6 @@ public:
 
 	friend class VideoDriver;
 private:
-	s32 addHighLevelShaderMaterialFromFiles(
-			io::IReadFile *vertexShaderProgram,
-			io::IReadFile *pixelShaderProgram = 0,
-			io::IReadFile *geometryShaderProgram = 0,
-			const c8 *shaderName = nullptr,
-			scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
-			scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
-			u32 verticesOut = 0,
-			IShaderConstantSetCallBack *callback = nullptr,
-			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
-			s32 userData = 0);
-
 	//! sets the needed renderstates
 	void setRenderStates3DMode();
 
