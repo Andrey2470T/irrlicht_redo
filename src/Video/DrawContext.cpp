@@ -488,16 +488,14 @@ void DrawContext::enableScissorTest(bool scissortest)
     TEST_GL_ERROR(driver);
 }
 
-void DrawContext::setScissorBox(const core::recti &box)
+void DrawContext::setScissorBox(s32 x, s32 y, s32 w, s32 h)
 {
 	if (!curScissorTest.enabled)
 		return;
 
-	glScissor(
-		box.UpperLeftCorner.X, viewport.getHeight()-box.LowerRightCorner.Y,
-		abs(box.getWidth()), abs(box.getHeight()));
+	glScissor(x, y, w, h);
 
-	curScissorTest.box = box;
+	curScissorTest.box = {x, y, x+w, y+h};
 
     TEST_GL_ERROR(driver);
 }

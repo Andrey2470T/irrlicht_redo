@@ -16,33 +16,16 @@ void Drawer::drawMeshBuffer(scene::IMeshBuffer *mb, std::optional<scene::IIndexB
 	FrameStats.HWBuffersUploaded += mb->reload(Driver, replaceIndices);
 
 	u32 indexCount = replaceIndices ? (*replaceIndices)->getCount() : mb->getIndexCount();
-	u32 primitiveCount = getPrimitiveCount(mb->getPrimitiveType(), indexCount);
 	u32 vertexCount = mb->getVertexCount();
-	if (!primitiveCount || !vertexCount)
-		return;
 
-	if (!checkPrimitiveCount(primitiveCount))
+	if (!checkMeshData(mb->getPrimitiveType(), vertexCount, indexCount))
 		return;
-
-	if (vertexCount > 65536)
-		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
-	FrameStats.Drawcalls++;
-	FrameStats.PrimitivesDrawn += primitiveCount;
 
 	Driver->setRenderStates3DMode();
 
 	mb->bind();
-	/*mb->getVertexBuffer()->getVBO().bind();
-	auto ibo = replaceIndices ? (*replaceIndices)->getIBO() : mb->getIndexBuffer()->getIBO();
-	ibo.bind();
-	auto &vTypeDesc = getVertexTypeDescription(mb->getVertexType());
-	enableAttributeArrays(vTypeDesc, 0);*/
 
-	drawGeneric((void*)0, primitiveCount, mb->getPrimitiveType(), EIT_16BIT);
-
-	/*disableAttributeArrays(vTypeDesc);
-	ibo.unbind();
-	mb->getVertexBuffer()->getVBO().unbind();*/
+	drawGeneric((void*)0, indexCount, mb->getPrimitiveType());
 
 	mb->unbind();
 }
@@ -62,26 +45,17 @@ void Drawer::drawMeshBufferNormals(const scene::IMeshBuffer *mb, f32 length, SCo
 void Drawer::drawVertexPrimitiveList(
 	const void *vertices, u32 vertexCount,
 	const void *indexList, u32 indexCount,
-	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
 {
-	if (!indexCount || !vertexCount)
+	if (!checkMeshData(pType, vertexCount, indexCount))
 		return;
-
-	u32 primCount = video::getPrimitiveCount(pType, indexCount);
-	if (!checkPrimitiveCount(primCount))
-		return;
-
-	if ((iType == EIT_16BIT) && (vertexCount > 65536))
-		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
-	Driver->FrameStats.Drawcalls++;
-	Driver->FrameStats.PrimitivesDrawn += primCount;
 
 	Driver->setRenderStates3DMode();
 
 	auto &vTypeDesc = getVertexTypeDescription(vType);
 	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
 
-	drawGeneric(indexList, primCount, pType, iType);
+	drawGeneric(indexList, indexCount, pType);
 
 	disableAttributeArrays(vTypeDesc);
 }
@@ -90,22 +64,10 @@ void Drawer::drawVertexPrimitiveList(
 void Drawer::draw2DVertexPrimitiveList(
 	const void *vertices, u32 vertexCount,
 	const void *indexList, u32 indexCount,
-	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+	scene::E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
 {
-	if (!indexCount || !vertexCount)
+	if (!checkMeshData(pType, vertexCount, indexCount))
 		return;
-
-	if (!vertices)
-		return;
-
-	u32 primCount = video::getPrimitiveCount(pType, indexCount);
-	if (!checkPrimitiveCount(primCount))
-		return;
-
-	if ((iType == EIT_16BIT) && (vertexCount > 65536))
-		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
-	Driver->FrameStats.Drawcalls++;
-	Driver->FrameStats.PrimitivesDrawn += primCount;
 
 	Driver->setRenderStates2DMode(
 		Driver->Material.MaterialType == EMT_TRANSPARENT_VERTEX_ALPHA,
@@ -116,7 +78,7 @@ void Drawer::draw2DVertexPrimitiveList(
 	auto &vTypeDesc = getVertexTypeDescription(vType);
 	enableAttributeArrays(vTypeDesc, reinterpret_cast<uintptr_t>(vertices));
 
-	drawGeneric(indexList, primCount, pType, iType);
+	drawGeneric(indexList, indexCount, pType);
 
 	disableAttributeArrays(vTypeDesc);
 }
@@ -184,12 +146,13 @@ void Drawer::draw2DImage(const GLTexture *texture, const core::rect<s32> &destRe
 
 	const core::dimension2d<u32> &renderTargetSize = Driver->getCurrentRenderTargetSize();
 
+	auto ctxt = Driver->getContext();
 	if (clipRect) {
 		if (!clipRect->isValid())
 			return;
 
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
+		ctxt->enableScissorTest(true);
+		ctxt->setScissorBox(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
 				clipRect->getWidth(), clipRect->getHeight());
 	}
 
@@ -207,7 +170,7 @@ void Drawer::draw2DImage(const GLTexture *texture, const core::rect<s32> &destRe
 	drawQuad(vertices);
 
 	if (clipRect)
-		glDisable(GL_SCISSOR_TEST);
+		ctxt->enableScissorTest(false);
 
 	TEST_GL_ERROR(Driver);
 }
@@ -262,12 +225,13 @@ void Drawer::draw2DImageBatch(const GLTexture *texture,
 
 	const core::dimension2d<u32> &renderTargetSize = Driver->getCurrentRenderTargetSize();
 
+	auto ctxt = Driver->getContext();
 	if (clipRect) {
 		if (!clipRect->isValid())
 			return;
 
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
+		ctxt->enableScissorTest(true);
+		ctxt->setScissorBox(clipRect->UpperLeftCorner.X, renderTargetSize.Height - clipRect->LowerRightCorner.Y,
 				clipRect->getWidth(), clipRect->getHeight());
 	}
 
@@ -317,7 +281,7 @@ void Drawer::draw2DImageBatch(const GLTexture *texture,
 	QuadIndexVBO->unbind();
 
 	if (clipRect)
-		glDisable(GL_SCISSOR_TEST);
+		ctxt->enableScissorTest(false);
 }
 
 //! draw a 2d rectangle
@@ -369,23 +333,21 @@ void Drawer::draw2DRectangle(const core::rect<s32> &position,
 void Drawer::draw2DLine(const core::position2d<s32> &start,
 		const core::position2d<s32> &end, SColor color)
 {
-	{
-		Driver->chooseMaterial2D();
-		Driver->setMaterialTexture(0, 0);
+	Driver->chooseMaterial2D();
+	Driver->setMaterialTexture(0, 0);
 
-		Driver->setRenderStates2DMode(color.getAlpha() < 255, false, false);
+	Driver->setRenderStates2DMode(color.getAlpha() < 255, false, false);
 
-		f32 startX = (f32)start.X;
-		f32 endX   = (f32)end.X;
-		f32 startY = (f32)start.Y;
-		f32 endY   = (f32)end.Y;
+	f32 startX = (f32)start.X;
+	f32 endX   = (f32)end.X;
+	f32 startY = (f32)start.Y;
+	f32 endY   = (f32)end.Y;
 
-		scene::Vertex2D vertices[2];
-		vertices[0] = {{startX, startY}, color, {0, 0}};
-		vertices[1] = {{endX, endY}, color, {1, 1}};
+	scene::Vertex2D vertices[2];
+	vertices[0] = {{startX, startY}, color, {0, 0}};
+	vertices[1] = {{endX, endY}, color, {1, 1}};
 
-		drawArrays(scene::EPT_LINES, scene::Vertex2D::FORMAT, vertices, 2);
-	}
+	drawArrays(scene::EPT_LINES, scene::Vertex2D::FORMAT, vertices, 2);
 }
 
 //! Draws a 3d line.
@@ -398,7 +360,7 @@ void Drawer::draw3DLine(const core::vector3df &start,
 	vertices[0] = {{start.X, start.Y, start.Z}, {0, 0, 1}, color, {0, 0}};
 	vertices[1] = {{end.X, end.Y, end.Z}, {0, 0, 1}, color, {0, 0}};
 
-	drawArrays(scene::EPT_LINES, scene::Vertex2D::FORMAT, vertices, 2);
+	drawArrays(scene::EPT_LINES, scene::Vertex3D::FORMAT, vertices, 2);
 }
 
 //! Draws a 3d axis aligned box.
@@ -417,7 +379,7 @@ void Drawer::draw3DBox(const core::aabbox3d<f32> &box, SColor color)
 		5, 1, 1, 3, 3, 7, 7, 5, 0, 2, 2, 6, 6, 4, 4, 0, 1, 0, 3, 2, 7, 6, 5, 4
 	};
 
-	drawVertexPrimitiveList(v, 8, box_indices, 24, scene::EVT_3D, scene::EPT_LINES, EIT_16BIT);
+	drawVertexPrimitiveList(v, 8, box_indices, 24, scene::EVT_3D, scene::EPT_LINES);
 }
 
 void Drawer::drawQuad(const scene::Vertex2D (&vertices)[4])
@@ -451,44 +413,16 @@ void Drawer::drawElements(scene::E_PRIMITIVE_TYPE primitiveType, const scene::Ve
 }
 
 void Drawer::drawGeneric(
-	const void *indexList, u32 primitiveCount,
-	scene::E_PRIMITIVE_TYPE pType, E_INDEX_TYPE iType)
+	const void *indexList, u32 count,
+	scene::E_PRIMITIVE_TYPE pType)
 {
-	GLenum indexSize = 0;
-
-	switch (iType) {
-	case EIT_16BIT:
-		indexSize = GL_UNSIGNED_SHORT;
-		break;
-	case EIT_32BIT:
-		indexSize = GL_UNSIGNED_INT;
-		break;
-	}
-
 	switch (pType) {
 	case scene::EPT_POINTS:
 	case scene::EPT_POINT_SPRITES:
-		glDrawArrays(GL_POINTS, 0, primitiveCount);
-		break;
-	case scene::EPT_LINE_STRIP:
-		glDrawElements(GL_LINE_STRIP, primitiveCount + 1, indexSize, indexList);
-		break;
-	case scene::EPT_LINE_LOOP:
-		glDrawElements(GL_LINE_LOOP, primitiveCount, indexSize, indexList);
-		break;
-	case scene::EPT_LINES:
-		glDrawElements(GL_LINES, primitiveCount * 2, indexSize, indexList);
-		break;
-	case scene::EPT_TRIANGLE_STRIP:
-		glDrawElements(GL_TRIANGLE_STRIP, primitiveCount + 2, indexSize, indexList);
-		break;
-	case scene::EPT_TRIANGLE_FAN:
-		glDrawElements(GL_TRIANGLE_FAN, primitiveCount + 2, indexSize, indexList);
-		break;
-	case scene::EPT_TRIANGLES:
-		glDrawElements(GL_TRIANGLES, primitiveCount * 3, indexSize, indexList);
+		glDrawArrays(GL_POINTS, 0, count);
 		break;
 	default:
+		glDrawElements(toGLPrimType[pType], count, GL_UNSIGNED_SHORT, indexList);
 		break;
 	}
 }
@@ -552,16 +486,29 @@ void Drawer::destroyQuadIndices()
 	QuadIndexVBO->destroy();
 }
 
-bool Drawer::checkPrimitiveCount(u32 prmCount) const
+bool Drawer::checkMeshData(scene::E_PRIMITIVE_TYPE pType, u32 vertexCount, u32 indexCount)
 {
+	if (!indexCount || !vertexCount)
+		return false;
+
+	u32 primCount = video::getPrimitiveCount(pType, indexCount);
+
 	const u32 m = Driver->GLInfo->getOpenGLVersion().Spec == OpenGLSpec::ES ? 65535 : 0x7fffffff;
 
-	if (prmCount > m) {
+	if (primCount > m) {
 		char tmp[128];
-		snprintf_irr(tmp, sizeof(tmp), "Could not draw triangles, too many primitives(%u), maximum is %u.", prmCount, m);
+		snprintf_irr(tmp, sizeof(tmp), "Could not draw triangles, too many primitives(%u), maximum is %u.", primCount, m);
 		g_irrlogger->log(tmp, ELL_ERROR);
 		return false;
 	}
+
+	if (vertexCount > 65536) {
+		g_irrlogger->log("Too many vertices for 16bit index type, render artifacts may occur.");
+		return false;
+	}
+
+	FrameStats.Drawcalls++;
+	FrameStats.PrimitivesDrawn += getPrimitiveCount(pType, indexCount);
 
 	return true;
 }

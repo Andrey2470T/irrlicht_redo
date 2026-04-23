@@ -177,7 +177,7 @@ public:
 	void setStencilOp(E_STENCIL_OP _sfail_op, E_STENCIL_OP _dpfail_op, E_STENCIL_OP _dppass_op);
 
 	void enableScissorTest(bool scissortest);
-	void setScissorBox(const core::recti &box);
+	void setScissorBox(s32 x, s32 y, s32 w, s32 h);
 
 	void enablePolygonOffset(bool polygonoffset);
 	void setPolygonOffsetParams(f32 slope_scaled, f32 depth_bias);
