@@ -79,8 +79,6 @@ public:
 	void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4 &mat);
 
 	void deleteAllTextures();
-	void removeAllRenderTargets();
-	void removeRenderTarget(RenderTarget *renderTarget);
 
 	u32 getTextureCount() const
 	{
@@ -118,8 +116,6 @@ public:
     {
         return FileSystem;
     }
-
-	RenderTarget *addRenderTarget();
 
 	const std::string &getName();
 	const std::string &getVendorInfo();
@@ -243,7 +239,6 @@ private:
 
 	core::array<SSurface> Textures;
 
-	core::array<RenderTarget *> RenderTargets;
 	RenderTarget *SharedRenderTarget;
     core::array<GLTexture *> SharedDepthTextures;
 	RenderTarget *CurrentRenderTarget;

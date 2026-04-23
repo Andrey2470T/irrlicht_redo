@@ -62,7 +62,6 @@ VideoDriver::~VideoDriver()
 	if (MeshManipulator)
 		MeshManipulator->drop();
 
-	removeAllRenderTargets();
 	deleteAllTextures();
 
 	Device->drop();
@@ -145,14 +144,6 @@ void VideoDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matrix4
 {
 	Matrices[state] = mat;
 	Transformation3DChanged = true;
-}
-
-RenderTarget *VideoDriver::addRenderTarget()
-{
-	RenderTarget *renderTarget = new RenderTarget(this);
-	RenderTargets.push_back(renderTarget);
-
-	return renderTarget;
 }
 
 //! prints error if an error happened.
@@ -418,7 +409,7 @@ bool VideoDriver::setRenderTarget(GLTexture *texture, u16 clearFlag, SColor clea
 	if (texture) {
 		// create render target if require.
 		if (!SharedRenderTarget)
-			SharedRenderTarget = addRenderTarget();
+			SharedRenderTarget = new RenderTarget(this);
 
         GLTexture *depthTexture = 0;
 
@@ -583,39 +574,12 @@ void VideoDriver::deleteAllTextures()
 {
 	setMaterial(SMaterial());
 
-	for (u32 i = 0; i < RenderTargets.size(); ++i)
-		RenderTargets[i]->setTextures({nullptr}, nullptr);
-
 	for (u32 i = 0; i < Textures.size(); ++i)
 		Textures[i].Surface->drop();
 
 	Textures.clear();
 
 	SharedDepthTextures.clear();
-}
-
-void VideoDriver::removeRenderTarget(RenderTarget *renderTarget)
-{
-	if (!renderTarget)
-		return;
-
-	for (u32 i = 0; i < RenderTargets.size(); ++i) {
-		if (RenderTargets[i] == renderTarget) {
-			RenderTargets[i]->drop();
-			RenderTargets.erase(i);
-			return;
-		}
-	}
-}
-
-void VideoDriver::removeAllRenderTargets()
-{
-	for (u32 i = 0; i < RenderTargets.size(); ++i)
-		RenderTargets[i]->drop();
-
-	RenderTargets.clear();
-
-	SharedRenderTarget = nullptr;
 }
 
 GLTexture *VideoDriver::addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format)
