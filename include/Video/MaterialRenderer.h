@@ -42,13 +42,14 @@ public:
     Shader(
         const std::string &vertexShaderCode,
         const std::string &fragmentShaderCode,
-        const std::string &geometryShaderCode = "");
+		const std::string &geometryShaderCode = "",
+		const scene::VertexDescriptor &vDesc=scene::Vertex3D::FORMAT);
 
     ~Shader();
 
 private:
     u32 createShader(E_SHADER_TYPE, const std::string &code);
-    void createProgram();
+	void createProgram(const scene::VertexDescriptor &vDesc=scene::Vertex3D::FORMAT);
     s32 getUniformLocation(const std::string &name);
 
     friend class MaterialRenderer;
@@ -65,7 +66,7 @@ public:
             const std::string &debugName = "",
 			IShaderConstantSetCallBack *callback = 0,
 			E_MATERIAL_TYPE baseMaterial = EMT_SOLID,
-			s32 userData = 0);
+			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
     ~MaterialRenderer();
 
@@ -80,6 +81,11 @@ public:
 	bool isTransparent() const
 	{
 		return (Alpha || Blending);
+	}
+
+	const scene::VertexDescriptor &getVertexDescriptor() const
+	{
+		return VertexDesc;
 	}
 
     void setUniformFloat(const std::string &name, f32 value);
@@ -127,6 +133,8 @@ protected:
     std::unique_ptr<Shader> ShaderObj;
 	bool Alpha;
 	bool Blending;
+
+	scene::VertexDescriptor VertexDesc;
 
 	s32 UserData;
 };

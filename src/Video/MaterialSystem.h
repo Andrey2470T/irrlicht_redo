@@ -87,7 +87,7 @@ public:
 			u32 verticesOut = 0,
 			IShaderConstantSetCallBack *callback = nullptr,
 			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
-			s32 userData = 0);
+			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
 	s32 addHighLevelShaderMaterial(
 			const std::string &vertexShaderProgram,
@@ -95,13 +95,13 @@ public:
 			const std::string &shaderName = "",
 			IShaderConstantSetCallBack *callback = nullptr,
 			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
-			s32 userData = 0)
+			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT)
 	{
 		return addHighLevelShaderMaterial(
             vertexShaderProgram, fragmentShaderProgram,
 			"", shaderName,
 			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0,
-			callback, baseMaterial, userData);
+			callback, baseMaterial, vDesc);
 	}
 
 	s32 addHighLevelShaderMaterialFromFiles(
@@ -114,7 +114,7 @@ public:
 			u32 verticesOut = 0,
 			IShaderConstantSetCallBack *callback = nullptr,
 			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
-			s32 userData = 0);
+			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
 	void deleteShaderMaterial(s32 material);
 

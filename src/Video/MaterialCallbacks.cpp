@@ -19,7 +19,7 @@ void MaterialBaseCB::OnSetMaterial(const SMaterial &material)
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
 }
 
-void MaterialBaseCB::OnSetUniforms(MaterialRenderer *renderer, s32 userData)
+void MaterialBaseCB::OnSetUniforms(MaterialRenderer *renderer)
 {
 	VideoDriver *driver = renderer->getVideoDriver();
 
@@ -67,9 +67,9 @@ void MaterialSolidCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void MaterialSolidCB::OnSetUniforms(MaterialRenderer *renderer, s32 userData)
+void MaterialSolidCB::OnSetUniforms(MaterialRenderer *renderer)
 {
-	MaterialBaseCB::OnSetUniforms(renderer, userData);
+	MaterialBaseCB::OnSetUniforms(renderer);
 
     VideoDriver *driver = renderer->getVideoDriver();
 
@@ -105,9 +105,9 @@ void MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
-void MaterialOneTextureBlendCB::OnSetUniforms(MaterialRenderer *renderer, s32 userData)
+void MaterialOneTextureBlendCB::OnSetUniforms(MaterialRenderer *renderer)
 {
-	MaterialBaseCB::OnSetUniforms(renderer, userData);
+	MaterialBaseCB::OnSetUniforms(renderer);
 
 	VideoDriver *driver = renderer->getVideoDriver();
 
@@ -125,7 +125,7 @@ void Material2DCB::OnSetMaterial(const SMaterial &material)
 	TextureUsage0 = material.TextureLayers[0].Texture ? 1 : 0;
 }
 
-void Material2DCB::OnSetUniforms(MaterialRenderer *renderer, s32 userData)
+void Material2DCB::OnSetUniforms(MaterialRenderer *renderer)
 {
 	renderer->setUniformFloat("uThickness", Thickness);
 

@@ -4,7 +4,6 @@
 
 #include "Video/MaterialRenderer.h"
 
-#include "Enums/EVertexAttributes.h"
 #include "Video/IShaderConstantSetCallBack.h"
 #include "Video/VideoDriver.h"
 #include "Device/Logger.h"
@@ -19,17 +18,17 @@ namespace video
 {
 
 Shader::Shader(
-    const std::string &vertexShaderCode,
-    const std::string &fragmentShaderCode,
-    const std::string &geometryShaderCode)
+	const std::string &vertexShaderCode,
+	const std::string &fragmentShaderCode,
+	const std::string &geometryShaderCode, const scene::VertexDescriptor &vDesc)
 {
     VertexShaderID = createShader(EST_VERTEX, vertexShaderCode);
     FragmentShaderID = createShader(EST_FRAGMENT, fragmentShaderCode);
 
-    if (!geometryShaderCode.empty())
+	if (!geometryShaderCode.empty())
         GeometryShaderID = createShader(EST_GEOMETRY, geometryShaderCode);
 
-    createProgram();
+	createProgram(vDesc);
 }
 
 Shader::~Shader()
@@ -79,7 +78,7 @@ u32 Shader::createShader(E_SHADER_TYPE shaderType, const std::string &code)
     return shader;
 }
 
-void Shader::createProgram()
+void Shader::createProgram(const scene::VertexDescriptor &vDesc)
 {
     GLuint program = glCreateProgram();
     glAttachShader(program, VertexShaderID);
@@ -88,8 +87,8 @@ void Shader::createProgram()
     if (GeometryShaderID != 0)
         glAttachShader(program, GeometryShaderID);
 
-    for (size_t i = 0; i < EVA_COUNT; ++i)
-        glBindAttribLocation(program, i, sBuiltInVertexAttributeNames[i]);
+	for (size_t i = 0; i < vDesc.Attributes.size(); ++i)
+		glBindAttribLocation(program, i, vDesc.Attributes[i].Name.c_str());
 
     glLinkProgram(program);
 
@@ -127,15 +126,15 @@ s32 Shader::getUniformLocation(const std::string &name)
 }
 
 MaterialRenderer::MaterialRenderer(
-    VideoDriver *driver,
-    s32 &outMaterialTypeNr,
-    const std::string &vertexShaderProgram,
-    const std::string &fragmentShaderProgram,
-    const std::string &debugName,
-    IShaderConstantSetCallBack *callback,
-    E_MATERIAL_TYPE baseMaterial,
-    s32 userData) :
-        Driver(driver), CallBack(callback), Alpha(false), Blending(false), UserData(userData)
+	VideoDriver *driver,
+	s32 &outMaterialTypeNr,
+	const std::string &vertexShaderProgram,
+	const std::string &fragmentShaderProgram,
+	const std::string &debugName,
+	IShaderConstantSetCallBack *callback,
+	E_MATERIAL_TYPE baseMaterial,
+	const scene::VertexDescriptor &vDesc) :
+		Driver(driver), CallBack(callback), Alpha(false), Blending(false), VertexDesc(vDesc)
 {
 	switch (baseMaterial) {
 	case EMT_TRANSPARENT_VERTEX_ALPHA:
@@ -169,7 +168,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
 {
 	outMaterialTypeNr = -1;
 
-	ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode);
+	ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode, "", VertexDesc);
 
     if (!debugName.empty()) {
         Driver->GLInfo->ObjectLabel(GL_PROGRAM, ShaderObj->ProgramID, debugName.c_str());
@@ -182,7 +181,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
 bool MaterialRenderer::OnRender(scene::E_VERTEX_TYPE vtxtype)
 {
     if (CallBack)
-		CallBack->OnSetUniforms(this, UserData);
+		CallBack->OnSetUniforms(this);
 
 	return true;
 }

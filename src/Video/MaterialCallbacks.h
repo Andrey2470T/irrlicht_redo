@@ -16,7 +16,7 @@ class MaterialBaseCB : public IShaderConstantSetCallBack
 {
 public:
 	void OnSetMaterial(const SMaterial &material) override;
-	void OnSetUniforms(MaterialRenderer *renderer, s32 userData) override;
+	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
     f32 Thickness = 1.0f;
@@ -27,7 +27,7 @@ class MaterialSolidCB : public MaterialBaseCB
 {
 public:
 	void OnSetMaterial(const SMaterial &material) override;
-	void OnSetUniforms(MaterialRenderer *renderer, s32 userData) override;
+	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
     f32 AlphaRef = 0.5f;
@@ -39,7 +39,7 @@ class MaterialOneTextureBlendCB : public MaterialBaseCB
 {
 public:
 	void OnSetMaterial(const SMaterial &material) override;
-	void OnSetUniforms(MaterialRenderer *renderer, s32 userData) override;
+	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
     s32 BlendType = 0;
@@ -51,7 +51,7 @@ class Material2DCB : public IShaderConstantSetCallBack
 {
 public:
 	void OnSetMaterial(const SMaterial &material) override;
-	void OnSetUniforms(MaterialRenderer *renderer, s32 userData) override;
+	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 private:
 	f32 Thickness = 1.0f;

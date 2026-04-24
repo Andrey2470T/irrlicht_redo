@@ -12,53 +12,53 @@ static inline u32 get_offset(M T::* member) {
 const VertexDescriptor Vertex3D::FORMAT = {
 	sizeof(Vertex3D),
 	{
-		{video::EVA_POSITION, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::Pos)},
-		{video::EVA_NORMAL, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::Normal)},
-		{video::EVA_COLOR, 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex3D::Color)},
-		{video::EVA_TCOORD0, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::TCoords)}
+		{"inPosition", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::Pos)},
+		{"inNormal", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::Normal)},
+		{"inColor", 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex3D::Color)},
+		{"inTexCoord0", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3D::TCoords)}
 	},
 };
 
 const VertexDescriptor Vertex2TCoords::FORMAT = {
 	sizeof(Vertex2TCoords),
 	{
-		{video::EVA_POSITION, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::Pos)},
-		{video::EVA_NORMAL, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::Normal)},
-		{video::EVA_COLOR, 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex2TCoords::Color)},
-		{video::EVA_TCOORD0, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::TCoords)},
-		{video::EVA_TCOORD1, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::TCoords2)}
+		{"inPosition", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::Pos)},
+		{"inNormal", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::Normal)},
+		{"inColor", 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex2TCoords::Color)},
+		{"inTexCoord0", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::TCoords)},
+		{"inTexCoord1", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2TCoords::TCoords2)}
 	},
 };
 
 const VertexDescriptor VertexTangents::FORMAT = {
 	sizeof(VertexTangents),
 	{
-		{video::EVA_POSITION, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Pos)},
-		{video::EVA_NORMAL, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Normal)},
-		{video::EVA_COLOR, 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&VertexTangents::Color)},
-		{video::EVA_TCOORD0, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::TCoords)},
-		{video::EVA_TANGENT, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Tangent)},
-		{video::EVA_BINORMAL, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Binormal)}
+		{"inPosition", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Pos)},
+		{"inNormal", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Normal)},
+		{"inColor", 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&VertexTangents::Color)},
+		{"inTexCoord0", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::TCoords)},
+		{"inTagent", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Tangent)},
+		{"inBinormal", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&VertexTangents::Binormal)}
 	},
 };
 
 const VertexDescriptor Vertex2D::FORMAT = {
 	sizeof(Vertex2D),
 	{
-		{video::EVA_POSITION, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2D::Pos)},
-		{video::EVA_COLOR, 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex2D::Color)},
-		{video::EVA_TCOORD0, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2D::TCoords)}
+		{"inPosition", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2D::Pos)},
+		{"inColor", 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex2D::Color)},
+		{"inTexCoord0", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex2D::TCoords)}
 	},
 };
 
 const VertexDescriptor Vertex3DExt::FORMAT = {
 	sizeof(Vertex3DExt),
 	{
-		{video::EVA_POSITION, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Pos)},
-		{video::EVA_NORMAL, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Normal)},
-		{video::EVA_COLOR, 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex3DExt::Color)},
-		{video::EVA_TCOORD0, 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::TCoords)},
-		{video::EVA_AUX, 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Aux)}
+		{"inPosition", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Pos)},
+		{"inNormal", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Normal)},
+		{"inColor", 4, VertexAttribute::Type::UBYTE, VertexAttribute::Mode::NORMALIZED, get_offset(&Vertex3DExt::Color)},
+		{"inTexCoord0", 2, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::TCoords)},
+		{"inAux", 3, VertexAttribute::Type::FLOAT, VertexAttribute::Mode::REGULAR, get_offset(&Vertex3DExt::Aux)}
 	},
 };
 

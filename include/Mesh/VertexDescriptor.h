@@ -1,5 +1,5 @@
 #include "Utils/irrTypes.h"
-#include "Enums/EVertexAttributes.h"
+#include <string>
 #include <vector>
 
 namespace scene
@@ -20,7 +20,7 @@ struct VertexAttribute
 		NORMALIZED,
 		INTEGER,
 	};
-	u8 Index;
+	std::string Name;
 	u8 Count;
 	Type Type;
 	Mode mode;

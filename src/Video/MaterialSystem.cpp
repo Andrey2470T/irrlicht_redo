@@ -1,6 +1,5 @@
 #include "MaterialSystem.h"
 
-#include "Enums/EVertexAttributes.h"
 #include "Video/IShaderConstantSetCallBack.h"
 #include "Video/VideoDriver.h"
 #include "Device/Logger.h"
@@ -129,13 +128,13 @@ s32 MaterialSystem::addHighLevelShaderMaterial(const std::string &vertexShaderPr
     u32 verticesOut,
     IShaderConstantSetCallBack *callback,
     E_MATERIAL_TYPE baseMaterial,
-    s32 userData)
+	const scene::VertexDescriptor &vDesc)
 {
 	s32 nr = -1;
 	MaterialRenderer *r = new MaterialRenderer(
 			Driver, nr, vertexShaderProgram,
             fragmentShaderProgram, shaderName,
-			callback, baseMaterial, userData);
+			callback, baseMaterial, vDesc);
 
 	r->drop();
 	return nr;
@@ -150,7 +149,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 	u32 verticesOut,
 	IShaderConstantSetCallBack *callback,
 	E_MATERIAL_TYPE baseMaterial,
-	s32 userData)
+	const scene::VertexDescriptor &vDesc)
 {
 	std::string vs = "";
 	std::string ps = "";
@@ -207,7 +206,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 	s32 result = addHighLevelShaderMaterial(
 			vs, ps, gs, shaderName,
 			inType, outType, verticesOut,
-			callback, baseMaterial, userData);
+			callback, baseMaterial, vDesc);
 
 	return result;
 }
@@ -477,33 +476,33 @@ void MaterialSystem::createMaterialRenderers()
 	// EMT_SOLID
 	core::stringc FragmentShader = ShadersPath + "Solid.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Solid",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID);
 
 	// EMT_TRANSPARENT_ALPHA_CHANNEL
 	FragmentShader = ShadersPath + "TransparentAlphaChannel.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannel",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL);
 
 	// EMT_TRANSPARENT_ALPHA_CHANNEL_REF
 	FragmentShader = ShadersPath + "TransparentAlphaChannelRef.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannelRef",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID);
 
 	// EMT_TRANSPARENT_VERTEX_ALPHA
 	FragmentShader = ShadersPath + "TransparentVertexAlpha.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentVertexAlpha",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL);
 
 	// EMT_ONETEXTURE_BLEND
 	FragmentShader = ShadersPath + "OneTextureBlend.fsh";
 	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "OneTextureBlend",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND);
 
 	// EMT_2D
 	VertexShader = ShadersPath + "Renderer2D.vsh";
 	FragmentShader = ShadersPath + "Renderer2D.fsh";
 	MaterialRenderer2DIdx = addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Renderer2D",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Renderer2DCB, EMT_SOLID, 0);
+			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Renderer2DCB, EMT_SOLID, scene::Vertex2D::FORMAT);
 
 	// Drop callbacks.
 

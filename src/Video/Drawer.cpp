@@ -435,17 +435,18 @@ std::array<GLenum, (u8)scene::VertexAttribute::Type::COUNT> toGLType = {
 
 void Drawer::enableAttributeArrays(const scene::VertexDescriptor &vertexDesc, uintptr_t verticesBase)
 {
-	for (auto &attr : vertexDesc.Attributes) {
-		glEnableVertexAttribArray(attr.Index);
+	for (size_t i = 0; i < vertexDesc.Attributes.size(); i++) {
+		auto &attr = vertexDesc.Attributes[i];
+		glEnableVertexAttribArray(i);
 		switch (attr.mode) {
 		case scene::VertexAttribute::Mode::REGULAR:
-			glVertexAttribPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], GL_FALSE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribPointer(i, attr.Count, toGLType[(u8)attr.Type], GL_FALSE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		case scene::VertexAttribute::Mode::NORMALIZED:
-			glVertexAttribPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], GL_TRUE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribPointer(i, attr.Count, toGLType[(u8)attr.Type], GL_TRUE, vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		case scene::VertexAttribute::Mode::INTEGER:
-			glVertexAttribIPointer(attr.Index, attr.Count, toGLType[(u8)attr.Type], vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
+			glVertexAttribIPointer(i, attr.Count, toGLType[(u8)attr.Type], vertexDesc.Size, reinterpret_cast<void *>(verticesBase + attr.Offset));
 			break;
 		}
 	}
@@ -453,8 +454,8 @@ void Drawer::enableAttributeArrays(const scene::VertexDescriptor &vertexDesc, ui
 
 void Drawer::disableAttributeArrays(const scene::VertexDescriptor &vertexDesc)
 {
-	for (auto &attr : vertexDesc.Attributes)
-		glDisableVertexAttribArray(attr.Index);
+	for (size_t i = 0; i < vertexDesc.Attributes.size(); i++)
+		glDisableVertexAttribArray(i);
 }
 
 void Drawer::initQuadsIndices(u32 max_vertex_count)
