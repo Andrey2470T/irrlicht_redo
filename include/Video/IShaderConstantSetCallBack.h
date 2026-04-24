@@ -15,7 +15,7 @@ class SMaterial;
 //! Interface making it possible to set constants for gpu programs every frame.
 /** Implement this interface in an own class and pass a pointer to it to one of
 the methods in IGPUProgrammingServices when creating a shader. The
-OnSetConstants method will be called every frame now. */
+OnSetUniforms method will be called every frame now. */
 class IShaderConstantSetCallBack : public virtual IReferenceCounted
 {
 public:
@@ -31,7 +31,7 @@ public:
 			UsedMaterial=&material;
 		}
 
-		OnSetConstants(IMaterialRenderer* renderer, s32 userData)
+		OnSetUniforms(IMaterialRenderer* renderer, s32 userData)
 		{
 			renderer->setVertexShaderConstant("myColor", reinterpret_cast<f32*>(&UsedMaterial->color), 4);
 		}
@@ -43,13 +43,13 @@ public:
 	//! Called by the engine when the vertex and/or pixel shader constants for an material renderer should be set.
 	/**
 	Implement the IShaderConstantSetCallBack in an own class and implement your own
-	OnSetConstants method using the given IMaterialRendererServices interface.
+	OnSetUniforms method using the given IMaterialRendererServices interface.
 	Pass a pointer to this class to one of the methods in IGPUProgrammingServices
-	when creating a shader. The OnSetConstants method will now be called every time
+	when creating a shader. The OnSetUniforms method will now be called every time
 	before geometry is being drawn using your shader material. A sample implementation
 	would look like this:
 	\code
-	virtual void OnSetConstants(video::IMaterialRenderer* renderer, s32 userData)
+	virtual void OnSetUniforms(video::IMaterialRenderer* renderer, s32 userData)
 	{
 		video::VideoDriver* driver = renderer->getVideoDriver();
 
@@ -71,7 +71,7 @@ public:
 	\param services: Pointer to an interface providing methods to set the constants for the shader.
 	\param userData: Userdata int which can be specified when creating the shader.
 	*/
-	virtual void OnSetConstants(MaterialRenderer *renderer, s32 userData) = 0;
+	virtual void OnSetUniforms(MaterialRenderer *renderer, s32 userData) = 0;
 };
 
 } // end namespace video

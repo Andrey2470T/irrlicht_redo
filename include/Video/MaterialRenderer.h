@@ -52,7 +52,6 @@ private:
     s32 getUniformLocation(const std::string &name);
 
     friend class MaterialRenderer;
-    friend class COpenGL3Renderer2D;
 };
 
 class MaterialRenderer : public IReferenceCounted
@@ -104,6 +103,8 @@ public:
 	void setUniform4UInt(const std::string &name, u32 value[4]);
 
     void setUniform4x4Matrix(const std::string &name, core::matrix4 value);
+
+	void setUniformFloatStruct(const std::string &name, const std::unordered_map<std::string, f32> &values);
 
     void setUniformColorfRGB(const std::string &name, const SColorf &colorf);
     void setUniformColorfRGBA(const std::string &name, const SColorf &colorf);

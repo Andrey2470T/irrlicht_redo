@@ -182,7 +182,7 @@ void MaterialRenderer::init(s32 &outMaterialTypeNr,
 bool MaterialRenderer::OnRender(scene::E_VERTEX_TYPE vtxtype)
 {
     if (CallBack)
-		CallBack->OnSetConstants(this, UserData);
+		CallBack->OnSetUniforms(this, UserData);
 
 	return true;
 }
@@ -281,6 +281,15 @@ void MaterialRenderer::setUniform4UInt(const std::string &name, u32 value[4])
 void MaterialRenderer::setUniform4x4Matrix(const std::string &name, core::matrix4 value)
 {
     glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());
+}
+
+void MaterialRenderer::setUniformFloatStruct(const std::string &name, const std::unordered_map<std::string, f32> &values)
+{
+	for (const auto &value : values) {
+		std::string uniform_name = name + "." + value.first;
+
+		setUniformFloat(uniform_name, value.second);
+	}
 }
 
 void MaterialRenderer::setUniformColorfRGB(const std::string &name, const SColorf &colorf)
