@@ -126,4 +126,7 @@ struct CompareVertex3D {
 	}
 };
 
+bool operator==(const VertexAttribute &attr1, const VertexAttribute &attr2);
+bool operator==(const VertexDescriptor &desc1, const VertexDescriptor &desc2);
+
 } // end namespace video

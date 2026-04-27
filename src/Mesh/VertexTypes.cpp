@@ -101,4 +101,14 @@ bool operator<(const Vertex3D &a, const Vertex3D &b)
 		((a.Pos == b.Pos) && (a.Normal == b.Normal) && (a.Color == b.Color) && (a.TCoords < b.TCoords)));
 }
 
+bool operator==(const VertexAttribute &attr1, const VertexAttribute &attr2)
+{
+	return (attr1.Name == attr2.Name && attr1.Count == attr2.Count &&
+		attr1.Type == attr2.Type && attr1.mode == attr2.mode && attr1.Offset == attr2.Offset);
+}
+bool operator==(const VertexDescriptor &desc1, const VertexDescriptor &desc2)
+{
+	return (desc1.Size == desc2.Size && desc1.Attributes == desc2.Attributes);
+}
+
 }
