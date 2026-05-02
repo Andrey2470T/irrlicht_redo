@@ -230,7 +230,7 @@ const c8 *const ZWriteNames[] = {
 /** SMaterial might ignore some textures in most function, like assignment and comparison,
 	when SDLDeviceParameters::MaxTextureUnits is set to a lower number.
 */
-constexpr static u32 MATERIAL_MAX_TEXTURES = 4;
+constexpr static u32 MATERIAL_MAX_TEXTURES = 8;
 
 //! Struct for holding parameters for a material renderer
 // Note for implementors: Serialization is in CNullDriver
