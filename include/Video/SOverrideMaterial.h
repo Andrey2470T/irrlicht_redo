@@ -150,11 +150,8 @@ struct SOverrideMaterial
 					case EMP_USE_MIP_MAPS:
 						material.UseMipMaps = Material.UseMipMaps;
 						break;
-					case EMP_BLEND_OPERATION:
-						material.BlendOperation = Material.BlendOperation;
-						break;
-					case EMP_BLEND_FACTOR:
-						material.BlendFactor = Material.BlendFactor;
+					case EMP_BLEND_MODE:
+						material.BlendMode = Material.BlendMode;
 						break;
 					case EMP_POLYGON_OFFSET:
 						material.PolygonOffsetDepthBias = Material.PolygonOffsetDepthBias;

@@ -558,8 +558,7 @@ core::dimension2du VideoDriver::getMaxTextureSize() const
 
 bool VideoDriver::needsTransparentRenderPass(const video::SMaterial &material) const
 {
-    video::MaterialRenderer *rnd = getMaterialRenderer(material.MaterialType);
-	if (rnd && rnd->isTransparent())
+	if (material.isTransparent())
 		return true;
 
 	return material.isAlphaBlendOperation();

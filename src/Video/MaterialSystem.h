@@ -82,11 +82,7 @@ public:
             const std::string &fragmentShaderProgram,
             const std::string &geometryShaderProgram = "",
             const std::string &shaderName = "",
-			scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
-			scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
-			u32 verticesOut = 0,
 			IShaderConstantSetCallBack *callback = nullptr,
-			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
 	s32 addHighLevelShaderMaterial(
@@ -94,14 +90,11 @@ public:
 			const std::string &fragmentShaderProgram = "",
 			const std::string &shaderName = "",
 			IShaderConstantSetCallBack *callback = nullptr,
-			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT)
 	{
 		return addHighLevelShaderMaterial(
             vertexShaderProgram, fragmentShaderProgram,
-			"", shaderName,
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0,
-			callback, baseMaterial, vDesc);
+			"", shaderName, callback, vDesc);
 	}
 
 	s32 addHighLevelShaderMaterialFromFiles(
@@ -109,11 +102,7 @@ public:
 			const io::path &pixelShaderProgramFileName,
 			const io::path &geometryShaderProgramFileName,
 			const  std::string &shaderName = "",
-			scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
-			scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
-			u32 verticesOut = 0,
 			IShaderConstantSetCallBack *callback = nullptr,
-			E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
 	void deleteShaderMaterial(s32 material);
@@ -152,7 +141,9 @@ private:
 
     bool setMaterialTexture(u32 layerIdx, const GLTexture *texture);
 
-	void loadShaderData(const io::path &vertexShaderName, const io::path &fragmentShaderName, c8 **vertexShaderData, c8 **fragmentShaderData);
+	void loadShaderData(
+		const io::path &vertexShaderName, const io::path &fragmentShaderName,
+		c8 **vertexShaderData, c8 **fragmentShaderData);
 
 	bool getWriteZBuffer(const SMaterial &material) const;
 };

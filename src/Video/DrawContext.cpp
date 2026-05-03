@@ -9,36 +9,6 @@
 namespace video
 {
 
-// Standard blend modes setup functions
-/*static void setNormalMode(DrawContext *ctxt)
-{
-    ctxt->setBlendFunc(BF_ONE, BF_ZERO);
-    ctxt->setBlendOp(BO_ADD);
-}
-
-static void setAlphaMode(DrawContext *ctxt)
-{
-    ctxt->enableBlend(true);
-    ctxt->setBlendFunc(BF_SRC_ALPHA, BF_ONE_MINUS_SRC_ALPHA);
-    ctxt->setBlendOp(BO_ADD);
-}
-
-static void setAddMode(DrawContext *ctxt)
-{
-    ctxt->enableBlend(true);
-    ctxt->setBlendColor(img::colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
-    ctxt->setBlendOp(BO_ADD);
-}
-
-static void setSubtractMode(DrawContext *ctxt)
-{
-    ctxt->enableBlend(true);
-    ctxt->setBlendColor(img::colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    ctxt->setBlendFunc(BF_SRC_COLOR, BF_DST_COLOR);
-    ctxt->setBlendOp(BO_SUBTRACT);
-}*/
-
 std::array<GLenum, EBO_COUNT> toGLBlendOp = {
 	0,
 	GL_FUNC_ADD,
@@ -265,28 +235,6 @@ void DrawContext::enableBlend(bool blend)
     }
 }
 
-/*void DrawContext::setBlendMode(GLBlendMode mode)
-{
-    switch (mode) {
-    case GLBlendMode::NORMAL:
-        setNormalMode(this);
-        break;
-    case GLBlendMode::ALPHA:
-        setAlphaMode(this);
-        break;
-    case GLBlendMode::ADD:
-        setAddMode(this);
-        break;
-    case GLBlendMode::SUBTRACT:
-        setSubtractMode(this);
-        break;
-    default:
-        break;
-    }
-
-    curBlend.mode = mode;
-}*/
-
 void DrawContext::setBlendColor(const SColorf &color)
 {
 	if (!curBlend.enabled)
@@ -353,6 +301,46 @@ void DrawContext::setBlendOp(E_BLEND_OPERATION op)
 		curBlend.mode = op;
 
         TEST_GL_ERROR(driver);
+	}
+}
+
+void DrawContext::setBlendMode(E_BLEND_MODE mode)
+{
+	enableBlend(mode != EBM_NONE);
+
+	switch(mode) {
+	case EBM_ALPHA:
+		setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
+		setBlendOp(EBO_ADD);
+		break;
+	case EBM_ADD:
+		setBlendFunc(EBF_ONE, EBF_ONE);
+		setBlendOp(EBO_ADD);
+		break;
+	case EBM_SUBTRACT:
+		setBlendFunc(EBF_ONE, EBF_ONE);
+		setBlendOp(EBO_SUBTRACT);
+		break;
+	case EBM_REVSUBTRACT:
+		setBlendFunc(EBF_ONE, EBF_ONE);
+		setBlendOp(EBO_REVSUBTRACT);
+		break;
+	case EBM_MULTIPLY:
+		setBlendSeparateFunc(EBF_DST_COLOR, EBF_ZERO, EBF_DST_ALPHA, EBF_ZERO);
+		setBlendOp(EBO_ADD);
+		break;
+	case EBM_SCREEN:
+		setBlendSeparateFunc(EBF_ONE, EBF_ONE_MINUS_SRC_COLOR, EBF_ONE, EBF_ONE_MINUS_SRC_ALPHA);
+		setBlendOp(EBO_ADD);
+		break;
+	case EBM_MIN:
+		setBlendOp(EBO_MIN);
+		break;
+	case EBM_MAX:
+		setBlendOp(EBO_MAX);
+		break;
+	default:
+		break;
 	}
 }
 

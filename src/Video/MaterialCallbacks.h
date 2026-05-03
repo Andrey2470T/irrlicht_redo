@@ -15,7 +15,7 @@ namespace video
 class MaterialBaseCB : public IShaderConstantSetCallBack
 {
 public:
-	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetMaterial(SMaterial &material) override;
 	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
@@ -26,19 +26,28 @@ protected:
 class MaterialSolidCB : public MaterialBaseCB
 {
 public:
-	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetMaterial(SMaterial &material) override;
 	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
-    f32 AlphaRef = 0.5f;
     s32 TextureUsage0 = 0;
     s32 TextureUnit0 = 0;
+};
+
+class MaterialTransparentCB : public MaterialSolidCB
+{
+public:
+	void OnSetMaterial(SMaterial &material) override;
+	void OnSetUniforms(MaterialRenderer *renderer) override;
+
+protected:
+	f32 AlphaRef = 0.5f;
 };
 
 class MaterialOneTextureBlendCB : public MaterialBaseCB
 {
 public:
-	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetMaterial(SMaterial &material) override;
 	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 protected:
@@ -50,7 +59,7 @@ protected:
 class Material2DCB : public IShaderConstantSetCallBack
 {
 public:
-	void OnSetMaterial(const SMaterial &material) override;
+	void OnSetMaterial(SMaterial &material) override;
 	void OnSetUniforms(MaterialRenderer *renderer) override;
 
 private:

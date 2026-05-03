@@ -49,12 +49,18 @@ enum E_BLEND_OPERATION : u8
 	EBO_COUNT
 };
 
-//! MaterialTypeParam: e.g. DirectX: D3DTOP_MODULATE, D3DTOP_MODULATE2X, D3DTOP_MODULATE4X
-enum E_MODULATE_FUNC : u8
+//! Values defining the blend mode
+enum E_BLEND_MODE : u8
 {
-	EMFN_MODULATE_1X = 1,
-	EMFN_MODULATE_2X = 2,
-	EMFN_MODULATE_4X = 4
+	EBM_NONE = 0,
+	EBM_ALPHA,
+	EBM_ADD,
+	EBM_SUBTRACT,
+	EBM_REVSUBTRACT,
+	EBM_MULTIPLY,
+	EBM_SCREEN,
+	EBM_MIN,
+	EBM_MAX
 };
 
 //! Comparison function, e.g. for depth buffer test
@@ -112,67 +118,6 @@ enum E_ALPHA_SOURCE : u8
 	//! Use texture alpha channel
 	EAS_TEXTURE
 };
-
-//! Pack srcFact, dstFact, Modulate and alpha source to MaterialTypeParam or BlendFactor
-/** alpha source can be an OR'ed combination of E_ALPHA_SOURCE values. */
-inline f32 pack_textureBlendFunc(const E_BLEND_FACTOR srcFact, const E_BLEND_FACTOR dstFact,
-		const E_MODULATE_FUNC modulate = EMFN_MODULATE_1X, const u32 alphaSource = EAS_TEXTURE)
-{
-	const u32 tmp = (alphaSource << 20) | (modulate << 16) | (srcFact << 12) | (dstFact << 8) | (srcFact << 4) | dstFact;
-	return FR(tmp);
-}
-
-//! Pack srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, Modulate and alpha source to MaterialTypeParam or BlendFactor
-/** alpha source can be an OR'ed combination of E_ALPHA_SOURCE values. */
-inline f32 pack_textureBlendFuncSeparate(const E_BLEND_FACTOR srcRGBFact, const E_BLEND_FACTOR dstRGBFact,
-		const E_BLEND_FACTOR srcAlphaFact, const E_BLEND_FACTOR dstAlphaFact,
-		const E_MODULATE_FUNC modulate = EMFN_MODULATE_1X, const u32 alphaSource = EAS_TEXTURE)
-{
-	const u32 tmp = (alphaSource << 20) | (modulate << 16) | (srcAlphaFact << 12) | (dstAlphaFact << 8) | (srcRGBFact << 4) | dstRGBFact;
-	return FR(tmp);
-}
-
-//! Unpack srcFact, dstFact, modulo and alphaSource factors
-/** The fields don't use the full byte range, so we could pack even more... */
-inline void unpack_textureBlendFunc(E_BLEND_FACTOR &srcFact, E_BLEND_FACTOR &dstFact,
-		E_MODULATE_FUNC &modulo, u32 &alphaSource, const f32 param)
-{
-	const u32 state = IR(param);
-	alphaSource = (state & 0x00F00000) >> 20;
-	modulo = E_MODULATE_FUNC((state & 0x000F0000) >> 16);
-	srcFact = E_BLEND_FACTOR((state & 0x000000F0) >> 4);
-	dstFact = E_BLEND_FACTOR((state & 0x0000000F));
-}
-
-//! Unpack srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo and alphaSource factors
-/** The fields don't use the full byte range, so we could pack even more... */
-inline void unpack_textureBlendFuncSeparate(E_BLEND_FACTOR &srcRGBFact, E_BLEND_FACTOR &dstRGBFact,
-		E_BLEND_FACTOR &srcAlphaFact, E_BLEND_FACTOR &dstAlphaFact,
-		E_MODULATE_FUNC &modulo, u32 &alphaSource, const f32 param)
-{
-	const u32 state = IR(param);
-	alphaSource = (state & 0x00F00000) >> 20;
-	modulo = E_MODULATE_FUNC((state & 0x000F0000) >> 16);
-	srcAlphaFact = E_BLEND_FACTOR((state & 0x0000F000) >> 12);
-	dstAlphaFact = E_BLEND_FACTOR((state & 0x00000F00) >> 8);
-	srcRGBFact = E_BLEND_FACTOR((state & 0x000000F0) >> 4);
-	dstRGBFact = E_BLEND_FACTOR((state & 0x0000000F));
-}
-
-//! has blend factor alphablending
-inline bool textureBlendFunc_hasAlpha(const E_BLEND_FACTOR factor)
-{
-	switch (factor) {
-	case EBF_SRC_ALPHA:
-	case EBF_ONE_MINUS_SRC_ALPHA:
-	case EBF_DST_ALPHA:
-	case EBF_ONE_MINUS_DST_ALPHA:
-	case EBF_SRC_ALPHA_SATURATE:
-		return true;
-	default:
-		return false;
-	}
-}
 
 //! These flags are used to specify the anti-aliasing and smoothing modes
 /** Techniques supported are multisampling, geometry smoothing, and alpha
@@ -237,53 +182,27 @@ constexpr static u32 MATERIAL_MAX_TEXTURES = 8;
 class SMaterial
 {
 public:
-	//! Default constructor. Creates a solid material
-	SMaterial() :
-			MaterialType(EMT_SOLID), ColorParam(0, 0, 0, 0),
-			MaterialTypeParam(0.0f), Thickness(1.0f), BlendFactor(0.0f),
-			PolygonOffsetDepthBias(0.f), PolygonOffsetSlopeScale(0.f),
-			ZBuffer(ECFN_LESSEQUAL), AntiAliasing(EAAM_SIMPLE), ColorMask(ECP_ALL),
-			BlendOperation(EBO_NONE), Wireframe(false), PointCloud(false),
-			ZWriteEnable(EZW_AUTO),
-			BackfaceCulling(true), FrontfaceCulling(false), FogEnable(false),
-			UseMipMaps(true)
-	{
-	}
-
 	//! Texture layer array.
 	SMaterialLayer TextureLayers[MATERIAL_MAX_TEXTURES];
 
 	//! Type of the material. Specifies how everything is blended together
-	E_MATERIAL_TYPE MaterialType;
+	E_MATERIAL_TYPE MaterialType{EMT_SOLID};
 
 	//! Custom color parameter, can be used by custom shader materials.
 	// See MainShaderConstantSetter in Luanti.
-	SColor ColorParam;
-
-	//! Free parameter, dependent on the material type.
-	/** Mostly ignored, used for example in
-	EMT_TRANSPARENT_ALPHA_CHANNEL and EMT_ONETEXTURE_BLEND. */
-	f32 MaterialTypeParam;
+	SColor ColorParam{0, 0, 0, 0};
 
 	//! Thickness of non-3dimensional elements such as lines and points.
-	f32 Thickness;
+	f32 Thickness{1.0f};
 
-	//! Store the blend factors
-	/** textureBlendFunc/textureBlendFuncSeparate functions should be used to write
-	properly blending factors to this parameter.
-	Due to historical reasons this parameter is not used for material type
-	EMT_ONETEXTURE_BLEND which uses MaterialTypeParam instead for the blend factor.
-	It's generally used only for materials without any blending otherwise (like EMT_SOLID).
-	It's main use is to allow having shader materials which can enable/disable
-	blending after they have been created.
-	When you set this you usually also have to set BlendOperation to a value != EBO_NONE
-	(setting it to EBO_ADD is probably the most common one value). */
-	f32 BlendFactor;
+	E_BLEND_MODE BlendMode{EBM_NONE};
+
+	u8 AlphaSource{EAS_NONE};
 
 	//! A constant z-buffer offset for a polygon/line/point
 	/** The range of the value is driver specific.
 	On OpenGL you get units which are multiplied by the smallest value that is guaranteed to produce a resolvable offset. */
-	f32 PolygonOffsetDepthBias;
+	f32 PolygonOffsetDepthBias{0.0f};
 
 	//! Variable Z-Buffer offset based on the slope of the polygon.
 	/** For polygons looking flat at a camera you could use 0 (for example in a 2D game)
@@ -292,50 +211,47 @@ public:
 	The complete polygon offset is: PolygonOffsetSlopeScale*slope + PolygonOffsetDepthBias
 	A good default here is to use 1.f if you want to push the polygons away from the camera
 	and -1.f to pull them towards the camera.  */
-	f32 PolygonOffsetSlopeScale;
+	f32 PolygonOffsetSlopeScale{0.0f};
 
 	//! Is the ZBuffer enabled? Default: ECFN_LESSEQUAL
 	/** If you want to disable depth test for this material
 	just set this parameter to ECFN_DISABLED. */
-	E_COMPARISON_FUNC ZBuffer : 4;
+	E_COMPARISON_FUNC ZBuffer{ECFN_LESSEQUAL};
 
 	//! Sets the antialiasing mode
 	/** Default is EAAM_SIMPLE, i.e. simple multi-sample anti-aliasing. */
-	E_ANTI_ALIASING_MODE AntiAliasing : 4;
+	E_ANTI_ALIASING_MODE AntiAliasing{EAAM_SIMPLE};
 
 	//! Defines the enabled color planes
 	/** Values are defined as or'ed values of the E_COLOR_PLANE enum.
 	Only enabled color planes will be rendered to the current render
 	target. Typical use is to disable all colors when rendering only to
 	depth or stencil buffer, or using Red and Green for Stereo rendering. */
-	E_COLOR_PLANE ColorMask : 4;
-
-	//! Store the blend operation of choice
-	E_BLEND_OPERATION BlendOperation : 4;
+	E_COLOR_PLANE ColorMask{ECP_ALL};
 
 	//! Draw as wireframe or filled triangles? Default: false
-	bool Wireframe : 1;
+	bool Wireframe{false};
 
 	//! Draw as point cloud or filled triangles? Default: false
-	bool PointCloud : 1;
+	bool PointCloud{false};
 
 	//! Is the zbuffer writable or is it read-only. Default: EZW_AUTO.
 	/** If this parameter is not EZW_OFF, you probably also want to set ZBuffer
 	to values other than ECFN_DISABLED */
-	E_ZWRITE ZWriteEnable : 2;
+	E_ZWRITE ZWriteEnable{EZW_AUTO};
 
 	//! Is backface culling enabled? Default: true
-	bool BackfaceCulling : 1;
+	bool BackfaceCulling{true};
 
 	//! Is frontface culling enabled? Default: false
-	bool FrontfaceCulling : 1;
+	bool FrontfaceCulling{false};
 
 	//! Is fog enabled? Default: false
-	bool FogEnable : 1;
+	bool FogEnable{false};
 
 	//! Shall mipmaps be used if available
 	/** Sometimes, disabling mipmap usage can be useful. Default: true */
-	bool UseMipMaps : 1;
+	bool UseMipMaps{true};
 
 	//! Execute a function on all texture layers.
 	/** Useful for setting properties which are not per material, but per
@@ -382,7 +298,7 @@ public:
 	\return Texture for texture level i, if defined, else 0. */
     GLTexture *getTexture(u32 i) const
 	{
-		return i < MATERIAL_MAX_TEXTURES ? TextureLayers[i].Texture : 0;
+		return i < MATERIAL_MAX_TEXTURES ? TextureLayers[i].Texture : nullptr;
 	}
 
 	//! Sets the i-th texture
@@ -404,7 +320,8 @@ public:
 		bool different =
 				MaterialType != b.MaterialType ||
 				ColorParam != b.ColorParam ||
-				MaterialTypeParam != b.MaterialTypeParam ||
+				BlendMode != b.BlendMode ||
+				AlphaSource != b.AlphaSource ||
 				Thickness != b.Thickness ||
 				Wireframe != b.Wireframe ||
 				PointCloud != b.PointCloud ||
@@ -415,8 +332,6 @@ public:
 				FogEnable != b.FogEnable ||
 				AntiAliasing != b.AntiAliasing ||
 				ColorMask != b.ColorMask ||
-				BlendOperation != b.BlendOperation ||
-				BlendFactor != b.BlendFactor ||
 				PolygonOffsetDepthBias != b.PolygonOffsetDepthBias ||
 				PolygonOffsetSlopeScale != b.PolygonOffsetSlopeScale ||
 				UseMipMaps != b.UseMipMaps;
@@ -440,22 +355,7 @@ public:
 	//! Check if material needs alpha blending
 	bool isAlphaBlendOperation() const
 	{
-		if (BlendOperation != EBO_NONE && BlendFactor != 0.f) {
-			E_BLEND_FACTOR srcRGBFact = EBF_ZERO;
-			E_BLEND_FACTOR dstRGBFact = EBF_ZERO;
-			E_BLEND_FACTOR srcAlphaFact = EBF_ZERO;
-			E_BLEND_FACTOR dstAlphaFact = EBF_ZERO;
-			E_MODULATE_FUNC modulo = EMFN_MODULATE_1X;
-			u32 alphaSource = 0;
-
-			unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo, alphaSource, BlendFactor);
-
-			if (textureBlendFunc_hasAlpha(srcRGBFact) || textureBlendFunc_hasAlpha(dstRGBFact) ||
-					textureBlendFunc_hasAlpha(srcAlphaFact) || textureBlendFunc_hasAlpha(dstAlphaFact)) {
-				return true;
-			}
-		}
-		return false;
+		return BlendMode == EBM_ALPHA;
 	}
 
 	//! Check for some fixed-function transparent types. Still used internally, but might be deprecated soon.
@@ -464,7 +364,8 @@ public:
 	bool isTransparent() const
 	{
 		if (MaterialType == EMT_TRANSPARENT_ALPHA_CHANNEL ||
-				MaterialType == EMT_TRANSPARENT_VERTEX_ALPHA)
+				MaterialType == EMT_TRANSPARENT_VERTEX_ALPHA ||
+				MaterialType == EMT_ONETEXTURE_BLEND)
 			return true;
 
 		return false;

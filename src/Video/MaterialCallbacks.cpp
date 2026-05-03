@@ -13,7 +13,7 @@ namespace video
 {
 
 // Base callback
-void MaterialBaseCB::OnSetMaterial(const SMaterial &material)
+void MaterialBaseCB::OnSetMaterial(SMaterial &material)
 {
 	FogEnable = material.FogEnable;
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
@@ -59,11 +59,10 @@ void MaterialBaseCB::OnSetUniforms(MaterialRenderer *renderer)
 
 // EMT_SOLID + EMT_TRANSPARENT_ALPHA_CHANNEL + EMT_TRANSPARENT_VERTEX_ALPHA
 
-void MaterialSolidCB::OnSetMaterial(const SMaterial &material)
+void MaterialSolidCB::OnSetMaterial(SMaterial &material)
 {
 	MaterialBaseCB::OnSetMaterial(material);
 
-	AlphaRef = material.MaterialTypeParam;
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
 }
 
@@ -76,30 +75,43 @@ void MaterialSolidCB::OnSetUniforms(MaterialRenderer *renderer)
 	core::matrix4 Matrix = driver->getTransform(ETS_TEXTURE_0);
     renderer->setUniform4x4Matrix("uTMatrix0", Matrix);
 
-    renderer->setUniformFloat("uAlphaRef", AlphaRef);
     renderer->setUniformInt("uTextureUsage0", TextureUsage0);
     renderer->setUniformInt("uTextureUnit0", TextureUnit0);
 }
 
+void MaterialTransparentCB::OnSetMaterial(SMaterial &material)
+{
+	MaterialSolidCB::OnSetMaterial(material);
+
+	AlphaRef = 0.5f;
+
+	material.BlendMode = video::EBM_ALPHA;
+}
+
+void MaterialTransparentCB::OnSetUniforms(MaterialRenderer *renderer)
+{
+	MaterialSolidCB::OnSetUniforms(renderer);
+
+	renderer->setUniformFloat("uAlphaRef", AlphaRef);
+}
+
 // EMT_ONETEXTURE_BLEND
 
-void MaterialOneTextureBlendCB::OnSetMaterial(const SMaterial &material)
+void MaterialOneTextureBlendCB::OnSetMaterial(SMaterial &material)
 {
 	MaterialBaseCB::OnSetMaterial(material);
 
-	BlendType = 0;
-
-	E_BLEND_FACTOR srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact;
-	E_MODULATE_FUNC modulate;
-	u32 alphaSource;
-	unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulate, alphaSource, material.MaterialTypeParam);
-
-	if (textureBlendFunc_hasAlpha(srcRGBFact) || textureBlendFunc_hasAlpha(dstRGBFact) || textureBlendFunc_hasAlpha(srcAlphaFact) || textureBlendFunc_hasAlpha(dstAlphaFact)) {
-		if (alphaSource == EAS_VERTEX_COLOR) {
-			BlendType = 1;
-		} else if (alphaSource == EAS_TEXTURE) {
-			BlendType = 2;
-		}
+	switch(material.AlphaSource)
+	{
+	case EAS_VERTEX_COLOR:
+		BlendType = 1;
+		break;
+	case EAS_TEXTURE:
+		BlendType = 2;
+		break;
+	default:
+		BlendType = 0;
+		break;
 	}
 
 	TextureUsage0 = (material.TextureLayers[0].Texture) ? 1 : 0;
@@ -119,7 +131,7 @@ void MaterialOneTextureBlendCB::OnSetUniforms(MaterialRenderer *renderer)
     renderer->setUniformInt("uTextureUnit0", TextureUnit0);
 }
 
-void Material2DCB::OnSetMaterial(const SMaterial &material)
+void Material2DCB::OnSetMaterial(SMaterial &material)
 {
 	Thickness = (material.Thickness > 0.f) ? material.Thickness : 1.f;
 	TextureUsage0 = material.TextureLayers[0].Texture ? 1 : 0;

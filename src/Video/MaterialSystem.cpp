@@ -119,22 +119,19 @@ void MaterialSystem::setMaterial(const SMaterial &material)
 }
 
 //! Adds a new material renderer to the VideoDriver, using GLSL to render geometry.
-s32 MaterialSystem::addHighLevelShaderMaterial(const std::string &vertexShaderProgram,
+s32 MaterialSystem::addHighLevelShaderMaterial(
+	const std::string &vertexShaderProgram,
     const std::string &fragmentShaderProgram,
     const std::string &geometryShaderProgram,
     const std::string &shaderName,
-    scene::E_PRIMITIVE_TYPE inType,
-    scene::E_PRIMITIVE_TYPE outType,
-    u32 verticesOut,
     IShaderConstantSetCallBack *callback,
-    E_MATERIAL_TYPE baseMaterial,
 	const scene::VertexDescriptor &vDesc)
 {
 	s32 nr = -1;
 	MaterialRenderer *r = new MaterialRenderer(
 			Driver, nr, vertexShaderProgram,
             fragmentShaderProgram, shaderName,
-			callback, baseMaterial, vDesc);
+			callback, vDesc);
 
 	r->drop();
 	return nr;
@@ -145,10 +142,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 	const io::path &pixelShaderProgramFileName,
 	const io::path &geometryShaderProgramFileName,
 	const std::string &shaderName,
-	scene::E_PRIMITIVE_TYPE inType, scene::E_PRIMITIVE_TYPE outType,
-	u32 verticesOut,
 	IShaderConstantSetCallBack *callback,
-	E_MATERIAL_TYPE baseMaterial,
 	const scene::VertexDescriptor &vDesc)
 {
 	std::string vs = "";
@@ -203,10 +197,7 @@ s32 MaterialSystem::addHighLevelShaderMaterialFromFiles(
 		}
 	}
 
-	s32 result = addHighLevelShaderMaterial(
-			vs, ps, gs, shaderName,
-			inType, outType, verticesOut,
-			callback, baseMaterial, vDesc);
+	s32 result = addHighLevelShaderMaterial(vs, ps, gs, shaderName, callback, vDesc);
 
 	return result;
 }
@@ -294,51 +285,10 @@ void MaterialSystem::setBasicRenderStates(const SMaterial &material, const SMate
 	// Color Mask
 	Driver->Context->setColorMask(material.ColorMask);
 
+	// Blending
+	Driver->Context->setBlendMode(material.BlendMode);
+
 	auto features = Driver->getFeatures();
-
-	// Blend Equation
-	if (material.BlendOperation == EBO_NONE)
-		Driver->Context->enableBlend(false);
-	else {
-		Driver->Context->enableBlend(true);
-
-		switch (material.BlendOperation) {
-		case EBO_ADD:
-		case EBO_SUBTRACT:
-		case EBO_REVSUBTRACT:
-			Driver->Context->setBlendOp(material.BlendOperation);
-			break;
-		case EBO_MIN:
-			if (features.BlendMinMaxSupported)
-				Driver->Context->setBlendOp(material.BlendOperation);
-			else
-				g_irrlogger->log("Attempt to use EBO_MIN without driver support", ELL_WARNING);
-			break;
-		case EBO_MAX:
-			if (features.BlendMinMaxSupported)
-				Driver->Context->setBlendOp(material.BlendOperation);
-			else
-				g_irrlogger->log("Attempt to use EBO_MAX without driver support", ELL_WARNING);
-			break;
-		default:
-			break;
-		}
-	}
-
-	// Blend Factor
-	if (IR(material.BlendFactor) & 0xFFFFFFFF // TODO: why the & 0xFFFFFFFF?
-			&& material.MaterialType != EMT_ONETEXTURE_BLEND) {
-		E_BLEND_FACTOR srcRGBFact = EBF_ZERO;
-		E_BLEND_FACTOR dstRGBFact = EBF_ZERO;
-		E_BLEND_FACTOR srcAlphaFact = EBF_ZERO;
-		E_BLEND_FACTOR dstAlphaFact = EBF_ZERO;
-		E_MODULATE_FUNC modulo = EMFN_MODULATE_1X;
-		u32 alphaSource = 0;
-
-		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulo, alphaSource, material.BlendFactor);
-
-		Driver->Context->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
-	}
 
 	// fillmode
 	if (Driver->getVersion().Spec != OpenGLSpec::ES && // not supported in gles
@@ -424,12 +374,9 @@ void MaterialSystem::setRenderStates2DMode(bool alpha, bool texture, bool alphaC
 	alphaChannel &= texture;
 
 	bool alpha_blend = alphaChannel || alpha;
-	Driver->Context->enableBlend(alpha_blend);
 
-	if (alpha_blend) {
-		Driver->Context->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
-		Driver->Context->setBlendOp(EBO_ADD);
-	}
+	if (alpha_blend)
+		Driver->Context->setBlendMode(EBM_ALPHA);
 
 	Material.setTexture(0, const_cast<GLTexture *>(Driver->Context->getTextureUnit(0)));
 	Driver->setTransform(ETS_TEXTURE_0, core::IdentityMatrix);
@@ -462,9 +409,9 @@ void MaterialSystem::createMaterialRenderers()
 	// Create callbacks.
 
 	MaterialSolidCB *SolidCB = new MaterialSolidCB();
-	MaterialSolidCB *TransparentAlphaChannelCB = new MaterialSolidCB();
+	MaterialSolidCB *TransparentAlphaChannelCB = new MaterialTransparentCB();
 	MaterialSolidCB *TransparentAlphaChannelRefCB = new MaterialSolidCB();
-	MaterialSolidCB *TransparentVertexAlphaCB = new MaterialSolidCB();
+	MaterialSolidCB *TransparentVertexAlphaCB = new MaterialTransparentCB();
 	MaterialOneTextureBlendCB *OneTextureBlendCB = new MaterialOneTextureBlendCB();
 	Material2DCB *Renderer2DCB = new Material2DCB();
 
@@ -475,34 +422,28 @@ void MaterialSystem::createMaterialRenderers()
 
 	// EMT_SOLID
 	core::stringc FragmentShader = ShadersPath + "Solid.fsh";
-	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Solid",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, SolidCB, EMT_SOLID);
+	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Solid", SolidCB);
 
 	// EMT_TRANSPARENT_ALPHA_CHANNEL
 	FragmentShader = ShadersPath + "TransparentAlphaChannel.fsh";
-	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannel",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelCB, EMT_TRANSPARENT_ALPHA_CHANNEL);
+	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannel", TransparentAlphaChannelCB);
 
 	// EMT_TRANSPARENT_ALPHA_CHANNEL_REF
 	FragmentShader = ShadersPath + "TransparentAlphaChannelRef.fsh";
-	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannelRef",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentAlphaChannelRefCB, EMT_SOLID);
+	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentAlphaChannelRef", TransparentAlphaChannelRefCB);
 
 	// EMT_TRANSPARENT_VERTEX_ALPHA
 	FragmentShader = ShadersPath + "TransparentVertexAlpha.fsh";
-	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentVertexAlpha",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, TransparentVertexAlphaCB, EMT_TRANSPARENT_ALPHA_CHANNEL);
+	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "TransparentVertexAlpha", TransparentVertexAlphaCB);
 
 	// EMT_ONETEXTURE_BLEND
 	FragmentShader = ShadersPath + "OneTextureBlend.fsh";
-	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "OneTextureBlend",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, OneTextureBlendCB, EMT_ONETEXTURE_BLEND);
+	addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "OneTextureBlend", OneTextureBlendCB);
 
 	// EMT_2D
 	VertexShader = ShadersPath + "Renderer2D.vsh";
 	FragmentShader = ShadersPath + "Renderer2D.fsh";
-	MaterialRenderer2DIdx = addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Renderer2D",
-			scene::EPT_TRIANGLES, scene::EPT_TRIANGLE_STRIP, 0, Renderer2DCB, EMT_SOLID, scene::Vertex2D::FORMAT);
+	MaterialRenderer2DIdx = addHighLevelShaderMaterialFromFiles(VertexShader, FragmentShader, "", "Renderer2D", Renderer2DCB, scene::Vertex2D::FORMAT);
 
 	// Drop callbacks.
 

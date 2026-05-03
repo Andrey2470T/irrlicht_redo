@@ -132,22 +132,9 @@ MaterialRenderer::MaterialRenderer(
 	const std::string &fragmentShaderProgram,
 	const std::string &debugName,
 	IShaderConstantSetCallBack *callback,
-	E_MATERIAL_TYPE baseMaterial,
 	const scene::VertexDescriptor &vDesc) :
-		Driver(driver), CallBack(callback), Alpha(false), Blending(false), VertexDesc(vDesc)
+		Driver(driver), CallBack(callback), VertexDesc(vDesc)
 {
-	switch (baseMaterial) {
-	case EMT_TRANSPARENT_VERTEX_ALPHA:
-	case EMT_TRANSPARENT_ALPHA_CHANNEL:
-		Alpha = true;
-		break;
-	case EMT_ONETEXTURE_BLEND:
-		Blending = true;
-		break;
-	default:
-		break;
-	}
-
 	if (CallBack)
 		CallBack->grab();
 
@@ -186,30 +173,18 @@ bool MaterialRenderer::OnRender(scene::E_VERTEX_TYPE vtxtype)
 	return true;
 }
 
-void MaterialRenderer::OnSetMaterial(const video::SMaterial &material,
+void MaterialRenderer::OnSetMaterial(video::SMaterial &material,
 		const video::SMaterial &lastMaterial,
 		bool resetAllRenderstatess)
 {
 	auto ctxt = Driver->getContext();
 
     ctxt->setProgram(ShaderObj->ProgramID);
-	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
-
-	if (Alpha) {
-		ctxt->enableBlend(true);
-		ctxt->setBlendFunc(EBF_SRC_ALPHA, EBF_ONE_MINUS_SRC_ALPHA);
-	} else if (Blending) {
-		E_BLEND_FACTOR srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact;
-		E_MODULATE_FUNC modulate;
-		u32 alphaSource;
-		unpack_textureBlendFuncSeparate(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact, modulate, alphaSource, material.MaterialTypeParam);
-
-		ctxt->setBlendSeparateFunc(srcRGBFact, dstRGBFact, srcAlphaFact, dstAlphaFact);
-		ctxt->enableBlend(true);
-	}
 
 	if (CallBack)
 		CallBack->OnSetMaterial(material);
+
+	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstatess);
 }
 
 void MaterialRenderer::setUniformFloat(const std::string &name, f32 value)

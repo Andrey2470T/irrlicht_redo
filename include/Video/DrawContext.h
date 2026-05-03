@@ -163,6 +163,7 @@ public:
 	void setBlendSeparateFunc(E_BLEND_FACTOR srcrgb_func, E_BLEND_FACTOR destrgb_func,
 		E_BLEND_FACTOR srca_func, E_BLEND_FACTOR desta_func);
 	void setBlendOp(E_BLEND_OPERATION op);
+	void setBlendMode(E_BLEND_MODE mode);
 
 	void enableDepthTest(bool depthtest);
 	void setDepthMask(bool depthmask);

@@ -54,15 +54,12 @@ enum E_MATERIAL_PROP
 	//! Corresponds to SMaterial::UseMipMaps.
 	EMP_USE_MIP_MAPS = 0x20000,
 
-	//! Corresponds to SMaterial::BlendOperation.
-	EMP_BLEND_OPERATION = 0x40000,
+	//! Corresponds to SMaterial::BlendMode.
+	EMP_BLEND_MODE = 0x40000,
 
 	//! Corresponds to SMaterial::PolygonOffsetFactor, PolygonOffsetDirection,
 	//! PolygonOffsetDepthBias and PolygonOffsetSlopeScale.
-	EMP_POLYGON_OFFSET = 0x80000,
-
-	//! Corresponds to SMaterial::BlendFactor.
-	EMP_BLEND_FACTOR = 0x100000,
+	EMP_POLYGON_OFFSET = 0x80000
 };
 
 } // end namespace video

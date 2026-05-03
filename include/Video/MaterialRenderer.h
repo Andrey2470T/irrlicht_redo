@@ -65,23 +65,16 @@ public:
             const std::string &fragmentShaderProgram = "",
             const std::string &debugName = "",
 			IShaderConstantSetCallBack *callback = 0,
-			E_MATERIAL_TYPE baseMaterial = EMT_SOLID,
 			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
 
     ~MaterialRenderer();
 
 	//! Called by the IVideoDriver implementation to set needed render states.
-    void OnSetMaterial(const SMaterial &material, const SMaterial &lastMaterial,
+	void OnSetMaterial(SMaterial &material, const SMaterial &lastMaterial,
 			bool resetAllRenderstates);
 
 	//! Called every time before a new bunch of geometry is drawn.
 	bool OnRender(scene::E_VERTEX_TYPE vtxtype);
-
-	//! Returns if the material is transparent.
-	bool isTransparent() const
-	{
-		return (Alpha || Blending);
-	}
 
 	const scene::VertexDescriptor &getVertexDescriptor() const
 	{
@@ -131,8 +124,6 @@ protected:
 	IShaderConstantSetCallBack *CallBack;
 
     std::unique_ptr<Shader> ShaderObj;
-	bool Alpha;
-	bool Blending;
 
 	scene::VertexDescriptor VertexDesc;
 

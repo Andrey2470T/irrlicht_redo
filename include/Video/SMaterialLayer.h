@@ -76,18 +76,14 @@ class SMaterialLayer
 {
 public:
 	//! Default constructor
-	SMaterialLayer() :
-			Texture(0), TextureWrapU(ETC_REPEAT), TextureWrapV(ETC_REPEAT), TextureWrapW(ETC_REPEAT),
-			MinFilter(ETMINF_LINEAR_MIPMAP_NEAREST), MagFilter(ETMAGF_LINEAR), AnisotropicFilter(0), LODBias(0), TextureMatrix(0)
-	{
-	}
+	SMaterialLayer() = default;
 
 	//! Copy constructor
 	/** \param other Material layer to copy from. */
 	SMaterialLayer(const SMaterialLayer &other)
 	{
 		// This pointer is checked during assignment
-		TextureMatrix = 0;
+		TextureMatrix = nullptr;
 		*this = other;
 	}
 
@@ -114,13 +110,13 @@ public:
 				*TextureMatrix = *other.TextureMatrix;
 			else {
 				delete TextureMatrix;
-				TextureMatrix = 0;
+				TextureMatrix = nullptr;
 			}
 		} else {
 			if (other.TextureMatrix) {
 				TextureMatrix = new core::matrix4(*other.TextureMatrix);
 			} else
-				TextureMatrix = 0;
+				TextureMatrix = nullptr;
 		}
 		TextureWrapU = other.TextureWrapU;
 		TextureWrapV = other.TextureWrapV;
@@ -196,19 +192,19 @@ public:
 	}
 
 	//! Texture
-    GLTexture *Texture;
+    GLTexture *Texture{nullptr};
 
 	//! Texture Clamp Mode
 	/** Values are taken from E_TEXTURE_CLAMP. */
-	u8 TextureWrapU : 4;
-	u8 TextureWrapV : 4;
-	u8 TextureWrapW : 4;
+	u8 TextureWrapU{ETC_REPEAT};
+	u8 TextureWrapV{ETC_REPEAT};
+	u8 TextureWrapW{ETC_REPEAT};
 
 	//! Minification (downscaling) filter
-	E_TEXTURE_MIN_FILTER MinFilter;
+	E_TEXTURE_MIN_FILTER MinFilter{ETMINF_LINEAR_MIPMAP_NEAREST};
 
 	//! Magnification (upscaling) filter
-	E_TEXTURE_MAG_FILTER MagFilter;
+	E_TEXTURE_MAG_FILTER MagFilter{ETMAGF_LINEAR};
 
 	//! Is anisotropic filtering enabled? Default: 0, disabled
 	/** In Irrlicht you can use anisotropic texture filtering
@@ -217,14 +213,14 @@ public:
 	will look less blurry with this flag switched on. The number gives
 	the maximal anisotropy degree, and is often in the range 2-16.
 	Value 1 is equivalent to 0, but should be avoided. */
-	u8 AnisotropicFilter;
+	u8 AnisotropicFilter{0};
 
 	//! Bias for the mipmap choosing decision.
 	/** This value can make the textures more or less blurry than with the
 	default value of 0. The value (divided by 8.f) is added to the mipmap level
 	chosen initially, and thus takes a smaller mipmap for a region
 	if the value is positive. */
-	s8 LODBias;
+	s8 LODBias{0};
 
 private:
 	friend class SMaterial;
@@ -232,7 +228,7 @@ private:
 	//! Texture Matrix
 	/** Do not access this element directly as the internal
 	resource management has to cope with Null pointers etc. */
-	core::matrix4 *TextureMatrix;
+	core::matrix4 *TextureMatrix{nullptr};
 };
 
 } // end namespace video
