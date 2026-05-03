@@ -339,24 +339,6 @@ if(USE_SDL3)
 	target_compile_definitions(IRRVIDEOOBJ PUBLIC _IRR_USE_SDL3_) # Video/Common.h
 endif()
 
-add_library(IRRGUIOBJ OBJECT
-	GUI/CGUIButton.cpp
-	GUI/CGUICheckBox.cpp
-	GUI/CGUIComboBox.cpp
-	GUI/CGUIEditBox.cpp
-	GUI/CGUIEnvironment.cpp
-	GUI/CGUIFileOpenDialog.cpp
-	GUI/CGUIFont.cpp
-	GUI/CGUIImage.cpp
-	GUI/CGUIListBox.cpp
-	GUI/CGUIScrollBar.cpp
-	GUI/CGUISkin.cpp
-	GUI/CGUIStaticText.cpp
-	GUI/CGUITabControl.cpp
-	GUI/CGUISpriteBank.cpp
-	GUI/CGUIImageList.cpp
-)
-
 # Library
 
 # There have to be some sources in IrrlichtRedo to workaround Cmake Xcode generator bug
@@ -375,7 +357,7 @@ add_library(IrrlichtRedo STATIC
 
 foreach(object_lib
 	IRRMESHOBJ IRRVIDEOOBJ
-	IRRIOOBJ IRRDEVICEOBJ IRRGUIOBJ)
+	IRRIOOBJ IRRDEVICEOBJ)
 	# Set include directories for object library compilation
 	target_include_directories(${object_lib} PRIVATE ${link_includes} ${sdl2_link_includes})
 	if(CMAKE_GENERATOR STREQUAL "Xcode")

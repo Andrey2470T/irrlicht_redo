@@ -126,9 +126,6 @@ public:
 
 	//! Sets whether to draw the background
 	virtual void setDrawBackground(bool draw) = 0;
-
-	//! Access the vertical scrollbar
-	virtual IGUIScrollBar *getVerticalScrollBar() const = 0;
 };
 
 } // end namespace gui

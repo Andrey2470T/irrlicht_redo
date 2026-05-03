@@ -202,30 +202,6 @@ public:
 	information. */
 	virtual IGUIElement *getRootGUIElement() = 0;
 
-	//! Adds a button element.
-	/** \param rectangle Rectangle specifying the borders of the button.
-	\param parent Parent gui element of the button.
-	\param id Id with which the gui element can be identified.
-	\param text Text displayed on the button.
-	\param tooltiptext Text displayed in the tooltip.
-	\return Pointer to the created button. Returns 0 if an error occurred.
-	This pointer should not be dropped. See IReferenceCounted::drop() for
-	more information. */
-	virtual IGUIButton *addButton(const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, s32 id = -1, const wchar_t *text = 0, const wchar_t *tooltiptext = 0) = 0;
-
-	//! Adds a scrollbar.
-	/** \param horizontal Specifies if the scroll bar is drawn horizontal
-	or vertical.
-	\param rectangle Rectangle specifying the borders of the scrollbar.
-	\param parent Parent gui element of the scroll bar.
-	\param id Id to identify the gui element.
-	\return Pointer to the created scrollbar. Returns 0 if an error
-	occurred. This pointer should not be dropped. See
-	IReferenceCounted::drop() for more information. */
-	virtual IGUIScrollBar *addScrollBar(bool horizontal, const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, s32 id = -1) = 0;
-
 	//! Adds an image element.
 	/** \param image Image to be displayed.
 	\param pos Position of the image. The width and height of the image is
@@ -267,35 +243,6 @@ public:
 	virtual IGUICheckBox *addCheckBox(bool checked, const core::rect<s32> &rectangle,
 			IGUIElement *parent = 0, s32 id = -1, const wchar_t *text = 0) = 0;
 
-	//! Adds a list box element.
-	/** \param rectangle Rectangle specifying the borders of the list box.
-	\param parent Parent gui element of the list box.
-	\param id Id to identify the gui element.
-	\param drawBackground Flag whether the background should be drawn.
-	\return Pointer to the created list box. Returns 0 if an error occurred.
-	This pointer should not be dropped. See IReferenceCounted::drop() for
-	more information. */
-	virtual IGUIListBox *addListBox(const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, s32 id = -1, bool drawBackground = false) = 0;
-
-	//! Adds a file open dialog.
-	/** \param title Text to be displayed as the title of the dialog.
-	\param modal Defines if the dialog is modal. This means, that all other
-	gui elements which were created before the message box cannot be used
-	until this messagebox is removed.
-	\param parent Parent gui element of the dialog.
-	\param id Id to identify the gui element.
-	\param restoreCWD If set to true, the current working directory will be
-	restored after the dialog is closed in some way. Otherwise the working
-	directory will be the one that the file dialog was last showing.
-	\param startDir Optional path for which the file dialog will be opened.
-	\return Pointer to the created file open dialog. Returns 0 if an error
-	occurred. This pointer should not be dropped. See
-	IReferenceCounted::drop() for more information. */
-	virtual IGUIFileOpenDialog *addFileOpenDialog(const wchar_t *title = 0,
-			bool modal = true, IGUIElement *parent = 0, s32 id = -1,
-			bool restoreCWD = false, io::path::char_type *startDir = 0) = 0;
-
 	//! Adds a static text.
 	/** \param text Text to be displayed. Can be altered after creation by SetText().
 	\param rectangle Rectangle specifying the borders of the static text
@@ -311,66 +258,6 @@ public:
 	virtual IGUIStaticText *addStaticText(const wchar_t *text, const core::rect<s32> &rectangle,
 			bool border = false, bool wordWrap = true, IGUIElement *parent = 0, s32 id = -1,
 			bool fillBackground = false) = 0;
-
-	//! Adds an edit box.
-	/** Supports Unicode input from every keyboard around the world,
-	scrolling, copying and pasting (exchanging data with the clipboard
-	directly), maximum character amount, marking, and all shortcuts like
-	ctrl+X, ctrl+V, ctrl+C, shift+Left, shift+Right, Home, End, and so on.
-	\param text Text to be displayed. Can be altered after creation
-	by setText().
-	\param rectangle Rectangle specifying the borders of the edit box.
-	\param border Set to true if the edit box should have a 3d border.
-	\param parent Parent item of the element, e.g. a window.
-	Set it to 0 to place the edit box directly in the environment.
-	\param id The ID of the element.
-	\return Pointer to the created edit box. Returns 0 if an error occurred.
-	This pointer should not be dropped. See IReferenceCounted::drop() for
-	more information. */
-	virtual IGUIEditBox *addEditBox(const wchar_t *text, const core::rect<s32> &rectangle,
-			bool border = true, IGUIElement *parent = 0, s32 id = -1) = 0;
-
-	//! Adds a tab control to the environment.
-	/** \param rectangle Rectangle specifying the borders of the tab control.
-	\param parent Parent item of the element, e.g. a window.
-	Set it to 0 to place the tab control directly in the environment.
-	\param fillbackground Specifies if the background of the tab control
-	should be drawn.
-	\param border Specifies if a flat 3d border should be drawn. This is
-	usually not necessary unless you place the control directly into
-	the environment without a window as parent.
-	\param id An identifier for the tab control.
-	\return Pointer to the created tab control element. Returns 0 if an
-	error occurred. This pointer should not be dropped. See
-	IReferenceCounted::drop() for more information. */
-	virtual IGUITabControl *addTabControl(const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, bool fillbackground = false,
-			bool border = true, s32 id = -1) = 0;
-
-	//! Adds tab to the environment.
-	/** You can use this element to group other elements. This is not used
-	for creating tabs on tab controls, please use IGUITabControl::addTab()
-	for this instead.
-	\param rectangle Rectangle specifying the borders of the tab.
-	\param parent Parent item of the element, e.g. a window.
-	Set it to 0 to place the tab directly in the environment.
-	\param id An identifier for the tab.
-	\return Pointer to the created tab. Returns 0 if an
-	error occurred. This pointer should not be dropped. See
-	IReferenceCounted::drop() for more information. */
-	virtual IGUITab *addTab(const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, s32 id = -1) = 0;
-
-	//! Adds a combo box to the environment.
-	/** \param rectangle Rectangle specifying the borders of the combo box.
-	\param parent Parent item of the element, e.g. a window.
-	Set it to 0 to place the combo box directly in the environment.
-	\param id An identifier for the combo box.
-	\return Pointer to the created combo box. Returns 0 if an
-	error occurred. This pointer should not be dropped. See
-	IReferenceCounted::drop() for more information. */
-	virtual IGUIComboBox *addComboBox(const core::rect<s32> &rectangle,
-			IGUIElement *parent = 0, s32 id = -1) = 0;
 
 	//! Find the next element which would be selected when pressing the tab-key
 	/** If you set the focus for the result you can manually force focus-changes like they
