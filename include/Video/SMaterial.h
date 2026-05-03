@@ -195,8 +195,10 @@ public:
 	//! Thickness of non-3dimensional elements such as lines and points.
 	f32 Thickness{1.0f};
 
+	//! One of predefined blend modes
 	E_BLEND_MODE BlendMode{EBM_NONE};
 
+	//! Does the alpha go from texture, vertex color or both?
 	u8 AlphaSource{EAS_NONE};
 
 	//! A constant z-buffer offset for a polygon/line/point
@@ -217,6 +219,9 @@ public:
 	/** If you want to disable depth test for this material
 	just set this parameter to ECFN_DISABLED. */
 	E_COMPARISON_FUNC ZBuffer{ECFN_LESSEQUAL};
+
+	//! Is the stencil buffer enabled? Default: ECFN_DISABLED
+	E_COMPARISON_FUNC StencilBuffer{ECFN_DISABLED};
 
 	//! Sets the antialiasing mode
 	/** Default is EAAM_SIMPLE, i.e. simple multi-sample anti-aliasing. */
@@ -326,6 +331,7 @@ public:
 				Wireframe != b.Wireframe ||
 				PointCloud != b.PointCloud ||
 				ZBuffer != b.ZBuffer ||
+				StencilBuffer != b.StencilBuffer ||
 				ZWriteEnable != b.ZWriteEnable ||
 				BackfaceCulling != b.BackfaceCulling ||
 				FrontfaceCulling != b.FrontfaceCulling ||

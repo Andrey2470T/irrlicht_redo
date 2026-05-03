@@ -59,7 +59,10 @@ enum E_MATERIAL_PROP
 
 	//! Corresponds to SMaterial::PolygonOffsetFactor, PolygonOffsetDirection,
 	//! PolygonOffsetDepthBias and PolygonOffsetSlopeScale.
-	EMP_POLYGON_OFFSET = 0x80000
+	EMP_POLYGON_OFFSET = 0x80000,
+
+	//! Corresponds to SMaterial::StencilBuffer
+	EMP_STENCIL_BUFFER = 0x100000
 };
 
 } // end namespace video
