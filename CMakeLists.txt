@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(IrrlichtRedo VERSION 1.0.0 LANGUAGES CXX)
+project(IrrlichtRedo VERSION 1.3.0 LANGUAGES CXX)
 
 message(STATUS "*** Building IrrlichtMt ${PROJECT_VERSION} ***")
 

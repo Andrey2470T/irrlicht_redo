@@ -1,4 +1,4 @@
-IrrlichtRedo version 1.2.0
+IrrlichtRedo version 1.3.0
 ==========================
 
 My fork of the IrrlichtMt [Minetest](https://github.com/minetest/irrlicht).
