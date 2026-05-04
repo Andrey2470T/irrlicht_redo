@@ -195,18 +195,6 @@ public:
 	/** \return 16 bit A1R5G5B5 value of this color. */
 	u16 toA1R5G5B5() const { return A8R8G8B8toA1R5G5B5(color); }
 
-	//! Converts color to OpenGL color format
-	/** From ARGB to RGBA in 4 byte components for endian aware
-	passing to OpenGL
-	\param dest: address where the 4x8 bit OpenGL color is stored. */
-	void toOpenGLColor(u8 *dest) const
-	{
-		*dest = (u8)getRed();
-		*++dest = (u8)getGreen();
-		*++dest = (u8)getBlue();
-		*++dest = (u8)getAlpha();
-	}
-
 	//! Sets all four components of the color at once.
 	/** Constructs the color from 4 values representing the alpha,
 	red, green and blue components of the color. Must be values
@@ -227,6 +215,8 @@ public:
 		color = (((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
 	}
 	void set(u32 col) { color = col; }
+
+	std::array<u32, 4> toArray() const { return {getAlpha(), getRed(), getGreen(), getBlue()}; }
 
 	//! Compares the color to another color.
 	/** \return True if the colors are the same, and false if not. */
@@ -408,6 +398,8 @@ public:
 		g = gg;
 		b = bb;
 	}
+
+	std::array<f32, 4> toArray() const { return {r, g, b, a}; }
 
 	//! Compares the color to another color.
 	/** \return True if the colors are the same, and false if not. */

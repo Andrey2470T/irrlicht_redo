@@ -101,7 +101,7 @@ public:
 	void setUniform4Int(const std::string &name, s32 value[4]);
 	void setUniform4UInt(const std::string &name, u32 value[4]);
 
-    void setUniform4x4Matrix(const std::string &name, core::matrix4 value);
+	void setUniform4x4Matrix(const std::string &name, core::matrix4 value);
 
 	void setUniformFloatStruct(const std::string &name, const std::unordered_map<std::string, f32> &values);
 

@@ -204,6 +204,8 @@ public:
 		return *this;
 	}
 
+	std::array<T, 2> toArray() const { return {X, Y}; }
+
 	//! Gets the length of the vector.
 	/** \return The length of the vector. */
 	T getLength() const { return core::squareroot(X * X + Y * Y); }

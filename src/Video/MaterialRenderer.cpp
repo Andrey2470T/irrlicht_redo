@@ -254,7 +254,7 @@ void MaterialRenderer::setUniform4UInt(const std::string &name, u32 value[4])
 
 void MaterialRenderer::setUniform4x4Matrix(const std::string &name, core::matrix4 value)
 {
-    glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());
+	glUniformMatrix4fv(ShaderObj->getUniformLocation(name), 1, GL_FALSE, value.pointer());
 }
 
 void MaterialRenderer::setUniformFloatStruct(const std::string &name, const std::unordered_map<std::string, f32> &values)
