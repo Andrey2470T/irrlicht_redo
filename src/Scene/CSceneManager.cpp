@@ -37,7 +37,7 @@ namespace scene
 
 //! constructor
 CSceneManager::CSceneManager(video::VideoDriver *driver,
-		gui::CursorControl *cursorControl, IMeshCache *cache) :
+		gui::ICursorControl *cursorControl, IMeshCache *cache) :
 		ISceneNode(0, 0),
 		Driver(driver),
 		CursorControl(cursorControl),
@@ -753,7 +753,7 @@ SkinnedMesh *CSceneManager::createSkinnedMesh()
 }
 
 // creates a scenemanager
-ISceneManager *createSceneManager(video::VideoDriver *driver, gui::CursorControl *cursorcontrol)
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::ICursorControl *cursorcontrol)
 {
 	return new CSceneManager(driver, cursorcontrol, nullptr);
 }

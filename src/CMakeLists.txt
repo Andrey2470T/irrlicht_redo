@@ -246,12 +246,11 @@ set(link_includes
 	"${ZLIB_INCLUDE_DIR}"
 	"${JPEG_INCLUDE_DIR}"
 	"${PNG_INCLUDE_DIR}"
+	"$<$<NOT:$<BOOL:${USE_SDL3}>>:${SDL2_INCLUDE_DIRS}>"
 
 	${OPENGL_INCLUDE_DIR}
 	${OPENGLES2_INCLUDE_DIR}
 )
-
-set(sdl2_link_includes "$<$<NOT:$<BOOL:${USE_SDL3}>>:${SDL2_INCLUDE_DIRS}>")
 
 # Source files
 
@@ -335,8 +334,8 @@ endif()
 
 if(USE_SDL3)
 	include_directories(IRROTHEROBJ $<TARGET_PROPERTY:SDL3::Headers,INTERFACE_INCLUDE_DIRECTORIES>)
-	target_compile_definitions(IRROTHEROBJ PUBLIC _IRR_USE_SDL3_)
-	target_compile_definitions(IRRVIDEOOBJ PUBLIC _IRR_USE_SDL3_) # Video/Common.h
+	target_compile_definitions(IRROTHEROBJ PRIVATE _IRR_USE_SDL3_)
+	target_compile_definitions(IRRVIDEOOBJ PRIVATE _IRR_USE_SDL3_) # Video/Common.h
 endif()
 
 # Library
@@ -359,7 +358,7 @@ foreach(object_lib
 	IRRMESHOBJ IRRVIDEOOBJ
 	IRRIOOBJ IRRDEVICEOBJ)
 	# Set include directories for object library compilation
-	target_include_directories(${object_lib} PRIVATE ${link_includes} ${sdl2_link_includes})
+	target_include_directories(${object_lib} PRIVATE ${link_includes}})
 	if(CMAKE_GENERATOR STREQUAL "Xcode")
 		# Workaround for Cmake Xcode project generator
 		target_link_libraries(IrrlichtRedo PRIVATE ${object_lib})
@@ -381,7 +380,6 @@ set_target_properties(IrrlichtRedo PROPERTIES VERSION ${PROJECT_VERSION})
 target_include_directories(IrrlichtRedo
 	PUBLIC
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
-		${sdl2_link_includes}
 	PRIVATE
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 		${link_includes}
@@ -395,17 +393,15 @@ target_link_libraries(IrrlichtRedo PRIVATE
 	${PNG_LIBRARY}
 	GLEW::GLEW
 
-	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
-
-	# incl. transitive SDL2 dependencies for static linking
-	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
-)
-
-target_link_libraries(IrrlichtRedo PUBLIC
 	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
 	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
 
 	"$<$<BOOL:${USE_SDL3}>:SDL3::SDL3-${SDL3_SUFFIX}>"
+
+	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
+
+	# incl. transitive SDL2 dependencies for static linking
+	"$<$<PLATFORM_ID:Android>:-landroid -llog -lGLESv2 -lGLESv1_CM -lOpenSLES>"
 )
 
 if(WIN32)

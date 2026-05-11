@@ -363,40 +363,9 @@ void SDLDevice::resetReceiveTextInputEvents()
 	}
 }
 
-SDLDevice *SDLDevice::createDevice(video::E_DRIVER_TYPE driverType,
-		const core::dimension2d<u32> &windowSize,
-		u32 bits, bool fullscreen,
-		bool stencilbuffer, bool vsync, IEventReceiver *res)
-{
-	SDLDeviceParameters p;
-	p.DriverType = driverType;
-	p.WindowSize = windowSize;
-	p.Bits = (u8)bits;
-	p.Fullscreen = fullscreen;
-	p.Stencilbuffer = stencilbuffer;
-	p.Vsync = vsync;
-	p.EventReceiver = res;
-
-	return createDeviceEx(p);
-}
-
-SDLDevice *SDLDevice::createDeviceEx(const SDLDeviceParameters &params)
-{
-	auto dev = new SDLDevice(params);
-
-	if (dev && !dev->getVideoDriver()) {
-		dev->closeDevice(); // destroy window
-		dev->run();         // consume quit message
-		dev->drop();
-		dev = 0;
-	}
-
-	return dev;
-}
-
 //! constructor
 SDLDevice::SDLDevice(const SDLDeviceParameters &param) :
-		VideoDrv(0), GUIEnvironment(0), SceneManager(0),
+		ISDLDevice(), VideoDrv(0), GUIEnvironment(0), SceneManager(0),
 		CursorCtrl(0), UserReceiver(param.EventReceiver),
 		Logger(0), ClipBoard(0), FileSystem(0),
 		InputReceivingSceneManager(0),
@@ -1933,4 +1902,35 @@ void SDLDevice::createKeyMap()
 	KeyMap.emplace(SDLK_PERIOD, KEY_PERIOD);
 
 	// some special keys missing
+}
+
+ISDLDevice *createDevice(video::E_DRIVER_TYPE driverType,
+		const core::dimension2d<u32> &windowSize,
+		u32 bits, bool fullscreen,
+		bool stencilbuffer, bool vsync, IEventReceiver *res)
+{
+	SDLDeviceParameters p;
+	p.DriverType = driverType;
+	p.WindowSize = windowSize;
+	p.Bits = (u8)bits;
+	p.Fullscreen = fullscreen;
+	p.Stencilbuffer = stencilbuffer;
+	p.Vsync = vsync;
+	p.EventReceiver = res;
+
+	return createDeviceEx(p);
+}
+
+ISDLDevice *createDeviceEx(const SDLDeviceParameters &params)
+{
+	auto dev = new SDLDevice(params);
+
+	if (dev && !dev->getVideoDriver()) {
+		dev->closeDevice(); // destroy window
+		dev->run();         // consume quit message
+		dev->drop();
+		dev = 0;
+	}
+
+	return dev;
 }

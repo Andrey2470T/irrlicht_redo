@@ -6,29 +6,6 @@
 
 #include "Utils/IReferenceCounted.h"
 #include "Utils/position2d.h"
-#include "Utils/rect.h"
-#include <vector>
-#include <memory>
-
-#ifdef _IRR_USE_SDL3_
-#define SDL_DISABLE_OLD_NAMES
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_mouse.h>
-#else
-#include <SDL.h>
-
-#define SDL_SYSTEM_CURSOR_DEFAULT SDL_SYSTEM_CURSOR_ARROW
-#define SDL_SYSTEM_CURSOR_POINTER SDL_SYSTEM_CURSOR_HAND
-#define SDL_SYSTEM_CURSOR_TEXT SDL_SYSTEM_CURSOR_IBEAM
-#define SDL_SYSTEM_CURSOR_NOT_ALLOWED SDL_SYSTEM_CURSOR_NO
-#define SDL_SYSTEM_CURSOR_MOVE SDL_SYSTEM_CURSOR_SIZEALL
-#define SDL_SYSTEM_CURSOR_NESW_RESIZE SDL_SYSTEM_CURSOR_SIZENESW
-#define SDL_SYSTEM_CURSOR_NWSE_RESIZE SDL_SYSTEM_CURSOR_SIZENWSE
-#define SDL_SYSTEM_CURSOR_NS_RESIZE SDL_SYSTEM_CURSOR_SIZENS
-#define SDL_SYSTEM_CURSOR_EW_RESIZE SDL_SYSTEM_CURSOR_SIZEWE
-#endif
-
-class SDLDevice;
 
 namespace gui
 {
@@ -79,19 +56,17 @@ const c8 *const GUICursorIconNames[ECI_COUNT + 1] = {
 };
 
 //! Interface to manipulate the mouse cursor.
-class CursorControl : public virtual IReferenceCounted
+class ICursorControl : public virtual IReferenceCounted
 {
 public:
-	CursorControl(SDLDevice *dev);
+	ICursorControl() = default;
+	virtual ~ICursorControl() = default;
 
 	//! Changes the visible state of the mouse cursor.
-	void setVisible(bool visible);
+	virtual void setVisible(bool visible) = 0;
 
 	//! Returns if the cursor is currently visible.
-	bool isVisible() const
-	{
-		return IsVisible;
-	}
+	virtual bool isVisible() const = 0;
 
 	//! Sets the new position of the cursor.
 	void setPosition(const core::position2d<f32> &pos)
@@ -100,7 +75,7 @@ public:
 	}
 
 	//! Sets the new position of the cursor.
-	void setPosition(f32 x, f32 y);
+	virtual void setPosition(f32 x, f32 y) = 0;
 
 	//! Sets the new position of the cursor.
 	void setPosition(const core::position2d<s32> &pos)
@@ -109,47 +84,19 @@ public:
 	}
 
 	//! Sets the new position of the cursor.
-	void setPosition(s32 x, s32 y);
+	virtual void setPosition(s32 x, s32 y) = 0;
 
 	//! Returns the current position of the mouse cursor.
-	const core::position2d<s32> &getPosition(bool updateCursor=true);
+	virtual const core::position2d<s32> &getPosition(bool updateCursor=true) = 0;
 
 	//! Returns the current position of the mouse cursor.
-	core::position2d<f32> getRelativePosition(bool updateCursor=true);
+	virtual core::position2d<f32> getRelativePosition(bool updateCursor=true) = 0;
 
-	void setRelativeMode(bool relative);
+	virtual void setRelativeMode(bool relative) = 0;
 
-	void setActiveIcon(gui::ECURSOR_ICON iconId);
+	virtual void setActiveIcon(gui::ECURSOR_ICON iconId) = 0;
 
-	gui::ECURSOR_ICON getActiveIcon() const
-	{
-		return ActiveIcon;
-	}
-
-private:
-	void updateCursorPos();
-
-	void initCursors();
-
-	SDLDevice *Device;
-	core::position2d<s32> CursorPos;
-	bool IsVisible;
-
-	struct CursorDeleter
-	{
-		void operator()(SDL_Cursor *ptr)
-		{
-#ifdef _IRR_USE_SDL3_
-			if (ptr)
-				SDL_DestroyCursor(ptr);
-#else
-			if (ptr)
-				SDL_FreeCursor(ptr);
-#endif
-		}
-	};
-	std::vector<std::unique_ptr<SDL_Cursor, CursorDeleter>> Cursors;
-	gui::ECURSOR_ICON ActiveIcon = gui::ECURSOR_ICON::ECI_NORMAL;
+	virtual gui::ECURSOR_ICON getActiveIcon() const = 0;
 };
 
 } // end namespace gui

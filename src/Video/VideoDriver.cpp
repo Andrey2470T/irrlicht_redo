@@ -23,7 +23,7 @@
 namespace video
 {
 
-VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device) :
+VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, ISDLDevice *device) :
 		MaterialSystem(this, io, params.OGLES2ShaderPath), Drawer(this),
 		DriverType(params.DriverType),
 		Params(params), AntiAlias(params.AntiAlias), SharedRenderTarget(nullptr),
@@ -67,7 +67,7 @@ VideoDriver::~VideoDriver()
 	Device->drop();
 }
 
-VideoDriver *VideoDriver::create(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device)
+VideoDriver *VideoDriver::create(const SDLDeviceParameters &params, io::IFileSystem *io, ISDLDevice *device)
 {
 	g_irrlogger->log("Create VideoDriver", ELL_INFORMATION);
 	auto driver = new VideoDriver(params, io, device);

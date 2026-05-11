@@ -32,7 +32,7 @@ namespace io
 class IWriteFile;
 class IReadFile;
 }
-class SDLDevice;
+class ISDLDevice;
 namespace video
 {
 struct VertexType;
@@ -51,13 +51,13 @@ class VideoDriver : public IReferenceCounted, public MaterialSystem, public Draw
 
 protected:
     //! constructor
-	VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
+	VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io, ISDLDevice *device);
 
 public:
 	//! destructor
     ~VideoDriver();
 
-	static VideoDriver *create(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
+	static VideoDriver *create(const SDLDeviceParameters &params, io::IFileSystem *io, ISDLDevice *device);
 
 	bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
 			core::rect<s32> *sourceRect = 0);
@@ -271,7 +271,7 @@ private:
 	bool Transformation3DChanged;
 	io::path OGLES2ShaderPath;
 
-	SDLDevice *Device;
+	ISDLDevice *Device;
 
 	bool EnableErrorTest;
 };

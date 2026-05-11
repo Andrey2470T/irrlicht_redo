@@ -1,11 +1,10 @@
-#include "Device/CursorControl.h"
-#include "Device/SDLDevice.h"
+#include "SDLDevice.h"
 
 namespace gui
 {
 
 CursorControl::CursorControl(SDLDevice *dev) :
-	Device(dev), IsVisible(true)
+	ICursorControl(), Device(dev), IsVisible(true)
 {
 	initCursors();
 }
