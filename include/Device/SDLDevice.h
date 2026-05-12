@@ -6,11 +6,19 @@
 
 #pragma once
 
-#include "Device/ISDLDevice.h"
+#include "Utils/IReferenceCounted.h"
+#include "Utils/dimension2d.h"
+#include "Enums/EDriverTypes.h"
 #include "Device/IEventReceiver.h"
 #include "CursorControl.h"
 #include "Device/Timer.h"
-#include "Device/Clipboard.h"
+#include "Clipboard.h"
+#include "Utils/irrArray.h"
+#include "Utils/position2d.h"
+#include "Image/SColor.h" // video::ECOLOR_FORMAT
+#include <string>
+#include <variant>
+#include "SDLDeviceParameters.h"
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten/html5.h>
@@ -27,11 +35,81 @@
 #include <memory>
 #include <unordered_map>
 
+namespace os
+{
+class Logger;
+}
+
+namespace video
+{
+class Image;
+class GLTexture;
+class VideoDriver;
+}
+
+namespace io
+{
+class IFileSystem;
+IFileSystem *createFileSystem();
+}
+
+namespace gui
+{
+class IGUIEnvironment;
+IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
+	video::VideoDriver *Driver, os::Clipboard *op);
+}
+
+namespace scene
+{
+class ISceneManager;
+ISceneManager *createSceneManager(video::VideoDriver *driver, gui::CursorControl *cc);
+}
+
+class IEventReceiver;
 
 //! Stub for an Irrlicht Device implementation (now merged into SDLDevice)
-class SDLDevice : public ISDLDevice
+class SDLDevice : public virtual IReferenceCounted
 {
 public:
+	//! Creates an Irrlicht device. The Irrlicht device is the root object for using the engine.
+	/** If you need more parameters to be passed to the creation of the Irrlicht Engine device,
+	use the createDeviceEx() function.
+	\param driverType: Type of the video driver to use.
+	\param windowSize: Size of the window or the video mode in fullscreen mode.
+	\param bits: Bits per pixel in fullscreen mode. Ignored if windowed mode.
+	\param fullscreen: Should be set to true if the device should run in fullscreen. Otherwise
+		the device runs in windowed mode.
+	\param stencilbuffer: Specifies if the stencil buffer should be enabled. Set this to true,
+	if you want the engine be able to draw stencil buffer shadows. Note that not all
+	devices are able to use the stencil buffer. If they don't no shadows will be drawn.
+	\param vsync: Specifies vertical synchronization: If set to true, the driver will wait
+	for the vertical retrace period, otherwise not.
+	\param receiver: A user created event receiver.
+	\return Returns pointer to the created IrrlichtDevice or null if the
+	device could not be created.
+	*/
+	static SDLDevice *createDevice(
+		video::E_DRIVER_TYPE driverType = video::EDT_OPENGL3,
+		// parentheses are necessary for some compilers
+		const core::dimension2d<u32> &windowSize = (core::dimension2d<u32>(640, 480)),
+		u32 bits = 32,
+		bool fullscreen = false,
+		bool stencilbuffer = true,
+		bool vsync = false,
+		IEventReceiver *receiver = 0);
+
+	//! Creates an Irrlicht device with the option to specify advanced parameters.
+	/** Usually you should used createDevice() for creating an Irrlicht Engine device.
+	Use this function only if you wish to specify advanced parameters like a window
+	handle in which the device should be created.
+	\param parameters: Structure containing advanced parameters for the creation of the device.
+	See SDLDeviceParameters for details.
+	\return Returns pointer to the created IrrlichtDevice or null if the
+	device could not be created. */
+	static SDLDevice *createDeviceEx(
+		const SDLDeviceParameters &parameters);
+
 	//! constructor
 	SDLDevice(const SDLDeviceParameters &param);
 
@@ -39,159 +117,159 @@ public:
 	~SDLDevice();
 
 	//! runs the device. Returns false if device wants to be deleted
-	bool run() override;
+	bool run();
 
 	//! pause execution temporarily
-	void yield() override;
+	void yield();
 
 	//! pause execution for a specified time
-	void sleep(u32 timeMs, bool pauseTimer=false) override;
+	void sleep(u32 timeMs, bool pauseTimer=false);
 
 	//! sets the caption of the window
-	void setWindowCaption(const wchar_t *text) override;
+	void setWindowCaption(const wchar_t *text);
 
 	//! Sets the window icon.
-	bool setWindowIcon(const video::Image *img) override;
+	bool setWindowIcon(const video::Image *img);
 
 	//! returns if window is active. if not, nothing need to be drawn
-	bool isWindowActive() const override;
+	bool isWindowActive() const;
 
 	//! returns if window has focus.
-	bool isWindowFocused() const override;
+	bool isWindowFocused() const;
 
 	//! returns if window is minimized.
-	bool isWindowMinimized() const override;
+	bool isWindowMinimized() const;
 
 	//! notifies the device that it should close itself
-	void closeDevice() override;
+	void closeDevice();
 
 	//! Sets if the window should be resizable in windowed mode.
-	void setResizable(bool resize = false) override;
+	void setResizable(bool resize = false);
 
 	//! Minimizes the window.
-	void minimizeWindow() override;
+	void minimizeWindow();
 
 	//! Maximizes the window.
-	void maximizeWindow() override;
+	void maximizeWindow();
 
 	//! Restores the window size.
-	void restoreWindow() override;
+	void restoreWindow();
 
 	//! Checks if the window is maximized.
-	bool isWindowMaximized() const override;
+	bool isWindowMaximized() const;
 
 	//! Checks if the Irrlicht window is running in fullscreen mode
 	/** \return True if window is fullscreen. */
-	bool isFullscreen() const override;
+	bool isFullscreen() const;
 
 	//! Enables or disables fullscreen mode.
 	/** \return True on success. */
-	bool setFullscreen(bool fullscreen) override;
+	bool setFullscreen(bool fullscreen);
 
 	//! Checks if the window could possibly be visible.
-	bool isWindowVisible() const override;
+	bool isWindowVisible() const;
 
 	//! Checks if the Irrlicht device supports touch events.
-	bool supportsTouchEvents() const override;
+	bool supportsTouchEvents() const;
 
 	//! Get the position of this window on screen
-	core::position2di getWindowPosition() override;
+	core::position2di getWindowPosition();
 
 	//! Activate any joysticks, and generate events for them.
-	bool activateJoysticks(core::array<SJoystickInfo> &joystickInfo) override;
+	bool activateJoysticks(core::array<SJoystickInfo> &joystickInfo);
 
 	//! Get the SDL version
-	std::string getVersionString() const override;
+	std::string getVersionString() const;
 
 	//! Get the display density in dots per inch.
-	float getDisplayDensity() const override;
+	float getDisplayDensity() const;
 
 	//! Activate accelerometer.
-	bool activateAccelerometer(float updateInterval = 0.016666f) override;
+	bool activateAccelerometer(float updateInterval = 0.016666f);
 
 	//! Deactivate accelerometer.
-	bool deactivateAccelerometer() override;
+	bool deactivateAccelerometer();
 
 	//! Is accelerometer active.
-	bool isAccelerometerActive() override;
+	bool isAccelerometerActive();
 
 	//! Is accelerometer available.
-	bool isAccelerometerAvailable() override;
+	bool isAccelerometerAvailable();
 
 	//! Activate gyroscope.
-	bool activateGyroscope(float updateInterval = 0.016666f) override;
+	bool activateGyroscope(float updateInterval = 0.016666f);
 
 	//! Deactivate gyroscope.
-	bool deactivateGyroscope() override;
+	bool deactivateGyroscope();
 
 	//! Is gyroscope active.
-	bool isGyroscopeActive() override;
+	bool isGyroscopeActive();
 
 	//! Is gyroscope available.
-	bool isGyroscopeAvailable() override;
+	bool isGyroscopeAvailable();
 
 	//! Activate device motion.
-	bool activateDeviceMotion(float updateInterval = 0.016666f) override;
+	bool activateDeviceMotion(float updateInterval = 0.016666f);
 
 	//! Deactivate device motion.
-	bool deactivateDeviceMotion() override;
+	bool deactivateDeviceMotion();
 
 	//! Is device motion active.
-	bool isDeviceMotionActive() override;
+	bool isDeviceMotionActive();
 
 	//! Is device motion available.
-	bool isDeviceMotionAvailable() override;
+	bool isDeviceMotionAvailable();
 
 	//! Set the maximal elapsed time between 2 clicks to generate doubleclicks for the mouse. It also affects tripleclick behavior.
-	void setDoubleClickTime(u32 timeMs) override;
+	void setDoubleClickTime(u32 timeMs);
 
 	//! Get the maximal elapsed time between 2 clicks to generate double- and tripleclicks for the mouse.
-	u32 getDoubleClickTime() const override;
+	u32 getDoubleClickTime() const;
 
 	//! Remove all messages pending in the system message loop
-	void clearSystemMessages() override;
+	void clearSystemMessages();
 
 	//! Resize the render window.
-	void setWindowSize(const core::dimension2d<u32> &size) override {}
+	void setWindowSize(const core::dimension2d<u32> &size) {}
 
-	bool swapBuffers() override;
+	bool swapBuffers();
 
 	//! returns the video driver
-	video::VideoDriver *getVideoDriver() override;
+	video::VideoDriver *getVideoDriver();
 
 	//! return file system
-	io::IFileSystem *getFileSystem() override;
+	io::IFileSystem *getFileSystem();
 
 	//! returns the gui environment
-	gui::IGUIEnvironment *getGUIEnvironment() override;
+	gui::IGUIEnvironment *getGUIEnvironment();
 
 	//! returns the scene manager
-	scene::ISceneManager *getSceneManager() override;
+	scene::ISceneManager *getSceneManager();
 
 	//! \return Returns a pointer to the mouse cursor control interface.
-	gui::CursorControl *getCursorControl() override;
+	gui::CursorControl *getCursorControl();
 
 	//! send the event to the right receiver
-	bool postEventFromUser(const SEvent &event) override;
+	bool postEventFromUser(const SEvent &event);
 
 	//! Sets a new event receiver to receive events
-	void setEventReceiver(IEventReceiver *receiver) override;
+	void setEventReceiver(IEventReceiver *receiver);
 
 	//! Returns pointer to the current event receiver. Returns 0 if there is none.
-	IEventReceiver *getEventReceiver() override;
+	IEventReceiver *getEventReceiver();
 
 	//! Sets the input receiving scene manager.
 	/** If set to null, the main scene manager (returned by GetSceneManager()) will receive the input */
-	void setInputReceivingSceneManager(scene::ISceneManager *sceneManager) override;
+	void setInputReceivingSceneManager(scene::ISceneManager *sceneManager);
 
 	//! Returns a pointer to the logger.
-	os::Logger *getLogger() override;
+	os::Logger *getLogger();
 
 	//! Returns the operation system opertator object.
-	os::Clipboard *getOSOperator() override;
+	os::Clipboard *getOSOperator();
 
-	std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const override;
-	Keycode getKeyFromScancode(const u32 scancode) const override;
+	std::variant<u32, EKEY_CODE> getScancodeFromKey(const Keycode &key) const;
+	Keycode getKeyFromScancode(const u32 scancode) const;
 
 private:
 	//! Compares to the last call of this function to return double and triple clicks.

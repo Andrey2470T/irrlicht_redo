@@ -84,9 +84,8 @@ void Shader::createProgram(const scene::VertexDescriptor &vDesc)
     glAttachShader(program, VertexShaderID);
     glAttachShader(program, FragmentShaderID);
 
-	if (GeometryShaderID != 0) {
+    if (GeometryShaderID != 0)
         glAttachShader(program, GeometryShaderID);
-	}
 
 	for (size_t i = 0; i < vDesc.Attributes.size(); ++i)
 		glBindAttribLocation(program, i, vDesc.Attributes[i].Name.c_str());
