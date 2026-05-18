@@ -130,8 +130,8 @@ s32 MaterialSystem::addHighLevelShaderMaterial(
 	s32 nr = -1;
 	MaterialRenderer *r = new MaterialRenderer(
 			Driver, nr, vertexShaderProgram,
-            fragmentShaderProgram, shaderName,
-			callback, vDesc);
+			fragmentShaderProgram, geometryShaderProgram,
+			shaderName, callback, vDesc);
 
 	r->drop();
 	return nr;

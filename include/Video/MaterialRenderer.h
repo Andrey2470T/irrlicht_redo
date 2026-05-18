@@ -63,6 +63,7 @@ public:
 			s32 &outMaterialTypeNr,
             const std::string &vertexShaderProgram = "",
             const std::string &fragmentShaderProgram = "",
+			const std::string &geometryShaderProgram = "",
             const std::string &debugName = "",
 			IShaderConstantSetCallBack *callback = 0,
 			const scene::VertexDescriptor &vDesc = scene::Vertex3D::FORMAT);
@@ -117,8 +118,8 @@ public:
 protected:
     void init(
         s32 &outMaterialTypeNr, const std::string &vertexShaderCode,
-		const std::string &fragmentShaderCode, const std::string &debugName = "",
-		bool addMaterial = true);
+		const std::string &fragmentShaderCode, const std::string &geometryShaderCode,
+		const std::string &debugName = "", bool addMaterial = true);
 
 	VideoDriver *Driver;
 	IShaderConstantSetCallBack *CallBack;

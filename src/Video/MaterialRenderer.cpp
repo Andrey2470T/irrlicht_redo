@@ -130,6 +130,7 @@ MaterialRenderer::MaterialRenderer(
 	s32 &outMaterialTypeNr,
 	const std::string &vertexShaderProgram,
 	const std::string &fragmentShaderProgram,
+	const std::string &geometryShaderProgram,
 	const std::string &debugName,
 	IShaderConstantSetCallBack *callback,
 	const scene::VertexDescriptor &vDesc) :
@@ -138,7 +139,7 @@ MaterialRenderer::MaterialRenderer(
 	if (CallBack)
 		CallBack->grab();
 
-    init(outMaterialTypeNr, vertexShaderProgram, fragmentShaderProgram, debugName);
+	init(outMaterialTypeNr, vertexShaderProgram, fragmentShaderProgram, geometryShaderProgram, debugName);
 }
 
 MaterialRenderer::~MaterialRenderer()
@@ -150,12 +151,13 @@ MaterialRenderer::~MaterialRenderer()
 void MaterialRenderer::init(s32 &outMaterialTypeNr,
     const std::string &vertexShaderCode,
     const std::string &fragmentShaderCode,
+	const std::string &geometryShaderCode,
     const std::string &debugName,
     bool addMaterial)
 {
 	outMaterialTypeNr = -1;
 
-	ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode, "", VertexDesc);
+	ShaderObj = std::make_unique<Shader>(vertexShaderCode, fragmentShaderCode, geometryShaderCode, VertexDesc);
 
     if (!debugName.empty()) {
         Driver->GLInfo->ObjectLabel(GL_PROGRAM, ShaderObj->ProgramID, debugName.c_str());
