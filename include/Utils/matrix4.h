@@ -71,6 +71,10 @@ public:
 	\param constructor Choose the initialization style */
 	CMatrix4(const CMatrix4<T> &other, eConstructor constructor = EM4CONST_COPY);
 
+	//! Constructs a matrix that reflects vectors
+	//! at the plane with the given plane normal vector (which need not be normalized).
+	[[nodiscard]] static CMatrix4<T> reflection(const vector3d<T> &normal);
+
 	//! Simple operator for directly accessing every element of the matrix.
 	T &operator()(const s32 row, const s32 col)
 	{
@@ -211,6 +215,9 @@ public:
 	//! Get Scale
 	vector3d<T> getScale() const;
 
+	//! Scale the matrix rows ("axes") by the components of a vector
+	void scaleAxes(const vector3d<T> &v);
+
 	//! Translate a vector by the inverse of the translation part of this matrix.
 	void inverseTranslateVect(vector3df &vect) const;
 
@@ -218,6 +225,7 @@ public:
 	[[nodiscard]] vector3d<T> scaleThenInvRotVect(const vector3d<T> &vect) const;
 
 	//! Rotate and scale a vector. Applies both rotation & scale part of the matrix.
+	// TODO rename to transformDirection
 	[[nodiscard]] vector3d<T> rotateAndScaleVect(const vector3d<T> &vect) const;
 
 	//! Transforms the vector by this matrix
@@ -273,6 +281,8 @@ public:
 	//! Inverts a primitive matrix which only contains a translation and a rotation
 	/** \param out: where result matrix is written to. */
 	bool getInversePrimitive(CMatrix4<T> &out) const;
+
+	T determinant() const;
 
 	//! Gets the inverse matrix of this one
 	/** \param out: where result matrix is written to.
@@ -421,6 +431,16 @@ public:
 
 	//! Compare two matrices using the equal method
 	bool equals(const CMatrix4<T> &other, const T tolerance = (T)ROUNDING_ERROR_f64) const;
+
+	//! Check whether matrix is a 3d affine transform (last column is approximately 0, 0, 0, 1)
+	bool isAffine(const T tolerance) const
+	{
+		const auto &m = *this;
+		return core::equals(m(0, 3), (T) 0, tolerance) &&
+				core::equals(m(1, 3), (T) 0, tolerance) &&
+				core::equals(m(2, 3), (T) 0, tolerance) &&
+				core::equals(m(3, 3), (T) 1, tolerance);
+	}
 
 private:
 	template <bool degrees>
