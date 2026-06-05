@@ -22,6 +22,7 @@ namespace video
 class VideoDriver;
 class IShaderConstantSetCallBack;
 class MaterialSystem;
+class HWBuffer;
 
 enum E_SHADER_TYPE
 {
@@ -46,6 +47,11 @@ public:
 		const scene::VertexDescriptor &vDesc=scene::Vertex3D::FORMAT);
 
     ~Shader();
+
+	u32 getProgramID() const
+	{
+		return ProgramID;
+	}
 
 private:
     u32 createShader(E_SHADER_TYPE, const std::string &code);
@@ -108,6 +114,8 @@ public:
 
     void setUniformColorfRGB(const std::string &name, const SColorf &colorf);
     void setUniformColorfRGBA(const std::string &name, const SColorf &colorf);
+
+	void setUniformBlock(const std::string &name, HWBuffer *ubo);
 
 	//! Get pointer to the IVideoDriver interface.
     VideoDriver *getVideoDriver();

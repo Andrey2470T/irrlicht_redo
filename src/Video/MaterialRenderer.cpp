@@ -278,6 +278,12 @@ void MaterialRenderer::setUniformColorfRGBA(const std::string &name, const SColo
     glUniform4f(ShaderObj->getUniformLocation(name), colorf.r, colorf.g, colorf.b, colorf.a);
 }
 
+void MaterialRenderer::setUniformBlock(const std::string &name, HWBuffer *ubo)
+{
+	u32 block_index = glGetUniformBlockIndex(ShaderObj->getProgramID(), name.c_str());
+	glUniformBlockBinding(ShaderObj->getProgramID(), block_index, ubo->getBindingPoint());
+}
+
 VideoDriver *MaterialRenderer::getVideoDriver()
 {
 	return Driver;
