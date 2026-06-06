@@ -67,7 +67,7 @@ public:
 
 private:
 	u32 ID = 0;
-	u32 bindPoint;
+	u32 bindPoint = 0;
 	HWBufferType type;
 	size_t curSize = 0;
 };

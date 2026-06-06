@@ -115,7 +115,7 @@ public:
     void setUniformColorfRGB(const std::string &name, const SColorf &colorf);
     void setUniformColorfRGBA(const std::string &name, const SColorf &colorf);
 
-	void setUniformBlock(const std::string &name, HWBuffer *ubo);
+	void setUniformBlock(const std::string &name, const HWBuffer &ubo);
 
 	//! Get pointer to the IVideoDriver interface.
     VideoDriver *getVideoDriver();

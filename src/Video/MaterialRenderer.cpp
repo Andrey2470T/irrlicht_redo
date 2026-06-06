@@ -85,7 +85,7 @@ void Shader::createProgram(const scene::VertexDescriptor &vDesc)
     glAttachShader(program, FragmentShaderID);
 
     if (GeometryShaderID != 0)
-        glAttachShader(program, GeometryShaderID);
+		glAttachShader(program, GeometryShaderID);
 
 	for (size_t i = 0; i < vDesc.Attributes.size(); ++i)
 		glBindAttribLocation(program, i, vDesc.Attributes[i].Name.c_str());
@@ -278,10 +278,11 @@ void MaterialRenderer::setUniformColorfRGBA(const std::string &name, const SColo
     glUniform4f(ShaderObj->getUniformLocation(name), colorf.r, colorf.g, colorf.b, colorf.a);
 }
 
-void MaterialRenderer::setUniformBlock(const std::string &name, HWBuffer *ubo)
+void MaterialRenderer::setUniformBlock(const std::string &name, const HWBuffer &ubo)
 {
 	u32 block_index = glGetUniformBlockIndex(ShaderObj->getProgramID(), name.c_str());
-	glUniformBlockBinding(ShaderObj->getProgramID(), block_index, ubo->getBindingPoint());
+	if (block_index != GL_INVALID_INDEX)
+		glUniformBlockBinding(ShaderObj->getProgramID(), block_index, ubo.getBindingPoint());
 }
 
 VideoDriver *MaterialRenderer::getVideoDriver()
