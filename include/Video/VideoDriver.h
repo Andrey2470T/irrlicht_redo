@@ -60,7 +60,7 @@ public:
 	static VideoDriver *create(const SDLDeviceParameters &params, io::IFileSystem *io, SDLDevice *device);
 
 	bool beginScene(u16 clearFlag, SColor clearColor = SColor(255, 0, 0, 0), f32 clearDepth = 1.f, u8 clearStencil = 0,
-			core::rect<s32> *sourceRect = 0);
+			core::recti *sourceRect = 0);
 
 	//! Alternative beginScene implementation. Can't clear stencil buffer, but otherwise identical to other beginScene
 	bool beginScene(SColor clearColor = SColor(255, 0, 0, 0))
@@ -84,7 +84,7 @@ public:
 	{
 		return Textures.size();
 	}
-    GLTexture *addTexture(const core::dimension2d<u32> &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
+	GLTexture *addTexture(const core::dimension2du &size, const io::path &name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
     GLTexture *addTexture(const io::path &name, Image *image);
 
     GLTexture *addTextureCubemap(const io::path &name, Image *imagePosX, Image *imageNegX, Image *imagePosY,
@@ -130,7 +130,7 @@ public:
 	}
 
 	//! returns screen size
-	const core::dimension2d<u32> &getScreenSize() const
+	const core::dimension2du &getScreenSize() const
 	{
 		return ScreenSize;
 	}
@@ -146,32 +146,32 @@ public:
 		return FrameStats;
 	}
 
-	const core::dimension2d<u32> &getCurrentRenderTargetSize() const;
+	const core::dimension2du &getCurrentRenderTargetSize() const;
 
 	//! Returns the maximum texture size supported.
 	core::dimension2du getMaxTextureSize() const;
 
-	const core::rect<s32> &getViewPort() const
+	const core::recti &getViewPort() const
 	{
 		return ViewPort;
 	}
 	//! sets a viewport
-	void setViewPort(const core::rect<s32> &area);
+	void setViewPort(const core::recti &area);
 
 	//! Only used internally by the engine
-	void OnResize(const core::dimension2d<u32> &size);
+	void OnResize(const core::dimension2du &size);
 
 	//! Returns the transformation set by setTransform
 	const core::matrix4 &getTransform(E_TRANSFORMATION_STATE state) const;
 
-    GLTexture *addRenderTargetTexture(const core::dimension2d<u32> &size,
+	GLTexture *addRenderTargetTexture(const core::dimension2du &size,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
-    GLTexture *addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
+	GLTexture *addRenderTargetTextureMs(const core::dimension2du &size, u8 msaa,
 			const io::path &name, const ECOLOR_FORMAT format = ECF_UNKNOWN);
 
 	//! Creates a render target texture for a cubemap
-    GLTexture *addRenderTargetTextureCubemap(const u32 sideLen,
+	GLTexture *addRenderTargetTextureCubemap(const core::dimension2du &size,
 			const io::path &name, const ECOLOR_FORMAT format);
 
 	//! looks if the image is already loaded
@@ -242,13 +242,13 @@ private:
 	RenderTarget *SharedRenderTarget;
     core::array<GLTexture *> SharedDepthTextures;
 	RenderTarget *CurrentRenderTarget;
-	core::dimension2d<u32> CurrentRenderTargetSize;
+	core::dimension2du CurrentRenderTargetSize;
 
 	io::IFileSystem *FileSystem;
 	scene::MeshManipulator *MeshManipulator;
 
 	core::rect<s32> ViewPort;
-	core::dimension2d<u32> ScreenSize;
+	core::dimension2du ScreenSize;
 
 	u32 MinVertexCountForVBO;
 	u32 TextureCreationFlags;

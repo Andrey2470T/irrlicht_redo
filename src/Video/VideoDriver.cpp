@@ -40,7 +40,7 @@ VideoDriver::VideoDriver(const SDLDeviceParameters &params, io::IFileSystem *io,
 	setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, true);
 	setTextureCreationFlag(ETCF_ALLOW_MEMORY_COPY, false);
 
-	ViewPort = core::rect<s32>(core::position2d<s32>(0, 0), core::dimension2di(params.WindowSize));
+	ViewPort = core::recti(core::position2d<s32>(0, 0), core::dimension2di(params.WindowSize));
 
 	MeshManipulator = new scene::MeshManipulator();
 
@@ -116,7 +116,7 @@ bool VideoDriver::genericDriverInit(const core::dimension2d<u32> &screenSize, bo
 	return true;
 }
 
-bool VideoDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, core::rect<s32> *sourceRect)
+bool VideoDriver::beginScene(u16 clearFlag, SColor clearColor, f32 clearDepth, u8 clearStencil, core::recti *sourceRect)
 {
 	FrameStats = {};
 
@@ -212,10 +212,10 @@ const core::dimension2d<u32> &VideoDriver::getCurrentRenderTargetSize() const
 		return CurrentRenderTargetSize;
 }
 
-void VideoDriver::setViewPort(const core::rect<s32> &area)
+void VideoDriver::setViewPort(const core::recti &area)
 {
-	core::rect<s32> vp = area;
-	core::rect<s32> rendert(0, 0, getCurrentRenderTargetSize().Width, getCurrentRenderTargetSize().Height);
+	core::recti vp = area;
+	core::recti rendert(0, 0, getCurrentRenderTargetSize().Width, getCurrentRenderTargetSize().Height);
 	vp.clipAgainst(rendert);
 
 	if (vp.getHeight() > 0 && vp.getWidth() > 0)
@@ -256,11 +256,11 @@ void VideoDriver::setMinHardwareBufferVertexCount(u32 count)
 
 //! Only used by the internal engine. Used to notify the driver that
 //! the window was resized.
-void VideoDriver::OnResize(const core::dimension2d<u32> &size)
+void VideoDriver::OnResize(const core::dimension2du &size)
 {
 	if (ViewPort.getWidth() == (s32)ScreenSize.Width &&
 			ViewPort.getHeight() == (s32)ScreenSize.Height)
-		ViewPort = core::rect<s32>(core::position2d<s32>(0, 0),
+		ViewPort = core::recti(core::position2d<s32>(0, 0),
 				core::dimension2di(size));
 
 	ScreenSize = size;
@@ -269,13 +269,13 @@ void VideoDriver::OnResize(const core::dimension2d<u32> &size)
 	Transformation3DChanged = true;
 }
 
-GLTexture *VideoDriver::addRenderTargetTexture(const core::dimension2d<u32> &size,
+GLTexture *VideoDriver::addRenderTargetTexture(const core::dimension2du &size,
 		const io::path &name, const ECOLOR_FORMAT format)
 {
 	return addRenderTargetTextureMs(size, 0, name, format);
 }
 
-GLTexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2d<u32> &size, u8 msaa,
+GLTexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2du &size, u8 msaa,
 		const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
@@ -292,7 +292,7 @@ GLTexture *VideoDriver::addRenderTargetTextureMs(const core::dimension2d<u32> &s
 	return renderTargetTexture;
 }
 
-GLTexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const io::path &name, const ECOLOR_FORMAT format)
+GLTexture *VideoDriver::addRenderTargetTextureCubemap(const core::dimension2du &size, const io::path &name, const ECOLOR_FORMAT format)
 {
 	// disable mip-mapping
 	bool generateMipLevels = getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
@@ -300,7 +300,6 @@ GLTexture *VideoDriver::addRenderTargetTextureCubemap(const u32 sideLen, const i
 
 	bool supportForFBO = (GLInfo->getFeatures().ColorAttachment > 0);
 
-	const core::dimension2d<u32> size(sideLen, sideLen);
 	core::dimension2du destSize(size);
 
 	if (!supportForFBO) {
@@ -386,7 +385,7 @@ bool VideoDriver::setRenderTargetEx(RenderTarget *target, u16 clearFlag, SColor 
 	} else {
 		Context->setRenderTarget(nullptr);
 
-		destRenderTargetSize = core::dimension2d<u32>(0, 0);
+		destRenderTargetSize = core::dimension2du(0, 0);
 
 		setViewPortRaw(ScreenSize.Width, ScreenSize.Height);
 	}
