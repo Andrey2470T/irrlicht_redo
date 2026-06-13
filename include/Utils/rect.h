@@ -116,6 +116,12 @@ public:
 				LowerRightCorner.Y >= pos.Y);
 	}
 
+	//! Return if the other rect is within this rect.
+	bool isRectInside(const rect<T> &other) const
+	{
+		return (isPointInside(other.UpperLeftCorner) && isPointInside(other.LowerRightCorner));
+	}
+
 	//! Check if the rectangle collides with another rectangle.
 	/** \param other Rectangle to test collision with
 	\return True if the rectangles collide. */
