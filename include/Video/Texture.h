@@ -202,8 +202,9 @@ public:
 
 	void uploadTexture(u32 layer, Image *img, u32 x=0, u32 y=0);
 
+	void resize(u32 newWidth, u32 newHeight);
+
 protected:
-    core::dimension2du getMipMapsSize(u32 mipLevel);
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
     void getImageValues(const Image *image);
 

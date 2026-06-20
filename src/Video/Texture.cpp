@@ -197,7 +197,7 @@ void *GLTexture::lock(
             auto prevFBO = ctxt->getRenderTarget();
             ctxt->setRenderTarget(tmpFBO);
 
-            tmpFBO->setColorTextures({this}, {}, mipLevel);
+			tmpFBO->setColorTextures({this}, {});
 
             Image *tmpImage = new Image(ECF_A8R8G8B8, lockImageSize);
 
@@ -386,13 +386,6 @@ Image *GLTexture::createImage(
         unlock();
         return image;
     }
-}
-
-core::dimension2du GLTexture::getMipMapsSize(u32 mipLevel)
-{
-    u32 w = Size.Width >> mipLevel;
-    u32 h = Size.Height >> mipLevel;
-    return core::dimension2du(w > 0 ? w : 1, h > 0 ? h : 1);
 }
 
 ECOLOR_FORMAT GLTexture::getBestColorFormat(ECOLOR_FORMAT format)
@@ -586,6 +579,50 @@ void GLTexture::uploadTexture(u32 layer, Image *img, u32 x, u32 y)
 
     if (formatInfo.Converter)
         delete tmpImage;
+}
+
+void GLTexture::resize(u32 newWidth, u32 newHeight)
+{
+	if (Type != ETT_2D || LockImage) // allowed only for 2D textures
+		return;
+
+	u32 oldTexID = TexID;
+	u32 oldWidth = Size.Width;
+	u32 oldHeight = Size.Height;
+
+	Size = core::dimension2du(newWidth, newHeight);
+
+	genTexture();
+
+	auto ctxt = Driver->getContext();
+	auto prevTexture = ctxt->getTextureUnit(0);
+	ctxt->setTextureUnit(0, this);
+
+	initTexture();
+
+	u32 srcFBO, dstFBO;
+
+	glGenFramebuffers(1, &srcFBO);
+	glGenFramebuffers(1, &dstFBO);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		toGLTexType[Type], oldTexID, 0);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		toGLTexType[Type], TexID, 0);
+
+	glBlitFramebuffer(0, 0, oldWidth, oldHeight,
+		0, 0, oldWidth, oldHeight,
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	glDeleteFramebuffers(1, &srcFBO);
+	glDeleteFramebuffers(1, &dstFBO);
+
+	glDeleteTextures(1, &oldTexID);
+
+	ctxt->setTextureUnit(0, prevTexture);
 }
 
 } // end namespace video
