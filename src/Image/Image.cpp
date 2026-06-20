@@ -27,7 +27,7 @@ namespace video
 //! Constructor from raw data
 Image::Image(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, void *data,
 		bool ownForeignMemory, bool deleteMemory) :
-        Format(format), Size(size), DeleteMemory(deleteMemory)
+	Format(format), Size(size), ClipRect({core::vector2du(), size}), DeleteMemory(deleteMemory)
 {
     BytesPerPixel = pixelFormatsInfo[Format].size / 8;
     Pitch = BytesPerPixel * Size.Width;
@@ -50,7 +50,7 @@ Image::Image(ECOLOR_FORMAT format, const core::dimension2d<u32> &size, void *dat
 
 //! Constructor of empty image
 Image::Image(ECOLOR_FORMAT format, const core::dimension2d<u32> &size) :
-        Format(format), Size(size), DeleteMemory(true)
+		Format(format), Size(size), ClipRect({core::vector2du(), size}), DeleteMemory(true)
 {
     BytesPerPixel = pixelFormatsInfo[Format].size / 8;
     Pitch = BytesPerPixel * Size.Width;

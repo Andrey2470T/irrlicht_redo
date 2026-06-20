@@ -43,6 +43,7 @@ class Image : public virtual IReferenceCounted
 {
     ECOLOR_FORMAT Format;
     core::dimension2d<u32> Size;
+	core::rect<u32> ClipRect;
 
     u8 *Data = nullptr;
 
@@ -81,6 +82,16 @@ public:
     {
         return Size;
     }
+
+	const core::rect<u32> &getClipRect() const
+	{
+		return ClipRect;
+	}
+
+	core::rect<u32> &getClipRect()
+	{
+		return ClipRect;
+	}
 
     //! Returns bits per pixel.
     u32 getBitsPerPixel() const
@@ -121,6 +132,11 @@ public:
     {
         return Data;
     }
+
+	void *getOffsetData() const
+	{
+		return Data + getPitch() * ClipRect.UpperLeftCorner.Y + BytesPerPixel * ClipRect.UpperLeftCorner.X;
+	}
 
 	//! returns a pixel
     SColor getPixel(u32 x, u32 y) const;

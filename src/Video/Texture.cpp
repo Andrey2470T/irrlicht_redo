@@ -78,7 +78,7 @@ GLTexture::GLTexture(const io::path &name, const std::vector<Image *> &srcImages
     initTexture();
 
 	for (size_t i = 0; i < tmpImages->size(); ++i)
-		uploadTexture(i, 0, (*tmpImages)[i]->getData());
+		uploadTexture(i, (*tmpImages)[i]);
 
     if (TexSettings.HasMipMaps) {
         regenerateMipMaps();
@@ -158,23 +158,20 @@ void GLTexture::unbind() const
 }
 
 void *GLTexture::lock(
-    E_TEXTURE_LOCK_MODE mode, u32 mipLevel, u32 layer)
+	E_TEXTURE_LOCK_MODE mode, u32 layer)
 {
 	LockReadOnly |= (mode == ETLM_READ_ONLY);
 	LockLayer = layer;
-    LockMipLevel = mipLevel;
 
 	if (KeepImage) {
 		assert(LockLayer < Images.size());
 
-        if (mipLevel == 0) {
-			LockImage = Images[LockLayer];
-			LockImage->grab();
-		}
+		LockImage = Images[LockLayer];
+		LockImage->grab();
 	}
 
 	if (!LockImage) {
-        core::dimension2du lockImageSize(getMipMapsSize(LockMipLevel));
+		core::dimension2du lockImageSize(Size);
 		assert(lockImageSize.Width > 0 && lockImageSize.Height > 0);
 
         LockImage = new Image(ColorFormat, lockImageSize);
@@ -190,7 +187,7 @@ void *GLTexture::lock(
 
             auto &formatInfo = GLSpecificInfo::TextureFormats[ColorFormat];
 
-            glGetTexImage(getTextureTarget(Type, layer), LockMipLevel, formatInfo.PixelFormat, formatInfo.PixelType, tmpImage->getData());
+			glGetTexImage(getTextureTarget(Type, layer), 0, formatInfo.PixelFormat, formatInfo.PixelType, tmpImage->getData());
             TEST_GL_ERROR(Driver);
 
             if (TexSettings.IsRenderTarget)
@@ -254,7 +251,7 @@ void GLTexture::unlock()
         auto prevTexture = Driver->getContext()->getTextureUnit(0);
 		Driver->getContext()->setTextureUnit(0, this);
 
-        uploadTexture(LockLayer, LockMipLevel, LockImage->getData());
+		uploadTexture(LockLayer, LockImage);
 
 		Driver->getContext()->setTextureUnit(0, prevTexture);
 	}
@@ -563,25 +560,26 @@ void GLTexture::initTexture()
         Driver->GLInfo->ObjectLabel(GL_TEXTURE, TexID, NamedPath.getInternalName().c_str());
 }
 
-void GLTexture::uploadTexture(u32 layer, u32 level, void *data)
+void GLTexture::uploadTexture(u32 layer, Image *img, u32 x, u32 y)
 {
+	auto data = img->getData();
 	if (!data)
 		return;
 
-    core::dimension2du imageSize(getMipMapsSize(level));
+	auto imageArea = img->getClipRect();
 
     Image *tmpImage = nullptr;
-	void *tmpData = data;
+	void *tmpData = img->getOffsetData();
 
     auto &formatInfo = GLSpecificInfo::TextureFormats[ColorFormat];
 
     if (formatInfo.Converter) {
-        tmpImage = new Image(ColorFormat, imageSize);
+		tmpImage = new Image(ColorFormat, imageArea.getSize());
 		tmpData = tmpImage->getData();
-        formatInfo.Converter(data, imageSize.getArea(), tmpData);
+		formatInfo.Converter(img->getOffsetData(), imageArea.getArea(), tmpData);
 	}
 
-    glTexSubImage2D(getTextureTarget(Type, layer), level, 0, 0, imageSize.Width, imageSize.Height,
+	glTexSubImage2D(getTextureTarget(Type, layer), 0, x, y, imageArea.getWidth(), imageArea.getHeight(),
                     formatInfo.PixelFormat, formatInfo.PixelType, tmpData);
 
 	TEST_GL_ERROR(Driver);

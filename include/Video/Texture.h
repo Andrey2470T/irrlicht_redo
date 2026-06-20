@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <optional>
 #include <vector>
 #include <cstdint>
 
@@ -167,9 +168,7 @@ public:
     void unbind() const;
 
 	// Texture interface methods
-    void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE,
-            u32 mipLevel = 0,
-            u32 layer = 0);
+	void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE, u32 layer = 0);
 
 	void unlock();
 
@@ -201,6 +200,8 @@ public:
         const core::position2di &targetPos,
         const core::dimension2du &targetSize);
 
+	void uploadTexture(u32 layer, Image *img, u32 x=0, u32 y=0);
+
 protected:
     core::dimension2du getMipMapsSize(u32 mipLevel);
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format);
@@ -208,7 +209,6 @@ protected:
 
     void genTexture();
     void initTexture();
-	void uploadTexture(u32 layer, u32 level, void *data);
 
 	// Fields from Texture
 	io::SNamedPath NamedPath;
@@ -226,7 +226,6 @@ protected:
 	bool LockReadOnly = false;
     Image *LockImage = nullptr;
 	u32 LockLayer = 0;
-    u8 LockMipLevel = 0;
 
 	bool KeepImage = false;
     std::vector<Image*> Images;
