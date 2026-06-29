@@ -96,11 +96,12 @@ GLTexture::GLTexture(const io::path &name, const std::vector<Image *> &srcImages
 
 GLTexture::GLTexture(const io::path &name, const core::dimension2du &size,
                      E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *Driver,
-                     u8 msaa) :
+                     u8 msaa, u8 maxMipLevel, bool isRenderTarget) :
     NamedPath(name), OriginalSize(size), Size(size), OriginalColorFormat(format),
     ColorFormat(format), Type(type), Driver(Driver), MSAA(msaa)
 {
-    TexSettings.IsRenderTarget = true;
+    TexSettings.IsRenderTarget = isRenderTarget;
+    TexSettings.MaxMipLevel = maxMipLevel;
 
     if (OriginalColorFormat == ECF_UNKNOWN)
 		ColorFormat = getBestColorFormat(ECF_R8G8B8);

@@ -160,7 +160,7 @@ public:
 	// Constructor for render target
 	GLTexture(const io::path &name, const core::dimension2du &size,
 			E_TEXTURE_TYPE type, ECOLOR_FORMAT format, VideoDriver *driver,
-			u8 msaa = 0);
+			u8 msaa = 0, u8 maxMipLevel = 0, bool isRenderTarget = false);
 
 	~GLTexture();
 
