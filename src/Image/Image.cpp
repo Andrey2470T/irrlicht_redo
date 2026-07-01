@@ -216,11 +216,12 @@ bool Image::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT f
 	if (!(Format == format && Size.Width == width && Size.Height == height))
 		return false;
 
+	auto data = getOffsetData();
 	if (pitch == Pitch) {
-		memcpy(target, Data, (size_t)height * pitch);
+		memcpy(target, data, (size_t)height * pitch);
 	} else {
 		u8 *tgtpos = (u8 *)target;
-		u8 *srcpos = Data;
+		u8 *srcpos = data;
 		const u32 bwidth = width * bpp;
 		const u32 rest = pitch - bwidth;
 		for (u32 y = 0; y < height; ++y) {
@@ -279,7 +280,7 @@ void Image::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT for
 	for (u32 y = 0; y < height; ++y) {
 		f32 sx = sourceXStart;
 		for (u32 x = 0; x < width; ++x) {
-			CColorConverter::convert_viaFormat(Data + syval + ((s32)sx) * BytesPerPixel, Format, 1, ((u8 *)target) + yval + (x * bpp), format);
+			CColorConverter::convert_viaFormat(getOffsetData() + syval + ((s32)sx) * BytesPerPixel, Format, 1, ((u8 *)target) + yval + (x * bpp), format);
 			sx += sourceXStep;
 		}
 		sy += sourceYStep;

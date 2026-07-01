@@ -133,7 +133,7 @@ public:
         return Data;
     }
 
-	void *getOffsetData() const
+	u8 *getOffsetData() const
 	{
 		return Data + getPitch() * ClipRect.UpperLeftCorner.Y + BytesPerPixel * ClipRect.UpperLeftCorner.X;
 	}
