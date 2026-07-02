@@ -112,7 +112,7 @@ bool Image::writeImageToFile(Image *image, const io::path &filename, io::IFileSy
 //! sets a pixel
 void Image::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 {
-	if (x >= Size.Width || y >= Size.Height)
+	if (!ClipRect.isPointInside(core::vector2du(x, y)))
 		return;
 
 	switch (Format) {
@@ -150,7 +150,7 @@ void Image::setPixel(u32 x, u32 y, const SColor &color, bool blend)
 //! returns a pixel
 SColor Image::getPixel(u32 x, u32 y) const
 {
-	if (x >= Size.Width || y >= Size.Height)
+	if (!ClipRect.isPointInside(core::vector2du(x, y)))
 		return SColor(0);
 
 	switch (Format) {
@@ -181,7 +181,10 @@ SColor Image::getPixel(u32 x, u32 y) const
 //! copies this surface into another at given position
 void Image::copyTo(Image *target, const core::position2d<s32> &pos)
 {
-	if (!Blit(BLITTER_TEXTURE, target, 0, &pos, this, 0, 0) && target && pos.X == 0 && pos.Y == 0 &&
+	auto sourceClipRect = core::rect<s32>(
+		ClipRect.UpperLeftCorner.X, ClipRect.UpperLeftCorner.Y,
+		ClipRect.LowerRightCorner.X, ClipRect.LowerRightCorner.Y);
+	if (!Blit(BLITTER_TEXTURE, target, 0, &pos, this, &sourceClipRect, 0) && target && pos.X == 0 && pos.Y == 0 &&
 			CColorConverter::canConvertFormat(Format, target->getColorFormat())) {
 		// No fast blitting, but copyToScaling uses other color conversions and might work
 		core::dimension2du dim(target->getDimension());
@@ -206,14 +209,17 @@ void Image::copyToWithAlpha(Image *target, const core::position2d<s32> &pos, con
 //! copies this surface into another, if it has the exact same size and format.
 bool Image::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch) const
 {
-	if (!target || !width || !height || !Size.Width || !Size.Height)
+	u32 clipW = ClipRect.getWidth();
+	u32 clipH = ClipRect.getHeight();
+
+	if (!target || !width || !height || !clipW || !clipH)
 		return false;
 
 	const u32 bpp = pixelFormatsInfo[format].size / 8;
 	if (0 == pitch)
 		pitch = width * bpp;
 
-	if (!(Format == format && Size.Width == width && Size.Height == height))
+	if (!(Format == format && clipW == width && clipH == height))
 		return false;
 
 	auto data = getOffsetData();
@@ -241,7 +247,10 @@ bool Image::copyToNoScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT f
 // note: this is very very slow.
 void Image::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT format, u32 pitch)
 {
-	if (!target || !width || !height || !Size.Width || !Size.Height)
+	u32 clipW = ClipRect.getWidth();
+	u32 clipH = ClipRect.getHeight();
+
+	if (!target || !width || !height || !clipW || !clipH)
 		return;
 
 	const u32 bpp = pixelFormatsInfo[format].size / 8;
@@ -254,24 +263,28 @@ void Image::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT for
 	// NOTE: Scaling is coded to keep the border pixels intact.
 	// Alternatively we could for example work with first pixel being taken at half step-size.
 	// Then we have one more step here and it would be:
-	//     sourceXStep = (f32)(Size.Width-1) / (f32)(width);
+	//     sourceXStep = (f32)(sourceWidth-1) / (f32)(width);
 	//     And sx would start at 0.5f + sourceXStep / 2.f;
 	//     Similar for y.
 	// As scaling is done without any antialiasing it doesn't matter too much which outermost pixels we use and keeping
 	// border pixels intact is probably mostly better (with AA the other solution would be more correct).
 	// This is however unnecessary (and unexpected) for scaling to integer multiples, so don't do it there.
+	const u32 sourceWidth = clipW;
+	const u32 sourceHeight = clipH;
+	const u8 *sourceData = getOffsetData();
+
 	f32 sourceXStep, sourceYStep;
 	f32 sourceXStart = 0.f, sourceYStart = 0.f;
-	if (width % Size.Width == 0)
-		sourceXStep = (f32)(Size.Width) / (f32)(width);
+	if (width % sourceWidth == 0)
+		sourceXStep = (f32)sourceWidth / (f32)width;
 	else {
-		sourceXStep = width > 1 ? (f32)(Size.Width - 1) / (f32)(width - 1) : 0.f;
+		sourceXStep = width > 1 ? (f32)(sourceWidth - 1) / (f32)(width - 1) : 0.f;
 		sourceXStart = 0.5f; // for rounding to nearest pixel
 	}
-	if (height % Size.Height == 0)
-		sourceYStep = (f32)(Size.Height) / (f32)(height);
+	if (height % sourceHeight == 0)
+		sourceYStep = (f32)sourceHeight / (f32)height;
 	else {
-		sourceYStep = height > 1 ? (f32)(Size.Height - 1) / (f32)(height - 1) : 0.f;
+		sourceYStep = height > 1 ? (f32)(sourceHeight - 1) / (f32)(height - 1) : 0.f;
 		sourceYStart = 0.5f; // for rounding to nearest pixel
 	}
 
@@ -280,11 +293,11 @@ void Image::copyToScaling(void *target, u32 width, u32 height, ECOLOR_FORMAT for
 	for (u32 y = 0; y < height; ++y) {
 		f32 sx = sourceXStart;
 		for (u32 x = 0; x < width; ++x) {
-			CColorConverter::convert_viaFormat(getOffsetData() + syval + ((s32)sx) * BytesPerPixel, Format, 1, ((u8 *)target) + yval + (x * bpp), format);
+			CColorConverter::convert_viaFormat(sourceData + syval + ((s32)sx) * BytesPerPixel, Format, 1, ((u8 *)target) + yval + (x * bpp), format);
 			sx += sourceXStep;
 		}
 		sy += sourceYStep;
-		syval = (s32)(sy)*Pitch;
+		syval = (s32)(sy) * Pitch;
 		yval += pitch;
 	}
 }
@@ -334,50 +347,63 @@ void Image::copyToScalingBoxFilter(Image *target, s32 bias, bool blend)
 //! fills the surface with given color
 void Image::fill(const SColor &color)
 {
-	u32 c;
+	// Fill only within current ClipRect
+	const u32 x0 = ClipRect.UpperLeftCorner.X;
+	const u32 y0 = ClipRect.UpperLeftCorner.Y;
+	const u32 x1 = ClipRect.LowerRightCorner.X;
+	const u32 y1 = ClipRect.LowerRightCorner.Y;
 
-	switch (Format) {
-	case ECF_A1R5G5B5:
-		c = color.toA1R5G5B5();
-		c |= c << 16;
-		break;
-	case ECF_R5G6B5:
-		c = video::A8R8G8B8toR5G6B5(color.color);
-		c |= c << 16;
-		break;
-	case ECF_A8R8G8B8:
-		c = color.color;
-		break;
-	case ECF_R8G8B8: {
-		u8 rgb[3];
-		CColorConverter::convert_A8R8G8B8toR8G8B8(&color, 1, rgb);
-		const u32 size = getImageDataSizeInBytes();
-		for (u32 i = 0; i < size; i += 3) {
-			memcpy(Data + i, rgb, 3);
+	// clamp to image size
+	const u32 sx = core::s32_clamp((s32)x0, 0, (s32)Size.Width);
+	const u32 sy = core::s32_clamp((s32)y0, 0, (s32)Size.Height);
+	const u32 ex = core::s32_clamp((s32)x1, 0, (s32)Size.Width);
+	const u32 ey = core::s32_clamp((s32)y1, 0, (s32)Size.Height);
+
+	const u32 bytesPerPixel = BytesPerPixel;
+
+	// Fast path: 32-bit pixels, no per-pixel blend, full-row contiguous write
+	if (bytesPerPixel == 4 && sx == 0 && ex == Size.Width) {
+		const u32 rowWords = Size.Width; // number of 32-bit pixels per row
+		const u32 value = color.color; // SColor assumed to have u32 color member
+
+		for (u32 y = sy; y < ey; ++y) {
+			u8 *row = Data + y * Pitch;
+			// write as 32-bit words
+			std::uint32_t *wrow = reinterpret_cast<std::uint32_t*>(row);
+			std::fill_n(wrow, rowWords, value);
 		}
-		return;
-	} break;
-	default:
-		// TODO: Handle other formats
-		return;
+	} else {
+		for (u32 y = sy; y < ey; ++y) {
+			for (u32 x = sx; x < ex; ++x) {
+				setPixel(x, y, color, false);
+			}
+		}
 	}
-	memset32(Data, c, getImageDataSizeInBytes());
 }
 
 void Image::flip(E_FLIP_AXIS axis)
 {
+    const u32 sy = core::s32_clamp((s32)ClipRect.UpperLeftCorner.Y, 0, (s32)Size.Height);
+    const u32 sx = core::s32_clamp((s32)ClipRect.UpperLeftCorner.X, 0, (s32)Size.Width);
+    const u32 ey = core::s32_clamp((s32)ClipRect.LowerRightCorner.Y, 0, (s32)Size.Height);
+    const u32 ex = core::s32_clamp((s32)ClipRect.LowerRightCorner.X, 0, (s32)Size.Width);
+
     if (axis == EFA_Y) {
         // Vertical flip
-        u8 *srcA = static_cast<u8 *>(Data);
-        u8 *srcB = srcA + (Size.Height - 1) * Pitch;
+        const u32 bytesPerPixel = BytesPerPixel;
+        std::vector<u8> tmpBuffer(bytesPerPixel * (ex - sx));
 
-        std::vector<u8> tmpBuffer(Pitch);
-        for (u32 i = 0; i < Size.Height; i += 2) {
-            memcpy(tmpBuffer.data(), srcA, Pitch);
-            memcpy(srcA, srcB, Pitch);
-            memcpy(srcB, tmpBuffer.data(), Pitch);
-            srcA += Pitch;
-            srcB -= Pitch;
+        for (u32 i = 0; i < (ey - sy) / 2; ++i) {
+            u32 y1 = sy + i;
+            u32 y2 = ey - 1 - i;
+            
+            u8 *row1 = Data + y1 * Pitch + sx * bytesPerPixel;
+            u8 *row2 = Data + y2 * Pitch + sx * bytesPerPixel;
+            u32 rowSize = (ex - sx) * bytesPerPixel;
+            
+            memcpy(tmpBuffer.data(), row1, rowSize);
+            memcpy(row1, row2, rowSize);
+            memcpy(row2, tmpBuffer.data(), rowSize);
         }
     }
     else {
@@ -385,13 +411,13 @@ void Image::flip(E_FLIP_AXIS axis)
         const u32 bytesPerPixel = BytesPerPixel;
         std::vector<u8> tmpBuffer(bytesPerPixel);
 
-        for (u32 y = 0; y < Size.Height; ++y)
+        for (u32 y = sy; y < ey; ++y)
         {
             u8 *rowStart = Data + (y * Pitch);
-            u8 *left = rowStart;
-            u8 *right = rowStart + (Size.Width - 1) * bytesPerPixel;
+            u8 *left = rowStart + sx * bytesPerPixel;
+            u8 *right = rowStart + (ex - 1) * bytesPerPixel;
 
-            for (u32 x = 0; x < Size.Width / 2; ++x)
+            for (u32 x = 0; x < (ex - sx) / 2; ++x)
             {
                 // Swap pixels
                 memcpy(tmpBuffer.data(), left, bytesPerPixel);
