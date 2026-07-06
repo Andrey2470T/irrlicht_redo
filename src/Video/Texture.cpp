@@ -146,14 +146,22 @@ GLTexture::~GLTexture()
 		image->drop();
 }
 
-void GLTexture::bind() const
+void GLTexture::bind()
 {
+    if (bound)
+        return;
+    
+    bound = true;
     glBindTexture(toGLTexType[Type], TexID);
     TEST_GL_ERROR(Driver);
 }
 
-void GLTexture::unbind() const
+void GLTexture::unbind()
 {
+    if (!bound)
+        return;
+
+    bound = false;
     glBindTexture(toGLTexType[Type], 0);
     TEST_GL_ERROR(Driver);
 }

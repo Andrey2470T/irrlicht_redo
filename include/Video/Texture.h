@@ -164,8 +164,8 @@ public:
 
 	~GLTexture();
 
-    void bind() const;
-    void unbind() const;
+    void bind();
+    void unbind();
 
 	// Texture interface methods
 	void *lock(E_TEXTURE_LOCK_MODE mode = ETLM_READ_WRITE, u32 layer = 0);
@@ -223,6 +223,8 @@ protected:
 	VideoDriver *Driver;
 	u32 TexID;
 	u8 MSAA = 0;
+
+	bool bound = false;
 
 	bool LockReadOnly = false;
     Image *LockImage = nullptr;
