@@ -91,7 +91,7 @@ u32 DrawContext::getProgram() const
 	return curProgramID;
 }
 
-const GLTexture *DrawContext::getTextureUnit(u32 index) const
+GLTexture *DrawContext::getTextureUnit(u32 index) const
 {
     if (index >= textureUnits.size()) {
 		g_irrlogger->log("DrawContext::getActiveUnit() indexing the active unit out of the range", ELL_ERROR);
@@ -101,7 +101,7 @@ const GLTexture *DrawContext::getTextureUnit(u32 index) const
     return textureUnits[index];
 }
 
-std::vector<const GLTexture *> DrawContext::getTextureUnits() const
+std::vector<GLTexture *> DrawContext::getTextureUnits() const
 {
     return textureUnits;
 }
@@ -181,7 +181,7 @@ void DrawContext::activateUnit(u32 index)
 	}
 }
 
-bool DrawContext::setTextureUnit(u32 index, const GLTexture *texture)
+bool DrawContext::setTextureUnit(u32 index, GLTexture *texture)
 {
     if (index >= textureUnits.size()) {
 		g_irrlogger->log("DrawContext::setActiveUnit() setting the new active unit index out of the range", ELL_ERROR);

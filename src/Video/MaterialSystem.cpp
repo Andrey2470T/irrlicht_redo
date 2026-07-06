@@ -457,8 +457,9 @@ void MaterialSystem::createMaterialRenderers()
 
 bool MaterialSystem::setMaterialTexture(u32 layerIdx, const GLTexture *texture)
 {
-    Material.TextureLayers[layerIdx].Texture = const_cast<GLTexture *>(texture); // function uses const-pointer for texture because all draw functions use const-pointers already
-	return Driver->Context->setTextureUnit(0, texture);
+	GLTexture *var_texture = const_cast<GLTexture *>(texture); 
+    Material.TextureLayers[layerIdx].Texture = var_texture; // function uses const-pointer for texture because all draw functions use const-pointers already
+	return Driver->Context->setTextureUnit(0, var_texture);
 }
 
 void MaterialSystem::loadShaderData(const io::path &vertexShaderName, const io::path &fragmentShaderName, c8 **vertexShaderData, c8 **fragmentShaderData)

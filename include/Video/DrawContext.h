@@ -105,7 +105,7 @@ class DrawContext
 	u32 curProgramID = 0;
 
     u32 maxTextureUnits;
-    std::vector<const GLTexture *> textureUnits;
+    std::vector<GLTexture *> textureUnits;
     u32 activeUnit;
 
     BlendState curBlend;
@@ -137,8 +137,8 @@ public:
 
 	RenderTarget *getRenderTarget() const;
 	u32 getProgram() const;
-    const GLTexture *getTextureUnit(u32 index) const;
-    std::vector<const GLTexture *> getTextureUnits() const;
+    GLTexture *getTextureUnit(u32 index) const;
+    std::vector<GLTexture *> getTextureUnits() const;
 
 	BlendState getBlendState() const;
 	DepthTestState getDepthTest() const;
@@ -154,7 +154,7 @@ public:
 	void setRenderTarget(RenderTarget *rt);
 	void setProgram(u32 programID);
 	void activateUnit(u32 index);
-    bool setTextureUnit(u32 index, const GLTexture *texture);
+    bool setTextureUnit(u32 index, GLTexture *texture);
     void removeTexture(GLTexture *texture);
 
 	void enableBlend(bool blend);
