@@ -23,11 +23,11 @@ void Drawer::drawMeshBuffer(scene::IMeshBuffer *mb, std::optional<scene::IIndexB
 
 	Driver->setRenderStates3DMode();
 
-	mb->bind();
-
-	drawGeneric((void*)0, indexCount, mb->getPrimitiveType());
-
-	mb->unbind();
+	if (mb->isValid()) {
+		mb->bind();
+		drawGeneric((void*)0, indexCount, mb->getPrimitiveType());
+		mb->unbind();
+	}
 }
 
 //! Draws the normals of a mesh buffer

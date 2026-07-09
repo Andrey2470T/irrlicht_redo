@@ -210,6 +210,11 @@ public:
 		VAObj.unbind();
 	}
 
+	bool isValid() const
+	{
+		return VAObj.exists();
+	}
+
 	bool reload(video::VideoDriver *driver, std::optional<scene::IIndexBuffer *> indexes=std::nullopt)
 	{
 		bool updated = getVertexBuffer()->reload(driver);
