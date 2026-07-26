@@ -216,6 +216,7 @@ void RenderTarget::setDepthStencilTexture(
 				break;
 			case ETT_CUBEMAP:
 				textarget = static_cast<GLenum>(dsCubeMapFace);
+				break;
 			default:
 				throw std::logic_error("not reachable");
 			}
